@@ -109,13 +109,15 @@ export const useDashboardStats = (filters?: DashboardFilters) => {
           .from('expenses')
           .select('*', { count: 'exact', head: true })
           .eq('user_id', user.id)
+          .is('deleted_at', null)
           .eq('status', 'reimbursable'),
         
         // Total expenses count
         supabase
           .from('expenses')
           .select('*', { count: 'exact', head: true })
-          .eq('user_id', user.id),
+          .eq('user_id', user.id)
+          .is('deleted_at', null),
         
         // Expenses by category
         (() => {

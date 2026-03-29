@@ -9,9 +9,13 @@ export function useTags() {
   return useQuery({
     queryKey: ['tags'],
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
       const { data, error } = await supabase
         .from('tags')
         .select('*')
+        .eq('user_id', user.id)
         .order('name', { ascending: true });
       
       if (error) throw error;
@@ -77,12 +81,21 @@ export function useDeleteTag() {
 
   return useMutation({
     mutationFn: async (id: string) => {
+      const { data: existing } = await supabase.from('tags').select('name').eq('id', id).single();
       const { error } = await supabase
         .from('tags')
         .delete()
         .eq('id', id);
       
       if (error) throw error;
+
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase.from('audit_log' as any).insert({
+          user_id: user.id, action: 'delete', entity_type: 'tag', entity_id: id,
+          entity_name: existing?.name || null,
+        } as any);
+      }
     },
     onSuccess: () => {
       afterTag();

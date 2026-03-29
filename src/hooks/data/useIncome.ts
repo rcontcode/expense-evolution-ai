@@ -205,7 +205,7 @@ export function useIncomeSummary(year?: number) {
         .is('deleted_at', null)
         .gte('date', startDate)
         .lte('date', endDate)
-        .limit(500);
+        .limit(2000);
 
       if (error) throw error;
 
