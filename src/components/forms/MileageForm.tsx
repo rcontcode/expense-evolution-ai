@@ -38,7 +38,7 @@ import { mileageSchema, MileageFormValues, RECURRENCE_TYPES } from '@/lib/valida
 import { Checkbox } from '@/components/ui/checkbox';
 import { useClients } from '@/hooks/data/useClients';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { MileageWithClient, calculateMileageDeduction, CRA_MILEAGE_RATES } from '@/hooks/data/useMileage';
+import { MileageWithClient, calculateMileageDeduction, calculateMileageDeductionByCountry, CRA_MILEAGE_RATES } from '@/hooks/data/useMileage';
 import { MileageRoutePreview } from '@/components/mileage/MileageRoutePreview';
 import { AddressAutocomplete } from '@/components/mileage/AddressAutocomplete';
 import { LeafletRouteMap } from '@/components/mileage/LeafletRouteMap';
@@ -177,15 +177,17 @@ export const MileageForm = ({ initialData, yearToDateKm = 0, onSubmit, isLoading
     }
   }, [watchRecurrence, watchRecurrenceDays, watchRecurrenceEndDate, watchExceptionDates, watchSpecificDates, watchDate, watchKilometers]);
   
+  const country = currentEntity?.country as 'CA' | 'CL' | null | undefined;
+
   const estimatedDeduction = watchKilometers 
-    ? calculateMileageDeduction(watchKilometers, yearToDateKm)
-    : { deductible: 0, rate: CRA_MILEAGE_RATES.first5000 };
+    ? calculateMileageDeductionByCountry(watchKilometers, yearToDateKm, country)
+    : null;
 
   // Calculate total deduction for all trips
   const totalTripDeduction = useMemo(() => {
-    if (tripSummary.totalTrips <= 1) return null;
-    return calculateMileageDeduction(tripSummary.totalKm, yearToDateKm);
-  }, [tripSummary.totalTrips, tripSummary.totalKm, yearToDateKm]);
+    if (tripSummary.totalTrips <= 1 || !country) return null;
+    return calculateMileageDeductionByCountry(tripSummary.totalKm, yearToDateKm, country);
+  }, [tripSummary.totalTrips, tripSummary.totalKm, yearToDateKm, country]);
 
   // Calculate distance using OSRM when both coordinates are available
   const calculateRouteDistance = useCallback(async (
@@ -924,7 +926,11 @@ export const MileageForm = ({ initialData, yearToDateKm = 0, onSubmit, isLoading
               <div className="border-t pt-3 mt-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">{t('mileage.totalEstimatedDeduction')}</span>
-                  <span className="font-bold text-chart-1">${totalTripDeduction.deductible.toFixed(2)}</span>
+                  <span className="font-bold text-chart-1">
+                    {totalTripDeduction.currency === 'CLP' 
+                      ? `$${totalTripDeduction.deductible.toLocaleString()} CLP`
+                      : `$${totalTripDeduction.deductible.toFixed(2)}`}
+                  </span>
                 </div>
               </div>
             )}
@@ -941,34 +947,52 @@ export const MileageForm = ({ initialData, yearToDateKm = 0, onSubmit, isLoading
             exceptionDates={watchExceptionDates}
             specificDates={watchSpecificDates}
             kilometers={watchKilometers}
-            deductionPerTrip={estimatedDeduction.deductible}
+            deductionPerTrip={estimatedDeduction?.deductible || 0}
           />
         )}
 
-        {/* Deduction Preview - Single trip */}
-        {watchKilometers > 0 && (
+        {/* Deduction Preview - Single trip — only if country is set */}
+        {watchKilometers > 0 && estimatedDeduction && (
           <div className="rounded-lg border bg-muted/50 p-4 space-y-2">
             <h4 className="font-medium text-sm">
               {watchRecurrence !== 'one_time' ? t('mileage.perTripDeduction') : t('mileage.deductionPreview')}
             </h4>
             <div className="grid grid-cols-2 gap-2 text-sm">
               <span className="text-muted-foreground">{t('mileage.estimatedDeduction')}</span>
-              <span className="font-bold text-chart-1">${estimatedDeduction.deductible.toFixed(2)}</span>
+              <span className="font-bold text-chart-1">
+                {estimatedDeduction.currency === 'CLP'
+                  ? `$${estimatedDeduction.deductible.toLocaleString()} CLP`
+                  : `$${estimatedDeduction.deductible.toFixed(2)}`}
+              </span>
               <span className="text-muted-foreground">{t('mileage.rateApplied')}</span>
-              <span>${estimatedDeduction.rate.toFixed(2)}/km</span>
+              <span>
+                {estimatedDeduction.currency === 'CLP'
+                  ? `$${estimatedDeduction.rate} CLP/km`
+                  : `$${estimatedDeduction.rate.toFixed(2)}/km`}
+              </span>
               <span className="text-muted-foreground">{t('mileage.yearToDateKm')}</span>
               <span>{yearToDateKm.toFixed(1)} km</span>
             </div>
             <div className="flex items-center gap-1.5 mt-2">
               <Badge variant="outline" className="text-[9px] px-1.5 py-0 bg-amber-500/10 border-amber-500/30 text-amber-600">
-                {t('mileage.rates2026') || '2026 Rates'}
+                {country === 'CA' ? '🇨🇦 CRA' : '🇨🇱 SII'} {new Date().getFullYear()}
               </Badge>
               <p className="text-[10px] text-muted-foreground">
-                {t('mileage.craRateNote')}
+                {country === 'CA' 
+                  ? (t('mileage.craRateNote') || 'Based on CRA rates')
+                  : (language === 'es' ? 'Basado en gastos presuntos SII' : 'Based on SII presumed expenses')}
               </p>
             </div>
-            <p className="text-[9px] text-muted-foreground/70 mt-1">
-              {t('mileage.verifyRatesNote') || 'Verify current rates at canada.ca/sii.cl before filing'}
+          </div>
+        )}
+
+        {/* No country hint */}
+        {watchKilometers > 0 && !estimatedDeduction && (
+          <div className="rounded-lg border border-dashed bg-muted/30 p-3 text-center">
+            <p className="text-xs text-muted-foreground">
+              {language === 'es' 
+                ? '💡 Configura una entidad fiscal para ver la deducción estimada por este viaje'
+                : '💡 Set up a fiscal entity to see the estimated deduction for this trip'}
             </p>
           </div>
         )}
