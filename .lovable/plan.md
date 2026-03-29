@@ -1,31 +1,41 @@
 
 
-# Proyección Flexible con Navegación Temporal + Disclaimer de Datos
+# Mejorar Estilo de Botones en PageContextGuide
 
-## Problema actual
-1. La pestaña Proyección siempre empieza desde "ahora" y muestra 6 meses fijos — no se puede navegar
-2. El `MonthNavigator` se oculta explícitamente para la vista de proyección (`view !== 'projection'`)
-3. No hay ningún disclaimer sobre calidad/completitud de datos
+## Problema
+Los botones de "goals" (Badge) y "actions" (grid de botones) en el componente `PageContextGuide` se ven como texto plano sin identidad visual de botón. Necesitan el estilo 3D candy del sistema de diseño.
 
-## Solución
+## Cambios
 
-### 1. Hacer la Proyección navegable
-- Mostrar el `MonthNavigator` también en la vista de proyección
-- Pasar `selectedMonth` a `CashFlowProjection` como punto de inicio
-- La proyección mostrará 6 meses **a partir del mes seleccionado** (no desde "ahora")
-- Agregar selector de rango: 3, 6, 12 meses
+### 1. Goals badges (línea 169)
+Cambiar de `Badge variant="outline"` plano a botones con fondo, sombra y efecto 3D:
+```
+// De:
+<Badge variant="outline" className="text-xs cursor-pointer hover:bg-primary/10">
 
-### 2. Agregar disclaimer de calidad de datos
-- Banner informativo debajo del gráfico:
-  - ES: "📊 Esta proyección se basa en tus pagos fijos activos. Su precisión depende de la completitud y actualización de tus datos."
-  - EN: "📊 This projection is based on your active recurring bills. Its accuracy depends on the completeness and freshness of your data."
-- Si hay pocos bills (< 3), mostrar variante más visible: "Agrega más pagos fijos para una proyección más precisa"
+// A:
+<Badge variant="outline" className="text-xs cursor-pointer bg-primary/10 border-primary/30 shadow-sm shadow-primary/10 hover:bg-primary/20 hover:shadow-md hover:shadow-primary/15 hover:-translate-y-0.5 hover:border-primary/50 transition-all duration-200 active:translate-y-0 active:shadow-inner">
+```
 
-### 3. Cambios en BillsDashboard
-- Remover la condición `view !== 'projection'` del MonthNavigator — mostrarlo siempre
-- Pasar `selectedMonth` a `<CashFlowProjection selectedMonth={selectedMonth} />`
+### 2. Action cards (línea 213-231)
+Reforzar el estilo 3D candy con fondo visible, sombras más pronunciadas y efecto de profundidad:
+```
+// De:
+"group p-3 rounded-xl border-2 border-border/50 hover:border-primary/40 hover:bg-primary/5 hover:shadow-md hover:shadow-primary/5 hover:-translate-y-0.5 transition-all text-left"
 
-## Archivos a modificar
-1. `src/components/bills/CashFlowProjection.tsx` — Aceptar `selectedMonth` prop, selector de rango (3/6/12), disclaimer de datos
-2. `src/components/bills/BillsDashboard.tsx` — Mostrar MonthNavigator en todas las vistas, pasar prop a CashFlowProjection
+// A:
+"group p-3 rounded-xl border-2 border-border/60 bg-card/80 shadow-md shadow-black/5 hover:border-primary/40 hover:bg-primary/10 hover:shadow-lg hover:shadow-primary/15 hover:-translate-y-1 active:translate-y-0 active:shadow-inner transition-all duration-200 text-left"
+```
+
+También mejorar el icon container:
+```
+// De:
+"w-7 h-7 rounded-md bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors"
+
+// A:
+"w-8 h-8 rounded-lg bg-primary/15 border border-primary/20 shadow-sm shadow-primary/10 flex items-center justify-center group-hover:bg-primary/25 group-hover:shadow-md group-hover:shadow-primary/15 transition-all duration-200"
+```
+
+## Archivo a modificar
+1. `src/components/guidance/PageContextGuide.tsx` — líneas 169, 213-231
 
