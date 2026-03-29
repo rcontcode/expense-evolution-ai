@@ -1,43 +1,53 @@
 
 
-# Mejorar Submenú de Clientes en Sidebar
+# Agrupar Archivos Multi-Página como Un Solo Contrato
 
 ## Problema
-El submenú de "Clientes" muestra solo "📊 Gráficos Negocio" que no tiene relación directa con clientes. Es confuso — el usuario esperaría ver herramientas relacionadas con la gestión de clientes, no gráficos generales del negocio.
+Cuando subes un contrato de 3 páginas (ej: 3 fotos), el sistema crea 3 filas independientes en la tabla `contracts`. Esto causa:
+1. La tabla muestra 3 contratos separados en vez de 1 contrato de 3 páginas
+2. No puedes ver el contrato completo — solo página por página
+3. Con varios clientes y contratos multi-página, la vista es un caos
+4. El análisis IA se ejecuta por archivo individual en vez del contrato completo
 
-## Solución
+## Solución: `group_id` para agrupar páginas
 
-Reemplazar el submenú actual con items relevantes a clientes:
+### 1. Migración DB
+Agregar columna `group_id UUID` a `contracts`. Cuando se suben múltiples archivos juntos, todos comparten el mismo `group_id`. Contratos de un solo archivo tienen `group_id = NULL` o su propio UUID.
 
-```
-Clientes
-├── 📊 Rentabilidad por Cliente  → /analytics#profitability (ClientProfitability)
-├── 📁 Proyectos               → /projects
-└── 📄 Contratos               → /contracts
-```
-
-Estos son los módulos que realmente se relacionan con clientes: ver qué tan rentable es cada uno, los proyectos asignados, y los contratos asociados.
-
-## Cambio
-
-**`src/components/Layout.tsx` (líneas 213-217)**
-
-De:
-```tsx
-children: [
-  { label: '📊 Gráficos Negocio', path: '/dashboard?area=negocio&atab=charts' },
-],
+```sql
+ALTER TABLE contracts ADD COLUMN group_id uuid DEFAULT NULL;
+ALTER TABLE contracts ADD COLUMN page_order integer DEFAULT 0;
 ```
 
-A:
-```tsx
-children: [
-  { label: '📊 Rentabilidad Clientes' / 'Client Profitability', path: '/analytics#profitability' },
-  { label: '📁 Proyectos' / 'Projects', path: '/projects' },
-  { label: '📄 Contratos' / 'Contracts', path: '/contracts' },
-],
-```
+### 2. Cambiar lógica de creación (`useContracts.ts`)
+**Actualmente**: Loop que crea 1 row por archivo, cada uno con título/fechas/valor duplicados.
+**Nuevo**: Generar un `group_id` compartido cuando `files.length > 1`. Solo el primer archivo lleva los metadatos completos (título, valor, fechas). Los demás llevan el mismo `group_id` y `page_order` incremental, sin duplicar metadatos.
 
-## Archivo a modificar
-1. `src/components/Layout.tsx` — líneas 214-216, actualizar children de Clientes
+### 3. Agrupar visualmente en la tabla (`ContractsTable.tsx`)
+- Agrupar contratos por `group_id` antes de renderizar
+- Mostrar 1 fila por grupo, con badge "3 páginas" si tiene múltiples archivos
+- El título del grupo es el del primer archivo (o el título manual)
+
+### 4. Visor multi-página en `ContractDetailDialog.tsx`
+- Cuando el contrato tiene `group_id`, buscar todas las páginas del grupo
+- Agregar navegación de páginas (← Pág 1/3 →) en el visor de documentos
+- Mostrar thumbnails de todas las páginas en un sidebar o strip inferior
+
+### 5. Agrupar contratos existentes (`ContractsTable.tsx`)
+- Agregar acción "Agrupar con..." en el menú de acciones (⋮)
+- Permite seleccionar otros contratos del mismo cliente para unificar bajo un `group_id`
+- También permitir "Desagrupar" para separar archivos
+
+### 6. Query actualizado (`useContracts.ts`)
+- Agregar `page_order` al `ORDER BY`
+- Crear helper `useContractGroup(groupId)` que trae todas las páginas de un grupo
+
+## Archivos a modificar
+1. **Migración SQL** — Agregar `group_id` y `page_order` a tabla `contracts`
+2. **`src/hooks/data/useContracts.ts`** — Asignar `group_id` compartido al subir múltiples archivos, crear hook `useContractGroup`
+3. **`src/types/contract.types.ts`** — Agregar `ContractGroup` type
+4. **`src/components/tables/ContractsTable.tsx`** — Agrupar filas por `group_id`, mostrar badge de páginas
+5. **`src/components/contracts/ContractCard.tsx`** — Badge de páginas en mobile
+6. **`src/components/contracts/ContractDetailDialog.tsx`** — Navegación multi-página con todas las páginas del grupo
+7. **`src/pages/Contracts.tsx`** — Pasar datos agrupados
 
