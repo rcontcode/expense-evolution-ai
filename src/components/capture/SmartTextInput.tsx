@@ -172,7 +172,7 @@ export function SmartTextInput({ onSuccess, onCancel }: SmartTextInputProps) {
           is_taxable: result.data.is_taxable !== false,
           currency: currentEntity?.default_currency || 'CAD',
           entity_id: currentEntity?.id || undefined,
-          recurrence: 'none',
+          recurrence: 'one_time',
         });
       }
       

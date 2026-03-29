@@ -308,6 +308,7 @@ export function SubscriptionTracker() {
         is_active: true,
         auto_pay: false,
         next_due_date: format(nextDue, 'yyyy-MM-dd'),
+        currency: currentEntity?.default_currency || 'CAD',
       });
 
       if (error) throw error;
