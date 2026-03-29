@@ -1,26 +1,34 @@
 
 
-# Corregir "consejos financieros" → "educación financiera" en toda la app
+# Adaptar "Plan de Acción" para usuarios de otros países
 
-## Problema Legal
+## Problema
 
-Decir "consejos financieros" implica que EvoFinz da asesoría financiera, lo cual contradice los disclaimers legales. Debe ser **educación financiera** o **tips de finanzas personales**.
+En `QuizResults.tsx`, la sección "Plan de Acción" siempre muestra "Optimizador de impuestos Canadá/Chile" y "Optimizador fiscal inteligente" — incluso cuando el usuario seleccionó un país diferente. Hay que adaptar estas líneas según el país del usuario.
 
-## 7 correcciones en 5 archivos
+## Cambio
 
-| # | Archivo | Cambio |
-|---|---------|--------|
-| 1 | `QuizModal.tsx` | "consejos financieros y novedades" → "educación financiera y novedades" |
-| 2 | `QuizModal.tsx` | "financial tips and updates" → "financial education and updates" |
-| 3 | `VipReferralLanding.tsx` | "consejos financieros, tips y novedades" → "educación financiera, tips y novedades" |
-| 4 | `VipReferralLanding.tsx` | "financial tips, advice and updates" → "financial education and updates" |
-| 5 | `NotificationPreferences.tsx` | label: "Consejos Financieros" → "Tips Financieros", desc: "Consejos y oportunidades" → "Tips y oportunidades" |
-| 6 | `ProfileExtenderDialog.tsx` | "consejos financieros" → "experiencia financiera" / "financial advice" → "financial experience" |
-| 7 | `app-assistant/index.ts` | "Cuando des consejos financieros" → "Cuando compartas educación financiera" |
+### `src/components/quiz/QuizResults.tsx`
 
-## Sin cambios (ya correcto)
+Hacer las listas `features` y `whyItems` dinámicas según `result.data.country`:
 
-- `FinancialLibrary.tsx` — podcast externo
-- `Landing.tsx`, `Terms.tsx`, `legal-disclaimer.tsx` — ya dicen "NO constituye asesoría"
-- Edge functions de optimización — ya usan "fines educativos"
+**features (ES):**
+- Si país es Chile/Canadá: `"Optimizador de impuestos Canadá/Chile"` (actual)
+- Si país es otro: `"Control financiero para cualquier país"` o similar
+
+**features (EN):**
+- Si país es Chile/Canadá: `"Tax optimizer for Canada/Chile"` (actual)  
+- Si país es otro: `"Financial tracking for any country"`
+
+**whyItems (ES):**
+- Si país es otro: `"🎯 Optimizador fiscal inteligente"` → `"🎯 Control inteligente de gastos e ingresos"`
+
+**whyItems (EN):**
+- Si país es otro: `"🎯 Smart tax optimizer"` → `"🎯 Smart expense and income tracking"`
+
+Se usa `result.data.country` (disponible en el componente) para detectar si incluye "Chile", "Canadá/Canada" o es otro país.
+
+## Archivo a modificar (1)
+
+1. **`src/components/quiz/QuizResults.tsx`** — Condicionar 4 strings en features/whyItems según país del usuario
 
