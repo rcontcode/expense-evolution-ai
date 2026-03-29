@@ -12,6 +12,10 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { ReceiptReviewDialog } from './ReceiptReviewDialog';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 export interface ExtractedData {
   vendor?: string;
@@ -65,6 +69,7 @@ export function ReceiptReviewCard({
 }: ReceiptReviewCardProps) {
   const { language } = useLanguage();
   const [showReviewDialog, setShowReviewDialog] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const data = document.extracted_data || {};
   const isPending = document.review_status === 'pending_review';
@@ -172,11 +177,9 @@ export function ReceiptReviewCard({
               <Button 
                 size="sm" 
                 variant="ghost"
-                onClick={async (e) => {
+                onClick={(e) => {
                   e.stopPropagation();
-                  if (window.confirm(language === 'es' ? '¿Eliminar este recibo?' : 'Delete this receipt?')) {
-                    await onDelete(document.id);
-                  }
+                  setShowDeleteConfirm(true);
                 }} 
                 className="w-full text-destructive hover:text-destructive hover:bg-destructive/10"
               >
@@ -187,6 +190,27 @@ export function ReceiptReviewCard({
           )}
         </CardContent>
       </Card>
+
+      {/* Delete Confirm Dialog */}
+      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{language === 'es' ? '¿Eliminar este recibo?' : 'Delete this receipt?'}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {language === 'es' ? 'Esta acción no se puede deshacer.' : 'This action cannot be undone.'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{language === 'es' ? 'Cancelar' : 'Cancel'}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={async () => { setShowDeleteConfirm(false); await onDelete?.(document.id); }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {language === 'es' ? 'Eliminar' : 'Delete'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Review Dialog */}
       <ReceiptReviewDialog
