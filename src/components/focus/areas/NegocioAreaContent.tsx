@@ -5,6 +5,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useDashboardStats } from '@/hooks/data/useDashboardStats';
 import { useMileageSummary } from '@/hooks/data/useMileage';
+import { useEntity } from '@/contexts/EntityContext';
 import { AreaTabsLayout, type AreaTab } from '../AreaTabsLayout';
 import { Users, FileText, Car } from 'lucide-react';
 
@@ -15,7 +16,8 @@ export const NegocioAreaContent = memo(({ forcedTab }: { forcedTab?: string | nu
   const { language } = useLanguage();
   const navigate = useNavigate();
   const { data: stats, isLoading } = useDashboardStats({});
-  const { data: mileageSummary, isLoading: mileageLoading } = useMileageSummary();
+  const { currentCountry } = useEntity();
+  const { data: mileageSummary, isLoading: mileageLoading } = useMileageSummary(undefined, currentCountry);
 
   const es = language === 'es';
 
@@ -39,7 +41,7 @@ export const NegocioAreaContent = memo(({ forcedTab }: { forcedTab?: string | nu
       label: es ? 'Kilometraje' : 'Mileage',
       emoji: '🚗',
       description: es ? 'Registro de viajes de negocios y deducciones por kilometraje' : 'Business trip logs and mileage deductions',
-      content: <MileageTabContent mileageSummary={mileageSummary} isLoading={mileageLoading} />,
+      content: <MileageTabContent mileageSummary={mileageSummary} isLoading={mileageLoading} country={currentCountry} />,
     },
   ];
 
