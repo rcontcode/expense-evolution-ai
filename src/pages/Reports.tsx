@@ -313,7 +313,7 @@ export default function Reports() {
             headStyles: { fillColor: [220, 38, 38] },
             styles: { fontSize: 8 },
           });
-          blobUrl = doc.output('bloburl') as unknown as string;
+          pdfDataUri = doc.output('datauristring');
           break;
         }
         case 'mileage': {
