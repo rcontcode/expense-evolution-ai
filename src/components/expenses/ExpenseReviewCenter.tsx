@@ -18,6 +18,7 @@ import { ExpenseWithRelations } from '@/types/expense.types';
 import { useDocumentsForReview, useDocumentImageUrl } from '@/hooks/data/useDocumentReview';
 import { useDeleteExpense, useUpdateExpense } from '@/hooks/data/useExpenses';
 import { supabase } from '@/integrations/supabase/client';
+import { useCreateIncome } from '@/hooks/data/useIncome';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
@@ -344,30 +345,17 @@ export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCe
       const date = data.date || ed.date || new Date().toISOString().split('T')[0];
       const currency = ed.currency || (currentEntity?.default_currency) || 'CAD';
 
-      // Get user's primary fiscal entity for entity_id
-      const { data: primaryEntity } = await supabase
-        .from('fiscal_entities')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('is_primary', true)
-        .single();
-
-      const { error: incomeError } = await supabase
-        .from('income')
-        .insert({
-          user_id: user.id,
-          amount,
-          date,
-          income_type: 'freelance' as const,
-          source,
-          description,
-          currency,
-          is_taxable: true,
-          document_id: docId,
-          entity_id: primaryEntity?.id || null,
-        } as any);
-
-      if (incomeError) throw incomeError;
+      await createIncome.mutateAsync({
+        amount,
+        date: new Date(date),
+        income_type: 'freelance',
+        source,
+        description,
+        currency,
+        is_taxable: true,
+        entity_id: currentEntity?.id || undefined,
+        recurrence: 'one_time',
+      });
 
       await supabase
         .from('documents')
@@ -378,12 +366,7 @@ export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCe
         .eq('id', docId)
         .eq('user_id', user.id);
 
-      // Invalidate all related queries for full sync
       queryClient.invalidateQueries({ queryKey: ['documents-review'] });
-      queryClient.invalidateQueries({ queryKey: ['income'] });
-      queryClient.invalidateQueries({ queryKey: ['income-summary'] });
-      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
-      queryClient.invalidateQueries({ queryKey: ['data-health'] });
       toast.success(language === 'es' ? `✅ Ingreso de $${amount.toLocaleString()} aprobado y registrado` : `✅ Income of $${amount.toLocaleString()} approved and recorded`);
       setEditingIncomeId(null);
     } catch (error: any) {

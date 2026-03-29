@@ -39,8 +39,7 @@ import { useEntity } from '@/contexts/EntityContext';
 import { useBankTransactions } from '@/hooks/data/useBankTransactions';
 import { useRecurringBills } from '@/hooks/data/useRecurringBills';
 import { useSubscriptionDetector, DetectedSubscription } from '@/hooks/data/useSubscriptionDetector';
-import { supabase } from '@/integrations/supabase/client';
-import { useInvalidateRelated } from '@/hooks/data/useInvalidateRelated';
+import { useCreateBill } from '@/hooks/data/useRecurringBills';
 import { toast } from 'sonner';
 import { format, parseISO, addMonths } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -292,17 +291,13 @@ export function SubscriptionTracker() {
 
   const handleConvertToBill = async (sub: DetectedSubscription) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
       const frequencyMap: Record<string, string> = {
         weekly: 'weekly', monthly: 'monthly', quarterly: 'quarterly', yearly: 'yearly',
       };
 
       const nextDue = addMonths(parseISO(sub.lastDate), sub.frequency === 'quarterly' ? 3 : sub.frequency === 'yearly' ? 12 : 1);
 
-      const { error } = await supabase.from('recurring_bills').insert({
-        user_id: user.id,
+      await createBill.mutateAsync({
         name: sub.vendor,
         amount: Math.round(sub.averageAmount * 100) / 100,
         frequency: frequencyMap[sub.frequency] || 'monthly',
@@ -311,20 +306,11 @@ export function SubscriptionTracker() {
         auto_pay: false,
         next_due_date: format(nextDue, 'yyyy-MM-dd'),
         currency: currentEntity?.default_currency || 'CAD',
-      });
-
-      if (error) throw error;
+      } as any);
 
       setConvertedVendors(prev => new Set(prev).add(sub.vendor));
-      afterBill();
-      toast.success(
-        isEs
-          ? `"${sub.vendor}" agregado como gasto fijo recurrente`
-          : `"${sub.vendor}" added as a recurring bill`
-      );
     } catch (err) {
       console.error('Error converting to bill:', err);
-      toast.error(isEs ? 'Error al crear gasto fijo' : 'Error creating recurring bill');
     }
   };
 
