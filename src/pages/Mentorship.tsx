@@ -21,8 +21,10 @@ import {
   MentorshipProgressSummary,
   LearningPathCard,
 } from '@/components/mentorship';
+import { WeeklySummaryBadge } from '@/components/mentorship/WeeklySummaryBadge';
+import { TracyQuickStats } from '@/components/mentorship/TracyQuickStats';
 import { MentorshipLevelBanner } from '@/components/mentorship/MentorshipLevelBanner';
-import { Target, Sparkles, GraduationCap, Brain, Coins, Atom } from 'lucide-react';
+import { Target, Sparkles, GraduationCap, Brain, Coins, Atom, BookOpen, ChevronDown } from 'lucide-react';
 import { MentorQuoteBanner } from '@/components/MentorQuoteBanner';
 import { Layout } from '@/components/Layout';
 import { PageHeader } from '@/components/PageHeader';
