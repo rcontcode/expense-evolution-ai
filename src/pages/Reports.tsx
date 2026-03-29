@@ -303,6 +303,11 @@ export default function Reports() {
               <CardDescription className="text-xs mt-1.5">
                 {l ? card.descEs : card.descEn}
               </CardDescription>
+              {getPreview(card.id) && (
+                <p className="text-xs font-medium text-primary/80 mt-1.5 bg-primary/5 rounded px-2 py-1">
+                  {getPreview(card.id)}
+                </p>
+              )}
             </CardHeader>
             <CardContent className="pt-0">
               <div className="flex gap-2">
