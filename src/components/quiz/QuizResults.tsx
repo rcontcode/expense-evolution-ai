@@ -126,37 +126,37 @@ const getPersonalizedMessage = (
         freelancer: {
           canada: `${firstName}, ¡impresionante dominio financiero! Como freelancer en Canadá que ya controla sus finanzas, EvoFinz es tu **multiplicador de resultados**: captura gastos en segundos con foto o voz, genera reportes T2125 automáticamente, y nuestro optimizador fiscal encuentra deducciones que incluso los expertos pasan por alto.`,
           chile: `${firstName}, ¡excelente gestión! Como freelancer en Chile con control financiero, EvoFinz te da **superpoderes**: automatiza la organización de boletas, calcula retenciones de honorarios automáticamente, y te alerta de deadlines del SII.`,
-          default: `${firstName}, ¡felicitaciones por tu disciplina financiera! EvoFinz no es para "arreglarte" – es para **potenciarte**. Automatiza las tareas repetitivas que ya haces bien y libera tu tiempo para lo que realmente importa.`,
+          default: `${firstName}, ¡felicitaciones por tu disciplina financiera! EvoFinz funciona en cualquier país: control de gastos con IA, presupuestos inteligentes, patrimonio neto, metas FIRE y mentoría financiera. La optimización fiscal está disponible para Chile y Canadá, y pronto se sumarán más países.`,
         },
         employee: {
           canada: `${firstName}, ¡tienes una base financiera sólida! Como empleado en Canadá, EvoFinz te ayuda a descubrir **deducciones ocultas** (home office, educación, gastos médicos) que podrías estar perdiendo. Además, nuestra calculadora de libertad financiera te muestra exactamente cuándo podrás ser financieramente libre.`,
           chile: `${firstName}, ¡excelente control! Como empleado en Chile, EvoFinz te ayuda a **maximizar tu APV**, optimizar gastos de salud y educación, y visualizar tu camino hacia la libertad financiera.`,
-          default: `${firstName}, ¡admirable disciplina! Para alguien con tu nivel de control, EvoFinz es el **copiloto perfecto**: tracking automático de patrimonio neto, proyecciones de jubilación, y análisis de tendencias.`,
+          default: `${firstName}, ¡admirable disciplina! EvoFinz es tu **copiloto perfecto** sin importar el país: tracking automático de patrimonio neto, proyecciones de jubilación y análisis de tendencias. El módulo fiscal está optimizado para Chile y Canadá — pronto más jurisdicciones.`,
         },
         business: {
           canada: `${firstName}, ¡gestión empresarial ejemplar! EvoFinz es tu **centro de comando financiero**: genera reportes T2125 con un clic, identifica gastos deducibles automáticamente, y rastrea rentabilidad por cliente/proyecto.`,
           chile: `${firstName}, ¡control empresarial impecable! EvoFinz automatiza tu gestión con el SII: organiza facturas, calcula IVA, genera reportes para tu contador, y te da visibilidad total de tu flujo de caja.`,
-          default: `${firstName}, ¡excelente visión de negocio! EvoFinz escala contigo: desde tracking automático de gastos hasta análisis de rentabilidad por proyecto.`,
+          default: `${firstName}, ¡excelente visión de negocio! EvoFinz escala contigo en cualquier país: tracking automático de gastos, análisis de rentabilidad por proyecto y control total de flujo de caja. Las herramientas fiscales están disponibles para Chile y Canadá, con más países próximamente.`,
         },
-        default: `${firstName}, ¡eres un ejemplo de disciplina financiera! EvoFinz no reemplaza tu expertise – lo **amplifica**. Automatización inteligente, insights basados en datos, y herramientas que transforman buenas prácticas en resultados extraordinarios.`,
+        default: `${firstName}, ¡eres un ejemplo de disciplina financiera! EvoFinz funciona globalmente: automatización inteligente de gastos, presupuestos, patrimonio neto, metas FIRE y mentoría. Las herramientas de optimización fiscal están disponibles para Chile y Canadá, y pronto se sumarán más países.`,
       },
       en: {
         freelancer: {
           canada: `${firstName}, impressive financial mastery! As a freelancer in Canada who already controls their finances, EvoFinz is your **results multiplier**: capture expenses in seconds with photo or voice, auto-generate T2125 reports, and our tax optimizer finds deductions even experts miss.`,
           chile: `${firstName}, excellent management! As a freelancer in Chile with financial control, EvoFinz gives you **superpowers**: automate invoice organization, auto-calculate withholdings, and get SII deadline alerts.`,
-          default: `${firstName}, congratulations on your financial discipline! EvoFinz isn't here to "fix" you – it's here to **supercharge** you. Automate repetitive tasks you already do well and free your time for what matters.`,
+          default: `${firstName}, congratulations on your financial discipline! EvoFinz works in any country: AI expense tracking, smart budgets, net worth, FIRE goals, and financial mentorship. Tax optimization is available for Chile and Canada, with more countries coming soon.`,
         },
         employee: {
           canada: `${firstName}, you have a solid financial foundation! As a Canadian employee, EvoFinz helps you discover **hidden deductions** (home office, education, medical) you might be missing. Plus, our FIRE calculator shows exactly when you can be financially free.`,
           chile: `${firstName}, excellent control! As a Chilean employee, EvoFinz helps you **maximize APV**, optimize health and education expenses, and visualize your path to financial freedom.`,
-          default: `${firstName}, admirable discipline! For someone at your level, EvoFinz is the **perfect copilot**: automatic net worth tracking, retirement projections, and trend analysis that turns data into smart decisions.`,
+          default: `${firstName}, admirable discipline! EvoFinz is your **perfect copilot** regardless of country: automatic net worth tracking, retirement projections, and trend analysis. Tax tools are optimized for Chile and Canada — more jurisdictions coming soon.`,
         },
         business: {
           canada: `${firstName}, exemplary business management! EvoFinz is your **financial command center**: generate T2125 reports with one click, auto-identify deductible expenses, and track profitability by client/project.`,
           chile: `${firstName}, impeccable business control! EvoFinz automates your SII management: organize invoices, calculate VAT, generate reports for your accountant, and get full cash flow visibility.`,
-          default: `${firstName}, excellent business vision! EvoFinz scales with you: from automatic expense tracking to per-project profitability analysis.`,
+          default: `${firstName}, excellent business vision! EvoFinz scales with you in any country: automatic expense tracking, per-project profitability analysis, and full cash flow control. Tax tools are available for Chile and Canada, with more countries coming soon.`,
         },
-        default: `${firstName}, you're an example of financial discipline! EvoFinz doesn't replace your expertise – it **amplifies** it. Smart automation, data-driven insights, and tools that transform good practices into extraordinary results.`,
+        default: `${firstName}, you're an example of financial discipline! EvoFinz works globally: smart expense automation, budgets, net worth, FIRE goals, and mentorship. Tax optimization tools are available for Chile and Canada, with more countries coming soon.`,
       },
     };
 
@@ -184,37 +184,37 @@ const getPersonalizedMessage = (
       freelancer: {
         canada: `${firstName}, como freelancer en Canadá, tienes acceso a deducciones del CRA que podrías estar perdiendo. EvoFinz te ayuda a capturar cada gasto deducible y maximizar tu retorno.`,
         chile: `${firstName}, como freelancer en Chile, puedes optimizar tu situación tributaria con el SII. EvoFinz te guía para organizar tus boletas y deducciones inteligentemente.`,
-        default: `${firstName}, como freelancer, tu control de gastos es clave para maximizar tus ganancias. EvoFinz automatiza este proceso para ti.`,
+        default: `${firstName}, como freelancer, EvoFinz es tu copiloto financiero sin importar el país: captura gastos con foto o voz, controla presupuestos, rastrea deudas y patrimonio. El módulo de impuestos está optimizado para Chile y Canadá por ahora — pronto llegarán más jurisdicciones.`,
       },
       employee: {
         canada: `${firstName}, aunque eres empleado en Canadá, puedes deducir gastos de trabajo desde casa, educación y más. EvoFinz te ayuda a no perder ni un dólar.`,
         chile: `${firstName}, como empleado en Chile, puedes optimizar con gastos de salud, educación y APV. EvoFinz te muestra exactamente cómo.`,
-        default: `${firstName}, llevar control de tus finanzas personales te dará claridad y tranquilidad. EvoFinz hace el trabajo pesado por ti.`,
+        default: `${firstName}, EvoFinz te da claridad financiera en cualquier país: presupuestos inteligentes, control de gastos con IA, patrimonio neto y metas FIRE. Las herramientas fiscales están disponibles para Chile y Canadá, con más países próximamente.`,
       },
       business: {
         canada: `${firstName}, como dueño de negocio en Canadá, tienes grandes oportunidades de optimización fiscal con el T2125. EvoFinz organiza todo automáticamente.`,
         chile: `${firstName}, como empresario en Chile, maximizar tus beneficios tributarios es clave. EvoFinz te da claridad sobre tu flujo de caja y obligaciones.`,
-        default: `${firstName}, gestionar las finanzas de tu negocio no tiene que ser complicado. EvoFinz te da el control que necesitas.`,
+        default: `${firstName}, gestionar las finanzas de tu negocio es fácil con EvoFinz, sin importar el país: gastos automáticos, rentabilidad por proyecto y control de flujo de caja. El módulo fiscal está disponible para Chile y Canadá — más países próximamente.`,
       },
-      default: `${firstName}, independiente de tu situación, tomar control de tus finanzas transformará tu vida. EvoFinz es tu asistente personal en este camino.`,
+      default: `${firstName}, EvoFinz funciona en cualquier país del mundo: control de gastos con IA, presupuestos, patrimonio neto, deudas, metas FIRE y mentoría financiera. Solo las herramientas fiscales son exclusivas de Chile y Canadá por ahora — pronto más países.`,
     },
     en: {
       freelancer: {
         canada: `${firstName}, as a freelancer in Canada, you have access to CRA deductions you might be missing. EvoFinz helps you capture every deductible expense and maximize your return.`,
         chile: `${firstName}, as a freelancer in Chile, you can optimize your tax situation with SII. EvoFinz guides you to organize your invoices and deductions smartly.`,
-        default: `${firstName}, as a freelancer, expense tracking is key to maximizing your earnings. EvoFinz automates this process for you.`,
+        default: `${firstName}, as a freelancer, EvoFinz is your financial copilot regardless of country: capture expenses with photo or voice, manage budgets, track debts and net worth. Tax tools are optimized for Chile and Canada for now — more jurisdictions coming soon.`,
       },
       employee: {
         canada: `${firstName}, even as an employee in Canada, you can deduct home office expenses, education, and more. EvoFinz helps you not miss a single dollar.`,
         chile: `${firstName}, as an employee in Chile, you can optimize with health, education, and APV expenses. EvoFinz shows you exactly how.`,
-        default: `${firstName}, tracking your personal finances will give you clarity and peace of mind. EvoFinz does the heavy lifting for you.`,
+        default: `${firstName}, EvoFinz gives you financial clarity in any country: smart budgets, AI expense tracking, net worth, and FIRE goals. Tax tools are available for Chile and Canada, with more countries coming soon.`,
       },
       business: {
         canada: `${firstName}, as a business owner in Canada, you have great tax optimization opportunities with T2125. EvoFinz organizes everything automatically.`,
         chile: `${firstName}, as a business owner in Chile, maximizing your tax benefits is key. EvoFinz gives you clarity on cash flow and obligations.`,
-        default: `${firstName}, managing your business finances doesn't have to be complicated. EvoFinz gives you the control you need.`,
+        default: `${firstName}, managing your business finances is easy with EvoFinz, regardless of country: automatic expenses, per-project profitability, and cash flow control. Tax module available for Chile and Canada — more countries coming soon.`,
       },
-      default: `${firstName}, regardless of your situation, taking control of your finances will transform your life. EvoFinz is your personal assistant on this journey.`,
+      default: `${firstName}, EvoFinz works in any country: AI expense tracking, budgets, net worth, debts, FIRE goals, and financial mentorship. Only tax tools are currently exclusive to Chile and Canada — more countries coming soon.`,
     },
   };
 
