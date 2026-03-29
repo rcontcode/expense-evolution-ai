@@ -374,8 +374,8 @@ const getFaqs = (language: string) => language === 'es' ? [
     answer: 'Sí, EvoFinz está diseñado para personas sin conocimientos contables. La categorización inteligente organiza automáticamente tus gastos, sugiere deducciones fiscales y genera reportes listos para tu contador o autoridad tributaria.'
   },
   {
-    question: '¿Qué países soporta EvoFinz?',
-    answer: 'Actualmente soportamos Canadá (CRA, T2125, RRSP/TFSA) y Chile (SII, F29/F22, APV). El sistema se adapta automáticamente según tu perfil, mostrando las reglas fiscales y calendarios correctos para tu país. Más países próximamente.'
+    question: '¿En qué países puedo usar EvoFinz?',
+    answer: 'EvoFinz está disponible para usuarios en 80+ países de habla hispana e inglesa. Todas las herramientas de finanzas personales, mentoría, presupuestos, hábitos, FIRE y patrimonio neto funcionan sin importar tu ubicación. Los módulos fiscales especializados (deducciones, calendarios, formularios) están actualmente disponibles para Canadá (CRA) y Chile (SII), con más jurisdicciones próximamente (México, España, Colombia).'
   },
   {
     question: '¿En qué idiomas está disponible?',
@@ -411,8 +411,8 @@ const getFaqs = (language: string) => language === 'es' ? [
     answer: 'Yes, EvoFinz is designed for people without accounting knowledge. Smart categorization automatically organizes your expenses, suggests tax deductions, and generates reports ready for your accountant or tax authority.'
   },
   {
-    question: 'Which countries does EvoFinz support?',
-    answer: 'We currently support Canada (CRA, T2125, RRSP/TFSA) and Chile (SII, F29/F22, APV). The system automatically adapts based on your profile, showing the correct tax rules and calendars for your country. More countries coming soon.'
+    question: 'Which countries can I use EvoFinz in?',
+    answer: 'EvoFinz is available for users in 80+ Spanish and English-speaking countries. All personal finance tools, mentorship, budgets, habits, FIRE, and net worth features work regardless of your location. Specialized tax modules (deductions, calendars, forms) are currently available for Canada (CRA) and Chile (SII), with more jurisdictions coming soon (Mexico, Spain, Colombia).'
   },
   {
     question: 'What languages are available?',

@@ -15,7 +15,7 @@ interface StatItem {
 
 const getStats = (language: string): StatItem[] => [
   { icon: Receipt, value: "30+", label: language === 'es' ? "Categorías fiscales" : "Tax categories", color: "from-cyan-400 to-blue-500", glowColor: "rgba(34, 211, 238, 0.6)" },
-  { icon: Globe, value: "2", label: language === 'es' ? "Países soportados" : "Countries supported", color: "from-emerald-400 to-teal-500", glowColor: "rgba(52, 211, 153, 0.6)" },
+  { icon: Globe, value: "80+", label: language === 'es' ? "Países disponibles" : "Countries available", color: "from-emerald-400 to-teal-500", glowColor: "rgba(52, 211, 153, 0.6)" },
   { icon: BookOpen, value: "8+", label: language === 'es' ? "Módulos de mentoría" : "Mentorship modules", color: "from-violet-400 to-purple-600", glowColor: "rgba(167, 139, 250, 0.6)" },
   { icon: Shield, value: "100%", label: language === 'es' ? "Datos encriptados" : "Encrypted data", color: "from-blue-400 to-indigo-500", glowColor: "rgba(96, 165, 250, 0.6)" },
   { icon: FileText, value: "5+", label: language === 'es' ? "Tipos de reporte" : "Report types", color: "from-amber-400 to-orange-500", glowColor: "rgba(251, 191, 36, 0.6)" },

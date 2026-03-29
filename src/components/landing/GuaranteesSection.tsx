@@ -67,8 +67,9 @@ const getGuarantees = (language: string) => [
 const getTrustIndicators = (language: string) => [
   {
     icon: Users,
-    value: '🇨🇦 🇨🇱',
-    label: language === 'es' ? 'Países Soportados' : 'Countries Supported'
+    value: '80+',
+    label: language === 'es' ? 'Países Disponibles' : 'Countries Available',
+    sublabel: language === 'es' ? 'Impuestos: 🇨🇦🇨🇱 · Más pronto' : 'Tax: 🇨🇦🇨🇱 · More soon'
   },
   {
     icon: FileText,
