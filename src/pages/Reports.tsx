@@ -520,3 +520,120 @@ async function exportIncomeSummaryExcel(l: boolean, incomes: any[], year: number
   a.click();
   URL.revokeObjectURL(url);
 }
+
+async function exportMileagePDF(
+  l: boolean, trips: MileageWithClient[], year: number,
+  country: any, fc: (n: number) => string, userName?: string | null, businessName?: string | null
+) {
+  const { default: jsPDF } = await import('jspdf');
+  const { default: autoTable } = await import('jspdf-autotable');
+  const doc = new jsPDF('landscape');
+  const now = new Date();
+
+  doc.setFontSize(18);
+  doc.text(l ? 'Reporte de Kilometraje' : 'Mileage Report', 14, 20);
+  doc.setFontSize(10);
+  doc.setTextColor(100);
+  const subtitle = [businessName, userName].filter(Boolean).join(' — ');
+  doc.text(`${subtitle ? subtitle + ' · ' : ''}${year}`, 14, 27);
+  doc.setTextColor(0);
+
+  const sorted = [...trips].sort((a, b) => a.date.localeCompare(b.date));
+  let runningKm = 0;
+
+  const body = sorted.map(t => {
+    const km = parseFloat(t.kilometers.toString());
+    const { calculateMileageDeductionByCountry: calcDed } = require('@/hooks/data/useMileage');
+    const ded = calcDed(km, runningKm, country, year);
+    runningKm += km;
+    return [
+      format(new Date(t.date), 'dd/MM/yyyy'),
+      t.route.replace('[SAMPLE] ', ''),
+      `${km.toFixed(1)} km`,
+      t.client?.name?.replace('[SAMPLE] ', '') || '-',
+      t.purpose || '-',
+      ded ? fc(ded.deductible) : '-',
+    ];
+  });
+
+  const totalKm = sorted.reduce((s, t) => s + parseFloat(t.kilometers.toString()), 0);
+
+  autoTable(doc, {
+    startY: 34,
+    head: [[
+      l ? 'Fecha' : 'Date', l ? 'Ruta' : 'Route', 'Km',
+      l ? 'Cliente' : 'Client', l ? 'Propósito' : 'Purpose',
+      l ? 'Deducción' : 'Deduction',
+    ]],
+    body,
+    foot: [[l ? 'Total' : 'Total', '', `${totalKm.toFixed(1)} km`, '', '', '']],
+    theme: 'striped',
+    headStyles: { fillColor: [59, 130, 246] },
+    styles: { fontSize: 7, cellPadding: 2 },
+    columnStyles: { 1: { cellWidth: 60 }, 4: { cellWidth: 40 } },
+  });
+
+  const ph = doc.internal.pageSize.height;
+  doc.setFontSize(8);
+  doc.setTextColor(150);
+  doc.text(`EvoFinz — ${format(now, 'PPp', { locale: l ? es : enUS })}`, 14, ph - 10);
+  doc.save(`mileage-${year}.pdf`);
+}
+
+async function exportMileageExcel(
+  l: boolean, trips: MileageWithClient[], year: number, country: any, summary: any
+) {
+  const ExcelJS = await import('exceljs');
+  const wb = new ExcelJS.Workbook();
+  const ws = wb.addWorksheet(l ? 'Viajes' : 'Trips');
+
+  ws.columns = [
+    { header: l ? 'Fecha' : 'Date', width: 12 },
+    { header: l ? 'Ruta' : 'Route', width: 35 },
+    { header: 'Km', width: 10 },
+    { header: l ? 'Cliente' : 'Client', width: 20 },
+    { header: l ? 'Propósito' : 'Purpose', width: 25 },
+    { header: l ? 'Deducción' : 'Deduction', width: 14 },
+  ];
+  ws.getRow(1).font = { bold: true };
+
+  const sorted = [...trips].sort((a, b) => a.date.localeCompare(b.date));
+  let runningKm = 0;
+
+  sorted.forEach(t => {
+    const km = parseFloat(t.kilometers.toString());
+    const ded = calculateMileageDeductionByCountry(km, runningKm, country, year);
+    runningKm += km;
+    ws.addRow([
+      t.date, t.route.replace('[SAMPLE] ', ''), km,
+      t.client?.name?.replace('[SAMPLE] ', '') || '', t.purpose || '',
+      ded?.deductible || 0,
+    ]);
+  });
+
+  ws.addRow([]);
+  ws.addRow([l ? 'Total' : 'Total', '', runningKm, '', '', summary?.totalDeductibleAmount || 0]).font = { bold: true };
+
+  // Summary sheet
+  if (summary) {
+    const ws2 = wb.addWorksheet(l ? 'Resumen' : 'Summary');
+    ws2.columns = [{ width: 25 }, { width: 18 }];
+    ws2.addRow([l ? 'Resumen de Kilometraje' : 'Mileage Summary', year]).font = { bold: true, size: 14 };
+    ws2.addRow([]);
+    ws2.addRow([l ? 'Total Viajes' : 'Total Trips', summary.totalTrips]);
+    ws2.addRow([l ? 'Total Km' : 'Total Km', summary.totalKilometers]);
+    ws2.addRow([l ? 'Deducción Total' : 'Total Deduction', summary.totalDeductibleAmount]);
+    if (summary.country === 'CA') {
+      ws2.addRow([l ? 'ITC Reclamable' : 'ITC Claimable', summary.itcClaimable]);
+    }
+  }
+
+  const buffer = await wb.xlsx.writeBuffer();
+  const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `mileage-${year}.xlsx`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
