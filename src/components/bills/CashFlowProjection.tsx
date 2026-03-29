@@ -1,31 +1,39 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { useRecurringBills } from '@/hooks/data/useRecurringBills';
 import { getMonthlyEquivalent, BILL_CATEGORY_CONFIG, type BillCategory } from '@/lib/constants/bill-categories';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, CartesianGrid, Legend, Area, AreaChart, ReferenceLine } from 'recharts';
-import { addMonths, format } from 'date-fns';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend, ReferenceLine } from 'recharts';
+import { addMonths, format, startOfMonth } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { TrendingUp } from 'lucide-react';
+import { TrendingUp, Info, AlertTriangle } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
-export function CashFlowProjection() {
+interface CashFlowProjectionProps {
+  selectedMonth?: Date;
+}
+
+export function CashFlowProjection({ selectedMonth }: CashFlowProjectionProps) {
   const { language } = useLanguage();
   const l = language === 'es';
   const { formatCurrency, formatCompact } = useFormatCurrency();
   const { data: bills } = useRecurringBills();
+  const [range, setRange] = useState<3 | 6 | 12>(6);
+
+  const baseMonth = selectedMonth ? startOfMonth(selectedMonth) : startOfMonth(new Date());
 
   const projection = useMemo(() => {
     if (!bills || bills.length === 0) return { months: [], categoryBreakdown: [], avgMonthly: 0 };
 
     const active = bills.filter(b => b.status === 'active');
-    const now = new Date();
     const months: { name: string; total: number; critical: number; high: number; medium: number; low: number }[] = [];
 
-    for (let i = 0; i < 6; i++) {
-      const month = addMonths(now, i);
+    for (let i = 0; i < range; i++) {
+      const month = addMonths(baseMonth, i);
       const monthName = format(month, 'MMM yy', { locale: l ? es : undefined });
 
       let total = 0;
@@ -50,7 +58,6 @@ export function CashFlowProjection() {
       months.push({ name: monthName, total, critical, high, medium, low });
     }
 
-    // Category breakdown for donut-like summary
     const catMap: Record<string, number> = {};
     active.forEach(bill => {
       const monthly = getMonthlyEquivalent(Number(bill.amount), bill.frequency, bill.frequency_months || undefined);
@@ -70,11 +77,13 @@ export function CashFlowProjection() {
     const avgMonthly = months.reduce((s, m) => s + m.total, 0) / months.length;
 
     return { months, categoryBreakdown, avgMonthly };
-  }, [bills, l]);
+  }, [bills, l, range, baseMonth]);
 
   if (!bills || bills.length === 0) {
     return null;
   }
+
+  const activeBillCount = bills.filter(b => b.status === 'active').length;
 
   const priorityColors = {
     critical: 'hsl(0, 80%, 50%)',
@@ -83,19 +92,40 @@ export function CashFlowProjection() {
     low: 'hsl(130, 50%, 45%)',
   };
 
+  const rangeOptions = [3, 6, 12] as const;
+
   return (
     <div className="space-y-4">
       {/* Projection Chart */}
       <Card>
         <CardHeader className="pb-2">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-2">
             <CardTitle className="text-base flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-primary" />
-              {l ? 'Proyección 6 Meses' : '6-Month Projection'}
+              {l ? `Proyección ${range} Meses` : `${range}-Month Projection`}
             </CardTitle>
-            <Badge variant="outline" className="text-xs">
-              {l ? 'Promedio:' : 'Avg:'} {formatCurrency(projection.avgMonthly)}/{l ? 'mes' : 'mo'}
-            </Badge>
+            <div className="flex items-center gap-2">
+              {/* Range selector */}
+              <div className="flex rounded-lg border border-border overflow-hidden">
+                {rangeOptions.map(r => (
+                  <button
+                    key={r}
+                    onClick={() => setRange(r)}
+                    className={cn(
+                      "px-2.5 py-1 text-xs font-medium transition-colors",
+                      range === r
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-secondary text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    {r}{l ? 'M' : 'mo'}
+                  </button>
+                ))}
+              </div>
+              <Badge variant="outline" className="text-xs">
+                {l ? 'Prom:' : 'Avg:'} {formatCurrency(projection.avgMonthly)}/{l ? 'mes' : 'mo'}
+              </Badge>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -152,6 +182,27 @@ export function CashFlowProjection() {
               </BarChart>
             </ResponsiveContainer>
           </div>
+
+          {/* Data quality disclaimer */}
+          {activeBillCount < 3 ? (
+            <Alert className="mt-3 border-amber-500/30 bg-amber-500/10">
+              <AlertTriangle className="h-4 w-4 text-amber-500" />
+              <AlertDescription className="text-xs text-muted-foreground">
+                {l
+                  ? `Solo tienes ${activeBillCount} pago(s) fijo(s). Agrega más para una proyección más precisa.`
+                  : `You only have ${activeBillCount} recurring bill(s). Add more for a more accurate projection.`}
+              </AlertDescription>
+            </Alert>
+          ) : (
+            <div className="mt-3 flex items-start gap-2 text-[11px] text-muted-foreground">
+              <Info className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+              <span>
+                {l
+                  ? 'Esta proyección se basa en tus pagos fijos activos. Su precisión depende de la completitud y actualización de tus datos.'
+                  : 'This projection is based on your active recurring bills. Its accuracy depends on the completeness and freshness of your data.'}
+              </span>
+            </div>
+          )}
         </CardContent>
       </Card>
 

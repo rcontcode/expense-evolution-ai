@@ -174,10 +174,8 @@ export function BillsDashboard() {
           </CardContent>
         </Card>
 
-        {/* ═══ MONTH NAVIGATOR (not shown for projection) ═══ */}
-        {view !== 'projection' && (
-          <MonthNavigator value={selectedMonth} onChange={setSelectedMonth} />
-        )}
+        {/* ═══ MONTH NAVIGATOR ═══ */}
+        <MonthNavigator value={selectedMonth} onChange={setSelectedMonth} />
 
         {hasBills && view === 'overview' && <BillsSummaryCards selectedMonth={selectedMonth} />}
 
@@ -205,7 +203,7 @@ export function BillsDashboard() {
               <PaymentChecklist selectedMonth={selectedMonth} />
             </TabsContent>
             <TabsContent value="projection" className="mt-0">
-              <CashFlowProjection />
+              <CashFlowProjection selectedMonth={selectedMonth} />
             </TabsContent>
           </motion.div>
         </AnimatePresence>
