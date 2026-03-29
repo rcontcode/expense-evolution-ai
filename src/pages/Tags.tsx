@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Layout } from '@/components/Layout';
 import { Button } from '@/components/ui/button';
-import { Plus, Tag as TagIcon, Edit, Trash2, Sparkles, Filter, Receipt, Search, BarChart3, Lightbulb, ArrowRight, AlertCircle, Plane, RefreshCw, Star, Briefcase, User, ChartPie } from 'lucide-react';
+import { Plus, Tag as TagIcon, Edit, Trash2, Sparkles, Filter, Receipt, Search, BarChart3, Lightbulb, ArrowRight, AlertCircle, Plane, RefreshCw, Star, Briefcase, User, ChartPie, Bot, ExternalLink, AlertTriangle } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTagsWithExpenseCount, useDeleteTag, useSeedDefaultTags } from '@/hooks/data/useTags';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,10 +13,10 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { InfoTooltip, TOOLTIP_CONTENT } from '@/components/ui/info-tooltip';
 import { TAG_COLOR_PALETTE, DEFAULT_TAGS } from '@/lib/constants/default-tags';
 import { PageHeader } from '@/components/PageHeader';
-// PageContextGuide and MiniWorkflow removed — title must be first for consistency
 import { TagAnalytics } from '@/components/analytics/TagAnalytics';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -71,7 +72,7 @@ const HOW_TO_STEPS = [
     step: 1,
     icon: Plus,
     title: { es: 'Crea Etiquetas', en: 'Create Tags' },
-    description: { es: 'Define nombre y color según tus necesidades', en: 'Define name and color based on your needs' },
+    description: { es: 'Aquí en esta página: elige nombre y color con el botón "Crear Etiqueta"', en: 'Right here: choose name and color with the "Create Tag" button' },
     color: 'text-pink-600',
     bgColor: 'bg-pink-100 dark:bg-pink-900/40',
   },
@@ -79,27 +80,84 @@ const HOW_TO_STEPS = [
     step: 2,
     icon: Receipt,
     title: { es: 'Asigna a Gastos', en: 'Assign to Expenses' },
-    description: { es: 'Desde el formulario de gastos, selecciona etiquetas', en: 'From the expense form, select tags' },
+    description: { es: 'Al crear/editar un gasto → campo "Etiquetas" al final del formulario', en: 'When creating/editing an expense → "Tags" field at the bottom of the form' },
     color: 'text-purple-600',
     bgColor: 'bg-purple-100 dark:bg-purple-900/40',
   },
   {
     step: 3,
     icon: Filter,
-    title: { es: 'Filtra en Tablas', en: 'Filter in Tables' },
-    description: { es: 'Usa etiquetas para encontrar gastos rápidamente', en: 'Use tags to find expenses quickly' },
+    title: { es: 'Filtra por Etiqueta', en: 'Filter by Tag' },
+    description: { es: 'En la tabla de gastos → filtro de etiquetas para encontrar rápido', en: 'In expenses table → tag filter to find quickly' },
     color: 'text-blue-600',
     bgColor: 'bg-blue-100 dark:bg-blue-900/40',
   },
   {
     step: 4,
     icon: BarChart3,
-    title: { es: 'Analiza Patrones', en: 'Analyze Patterns' },
-    description: { es: 'Ve estadísticas por etiqueta en el dashboard', en: 'See tag statistics in the dashboard' },
+    title: { es: 'Ve Estadísticas', en: 'View Statistics' },
+    description: { es: 'Pestaña "Estadísticas" aquí arriba → distribución y tendencias', en: '"Analytics" tab above → distribution and trends' },
     color: 'text-amber-600',
     bgColor: 'bg-amber-100 dark:bg-amber-900/40',
   },
 ];
+
+const TAG_ADVANTAGES = [
+  {
+    icon: TagIcon,
+    title: { es: 'Clasificación personalizada', en: 'Custom classification' },
+    description: { es: 'Las categorías son fijas, las etiquetas son tuyas. Crea las que necesites.', en: 'Categories are fixed, tags are yours. Create what you need.' },
+    color: 'from-violet-500 to-purple-600',
+    shadowColor: 'shadow-violet-500/20',
+  },
+  {
+    icon: Search,
+    title: { es: 'Filtrado rápido', en: 'Quick filtering' },
+    description: { es: 'Encuentra gastos de un viaje o proyecto en segundos desde la tabla.', en: 'Find expenses from a trip or project in seconds from the table.' },
+    color: 'from-blue-500 to-cyan-600',
+    shadowColor: 'shadow-blue-500/20',
+  },
+  {
+    icon: BarChart3,
+    title: { es: 'Análisis por etiqueta', en: 'Analysis by tag' },
+    description: { es: 'Descubre cuánto gastas en cada contexto con gráficos dedicados.', en: 'Discover how much you spend in each context with dedicated charts.' },
+    color: 'from-amber-500 to-orange-600',
+    shadowColor: 'shadow-amber-500/20',
+  },
+  {
+    icon: Bot,
+    title: { es: 'Sugerencias IA', en: 'AI suggestions' },
+    description: { es: 'La IA sugiere etiquetas automáticamente según el tipo de gasto.', en: 'AI suggests tags automatically based on expense type.' },
+    color: 'from-emerald-500 to-teal-600',
+    shadowColor: 'shadow-emerald-500/20',
+  },
+];
+
+// Simple duplicate detection based on common translation pairs
+const KNOWN_PAIRS: Record<string, string> = {
+  'urgent': 'urgente', 'urgente': 'urgent',
+  'recurring': 'recurrente', 'recurrente': 'recurring',
+  'pending': 'pendiente', 'pendiente': 'pending',
+  'reimbursed': 'reembolsado', 'reembolsado': 'reimbursed',
+  'personal': 'personal',
+  'marketing': 'marketing',
+  'premium client': 'cliente premium', 'cliente premium': 'premium client',
+  'business trip': 'viaje de negocios', 'viaje de negocios': 'business trip',
+};
+
+function findDuplicatePairs(tags: { name: string }[]): [string, string][] {
+  const pairs: [string, string][] = [];
+  const names = tags.map(t => t.name.toLowerCase());
+  const seen = new Set<string>();
+  for (let i = 0; i < names.length; i++) {
+    const pair = KNOWN_PAIRS[names[i]];
+    if (pair && names.includes(pair) && !seen.has(`${names[i]}-${pair}`) && !seen.has(`${pair}-${names[i]}`)) {
+      seen.add(`${names[i]}-${pair}`);
+      pairs.push([tags[i].name, tags[names.indexOf(pair)].name]);
+    }
+  }
+  return pairs;
+}
 
 export default function Tags() {
   const { t, language } = useLanguage();
