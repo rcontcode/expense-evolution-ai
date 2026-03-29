@@ -454,7 +454,7 @@ export const guideSections: GuideSection[] = [
       en: 'Centralize all client information: contact data, geographic location, billing history, associated contracts, and profitability analysis. Includes pre-configured billing profiles, per-client multi-currency support, and client type (individual/company). Know exactly how much each client generates and how much you spend serving them.'
     },
     steps: [
-      { es: 'Agrega cliente con nombre, email, teléfono, dirección y datos fiscales (RFC/NIT/RUT)', en: 'Add client with name, email, phone, address, and tax data (RFC/NIT/RUT)' },
+      { es: 'Agrega cliente con nombre, email, teléfono, dirección y datos fiscales (RUT para Chile o Business Number para Canadá)', en: 'Add client with name, email, phone, address, and tax data (RUT for Chile or Business Number for Canada)' },
       { es: 'Configura país, provincia, moneda y condiciones de pago (30, 60, 90 días)', en: 'Configure country, province, currency, and payment terms (30, 60, 90 days)' },
       { es: 'Asocia gastos e ingresos al cliente para tracking de rentabilidad', en: 'Associate expenses and income with client for profitability tracking' },
       { es: 'Vincula contratos activos al perfil del cliente', en: 'Link active contracts to client profile' },
@@ -559,8 +559,8 @@ export const guideSections: GuideSection[] = [
     title: { es: 'Kilometraje', en: 'Mileage' },
     shortDesc: { es: 'Viajes de trabajo y deducciones fiscales', en: 'Work trips and tax deductions' },
     purpose: {
-      es: 'Registra tus viajes de trabajo para deducir kilometraje en impuestos. Calcula automáticamente la deducción según las tasas oficiales de tu país (CRA para Canadá, IRS para USA). Incluye mapa de ubicaciones de clientes, ida/vuelta automática, y resúmenes mensuales/anuales de kilómetros deducibles.',
-      en: 'Record your work trips to deduct mileage on taxes. Automatically calculates deduction based on official rates (CRA for Canada, IRS for USA). Includes client location map, automatic round trip, and monthly/annual deductible kilometer summaries.'
+      es: 'Registra tus viajes de trabajo para deducir kilometraje en impuestos. Calcula automáticamente la deducción según las tasas oficiales de tu país (CRA para Canadá, SII para Chile). Incluye mapa de ubicaciones de clientes, ida/vuelta automática, y resúmenes mensuales/anuales de kilómetros deducibles.',
+      en: 'Record your work trips to deduct mileage on taxes. Automatically calculates deduction based on official rates (CRA for Canada, SII for Chile). Includes client location map, automatic round trip, and monthly/annual deductible kilometer summaries.'
     },
     steps: [
       { es: 'Registra un viaje: origen, destino, distancia en km y propósito del viaje', en: 'Record a trip: origin, destination, distance in km, and trip purpose' },
@@ -577,7 +577,7 @@ export const guideSections: GuideSection[] = [
     faq: [
       {
         question: { es: '¿Qué tasa por kilómetro usa EvoFinz?', en: 'What rate per kilometer does EvoFinz use?' },
-        answer: { es: 'Usa las tasas oficiales del CRA (Canadá) actualizadas anualmente. Para otros países, las tasas se configuran desde el Perfil de Negocio.', en: 'Uses official CRA rates (Canada) updated annually. For other countries, rates are configured from the Business Profile.' }
+        answer: { es: 'Usa las tasas oficiales del CRA (Canadá) y SII (Chile) actualizadas anualmente. Más países próximamente.', en: 'Uses official CRA (Canada) and SII (Chile) rates updated annually. More countries coming soon.' }
       },
     ],
     connections: [
@@ -1033,12 +1033,12 @@ export const guideSections: GuideSection[] = [
     title: { es: 'Perfil de Negocio y Entidades Fiscales', en: 'Business Profile & Tax Entities' },
     shortDesc: { es: 'Configuración multi-entidad y multi-país', en: 'Multi-entity and multi-country configuration' },
     purpose: {
-      es: 'Configura tus entidades fiscales (persona natural, empresa, LLC, sociedad) con datos de país, provincia, moneda, régimen fiscal y ID fiscal (RFC, RUT, NIT, SIN, SSN). Puedes tener múltiples entidades para diferentes negocios o países y cambiar entre ellas. Esto personaliza toda la experiencia: calendario fiscal, moneda predeterminada, tasas de kilometraje y filtros de datos.',
-      en: 'Configure your tax entities (individual, company, LLC, partnership) with country, province, currency, tax regime, and tax ID (RFC, RUT, NIT, SIN, SSN). You can have multiple entities for different businesses or countries and switch between them. This personalizes the entire experience: tax calendar, default currency, mileage rates, and data filters.'
+      es: 'Configura tus entidades fiscales (persona natural, empresa, LLC, sociedad) con datos de país, provincia, moneda, régimen fiscal y ID fiscal (RUT para Chile o Business Number para Canadá). Puedes tener múltiples entidades para diferentes negocios o países y cambiar entre ellas. Esto personaliza toda la experiencia: calendario fiscal, moneda predeterminada, tasas de kilometraje y filtros de datos. Actualmente soportamos Canadá y Chile, con más jurisdicciones próximamente.',
+      en: 'Configure your tax entities (individual, company, LLC, partnership) with country, province, currency, tax regime, and tax ID (RUT for Chile or Business Number for Canada). You can have multiple entities for different businesses or countries and switch between them. This personalizes the entire experience: tax calendar, default currency, mileage rates, and data filters. Currently supporting Canada and Chile, with more jurisdictions coming soon.'
     },
     steps: [
       { es: 'Crea tu entidad fiscal principal: país, tipo de entidad, régimen fiscal', en: 'Create your main tax entity: country, entity type, tax regime' },
-      { es: 'Agrega tu ID fiscal (RFC/RUT/NIT/SIN según el país)', en: 'Add your tax ID (RFC/RUT/NIT/SIN depending on country)' },
+      { es: 'Agrega tu ID fiscal (RUT o Business Number según tu jurisdicción)', en: 'Add your tax ID (RUT or Business Number depending on your jurisdiction)' },
       { es: 'Configura moneda predeterminada y fin del año fiscal', en: 'Configure default currency and fiscal year end' },
       { es: 'Si operas en múltiples países, crea entidades adicionales', en: 'If you operate in multiple countries, create additional entities' },
       { es: 'Marca una como primaria y selecciona la entidad activa para filtrar datos', en: 'Mark one as primary and select active entity to filter data' },
