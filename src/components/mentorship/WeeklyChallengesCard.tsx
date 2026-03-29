@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trophy, Flame, Star, Zap, CheckCircle2, ExternalLink } from 'lucide-react';
+import { Trophy, Flame, Star, Zap, CheckCircle2, ExternalLink, CalendarDays } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { 
   getChallengesForWeek, 
@@ -107,10 +107,13 @@ export function WeeklyChallengesCard() {
     <Card className="border-primary/20 overflow-hidden">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between flex-wrap gap-2">
-          <CardTitle className="text-base sm:text-lg flex items-center gap-2">
-            <Trophy className="h-5 w-5 text-primary" />
-            {es ? 'Desafíos de la Semana' : 'Weekly Challenges'}
-          </CardTitle>
+          <div>
+            <CardTitle className="text-base sm:text-lg flex items-center gap-2">
+              <Trophy className="h-5 w-5 text-primary" />
+              {es ? 'Desafíos de la Semana' : 'Weekly Challenges'}
+            </CardTitle>
+            <WeekDateRange es={es} />
+          </div>
           <div className="flex items-center gap-1.5">
             {(['beginner', 'intermediate', 'advanced'] as ChallengeDifficulty[]).map(d => (
               <Button
