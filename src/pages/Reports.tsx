@@ -13,7 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { FileDown, FileSpreadsheet, FileText, TrendingUp, PiggyBank, CalendarCheck, Receipt, Loader2, DollarSign, BarChart3, Car } from 'lucide-react';
+import { FileDown, FileSpreadsheet, FileText, TrendingUp, PiggyBank, CalendarCheck, Receipt, Loader2, DollarSign, BarChart3, Car, Eye } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { startOfYear, endOfYear, format } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
@@ -110,6 +111,8 @@ export default function Reports() {
   const currentYear = new Date().getFullYear();
   const [selectedYear, setSelectedYear] = useState(currentYear);
   const [exporting, setExporting] = useState<string | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewTitle, setPreviewTitle] = useState('');
 
   const yearStart = startOfYear(new Date(selectedYear, 0));
   const yearEnd = endOfYear(new Date(selectedYear, 0));
@@ -164,6 +167,197 @@ export default function Reports() {
       default:
         return null;
     }
+  };
+
+  const handlePreview = async (reportId: string) => {
+    const key = `${reportId}-preview`;
+    setExporting(key);
+    try {
+      let blobUrl: string | null = null;
+      const card = REPORT_CARDS.find(c => c.id === reportId);
+
+      switch (reportId) {
+        case 'pnl': {
+          const yearInc = (incomes || []).filter(i => new Date(i.date).getFullYear() === selectedYear);
+          const pnlData = {
+            year: selectedYear,
+            language: l ? 'es' as const : 'en' as const,
+            userName: profile?.full_name || undefined,
+            businessName: profile?.business_name || undefined,
+            incomes: yearInc.map(i => ({ amount: i.amount, date: i.date, income_type: i.income_type, source: i.source, description: i.description })),
+            expenses: (expenses || []).map(e => ({ amount: Number(e.amount), date: e.date, category: e.category, vendor: e.vendor })),
+          };
+          const { exportPnLToPDF } = await import('@/lib/export/pnl-export');
+          // exportPnLToPDF returns void and saves — we need to generate the doc ourselves
+          // For now, use a generic approach: generate and get blob
+          const { default: jsPDF } = await import('jspdf');
+          const { default: autoTable } = await import('jspdf-autotable');
+          const doc = new jsPDF();
+          doc.setFontSize(16);
+          doc.text(l ? 'Estado de Resultados (P&L)' : 'Profit & Loss Statement', 14, 20);
+          doc.setFontSize(10);
+          doc.setTextColor(100);
+          doc.text(`${selectedYear}`, 14, 27);
+          doc.setTextColor(0);
+          const totalInc = pnlData.incomes.reduce((s, i) => s + i.amount, 0);
+          const totalExp = pnlData.expenses.reduce((s, e) => s + e.amount, 0);
+          autoTable(doc, {
+            startY: 34,
+            head: [[l ? 'Concepto' : 'Item', l ? 'Monto' : 'Amount']],
+            body: [
+              [l ? 'Ingresos Totales' : 'Total Income', fc(totalInc)],
+              [l ? 'Gastos Totales' : 'Total Expenses', fc(totalExp)],
+              [l ? 'Ganancia Neta' : 'Net Profit', fc(totalInc - totalExp)],
+              [l ? 'Margen' : 'Margin', totalInc > 0 ? `${((totalInc - totalExp) / totalInc * 100).toFixed(1)}%` : '0%'],
+            ],
+            theme: 'grid',
+            headStyles: { fillColor: [16, 185, 129] },
+          });
+          blobUrl = doc.output('bloburl') as unknown as string;
+          break;
+        }
+        case 'expenses': {
+          const { default: jsPDF } = await import('jspdf');
+          const { default: autoTable } = await import('jspdf-autotable');
+          const doc = new jsPDF();
+          doc.setFontSize(16);
+          doc.text(l ? 'Reporte de Gastos' : 'Expense Report', 14, 20);
+          doc.setFontSize(10);
+          doc.setTextColor(100);
+          doc.text(`${selectedYear}`, 14, 27);
+          doc.setTextColor(0);
+          const rows = (expenses || []).slice(0, 30).map(e => [e.date, e.vendor || e.description || '', e.category || '', fc(Number(e.amount))]);
+          autoTable(doc, {
+            startY: 34,
+            head: [[l ? 'Fecha' : 'Date', l ? 'Proveedor' : 'Vendor', l ? 'Categoría' : 'Category', l ? 'Monto' : 'Amount']],
+            body: rows,
+            theme: 'striped',
+            headStyles: { fillColor: [59, 130, 246] },
+            styles: { fontSize: 8 },
+          });
+          if ((expenses || []).length > 30) {
+            const finalY = (doc as any).lastAutoTable?.finalY || 250;
+            doc.setFontSize(9);
+            doc.setTextColor(100);
+            doc.text(l ? `... y ${(expenses || []).length - 30} más. Descarga el PDF completo.` : `... and ${(expenses || []).length - 30} more. Download the full PDF.`, 14, finalY + 10);
+          }
+          blobUrl = doc.output('bloburl') as unknown as string;
+          break;
+        }
+        case 'budget': {
+          const { default: jsPDF } = await import('jspdf');
+          const { default: autoTable } = await import('jspdf-autotable');
+          const doc = new jsPDF();
+          const now = new Date();
+          doc.setFontSize(16);
+          doc.text(l ? 'Plan de Presupuesto Mensual' : 'Monthly Budget Plan', 14, 20);
+          doc.setFontSize(10);
+          doc.setTextColor(100);
+          doc.text(format(now, 'MMMM yyyy', { locale: l ? es : enUS }), 14, 27);
+          doc.setTextColor(0);
+          autoTable(doc, {
+            startY: 34,
+            head: [[l ? 'Concepto' : 'Item', l ? 'Monto' : 'Amount']],
+            body: [
+              [l ? 'Ingresos' : 'Income', fc(plan.totalIncome)],
+              [l ? 'Pagos Fijos' : 'Fixed', fc(plan.totalFixed)],
+              [l ? 'Gastado' : 'Spent', fc(plan.totalSpent)],
+              [l ? 'Disponible' : 'Available', fc(plan.freeMoney - plan.totalSpent)],
+              [l ? 'Presupuesto Diario' : 'Daily Budget', fc(plan.dailyBudget)],
+              [l ? 'Ahorro Proyectado' : 'Projected Savings', fc(plan.projectedSavings)],
+              [l ? 'Tasa de Ahorro' : 'Savings Rate', `${plan.savingsRate.toFixed(1)}%`],
+            ],
+            theme: 'grid',
+            headStyles: { fillColor: [16, 185, 129] },
+          });
+          blobUrl = doc.output('bloburl') as unknown as string;
+          break;
+        }
+        case 'bills': {
+          const ab = bills?.filter(b => b.status === 'active') || [];
+          if (ab.length === 0) { toast.info(l ? 'No hay pagos' : 'No bills'); setExporting(null); return; }
+          const { default: jsPDF } = await import('jspdf');
+          const { default: autoTable } = await import('jspdf-autotable');
+          const doc = new jsPDF();
+          const lang = l ? 'es' : 'en';
+          doc.setFontSize(16);
+          doc.text(l ? 'Pagos Recurrentes' : 'Recurring Bills', 14, 20);
+          autoTable(doc, {
+            startY: 30,
+            head: [[l ? 'Nombre' : 'Name', l ? 'Categoría' : 'Category', l ? 'Monto' : 'Amount', l ? 'Frecuencia' : 'Frequency']],
+            body: ab.map(b => [b.name, getBillCategoryLabel(b.category, lang), fc(b.amount), getBillFrequencyLabel(b.frequency, lang)]),
+            theme: 'striped',
+            headStyles: { fillColor: [59, 130, 246] },
+            styles: { fontSize: 8 },
+          });
+          blobUrl = doc.output('bloburl') as unknown as string;
+          break;
+        }
+        case 'tax': {
+          const { default: jsPDF } = await import('jspdf');
+          const { default: autoTable } = await import('jspdf-autotable');
+          const doc = new jsPDF();
+          const deductible = (expenses || []).filter(e => e.status === 'deductible');
+          doc.setFontSize(16);
+          doc.text(l ? 'Reporte Fiscal / T2125' : 'Tax Report / T2125', 14, 20);
+          doc.setFontSize(10);
+          doc.setTextColor(100);
+          doc.text(`${selectedYear}`, 14, 27);
+          doc.setTextColor(0);
+          autoTable(doc, {
+            startY: 34,
+            head: [[l ? 'Fecha' : 'Date', l ? 'Proveedor' : 'Vendor', l ? 'Categoría' : 'Category', l ? 'Monto' : 'Amount']],
+            body: deductible.slice(0, 25).map(e => [e.date, e.vendor || '', e.category || '', fc(Number(e.amount))]),
+            foot: [[l ? 'Total' : 'Total', '', '', fc(deductible.reduce((s, e) => s + Number(e.amount), 0))]],
+            theme: 'striped',
+            headStyles: { fillColor: [220, 38, 38] },
+            styles: { fontSize: 8 },
+          });
+          blobUrl = doc.output('bloburl') as unknown as string;
+          break;
+        }
+        case 'mileage': {
+          const trips = mileageData || [];
+          if (trips.length === 0) { toast.info(l ? 'No hay viajes' : 'No trips'); setExporting(null); return; }
+          const { default: jsPDF } = await import('jspdf');
+          const { default: autoTable } = await import('jspdf-autotable');
+          const doc = new jsPDF('l');
+          doc.setFontSize(16);
+          doc.text(l ? 'Reporte de Kilometraje' : 'Mileage Report', 14, 20);
+          doc.setFontSize(10);
+          doc.setTextColor(100);
+          doc.text(`${selectedYear}`, 14, 27);
+          doc.setTextColor(0);
+          const sorted = [...trips].sort((a, b) => a.date.localeCompare(b.date));
+          let runKm = 0;
+          const body = sorted.slice(0, 25).map(t => {
+            const km = parseFloat(t.kilometers.toString());
+            const ded = calculateMileageDeductionByCountry(km, runKm, currentCountry, selectedYear);
+            runKm += km;
+            return [t.date, t.route.replace('[SAMPLE] ', ''), `${km.toFixed(1)} km`, t.client?.name?.replace('[SAMPLE] ', '') || '-', ded ? fc(ded.deductible) : '-'];
+          });
+          autoTable(doc, {
+            startY: 34,
+            head: [[l ? 'Fecha' : 'Date', l ? 'Ruta' : 'Route', 'Km', l ? 'Cliente' : 'Client', l ? 'Deducción' : 'Deduction']],
+            body,
+            theme: 'striped',
+            headStyles: { fillColor: [59, 130, 246] },
+            styles: { fontSize: 8 },
+          });
+          blobUrl = doc.output('bloburl') as unknown as string;
+          break;
+        }
+      }
+
+      if (blobUrl) {
+        setPreviewUrl(blobUrl);
+        setPreviewTitle(l ? (card?.titleEs || 'Preview') : (card?.titleEn || 'Preview'));
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error(l ? 'Error al generar preview' : 'Preview failed');
+    }
+    setExporting(null);
   };
 
   const handleExport = async (reportId: string, format: 'pdf' | 'excel') => {
@@ -312,16 +506,28 @@ export default function Reports() {
             <CardContent className="pt-0">
               <div className="flex gap-2">
                 {card.formats.includes('pdf') && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="gap-1.5 flex-1"
-                    onClick={() => handleExport(card.id, 'pdf')}
-                    disabled={!!exporting}
-                  >
-                    {exporting === `${card.id}-pdf` ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <FileDown className="h-3.5 w-3.5" />}
-                    PDF
-                  </Button>
+                  <>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="gap-1 px-2"
+                      onClick={() => handlePreview(card.id)}
+                      disabled={!!exporting}
+                      title={l ? 'Vista previa' : 'Preview'}
+                    >
+                      {exporting === `${card.id}-preview` ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Eye className="h-3.5 w-3.5" />}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="gap-1.5 flex-1"
+                      onClick={() => handleExport(card.id, 'pdf')}
+                      disabled={!!exporting}
+                    >
+                      {exporting === `${card.id}-pdf` ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <FileDown className="h-3.5 w-3.5" />}
+                      PDF
+                    </Button>
+                  </>
                 )}
                 {card.formats.includes('excel') && (
                   <Button
@@ -340,6 +546,27 @@ export default function Reports() {
           </Card>
         ))}
       </div>
+
+      {/* PDF Preview Dialog */}
+      <Dialog open={!!previewUrl} onOpenChange={(open) => { if (!open) { if (previewUrl) URL.revokeObjectURL(previewUrl); setPreviewUrl(null); } }}>
+        <DialogContent className="max-w-4xl h-[85vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Eye className="h-5 w-5 text-primary" />
+              {previewTitle} — {l ? 'Vista Previa' : 'Preview'}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 min-h-0">
+            {previewUrl && (
+              <iframe
+                src={previewUrl}
+                className="w-full h-full rounded-lg border"
+                title="PDF Preview"
+              />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <p className="text-xs text-center text-muted-foreground">
         {l
