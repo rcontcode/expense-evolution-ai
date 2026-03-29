@@ -55,7 +55,7 @@ const ASSET_EDUCATION = {
     title: '¿Un auto es realmente un activo?',
     warning: 'Ojo, un vehículo personal NO es un activo productivo. Se deprecia (pierde valor) cada año y genera gastos constantes (seguro, mantenimiento, combustible).',
     exception: 'Solo cuenta como activo SI genera ingresos: taxi, Uber, repartos, vehículo de trabajo que te pagan por usar.',
-    tip: 'Robert Kiyosaki dice: "Un activo pone dinero en tu bolsillo, un pasivo saca dinero de tu bolsillo." Tu auto personal saca dinero cada mes.',
+    tip: 'Principio clave: "Un activo pone dinero en tu bolsillo, un pasivo saca dinero de tu bolsillo." Tu auto personal saca dinero cada mes.',
     questions: [
       '¿Este vehículo genera ingresos directos?',
       '¿Lo usas para trabajar y recibes compensación?',
@@ -66,7 +66,7 @@ const ASSET_EDUCATION = {
     title: '¿Los coleccionables son buenos activos?',
     warning: 'Los coleccionables (arte, relojes, tarjetas, etc.) son activos especulativos. Su valor depende del mercado y pueden no tener liquidez.',
     exception: 'Solo inclúyelos si tienes valuación profesional reciente y hay mercado activo para venderlos.',
-    tip: 'Warren Buffett evita activos que no generan flujo de efectivo. Prefiere negocios que producen dinero constantemente.',
+    tip: 'Principio clave: Los mejores inversores evitan activos que no generan flujo de efectivo. Prefieren negocios que producen dinero constantemente.',
     questions: [
       '¿Tienes una valuación reciente y confiable?',
       '¿Existe un mercado líquido para venderlo?',

@@ -114,8 +114,8 @@ export function useDebtClassification(language: 'es' | 'en' = 'es'): DebtClassif
 
     if (totalBadDebt > totalGoodDebt) {
       recommendations.push(language === 'es'
-        ? 'Kiyosaki: "La deuda mala te hace más pobre, la buena te hace más rico"'
-        : 'Kiyosaki: "Bad debt makes you poorer, good debt makes you richer"');
+        ? '"La deuda mala te hace más pobre, la buena te hace más rico"'
+        : '"Bad debt makes you poorer, good debt makes you richer"');
       recommendations.push(language === 'es'
         ? 'Prioriza pagar la deuda mala antes de adquirir más deuda'
         : 'Prioritize paying off bad debt before acquiring more debt');

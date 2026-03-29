@@ -132,8 +132,8 @@ export function useCashflowQuadrant(language: 'es' | 'en' = 'es'): CashflowQuadr
     
     if (quadrantTotals.E > quadrantTotals.I) {
       recommendations.push(language === 'es'
-        ? 'Kiyosaki: "Los ricos no trabajan por dinero, hacen que el dinero trabaje para ellos"'
-        : 'Kiyosaki: "The rich don\'t work for money, they make money work for them"');
+        ? '"Los ricos no trabajan por dinero, hacen que el dinero trabaje para ellos"'
+        : '"The rich don\'t work for money, they make money work for them"');
     }
     
     if (dominantQuadrant === 'E') {

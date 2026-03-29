@@ -995,12 +995,12 @@ export const TOOLTIP_CONTENT = {
   mentorship: {
     es: {
       title: "Mentoría Financiera",
-      description: "Aprende de los mejores: Kiyosaki, Brian Tracy, Jim Rohn. Hábitos, estrategias y bienestar financiero.",
+      description: "Aprende de los mejores: hábitos, estrategias y bienestar financiero.",
       howToUse: "Explora cada mentor y aplica sus enseñanzas a tu plan financiero.",
     },
     en: {
       title: "Financial Mentorship",
-      description: "Learn from the best: Kiyosaki, Brian Tracy, Jim Rohn. Habits, strategies and financial wellbeing.",
+      description: "Learn from the best: habits, strategies and financial wellbeing.",
       howToUse: "Explore each mentor and apply their teachings to your financial plan.",
     },
   },

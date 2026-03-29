@@ -296,7 +296,7 @@ const friendlyMessages: Record<string, {
   mentorship: {
     celebration: '¡La SABIDURÍA FINANCIERA de los grandes te espera! 🧠📚',
     achievement: '🏆 Oportunidad de Crecimiento: "Financial Scholar"',
-    encouragement: 'Los principios de Kiyosaki, Tracy y los grandes han transformado millones de vidas. ¡La tuya puede ser la siguiente!',
+    encouragement: 'Los principios de finanzas personales han transformado millones de vidas. ¡La tuya puede ser la siguiente!',
     keepGoing: 'La educación financiera es la inversión con mayor ROI que existe.',
     whatYouDid: 'Buscas aprender de los mejores - ¡eso te distingue del 95%!',
     valueUnlocked: 'Pro incluye 8 componentes de mentoría con principios probados de éxito financiero.',
