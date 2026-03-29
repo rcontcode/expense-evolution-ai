@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useInvalidateRelated } from './useInvalidateRelated';
+import { insertAuditLog } from './useAuditLog';
 
 export interface InvestmentGoal {
   id: string;
@@ -119,10 +120,10 @@ export function useDeleteInvestmentGoal() {
       if (error) throw error;
 
       if (user) {
-        await supabase.from('audit_log' as any).insert({
-          user_id: user.id, action: 'delete', entity_type: 'investment_goal', entity_id: id,
+        await insertAuditLog(user.id, {
+          action: 'delete', entity_type: 'investment_goal', entity_id: id,
           entity_name: existing?.name || null, old_values: existing ? { name: existing.name, target_amount: existing.target_amount } : null,
-        } as any);
+        });
       }
     },
     onSuccess: () => {

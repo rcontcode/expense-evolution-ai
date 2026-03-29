@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useInvalidateRelated } from './useInvalidateRelated';
+import { insertAuditLog } from './useAuditLog';
 
 // RecurringBill, BillPayment, BillInsert, BillUpdate types
 export interface RecurringBill {
@@ -151,10 +152,10 @@ export function useDeleteBill() {
       if (error) throw error;
 
       if (user) {
-        await supabase.from('audit_log' as any).insert({
-          user_id: user.id, action: 'delete', entity_type: 'recurring_bill', entity_id: id,
+        await insertAuditLog(user.id, {
+          action: 'delete', entity_type: 'recurring_bill', entity_id: id,
           entity_name: existing?.name || null, old_values: existing ? { name: existing.name, amount: existing.amount } : null,
-        } as any);
+        });
       }
     },
     onSuccess: () => {
