@@ -1,63 +1,70 @@
 
 
-# Potenciación de Mentoría — 3 Mejoras (sin Coach IA redundante)
+# Mejoras UX de Mentoría — Ronda 2
 
-## Descartado: Mentor AI Coach
-Phoenix ya cumple este rol. En vez de crear otro chatbot, se puede agregar contexto de mentoría al prompt de Phoenix cuando detecte que el usuario está en `/mentorship` — pero eso es una mejora separada del asistente, no de esta página.
+## Hallazgos
 
-## Mejoras a implementar
+### 1. Componentes duplicados entre tabs
+- `PayYourselfFirstCard` aparece en Atomic Y Rohn
+- `FinancialHabitsCard` aparece en Atomic Y Tracy
+- `FinancialEducationCard` aparece en Rohn Y Tracy
+- Esto confunde al usuario y hace las tabs más largas sin razón
 
-### 1. Desafíos Semanales Temáticos
-Retos rotativos por mentor con XP y racha.
+### 2. Weekly Challenges enterrados en Library
+- Solo visibles en la tab Library, pero aplican a TODAS las tabs (retos de Kiyosaki, Rohn, Tracy, Atomic)
+- Deberían estar en el área superior, visibles siempre
 
-- Crear `src/lib/constants/mentorship-challenges.ts` — pool de ~20 retos por mentor
-  - Kiyosaki: "Registra 3 activos esta semana", "Clasifica tus deudas"
-  - Rohn: "Escribe en tu journal 5 días", "Lee 30 minutos diarios"
-  - Tracy: "Define 1 meta SMART", "Prioriza tareas con ABCDE"
-  - Atomic: "Crea 1 hábito nuevo", "Registra tu págate primero"
-- Crear `src/components/mentorship/WeeklyChallengesCard.tsx`
-  - Muestra reto activo de la semana con progreso visual
-  - Persistencia en localStorage con reset semanal (lunes)
-  - Integrar con `useGamificationTriggers` para dar XP al completar
-  - Selector de dificultad (principiante/intermedio/avanzado)
+### 3. Progress Summary sin "score" unificado
+- Muestra 4 métricas aisladas sin una puntuación global
+- No hay tendencia (sube/baja vs semana pasada)
+- No hay color dinámico según salud del progreso
 
-### 2. Resumen de Progreso Unificado
-Dashboard compacto con KPIs de todas las herramientas de mentoría.
+### 4. Learning Path desaparece cuando hay actividad
+- Si el usuario ya tiene journal, hábitos, metas y libros, retorna `null`
+- Debería mostrar sugerencias avanzadas en vez de desaparecer
 
-- Crear `src/components/mentorship/MentorshipProgressSummary.tsx`
-  - Grid de métricas usando hooks existentes:
-    - Libros leídos/en progreso (`useFinancialEducation`)
-    - Racha de hábitos (`useFinancialHabits`)
-    - Entradas de journal este mes (`useFinancialJournal`)
-    - Metas activas/completadas (`useSavingsGoals`)
-    - % libertad financiera (`useFinancialFreedom` si existe)
-    - Nivel de mentoría actual (del banner)
-  - Diseño: cards compactas con iconos, números grandes, mini-sparklines
-  - Colocar debajo del `MentorshipLevelBanner`
-
-### 3. Ruta de Aprendizaje Personalizada
-Sugiere qué hacer según actividad del usuario.
-
-- Crear `src/components/mentorship/LearningPathCard.tsx`
-  - Analiza datos del usuario y muestra 3 "próximos pasos" con links directos:
-    - Sin journal → "Empieza tu journal financiero" → `?tab=rohn`
-    - Sin metas SMART → "Crea tu primera meta" → `?tab=tracy`
-    - Sin libros → "Explora la biblioteca" → `?tab=library`
-    - Sin hábitos → "Crea tu primer hábito atómico" → `?tab=atomic`
-    - Racha rota → "Retoma tu racha de hábitos" → `?tab=atomic`
-  - Cada sugerencia tiene prioridad basada en impacto
-  - Se oculta cuando el usuario ya tiene actividad en todo
-  - Colocar después del progress summary
+### 5. Tab banners solo decorativos
+- Los gradient headers de cada tab repiten info del nombre sin aportar valor contextual
+- Podrían incluir un micro-tip del mentor relevante
 
 ---
 
-## Archivos a crear
-1. `src/lib/constants/mentorship-challenges.ts` — Pool de retos
-2. `src/components/mentorship/WeeklyChallengesCard.tsx` — Desafíos semanales
-3. `src/components/mentorship/MentorshipProgressSummary.tsx` — Dashboard progreso
-4. `src/components/mentorship/LearningPathCard.tsx` — Ruta personalizada
+## Plan de cambios
+
+### Paso 1: Desduplicar componentes entre tabs
+- **Atomic tab**: Quitar `PayYourselfFirstCard` (ya está en Rohn)
+- **Tracy tab**: Quitar `FinancialHabitsCard` y `FinancialEducationCard` (ya están en Atomic/Rohn)
+- Dejar cada herramienta en SU tab nativa
+
+### Paso 2: Mover Weekly Challenges al área superior
+- Sacar `WeeklyChallengesCard` de la tab Library
+- Colocarlo debajo del grid `ProgressSummary + LearningPath`
+- Visible en todas las tabs
+
+### Paso 3: Mejorar Progress Summary con score global
+- Calcular un "Mentorship Score" (0-100) basado en: libros leídos, racha hábitos, journal entries, metas activas
+- Agregar indicador visual circular o barra con el score
+- Color dinámico: rojo (<30), amarillo (30-60), verde (60-80), dorado (80+)
+- Agregar badge con nivel textual ("Comenzando", "En camino", "Avanzado", "Maestro")
+
+### Paso 4: Learning Path con sugerencias avanzadas
+- Cuando el usuario tiene actividad en todo, en vez de retornar `null`:
+  - "Aumenta tu racha a 7 días" → atomic
+  - "Completa 5 recursos de la biblioteca" → library
+  - "Escribe en tu journal 3 veces esta semana" → rohn
+  - "Revisa tu % de libertad financiera" → kiyosaki
+- Siempre mostrar al menos 2 sugerencias
+
+### Paso 5: Tab banners con micro-tips contextuales
+- Agregar una frase corta del mentor relevante debajo de la descripción existente
+- Rotar entre 3-4 tips por tab, cambiando cada vez que se entra
+- Ejemplo Kiyosaki: "💡 Tip: Pregúntate hoy ¿este gasto es un activo o un pasivo?"
+
+---
 
 ## Archivos a modificar
-1. `src/pages/Mentorship.tsx` — Agregar 3 componentes nuevos (progress summary + learning path después del banner, challenges en cada tab relevante)
-2. `src/components/mentorship/index.ts` — Exportar nuevos componentes
+
+1. `src/pages/Mentorship.tsx` — Mover challenges arriba, quitar duplicados de tabs
+2. `src/components/mentorship/MentorshipProgressSummary.tsx` — Agregar score global + color dinámico
+3. `src/components/mentorship/LearningPathCard.tsx` — Sugerencias avanzadas cuando no hay básicas
 
