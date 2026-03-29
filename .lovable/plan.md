@@ -1,36 +1,63 @@
 
 
-# Corrección de Referencias a Países en Manual y Landing
+# Potenciación de Mentoría — 3 Mejoras (sin Coach IA redundante)
 
-## Problema
+## Descartado: Mentor AI Coach
+Phoenix ya cumple este rol. En vez de crear otro chatbot, se puede agregar contexto de mentoría al prompt de Phoenix cuando detecte que el usuario está en `/mentorship` — pero eso es una mejora separada del asistente, no de esta página.
 
-El manual menciona **RFC** (México), **NIT** (Colombia), **SIN/SSN** (USA), **IRS** (USA) en múltiples lugares. La app **solo soporta Canadá (CRA) y Chile (SII)** actualmente. Estas referencias son engañosas.
+## Mejoras a implementar
 
-## Cambios Específicos
+### 1. Desafíos Semanales Temáticos
+Retos rotativos por mentor con XP y racha.
 
-### `src/data/user-guide-content.ts`
+- Crear `src/lib/constants/mentorship-challenges.ts` — pool de ~20 retos por mentor
+  - Kiyosaki: "Registra 3 activos esta semana", "Clasifica tus deudas"
+  - Rohn: "Escribe en tu journal 5 días", "Lee 30 minutos diarios"
+  - Tracy: "Define 1 meta SMART", "Prioriza tareas con ABCDE"
+  - Atomic: "Crea 1 hábito nuevo", "Registra tu págate primero"
+- Crear `src/components/mentorship/WeeklyChallengesCard.tsx`
+  - Muestra reto activo de la semana con progreso visual
+  - Persistencia en localStorage con reset semanal (lunes)
+  - Integrar con `useGamificationTriggers` para dar XP al completar
+  - Selector de dificultad (principiante/intermedio/avanzado)
 
-| Línea | Actual | Correcto |
-|-------|--------|----------|
-| 457 | `RFC/NIT/RUT` | `RUT (Chile) o Business Number (Canadá)` |
-| 562-563 | `CRA para Canadá, IRS para USA` | `CRA para Canadá, SII para Chile` |
-| 580 | `Para otros países, las tasas se configuran...` | `Próximamente más países` |
-| 1036-1037 | `RFC, RUT, NIT, SIN, SSN` | `RUT (Chile) o BN (Canadá). Más países próximamente` |
-| 1041 | `RFC/RUT/NIT/SIN según el país` | `RUT o Business Number según jurisdicción` |
+### 2. Resumen de Progreso Unificado
+Dashboard compacto con KPIs de todas las herramientas de mentoría.
 
-### Menciones genéricas correctas (NO cambiar)
-- Líneas 48, 73: "múltiples países" / "multi-country" → OK, es aspiracional y ya funciona con CA+CL
-- Línea 124: "diferentes negocios/países" → OK
-- Sección cross-border → OK, funciona con CA↔CL
+- Crear `src/components/mentorship/MentorshipProgressSummary.tsx`
+  - Grid de métricas usando hooks existentes:
+    - Libros leídos/en progreso (`useFinancialEducation`)
+    - Racha de hábitos (`useFinancialHabits`)
+    - Entradas de journal este mes (`useFinancialJournal`)
+    - Metas activas/completadas (`useSavingsGoals`)
+    - % libertad financiera (`useFinancialFreedom` si existe)
+    - Nivel de mentoría actual (del banner)
+  - Diseño: cards compactas con iconos, números grandes, mini-sparklines
+  - Colocar debajo del `MentorshipLevelBanner`
 
-### Agregar nota de expansión futura
-En la sección `business-profile`, agregar un tip: "Actualmente soportamos Canadá y Chile. Más jurisdicciones próximamente."
+### 3. Ruta de Aprendizaje Personalizada
+Sugiere qué hacer según actividad del usuario.
 
-### `src/pages/Landing.tsx`
-- Ya dice `+ países próximamente` (línea 671) → Correcto, no cambiar
-- Ya muestra 🇨🇦🇨🇱 → Correcto
+- Crear `src/components/mentorship/LearningPathCard.tsx`
+  - Analiza datos del usuario y muestra 3 "próximos pasos" con links directos:
+    - Sin journal → "Empieza tu journal financiero" → `?tab=rohn`
+    - Sin metas SMART → "Crea tu primera meta" → `?tab=tracy`
+    - Sin libros → "Explora la biblioteca" → `?tab=library`
+    - Sin hábitos → "Crea tu primer hábito atómico" → `?tab=atomic`
+    - Racha rota → "Retoma tu racha de hábitos" → `?tab=atomic`
+  - Cada sugerencia tiene prioridad basada en impacto
+  - Se oculta cuando el usuario ya tiene actividad en todo
+  - Colocar después del progress summary
+
+---
+
+## Archivos a crear
+1. `src/lib/constants/mentorship-challenges.ts` — Pool de retos
+2. `src/components/mentorship/WeeklyChallengesCard.tsx` — Desafíos semanales
+3. `src/components/mentorship/MentorshipProgressSummary.tsx` — Dashboard progreso
+4. `src/components/mentorship/LearningPathCard.tsx` — Ruta personalizada
 
 ## Archivos a modificar
-
-1. `src/data/user-guide-content.ts` — 5 correcciones puntuales de tax IDs/autoridades + 1 tip nuevo
+1. `src/pages/Mentorship.tsx` — Agregar 3 componentes nuevos (progress summary + learning path después del banner, challenges en cada tab relevante)
+2. `src/components/mentorship/index.ts` — Exportar nuevos componentes
 
