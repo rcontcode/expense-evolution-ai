@@ -1,70 +1,63 @@
 
 
-# Mejoras UX de Mentoría — Ronda 2
+# Fix: Desafíos Semanales + Visibilidad de Herramientas
 
-## Hallazgos
+## Problema 1: Botón flecha en desafíos no es funcional
 
-### 1. Componentes duplicados entre tabs
-- `PayYourselfFirstCard` aparece en Atomic Y Rohn
-- `FinancialHabitsCard` aparece en Atomic Y Tracy
-- `FinancialEducationCard` aparece en Rohn Y Tracy
-- Esto confunde al usuario y hace las tabs más largas sin razón
+El botón `>` (ChevronRight) solo incrementa un contador manualmente sin conexión real a la app. El campo `actionKeyword` existe en cada challenge pero **nunca se usa** — no hay auto-tracking. El usuario no entiende qué hacer con la flecha.
 
-### 2. Weekly Challenges enterrados en Library
-- Solo visibles en la tab Library, pero aplican a TODAS las tabs (retos de Kiyosaki, Rohn, Tracy, Atomic)
-- Deberían estar en el área superior, visibles siempre
+**Solución**: Reemplazar la flecha por un botón "Ir" que navega a la herramienta correspondiente + conectar el progreso real de la app a los challenges.
 
-### 3. Progress Summary sin "score" unificado
-- Muestra 4 métricas aisladas sin una puntuación global
-- No hay tendencia (sube/baja vs semana pasada)
-- No hay color dinámico según salud del progreso
+### Cambios en `WeeklyChallengesCard.tsx`:
+- Eliminar el botón `ChevronRight` que hace `handleIncrement`
+- Agregar un botón "Ir" / "Go" que navega a la ruta correspondiente del challenge (ej: challenge de journal → `/mentorship?tab=rohn`, challenge de hábitos → `/mentorship?tab=atomic`, challenge de ingresos → `/income`)
+- Mapear cada `actionKeyword` a una ruta de navegación
+- Agregar auto-tracking: escuchar eventos de `localStorage` (`mission-progress-updated`, `xp-earned`) y también consultar datos reales (contar journal entries de esta semana, contar hábitos creados, etc.) para actualizar el progreso automáticamente
+- Mostrar texto descriptivo del botón: "Ir al Journal" / "Ir a Patrimonio" en vez de una flecha genérica
 
-### 4. Learning Path desaparece cuando hay actividad
-- Si el usuario ya tiene journal, hábitos, metas y libros, retorna `null`
-- Debería mostrar sugerencias avanzadas en vez de desaparecer
+### Cambios en `mentorship-challenges.ts`:
+- Agregar campo `route` a `MentorshipChallenge` con la ruta de navegación de cada challenge
+- Agregar campo `buttonLabelEs` / `buttonLabelEn` para el texto del botón
 
-### 5. Tab banners solo decorativos
-- Los gradient headers de cada tab repiten info del nombre sin aportar valor contextual
-- Podrían incluir un micro-tip del mentor relevante
+### Nuevo hook `useChallengeAutoTracker.ts`:
+- Hook que consulta datos reales de la semana actual para cada challenge:
+  - `journal_entry` → contar entries de `financial_journal` de esta semana
+  - `create_habit` → contar hábitos creados esta semana
+  - `create_smart_goal` → contar savings goals creadas esta semana
+  - `log_income` → contar income entries de esta semana
+  - etc.
+- Retorna `Record<actionKeyword, count>` para sincronizar el progreso real
+
+---
+
+## Problema 2: Herramientas como Reading Tracker no son visibles
+
+El `ReadingProgressTracker` (699 líneas, muy completo) está oculto dentro de `FinancialEducationCard` como un sub-tab. No se menciona en la landing ni se promociona en otras partes de la app.
+
+**Solución**: Promocionar las mejores herramientas "ocultas" en 3 lugares.
+
+### A) Landing Page (`Landing.tsx`):
+- Actualizar la descripción del feature "Mentoría Elite" para incluir: "Desafíos semanales, tracker de lectura, hábitos atómicos"
+- Agregar un feature card para "Acompañante de Lectura" o expandir "Biblioteca Financiera" con mención del tracker
+
+### B) Manual de Usuario (`user-guide-content.ts`):
+- En la sección `mentorship`: agregar steps sobre desafíos semanales y el tracker de lectura
+- En la sección `financial-education`: agregar step específico sobre el Reading Progress Tracker y cómo acceder
+- Agregar tip: "Usa el Acompañante de Lectura para ver tu ritmo de lectura vs promedio global"
+
+### C) Cross-promotion en la app:
+- En `DashboardGamificationWidget` o similar: agregar una mini-card/tip que diga "¿Sabías que tienes un acompañante de lectura? → Ir a Mentoría" cuando el usuario no tiene recursos en progreso
+- En `LearningPathCard.tsx`: agregar sugerencia "Activa el tracker de lectura para medir tu progreso" → link a `?tab=rohn`
 
 ---
 
-## Plan de cambios
-
-### Paso 1: Desduplicar componentes entre tabs
-- **Atomic tab**: Quitar `PayYourselfFirstCard` (ya está en Rohn)
-- **Tracy tab**: Quitar `FinancialHabitsCard` y `FinancialEducationCard` (ya están en Atomic/Rohn)
-- Dejar cada herramienta en SU tab nativa
-
-### Paso 2: Mover Weekly Challenges al área superior
-- Sacar `WeeklyChallengesCard` de la tab Library
-- Colocarlo debajo del grid `ProgressSummary + LearningPath`
-- Visible en todas las tabs
-
-### Paso 3: Mejorar Progress Summary con score global
-- Calcular un "Mentorship Score" (0-100) basado en: libros leídos, racha hábitos, journal entries, metas activas
-- Agregar indicador visual circular o barra con el score
-- Color dinámico: rojo (<30), amarillo (30-60), verde (60-80), dorado (80+)
-- Agregar badge con nivel textual ("Comenzando", "En camino", "Avanzado", "Maestro")
-
-### Paso 4: Learning Path con sugerencias avanzadas
-- Cuando el usuario tiene actividad en todo, en vez de retornar `null`:
-  - "Aumenta tu racha a 7 días" → atomic
-  - "Completa 5 recursos de la biblioteca" → library
-  - "Escribe en tu journal 3 veces esta semana" → rohn
-  - "Revisa tu % de libertad financiera" → kiyosaki
-- Siempre mostrar al menos 2 sugerencias
-
-### Paso 5: Tab banners con micro-tips contextuales
-- Agregar una frase corta del mentor relevante debajo de la descripción existente
-- Rotar entre 3-4 tips por tab, cambiando cada vez que se entra
-- Ejemplo Kiyosaki: "💡 Tip: Pregúntate hoy ¿este gasto es un activo o un pasivo?"
-
----
+## Archivos a crear
+1. `src/hooks/data/useChallengeAutoTracker.ts` — Auto-tracking de progreso real
 
 ## Archivos a modificar
-
-1. `src/pages/Mentorship.tsx` — Mover challenges arriba, quitar duplicados de tabs
-2. `src/components/mentorship/MentorshipProgressSummary.tsx` — Agregar score global + color dinámico
-3. `src/components/mentorship/LearningPathCard.tsx` — Sugerencias avanzadas cuando no hay básicas
+1. `src/lib/constants/mentorship-challenges.ts` — Agregar `route`, `buttonLabelEs`, `buttonLabelEn`
+2. `src/components/mentorship/WeeklyChallengesCard.tsx` — Reemplazar flecha por botón "Ir" + auto-sync progreso
+3. `src/pages/Landing.tsx` — Expandir descripciones de mentoría/biblioteca
+4. `src/data/user-guide-content.ts` — Agregar tracker de lectura y desafíos semanales
+5. `src/components/mentorship/LearningPathCard.tsx` — Agregar sugerencia del tracker de lectura
 
