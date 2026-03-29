@@ -506,16 +506,28 @@ export default function Reports() {
             <CardContent className="pt-0">
               <div className="flex gap-2">
                 {card.formats.includes('pdf') && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="gap-1.5 flex-1"
-                    onClick={() => handleExport(card.id, 'pdf')}
-                    disabled={!!exporting}
-                  >
-                    {exporting === `${card.id}-pdf` ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <FileDown className="h-3.5 w-3.5" />}
-                    PDF
-                  </Button>
+                  <>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="gap-1 px-2"
+                      onClick={() => handlePreview(card.id)}
+                      disabled={!!exporting}
+                      title={l ? 'Vista previa' : 'Preview'}
+                    >
+                      {exporting === `${card.id}-preview` ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Eye className="h-3.5 w-3.5" />}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="gap-1.5 flex-1"
+                      onClick={() => handleExport(card.id, 'pdf')}
+                      disabled={!!exporting}
+                    >
+                      {exporting === `${card.id}-pdf` ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <FileDown className="h-3.5 w-3.5" />}
+                      PDF
+                    </Button>
+                  </>
                 )}
                 {card.formats.includes('excel') && (
                   <Button
@@ -534,6 +546,27 @@ export default function Reports() {
           </Card>
         ))}
       </div>
+
+      {/* PDF Preview Dialog */}
+      <Dialog open={!!previewUrl} onOpenChange={(open) => { if (!open) { if (previewUrl) URL.revokeObjectURL(previewUrl); setPreviewUrl(null); } }}>
+        <DialogContent className="max-w-4xl h-[85vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Eye className="h-5 w-5 text-primary" />
+              {previewTitle} — {l ? 'Vista Previa' : 'Preview'}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 min-h-0">
+            {previewUrl && (
+              <iframe
+                src={previewUrl}
+                className="w-full h-full rounded-lg border"
+                title="PDF Preview"
+              />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <p className="text-xs text-center text-muted-foreground">
         {l
