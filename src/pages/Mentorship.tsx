@@ -279,6 +279,9 @@ export default function Mentorship() {
           <LearningPathCard />
         </div>
 
+        {/* Weekly Summary Badge */}
+        <WeeklySummaryBadge />
+
         {/* Weekly Challenges - visible across all tabs */}
         <WeeklyChallengesCard />
 
@@ -354,11 +357,26 @@ export default function Mentorship() {
               <div id="mentorship-education">
                 <FinancialEducationCard />
               </div>
-              <div id="mentorship-reading-reminder">
-                <ReadingReminderSettings />
-              </div>
-              <div id="mentorship-reading-pace">
-                <ReadingPaceComparison />
+              <div className="md:col-span-2" id="mentorship-reading-tools">
+                <Collapsible defaultOpen={false}>
+                  <CollapsibleTrigger className="flex items-center gap-2 w-full p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors group">
+                    <BookOpen className="h-4 w-4 text-amber-500" />
+                    <span className="text-sm font-medium flex-1 text-left">
+                      {language === 'es' ? '📖 Herramientas de Lectura' : '📖 Reading Tools'}
+                    </span>
+                    <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="mt-3">
+                    <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
+                      <div id="mentorship-reading-reminder">
+                        <ReadingReminderSettings />
+                      </div>
+                      <div id="mentorship-reading-pace">
+                        <ReadingPaceComparison />
+                      </div>
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
               </div>
               <div className="md:col-span-2">
                 <GlobalLearningChart />
@@ -376,6 +394,7 @@ export default function Mentorship() {
               <div id="mentorship-smart-goals">
                 <SMARTGoalsCard />
               </div>
+              <TracyQuickStats />
             </div>
           </TabsContent>
 
