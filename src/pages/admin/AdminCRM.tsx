@@ -39,6 +39,7 @@ import { AdminCRMHome } from '@/components/admin/tabs/AdminCRMHome';
 import { AdminFollowUpsAgenda } from '@/components/admin/tabs/AdminFollowUpsAgenda';
 import { LeadMergeDialog } from '@/components/admin/LeadMergeDialog';
 import { useHotLeadRealtime } from '@/hooks/admin/useHotLeadRealtime';
+import { useUncontactedHotCount } from '@/hooks/admin/useUncontactedHotCount';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
@@ -112,6 +113,7 @@ const AdminCRM = () => {
 
   // Realtime notifications for HOT leads
   useHotLeadRealtime();
+  const { data: hotCount = 0 } = useUncontactedHotCount();
 
   // Fetch all leads for merge dialog
   const { data: allLeadsForMerge = [] } = useQuery({
@@ -720,10 +722,15 @@ const AdminCRM = () => {
                   <span className="hidden md:inline">Ranking</span>
                   <span className="md:hidden">🏆</span>
                 </TabsTrigger>
-                <TabsTrigger value="queue" className="flex items-center gap-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-orange-500 data-[state=active]:text-white rounded-lg font-semibold text-[10px] md:text-xs">
+                <TabsTrigger value="queue" className="flex items-center gap-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-orange-500 data-[state=active]:text-white rounded-lg font-semibold text-[10px] md:text-xs relative">
                   <Phone className="h-3.5 w-3.5" />
                   <span className="hidden md:inline">{isEs ? 'Contactar' : 'Queue'}</span>
                   <span className="md:hidden">📞</span>
+                  {hotCount > 0 && (
+                    <span className="absolute -top-1 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white px-1 animate-pulse">
+                      {hotCount}
+                    </span>
+                  )}
                 </TabsTrigger>
                 <TabsTrigger value="history" className="flex items-center gap-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-sky-500 data-[state=active]:to-blue-600 data-[state=active]:text-white rounded-lg font-semibold text-[10px] md:text-xs">
                   <span className="hidden md:inline">{isEs ? 'Historial' : 'History'}</span>

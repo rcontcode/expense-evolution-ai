@@ -1,5 +1,7 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { CountryFlag } from '@/components/ui/country-flag';
+import { Checkbox } from '@/components/ui/checkbox';
+import { LeadsBulkActions } from './LeadsBulkActions';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import {
@@ -171,8 +173,36 @@ function SortableHeader({ label, sortKey, currentKey, currentDir, onSort }: {
 export function LeadsTable({ leads, allLeads, onMarkContacted, onMarkConverted }: LeadsTableProps) {
   const [selectedLead, setSelectedLead] = useState<QuizLead | null>(null);
   const [followUpLead, setFollowUpLead] = useState<QuizLead | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [sortKey, setSortKey] = useState<SortKey>('created_at');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
+
+  const toggleSelect = useCallback((id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  }, []);
+
+  const toggleSelectAll = useCallback(() => {
+    setSelectedIds(prev => {
+      if (prev.size === leads.length) return new Set();
+      return new Set(leads.map(l => l.id));
+    });
+  }, [leads]);
+
+  const clearSelection = useCallback(() => setSelectedIds(new Set()), []);
+
+  // Collect all tags for bulk actions
+  const allTags = useMemo(() => {
+    const tags = new Set<string>();
+    (allLeads || leads).forEach(l => {
+      const lt = l.tags as string[] | null;
+      lt?.forEach(t => tags.add(t));
+    });
+    return Array.from(tags).sort();
+  }, [allLeads, leads]);
 
   const handleSort = (key: SortKey) => {
     if (sortKey === key) {
@@ -245,10 +275,22 @@ export function LeadsTable({ leads, allLeads, onMarkContacted, onMarkConverted }
 
   return (
     <>
+      <LeadsBulkActions
+        selectedIds={selectedIds}
+        allLeads={allLeads || leads}
+        onClearSelection={clearSelection}
+        allTags={allTags}
+      />
       <div className="rounded-md border overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-[40px] px-2">
+                <Checkbox
+                  checked={selectedIds.size === leads.length && leads.length > 0}
+                  onCheckedChange={toggleSelectAll}
+                />
+              </TableHead>
               <TableHead className="w-[40px]"></TableHead>
               <SortableHeader label="Nombre" sortKey="name" {...sortProps} />
               <SortableHeader label="Prioridad" sortKey="priority" {...sortProps} />
@@ -271,6 +313,13 @@ export function LeadsTable({ leads, allLeads, onMarkContacted, onMarkConverted }
                   key={lead.id}
                   className={cn(colors.row, colors.border)}
                 >
+                  {/* Checkbox */}
+                  <TableCell className="px-2">
+                    <Checkbox
+                      checked={selectedIds.has(lead.id)}
+                      onCheckedChange={() => toggleSelect(lead.id)}
+                    />
+                  </TableCell>
                   {/* Priority indicator */}
                   <TableCell className="px-2">
                     <div 
