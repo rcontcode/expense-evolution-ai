@@ -7,6 +7,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
+import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 import { ExpenseWithRelations } from '@/types/expense.types';
 
@@ -126,6 +127,7 @@ function ImageViewer({ src, alt }: { src: string; alt: string }) {
 export function LinkReceiptDialog({ open, onClose, expenseIds, expenses = [] }: LinkReceiptDialogProps) {
   const { language } = useLanguage();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
   const [orphanDocs, setOrphanDocs] = useState<OrphanDocument[]>([]);
   const [loading, setLoading] = useState(false);
   const [linking, setLinking] = useState<string | null>(null);
@@ -191,8 +193,8 @@ export function LinkReceiptDialog({ open, onClose, expenseIds, expenses = [] }: 
   const handleLink = async (docId: string, expenseId: string) => {
     setLinking(docId);
     try {
-      await supabase.from('expenses').update({ document_id: docId }).eq('id', expenseId);
-      await supabase.from('documents').update({ expense_id: expenseId } as any).eq('id', docId);
+      await supabase.from('expenses').update({ document_id: docId }).eq('id', expenseId).eq('user_id', user!.id);
+      await supabase.from('documents').update({ expense_id: expenseId } as any).eq('id', docId).eq('user_id', user!.id);
       queryClient.invalidateQueries({ queryKey: ['expenses'] });
       toast.success(language === 'es' ? '✅ Recibo vinculado exitosamente' : '✅ Receipt linked successfully');
       setOrphanDocs(prev => prev.filter(d => d.id !== docId));
