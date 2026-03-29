@@ -90,6 +90,9 @@ export default function UserGuide() {
                     {s.emoji} {t(s.title)}
                   </button>
                 ))}
+                <button onClick={() => scrollToSection('data-entry-points')} className="text-xs text-left w-full px-2 py-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
+                  🎯 {lang === 'es' ? 'Puntos de Entrada' : 'Entry Points'}
+                </button>
                 <button onClick={() => scrollToSection('connections')} className="text-xs text-left w-full px-2 py-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
                   🔗 {lang === 'es' ? 'Interconexiones' : 'Connections'}
                 </button>
