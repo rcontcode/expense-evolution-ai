@@ -36,6 +36,7 @@ import { AdminAdvancedMetrics } from '@/components/admin/tabs/AdminAdvancedMetri
 import { AdminCrossAppRanking } from '@/components/admin/tabs/AdminCrossAppRanking';
 import { AdminRevenueDashboard } from '@/components/admin/tabs/AdminRevenueDashboard';
 import { AdminROIDashboard } from '@/components/admin/tabs/AdminROIDashboard';
+import { AdminNurturingTab } from '@/components/admin/tabs/AdminNurturingTab';
 import { AdminCRMHome } from '@/components/admin/tabs/AdminCRMHome';
 import { AdminFollowUpsAgenda } from '@/components/admin/tabs/AdminFollowUpsAgenda';
 import { LeadMergeDialog } from '@/components/admin/LeadMergeDialog';
@@ -765,6 +766,10 @@ const AdminCRM = () => {
                   <span className="hidden md:inline">ROI</span>
                   <span className="md:hidden">💰</span>
                 </TabsTrigger>
+                <TabsTrigger value="nurturing" className="flex items-center gap-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-teal-600 data-[state=active]:text-white rounded-lg font-semibold text-[10px] md:text-xs">
+                  <span className="hidden md:inline">Nurturing</span>
+                  <span className="md:hidden">🔄</span>
+                </TabsTrigger>
               </TabsList>
               <TabsContent value="home"><AdminCRMHome language={language} onNavigateTab={setActiveTab} /></TabsContent>
               <TabsContent value="agenda"><AdminFollowUpsAgenda language={language} /></TabsContent>
@@ -780,6 +785,7 @@ const AdminCRM = () => {
               <TabsContent value="subscriptions"><AdminSubscriptionsTab language={language} /></TabsContent>
               <TabsContent value="revenue"><AdminRevenueDashboard language={language} /></TabsContent>
               <TabsContent value="roi"><AdminROIDashboard language={language} /></TabsContent>
+              <TabsContent value="nurturing"><AdminNurturingTab language={language} /></TabsContent>
             </Tabs>
             <div className="sticky top-6"><AdminActivityFeed language={language} /></div>
           </motion.div>
