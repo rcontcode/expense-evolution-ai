@@ -127,6 +127,7 @@ function ImageViewer({ src, alt }: { src: string; alt: string }) {
 export function LinkReceiptDialog({ open, onClose, expenseIds, expenses = [] }: LinkReceiptDialogProps) {
   const { language } = useLanguage();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
   const [orphanDocs, setOrphanDocs] = useState<OrphanDocument[]>([]);
   const [loading, setLoading] = useState(false);
   const [linking, setLinking] = useState<string | null>(null);

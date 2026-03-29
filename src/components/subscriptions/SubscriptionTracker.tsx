@@ -269,7 +269,7 @@ export function SubscriptionTracker() {
   const { data: expenses, isLoading: expensesLoading } = useExpenses();
   const { data: bankTransactions, isLoading: bankLoading } = useBankTransactions();
   const { data: recurringBills } = useRecurringBills();
-  const { afterBill } = useInvalidateRelated();
+  const createBill = useCreateBill();
   const { currentEntity } = useEntity();
   const [convertedVendors, setConvertedVendors] = useState<Set<string>>(new Set());
   const isEs = language === 'es';

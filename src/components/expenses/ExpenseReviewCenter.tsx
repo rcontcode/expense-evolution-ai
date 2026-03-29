@@ -195,6 +195,7 @@ export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCe
   const { data: documents = [] } = useDocumentsForReview();
   const deleteMutation = useDeleteExpense();
   const updateMutation = useUpdateExpense();
+  const createIncome = useCreateIncome();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editAmount, setEditAmount] = useState('');
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
