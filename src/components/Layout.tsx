@@ -212,7 +212,9 @@ const getNavSections = (language: string, isBetaTester: boolean = false) => {
     items: [
       { icon: Users, label: 'nav.clients', path: '/clients', badge: null, tooltipKey: 'clients' as const,
         children: [
-          { label: language === 'es' ? '📊 Gráficos Negocio' : '📊 Business Charts', path: '/dashboard?area=negocio&atab=charts' },
+          { label: language === 'es' ? '📊 Rentabilidad Clientes' : '📊 Client Profitability', path: '/analytics#profitability' },
+          { label: language === 'es' ? '📁 Proyectos' : '📁 Projects', path: '/projects' },
+          { label: language === 'es' ? '📄 Contratos' : '📄 Contracts', path: '/contracts' },
         ],
       },
       { icon: FolderKanban, label: 'nav.projects', path: '/projects', badge: null, tooltipKey: 'projects' as const },
