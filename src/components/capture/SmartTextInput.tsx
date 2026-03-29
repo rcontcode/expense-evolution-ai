@@ -245,6 +245,29 @@ export function SmartTextInput({ onSuccess, onCancel }: SmartTextInputProps) {
             {l ? '🎙️ Escuchando... habla ahora' : '🎙️ Listening... speak now'}
           </p>
         )}
+
+        {/* Examples block */}
+        {!result && (
+          <div className="p-3 rounded-xl bg-muted/30 border border-border/30 space-y-2">
+            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">
+              {l ? 'Ejemplos que funcionan:' : 'Examples that work:'}
+            </p>
+            <div className="grid gap-1.5 text-[12px] text-muted-foreground">
+              <div className="flex items-start gap-1.5">
+                <Receipt className="h-3.5 w-3.5 mt-0.5 text-amber-500 shrink-0" />
+                <span>{l ? '"Compré café $5 en Starbucks ayer"' : '"Bought coffee $5 at Starbucks yesterday"'}</span>
+              </div>
+              <div className="flex items-start gap-1.5">
+                <DollarSign className="h-3.5 w-3.5 mt-0.5 text-emerald-500 shrink-0" />
+                <span>{l ? '"Me pagaron $3000 de salario"' : '"Got paid $3000 salary"'}</span>
+              </div>
+              <div className="flex items-start gap-1.5">
+                <CreditCard className="h-3.5 w-3.5 mt-0.5 text-blue-500 shrink-0" />
+                <span>{l ? '"Netflix $15.99 mensual"' : '"Netflix $15.99 monthly"'}</span>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Result preview */}
