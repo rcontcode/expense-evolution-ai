@@ -559,30 +559,62 @@ export const guideSections: GuideSection[] = [
     color: 'border-cyan-500/30',
   },
   {
+    id: 'tags',
+    emoji: '🏷️',
+    title: { es: 'Etiquetas', en: 'Tags' },
+    shortDesc: { es: 'Clasificación personalizada para gastos', en: 'Custom classification for expenses' },
+    purpose: {
+      es: 'Las etiquetas te permiten crear tu propio sistema de clasificación además de las categorías fijas. Úsalas para marcar gastos como "deducible", "viaje a Cancún", "proyecto X" o "pendiente reembolso". Se asignan al crear o editar un gasto (campo Etiquetas al final del formulario). La IA también puede sugerirlas automáticamente. Después puedes filtrar, analizar y generar reportes por etiqueta.',
+      en: 'Tags let you create your own classification system on top of fixed categories. Use them to mark expenses as "deductible", "Cancun trip", "project X" or "pending reimbursement". They\'re assigned when creating or editing an expense (Tags field at the bottom of the form). AI can also suggest them automatically. Then you can filter, analyze, and generate reports by tag.'
+    },
+    steps: [
+      { es: 'Ve a Etiquetas en el menú y crea etiquetas con nombre y color', en: 'Go to Tags in the menu and create tags with name and color' },
+      { es: 'Al crear/editar un gasto → campo "Etiquetas" al final del formulario', en: 'When creating/editing an expense → "Tags" field at the bottom of the form' },
+      { es: 'En la tabla de gastos usa el filtro de etiquetas para encontrar rápido', en: 'In the expenses table use the tag filter to find quickly' },
+      { es: 'En Etiquetas → pestaña Estadísticas para ver distribución y tendencias', en: 'In Tags → Statistics tab to see distribution and trends' },
+    ],
+    tips: [
+      { es: 'Las categorías son fijas, las etiquetas son tuyas — combínalas para máximo control', en: 'Categories are fixed, tags are yours — combine them for maximum control' },
+      { es: 'Crea etiquetas como "Deducible" o "Reembolsable" para filtrar en temporada de impuestos', en: 'Create tags like "Deductible" or "Reimbursable" to filter during tax season' },
+      { es: 'La IA sugiere etiquetas automáticamente al crear gastos', en: 'AI suggests tags automatically when creating expenses' },
+    ],
+    faq: [
+      {
+        question: { es: '¿Dónde se asignan las etiquetas?', en: 'Where are tags assigned?' },
+        answer: { es: 'Solo en gastos. Al crear o editar un gasto, encontrarás el campo "Etiquetas" al final del formulario. También la IA las sugiere automáticamente.', en: 'Only on expenses. When creating or editing an expense, you\'ll find the "Tags" field at the bottom of the form. AI also suggests them automatically.' }
+      },
+    ],
+    connections: [
+      { es: 'Se asignan a Gastos y aparecen en filtros y reportes', en: 'Assigned to Expenses and appear in filters and reports' },
+      { es: 'La IA sugiere etiquetas via clasificación automática', en: 'AI suggests tags via automatic classification' },
+    ],
+    color: 'border-yellow-500/30',
+  },
+  {
     id: 'mileage',
     emoji: '🚗',
     title: { es: 'Kilometraje', en: 'Mileage' },
-    shortDesc: { es: 'Viajes de trabajo y deducciones fiscales', en: 'Work trips and tax deductions' },
+    shortDesc: { es: 'Control de viajes de trabajo y deducciones por país', en: 'Work trip tracking and country-specific deductions' },
     purpose: {
-      es: 'Registra tus viajes de trabajo para deducir kilometraje en impuestos. Calcula automáticamente la deducción según las tasas oficiales de tu país (CRA para Canadá, SII para Chile). Incluye mapa de ubicaciones de clientes, ida/vuelta automática, y resúmenes mensuales/anuales de kilómetros deducibles.',
-      en: 'Record your work trips to deduct mileage on taxes. Automatically calculates deduction based on official rates (CRA for Canada, SII for Chile). Includes client location map, automatic round trip, and monthly/annual deductible kilometer summaries.'
+      es: 'Registra tus viajes de trabajo para control personal de kilómetros recorridos. Opcionalmente, usa los datos para deducir kilometraje en impuestos según las tasas oficiales de tu país: CRA para Canadá, SII para Chile, IRS para USA, o como control personal en cualquier otro país. Tú decides si es solo para tu registro o para presentar ante la autoridad fiscal o un cliente. Incluye mapa de ubicaciones, ida/vuelta automática, y resúmenes mensuales/anuales.',
+      en: 'Record your work trips for personal mileage control. Optionally, use the data to deduct mileage on taxes based on official rates: CRA for Canada, SII for Chile, IRS for USA, or as personal tracking in any other country. You decide if it\'s just for your records or to present to tax authorities or a client. Includes location map, automatic round trip, and monthly/annual summaries.'
     },
     steps: [
       { es: 'Registra un viaje: origen, destino, distancia en km y propósito del viaje', en: 'Record a trip: origin, destination, distance in km, and trip purpose' },
       { es: 'Selecciona si es ida/vuelta o solo ida', en: 'Select if round trip or one-way' },
       { es: 'Asocia el viaje a un cliente si aplica', en: 'Associate the trip with a client if applicable' },
-      { es: 'El sistema calcula la deducción fiscal automáticamente según tasas oficiales', en: 'The system automatically calculates tax deduction based on official rates' },
-      { es: 'Revisa resúmenes mensuales y anuales de kilómetros deducibles', en: 'Review monthly and annual deductible kilometer summaries' },
+      { es: 'El sistema calcula la deducción fiscal según tu país (Canadá, Chile, USA, u otro)', en: 'The system calculates tax deduction based on your country (Canada, Chile, USA, or other)' },
+      { es: 'Revisa resúmenes mensuales y anuales — úsalos para impuestos o control personal', en: 'Review monthly and annual summaries — use for taxes or personal tracking' },
     ],
     tips: [
-      { es: 'Registra CADA viaje de trabajo — $0.70/km se acumula significativamente al año', en: 'Record EVERY work trip — $0.70/km accumulates significantly over the year' },
+      { es: 'Registra CADA viaje de trabajo — los kilómetros se acumulan significativamente al año', en: 'Record EVERY work trip — kilometers accumulate significantly over the year' },
       { es: 'Usa el mapa de clientes para ver distancias frecuentes y optimizar rutas', en: 'Use the client map to see frequent distances and optimize routes' },
-      { es: 'Ganas XP en Aventura Financiera por cada viaje registrado', en: 'You earn XP in Financial Adventure for each recorded trip' },
+      { es: 'No necesitas estar en Canadá ni Chile — funciona como control personal en cualquier país', en: 'You don\'t need to be in Canada or Chile — works as personal tracking in any country' },
     ],
     faq: [
       {
         question: { es: '¿Qué tasa por kilómetro usa EvoFinz?', en: 'What rate per kilometer does EvoFinz use?' },
-        answer: { es: 'Usa las tasas oficiales del CRA (Canadá) y SII (Chile) actualizadas anualmente. Más países próximamente.', en: 'Uses official CRA (Canada) and SII (Chile) rates updated annually. More countries coming soon.' }
+        answer: { es: 'Detecta tu país automáticamente: usa tasas oficiales CRA (Canadá), SII (Chile), o IRS (USA). Para otros países muestra el control de km sin tasa fiscal específica, útil para rendir a clientes o llevar tu propio registro.', en: 'Detects your country automatically: uses official CRA (Canada), SII (Chile), or IRS (USA) rates. For other countries it shows km tracking without a specific tax rate, useful for client reporting or personal records.' }
       },
     ],
     connections: [
