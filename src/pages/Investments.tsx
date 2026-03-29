@@ -4,6 +4,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Briefcase } from 'lucide-react';
 import { InvestmentRiskProfiler } from '@/components/investments/InvestmentRiskProfiler';
+import { LegalDisclaimer } from '@/components/ui/legal-disclaimer';
 
 const FIRECalculatorCard = lazy(() => import('@/components/dashboard/FIRECalculatorCard').then(m => ({ default: m.FIRECalculatorCard })));
 const DebtManagerCard = lazy(() => import('@/components/dashboard/DebtManagerCard').then(m => ({ default: m.DebtManagerCard })));
@@ -39,6 +40,7 @@ export default function Investments() {
               <DebtManagerCard />
             </div>
             <PersonalizedInvestmentTips />
+            <LegalDisclaimer variant="investment" size="compact" />
           </div>
         </Suspense>
       </div>

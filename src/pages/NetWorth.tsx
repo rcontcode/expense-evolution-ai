@@ -27,6 +27,7 @@ import { Button } from '@/components/ui/button';
 import { Lightbulb, Sparkles, Plus, Wallet, TrendingUp, RefreshCw } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { LegalDisclaimer } from '@/components/ui/legal-disclaimer';
 
 export default function NetWorth() {
   const { t, language } = useLanguage();
@@ -235,6 +236,7 @@ export default function NetWorth() {
                 </div>
               </div>
             </div>
+            <LegalDisclaimer variant="investment" size="compact" />
           </>
         )}
 

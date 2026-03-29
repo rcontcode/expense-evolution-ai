@@ -6,6 +6,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useAssets } from '@/hooks/data/useNetWorth';
 
 import { ShieldCheck, TrendingUp, AlertTriangle, Target, ChevronDown, ChevronUp, PieChart } from 'lucide-react';
+import { LegalDisclaimer } from '@/components/ui/legal-disclaimer';
 
 interface AssetAllocation {
   category: string;
@@ -220,6 +221,7 @@ export function InvestmentRiskProfiler() {
             </div>
           ))}
         </div>
+        <LegalDisclaimer variant="investment" size="compact" showLearnMore={false} className="mt-4" />
       </CardContent>
     </Card>
   );
