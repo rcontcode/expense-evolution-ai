@@ -335,8 +335,16 @@ export function useDeleteAsset() {
 
   return useMutation({
     mutationFn: async (id: string) => {
+      const { data: existing } = await supabase.from('assets').select('name').eq('id', id).single();
       const { error } = await supabase.from('assets').delete().eq('id', id);
       if (error) throw error;
+
+      if (user) {
+        await supabase.from('audit_log' as any).insert({
+          user_id: user.id, action: 'delete', entity_type: 'asset', entity_id: id,
+          entity_name: existing?.name || null,
+        } as any);
+      }
     },
     onSuccess: () => {
       afterNetWorth();
@@ -413,12 +421,21 @@ export function useUpdateLiability() {
 
 export function useDeleteLiability() {
   const { afterNetWorth } = useInvalidateRelated();
+  const { user } = useAuth();
   const { t } = useLanguage();
 
   return useMutation({
     mutationFn: async (id: string) => {
+      const { data: existing } = await supabase.from('liabilities').select('name').eq('id', id).single();
       const { error } = await supabase.from('liabilities').delete().eq('id', id);
       if (error) throw error;
+
+      if (user) {
+        await supabase.from('audit_log' as any).insert({
+          user_id: user.id, action: 'delete', entity_type: 'liability', entity_id: id,
+          entity_name: existing?.name || null,
+        } as any);
+      }
     },
     onSuccess: () => {
       afterNetWorth();
