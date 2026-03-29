@@ -19,6 +19,7 @@ export function useFiscalEntities() {
       const { data, error } = await supabase
         .from('fiscal_entities')
         .select('*')
+        .eq('user_id', user!.id)
         .order('is_primary', { ascending: false })
         .order('created_at', { ascending: true });
       
@@ -38,6 +39,7 @@ export function usePrimaryFiscalEntity() {
       const { data, error } = await supabase
         .from('fiscal_entities')
         .select('*')
+        .eq('user_id', user!.id)
         .eq('is_primary', true)
         .maybeSingle();
       
@@ -110,12 +112,21 @@ export function useDeleteFiscalEntity() {
 
   return useMutation({
     mutationFn: async (id: string) => {
+      const { data: existing } = await supabase.from('fiscal_entities').select('name, entity_type').eq('id', id).single();
       const { error } = await supabase
         .from('fiscal_entities')
         .delete()
         .eq('id', id);
       
       if (error) throw error;
+
+      const { data: userData } = await supabase.auth.getUser();
+      if (userData.user) {
+        await supabase.from('audit_log' as any).insert({
+          user_id: userData.user.id, action: 'delete', entity_type: 'fiscal_entity', entity_id: id,
+          entity_name: existing?.name || null, old_values: existing ? { name: existing.name, entity_type: existing.entity_type } : null,
+        } as any);
+      }
     },
     onSuccess: () => {
       afterEntity();

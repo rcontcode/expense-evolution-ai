@@ -63,6 +63,7 @@ export function useRecurringBills() {
       const { data, error } = await supabase
         .from('recurring_bills')
         .select('*')
+        .eq('user_id', user!.id)
         .order('next_due_date', { ascending: true });
       if (error) throw error;
       return data as RecurringBill[];
@@ -77,7 +78,7 @@ export function useBillPayments(billId?: string) {
   return useQuery({
     queryKey: ['bill-payments', billId, user?.id],
     queryFn: async () => {
-      let query = supabase.from('bill_payments').select('*').order('paid_date', { ascending: false });
+      let query = supabase.from('bill_payments').select('*').eq('user_id', user!.id).order('paid_date', { ascending: false });
       if (billId) query = query.eq('bill_id', billId);
       const { data, error } = await query;
       if (error) throw error;
@@ -141,10 +142,20 @@ export function useDeleteBill() {
   const { language } = useLanguage();
   const { afterBill } = useInvalidateRelated();
 
+  const { user } = useAuth();
+
   return useMutation({
     mutationFn: async (id: string) => {
+      const { data: existing } = await supabase.from('recurring_bills').select('name, amount').eq('id', id).single();
       const { error } = await supabase.from('recurring_bills').delete().eq('id', id);
       if (error) throw error;
+
+      if (user) {
+        await supabase.from('audit_log' as any).insert({
+          user_id: user.id, action: 'delete', entity_type: 'recurring_bill', entity_id: id,
+          entity_name: existing?.name || null, old_values: existing ? { name: existing.name, amount: existing.amount } : null,
+        } as any);
+      }
     },
     onSuccess: () => {
       afterBill();

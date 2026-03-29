@@ -29,6 +29,7 @@ export function useSavingsGoals() {
       const { data, error } = await supabase
         .from('savings_goals')
         .select('*')
+        .eq('user_id', user!.id)
         .order('priority', { ascending: true });
 
       if (error) throw error;
@@ -119,14 +120,24 @@ export function useUpdateSavingsGoal() {
 export function useDeleteSavingsGoal() {
   const { afterSavings } = useInvalidateRelated();
 
+  const { user } = useAuth();
+
   return useMutation({
     mutationFn: async (id: string) => {
+      const { data: existing } = await supabase.from('savings_goals').select('name, target_amount').eq('id', id).single();
       const { error } = await supabase
         .from('savings_goals')
         .delete()
         .eq('id', id);
 
       if (error) throw error;
+
+      if (user) {
+        await supabase.from('audit_log' as any).insert({
+          user_id: user.id, action: 'delete', entity_type: 'savings_goal', entity_id: id,
+          entity_name: existing?.name || null, old_values: existing ? { name: existing.name, target_amount: existing.target_amount } : null,
+        } as any);
+      }
     },
     onSuccess: () => {
       afterSavings();
