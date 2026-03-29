@@ -8,6 +8,8 @@ import { useIncome } from '@/hooks/data/useIncome';
 import { useRecurringBills } from '@/hooks/data/useRecurringBills';
 import { Fuel, TrendingDown, TrendingUp, AlertTriangle, Shield, Zap } from 'lucide-react';
 import { subMonths, isAfter, differenceInDays } from 'date-fns';
+import { ProjectionDisclaimer, type DataSource } from '@/components/projections/ProjectionDisclaimer';
+import { useMemo } from 'react';
 
 interface RunwayMetrics {
   avgDailyExpense: number;
@@ -96,6 +98,12 @@ export function CashFlowRunwayCalculator() {
 
   const risk = riskConfig[metrics.riskLevel];
   const RiskIcon = risk.icon;
+
+  const disclaimerSources: DataSource[] = useMemo(() => [
+    { name: { es: 'Gastos (3 meses)', en: 'Expenses (3 months)' }, available: (expenses || []).filter(e => isAfter(new Date(e.date), subMonths(new Date(), 3))).length > 0, count: (expenses || []).filter(e => isAfter(new Date(e.date), subMonths(new Date(), 3))).length, tip: { es: 'Registra al menos 1 mes de gastos', en: 'Log at least 1 month of expenses' } },
+    { name: { es: 'Ingresos (3 meses)', en: 'Income (3 months)' }, available: (income || []).filter(i => isAfter(new Date(i.date), subMonths(new Date(), 3))).length > 0, count: (income || []).filter(i => isAfter(new Date(i.date), subMonths(new Date(), 3))).length, tip: { es: 'Registra tus fuentes de ingreso', en: 'Log your income sources' } },
+    { name: { es: 'Pagos fijos', en: 'Recurring bills' }, available: (bills || []).filter(b => b.status === 'active').length > 0, count: (bills || []).filter(b => b.status === 'active').length, tip: { es: 'Agrega tus pagos recurrentes', en: 'Add your recurring payments' } },
+  ], [expenses, income, bills]);
 
   const formatCurrency = (n: number) => `$${Math.abs(n).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 
@@ -199,6 +207,18 @@ export function CashFlowRunwayCalculator() {
             </div>
           )}
         </div>
+
+        <ProjectionDisclaimer
+          dataSources={disclaimerSources}
+          methodology={{
+            es: 'Calcula tu tasa de ahorro y flujo neto usando promedios de los últimos 3 meses de ingresos y gastos, más tus pagos fijos activos.',
+            en: 'Calculates your savings rate and net flow using 3-month averages of income and expenses, plus your active recurring bills.'
+          }}
+          assumptions={[
+            { es: 'Los promedios de 3 meses representan tu comportamiento típico', en: '3-month averages represent your typical behavior' },
+            { es: 'Los pagos fijos se mantienen constantes', en: 'Fixed payments remain constant' },
+          ]}
+        />
       </CardContent>
     </Card>
   );

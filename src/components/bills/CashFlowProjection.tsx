@@ -10,8 +10,9 @@ import { getMonthlyEquivalent, BILL_CATEGORY_CONFIG, type BillCategory } from '@
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend, ReferenceLine } from 'recharts';
 import { addMonths, format, startOfMonth } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { TrendingUp, Info, AlertTriangle } from 'lucide-react';
+import { TrendingUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { ProjectionDisclaimer } from '@/components/projections/ProjectionDisclaimer';
 
 interface CashFlowProjectionProps {
   selectedMonth?: Date;
@@ -183,26 +184,20 @@ export function CashFlowProjection({ selectedMonth }: CashFlowProjectionProps) {
             </ResponsiveContainer>
           </div>
 
-          {/* Data quality disclaimer */}
-          {activeBillCount < 3 ? (
-            <Alert className="mt-3 border-amber-500/30 bg-amber-500/10">
-              <AlertTriangle className="h-4 w-4 text-amber-500" />
-              <AlertDescription className="text-xs text-muted-foreground">
-                {l
-                  ? `Solo tienes ${activeBillCount} pago(s) fijo(s). Agrega más para una proyección más precisa.`
-                  : `You only have ${activeBillCount} recurring bill(s). Add more for a more accurate projection.`}
-              </AlertDescription>
-            </Alert>
-          ) : (
-            <div className="mt-3 flex items-start gap-2 text-[11px] text-muted-foreground">
-              <Info className="h-3.5 w-3.5 shrink-0 mt-0.5" />
-              <span>
-                {l
-                  ? 'Esta proyección se basa en tus pagos fijos activos. Su precisión depende de la completitud y actualización de tus datos.'
-                  : 'This projection is based on your active recurring bills. Its accuracy depends on the completeness and freshness of your data.'}
-              </span>
-            </div>
-          )}
+          <ProjectionDisclaimer
+            className="mt-3"
+            dataSources={[
+              { name: { es: 'Pagos fijos activos', en: 'Active recurring bills' }, available: activeBillCount > 0, count: activeBillCount, tip: { es: 'Agrega más pagos fijos para mayor precisión', en: 'Add more recurring bills for better accuracy' } },
+            ]}
+            methodology={{
+              es: 'Proyecta solo tus pagos fijos activos convertidos a equivalente mensual. No incluye gastos variables ni ingresos.',
+              en: 'Projects only your active recurring bills converted to monthly equivalent. Does not include variable expenses or income.'
+            }}
+            assumptions={[
+              { es: 'Solo incluye pagos fijos — los gastos variables no están contemplados', en: 'Only includes fixed payments — variable expenses are not included' },
+              { es: 'Los montos se mantienen constantes (sin inflación)', en: 'Amounts remain constant (no inflation)' },
+            ]}
+          />
         </CardContent>
       </Card>
 
