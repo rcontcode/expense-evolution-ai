@@ -103,7 +103,7 @@ const getFeatures = (language: string) => [
   { 
     icon: GraduationCap, 
     title: language === 'es' ? 'Mentoría Elite' : 'Elite Mentorship', 
-    description: language === 'es' ? '📚 Kiyosaki, Tracy, Clear' : '📚 Kiyosaki, Tracy, Clear', 
+    description: language === 'es' ? '📚 Desafíos semanales, tracker de lectura, hábitos' : '📚 Weekly challenges, reading tracker, habits', 
     tier: 'Pro', 
     color: 'from-cyan-500 to-blue-500',
     row: 2
@@ -118,8 +118,8 @@ const getFeatures = (language: string) => [
   },
   { 
     icon: BookOpen, 
-    title: language === 'es' ? 'Biblioteca Financiera' : 'Financial Library', 
-    description: language === 'es' ? '📖 Libros, podcasts, cursos' : '📖 Books, podcasts, courses', 
+    title: language === 'es' ? 'Biblioteca + Tracker' : 'Library + Tracker', 
+    description: language === 'es' ? '📖 100+ recursos + acompañante de lectura' : '📖 100+ resources + reading companion', 
     tier: 'Premium', 
     color: 'from-green-500 to-emerald-500',
     row: 2

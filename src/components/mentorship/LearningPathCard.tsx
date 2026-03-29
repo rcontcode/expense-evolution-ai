@@ -117,6 +117,21 @@ export function LearningPathCard() {
       });
     }
 
+    // Reading tracker suggestion (always show if no resources in progress)
+    const inProgressResources = eduStats?.inProgress || 0;
+    if (inProgressResources === 0) {
+      items.push({
+        priority: 2,
+        titleEs: '📖 Activa el Acompañante de Lectura',
+        titleEn: '📖 Activate the Reading Companion',
+        descEs: 'Trackea tu ritmo de lectura y compara con el promedio global',
+        descEn: 'Track your reading pace and compare with global average',
+        tab: 'rohn',
+        icon: '📊',
+        color: 'border-indigo-500/30 bg-indigo-500/5',
+      });
+    }
+
     // === ADVANCED suggestions (when beginner ones are done) ===
     if (items.length < 2) {
       // Streak goal
