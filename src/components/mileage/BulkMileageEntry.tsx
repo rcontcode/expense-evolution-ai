@@ -9,6 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useInvalidateRelated } from '@/hooks/data/useInvalidateRelated';
 import { useMissionTracker } from '@/hooks/data/useMissions';
 import { useEntity } from '@/contexts/EntityContext';
+import { Plus, Trash2, Save, Loader2, Calendar } from 'lucide-react';
 import { format, subDays } from 'date-fns';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';

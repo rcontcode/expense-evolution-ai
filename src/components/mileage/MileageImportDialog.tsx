@@ -12,6 +12,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useInvalidateRelated } from '@/hooks/data/useInvalidateRelated';
 import { useMissionTracker } from '@/hooks/data/useMissions';
 import { useEntity } from '@/contexts/EntityContext';
+import { Upload, FileSpreadsheet, MapPin, Zap, Download, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
 import { format, parse, isValid } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 import { BulkMileageEntry } from './BulkMileageEntry';
