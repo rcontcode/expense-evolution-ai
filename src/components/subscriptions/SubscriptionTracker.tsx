@@ -35,6 +35,7 @@ import {
 import { motion } from 'framer-motion';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useExpenses } from '@/hooks/data/useExpenses';
+import { useEntity } from '@/contexts/EntityContext';
 import { useBankTransactions } from '@/hooks/data/useBankTransactions';
 import { useRecurringBills } from '@/hooks/data/useRecurringBills';
 import { useSubscriptionDetector, DetectedSubscription } from '@/hooks/data/useSubscriptionDetector';
@@ -270,6 +271,7 @@ export function SubscriptionTracker() {
   const { data: bankTransactions, isLoading: bankLoading } = useBankTransactions();
   const { data: recurringBills } = useRecurringBills();
   const { afterBill } = useInvalidateRelated();
+  const { currentEntity } = useEntity();
   const [convertedVendors, setConvertedVendors] = useState<Set<string>>(new Set());
   const isEs = language === 'es';
 
