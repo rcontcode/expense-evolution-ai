@@ -111,15 +111,38 @@ export function BillsManager({ selectedMonth }: BillsManagerProps) {
         <div className="text-muted-foreground text-center py-8">{l ? 'Cargando...' : 'Loading...'}</div>
       ) : Object.keys(grouped).length === 0 ? (
         <Card className="border-dashed">
-          <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+          <CardContent className="flex flex-col items-center justify-center py-10 text-center">
             <p className="text-4xl mb-3">📋</p>
             <p className="font-medium">{l ? 'No hay pagos recurrentes' : 'No recurring bills'}</p>
-            <p className="text-sm text-muted-foreground mt-1">
-              {l ? 'Agrega tus cuentas y pagos mensuales para organizarlos' : 'Add your bills and monthly payments to organize them'}
+            <p className="text-sm text-muted-foreground mt-1 max-w-md">
+              {l ? 'Agrega tus cuentas y pagos mensuales para organizarlos y nunca olvidar un vencimiento.' : 'Add your bills and monthly payments to organize them and never miss a due date.'}
             </p>
             <Button onClick={openNew} size="sm" className="mt-4">
-              <Plus className="h-4 w-4 mr-1" /> {l ? 'Agregar primero' : 'Add first'}
+              <Plus className="h-4 w-4 mr-1" /> {l ? 'Agregar pago fijo' : 'Add fixed payment'}
             </Button>
+            <div className="mt-5 p-3 rounded-lg bg-muted/50 border border-border/50 text-left max-w-sm">
+              <p className="text-xs font-semibold mb-2 text-muted-foreground">
+                💡 {l ? 'Otras formas de registrar:' : 'Other ways to add:'}
+              </p>
+              <ul className="text-[11px] text-muted-foreground space-y-1.5">
+                <li className="flex items-start gap-1.5">
+                  <span>📸</span>
+                  <span>{l ? 'Captura inteligente: toma foto de un recibo o factura recurrente' : 'Smart capture: take a photo of a recurring receipt or bill'}</span>
+                </li>
+                <li className="flex items-start gap-1.5">
+                  <span>🏦</span>
+                  <a href="/banking" className="underline underline-offset-2 hover:text-foreground transition-colors">
+                    {l ? 'Importar extracto bancario → detecta pagos automáticamente' : 'Import bank statement → detects payments automatically'}
+                  </a>
+                </li>
+                <li className="flex items-start gap-1.5">
+                  <span>💳</span>
+                  <a href="/expenses" className="underline underline-offset-2 hover:text-foreground transition-colors">
+                    {l ? 'Registrar gastos → se detectan patrones recurrentes' : 'Record expenses → recurring patterns are detected'}
+                  </a>
+                </li>
+              </ul>
+            </div>
           </CardContent>
         </Card>
       ) : (

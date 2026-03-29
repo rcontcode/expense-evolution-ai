@@ -479,11 +479,30 @@ export function BankAnalysisDashboard({ onImportClick }: BankAnalysisDashboardPr
             </CardHeader>
             <CardContent>
               {insights.recurringPayments.length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">
-                  {language === 'es' 
-                    ? 'No se detectaron pagos recurrentes. Importa más transacciones para detectar patrones.'
-                    : 'No recurring payments detected. Import more transactions to detect patterns.'}
-                </p>
+                <div className="text-center py-8 space-y-3">
+                  <p className="text-muted-foreground text-sm">
+                    {language === 'es' 
+                      ? 'No se detectaron pagos recurrentes. Importa más transacciones para detectar patrones.'
+                      : 'No recurring payments detected. Import more transactions to detect patterns.'}
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-1.5 shadow-sm hover:shadow-md transition-all"
+                    onClick={onImportClick}
+                  >
+                    <Upload className="h-3.5 w-3.5" />
+                    {language === 'es' ? 'Importar Estado de Cuenta' : 'Import Bank Statement'}
+                  </Button>
+                  <p className="text-[11px] text-muted-foreground max-w-xs mx-auto">
+                    {language === 'es'
+                      ? '💡 También puedes registrar pagos fijos manualmente en'
+                      : '💡 You can also manually register fixed payments in'}{' '}
+                    <a href="/bills" className="underline underline-offset-2 hover:text-foreground transition-colors font-medium">
+                      {language === 'es' ? 'Pagos Fijos' : 'Fixed Payments'}
+                    </a>
+                  </p>
+                </div>
               ) : (
                 <div className="space-y-3">
                   {insights.recurringPayments.map((payment, index) => (
