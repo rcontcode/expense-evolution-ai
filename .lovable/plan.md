@@ -1,103 +1,57 @@
 
 
-# Mejora Legal: Consistencia en Referencias a Autores
+# Mejorar Mensajes del Quiz para País "Otro"
 
-## Diagnóstico
+## Problema
 
-Revisé 46 archivos con menciones. La app ya tiene buena base legal (página `/legal` con Fair Use, `LegalDisclaimer`, tooltips "No afiliado"). Pero hay **inconsistencias de riesgo**:
-
-### Nivel de Riesgo por Zona
-
-| Zona | Riesgo | Problema |
-|------|--------|----------|
-| **Hooks de datos** (useCashflowQuadrant, useDebtClassification) | Alto | Usan `Kiyosaki: "cita"` en recomendaciones como si fuera asesoría directa del autor |
-| **AssetDialog** | Alto | `Robert Kiyosaki dice:` como si la app tuviera su endoso |
-| **UpgradePrompt** (ventas) | Alto | Usa nombres en copy de venta: "Principios Kiyosaki", "Metas Tracy" — implica afiliación comercial |
-| **FAQSection / info-tooltip** | Medio | Nombres en descripciones de features como selling point |
-| **MentorshipLevelBanner** | Bajo | Contexto educativo con atribución — OK bajo Fair Use |
-| **mentor-quotes.ts** | Bajo | Catálogo educativo con atribución — OK |
-| **Badges "📖 Kiyosaki*"** | Bajo | Ya tienen tooltip "No afiliado" — OK |
-
-### Principio Legal
-
-- **Sección de Mentoría** (contexto educativo explícito): nombres con atribución y disclaimer = OK
-- **Fuera de Mentoría** (hooks, ventas, tooltips, landing): nombres deben ser genéricos o reformulados
+Cuando alguien selecciona "🌍 Otro" en el quiz, los mensajes `default` son genéricos y no aclaran que:
+- EvoFinz funciona para **todo** (gastos, presupuesto, patrimonio, deudas, metas, mentoría, IA)
+- Solo la parte de **impuestos/taxes** es exclusiva de Chile y Canadá por ahora
+- Pronto se incorporarán más países
 
 ## Cambios
 
-### 1. `src/hooks/data/useCashflowQuadrant.ts` — Eliminar nombre de recomendación
+### 1. `src/components/quiz/QuizResults.tsx` — Mejorar todos los mensajes `default`
 
+**12 mensajes** a actualizar (6 ES + 6 EN) en `getPersonalizedMessage`:
+
+**High score (≥80) — 4 defaults (freelancer, employee, business, general):**
 ```
-// ANTES:
-'Kiyosaki: "Los ricos no trabajan por dinero..."'
+// ANTES (ES freelancer default):
+"EvoFinz no es para arreglarte – es para potenciarte. Automatiza tareas repetitivas..."
+
 // DESPUÉS:
-'"Los ricos no trabajan por dinero, hacen que el dinero trabaje para ellos"'
+"¡Felicitaciones por tu disciplina! EvoFinz funciona en cualquier país: 
+control de gastos con IA, presupuestos, patrimonio neto, metas FIRE y mentoría 
+financiera. La optimización fiscal está disponible para Chile y Canadá, 
+y pronto se sumarán más países."
 ```
 
-Quitar el prefijo "Kiyosaki:" — la cita se mantiene como sabiduría financiera general sin atribuir como si fuera consejo del autor.
-
-### 2. `src/hooks/data/useDebtClassification.ts` — Igual
-
+**Regular score (<80) — 4 defaults + 2 generales:**
 ```
-// ANTES:
-'Kiyosaki: "La deuda mala te hace más pobre..."'
+// ANTES (ES freelancer default):
+"Como freelancer, tu control de gastos es clave. EvoFinz automatiza este proceso."
+
 // DESPUÉS:
-'"La deuda mala te hace más pobre, la buena te hace más rico"'
+"Como freelancer, EvoFinz es tu copiloto financiero sin importar el país: 
+captura gastos con foto o voz, controla presupuestos, rastrea deudas y patrimonio. 
+El módulo de impuestos está optimizado para Chile y Canadá por ahora — 
+pronto llegarán más jurisdicciones."
 ```
 
-### 3. `src/components/net-worth/AssetDialog.tsx` — Reformular tip
+Patrón para todos: **"EvoFinz funciona globalmente para [lista features]. La parte fiscal es actualmente para Chile y Canadá, pronto más países."**
+
+### 2. `src/components/quiz/QuizModal.tsx` — Agregar nota bajo opción "Otro"
+
+Cuando el usuario selecciona "🌍 Otro", mostrar un pequeño texto informativo debajo de las opciones:
 
 ```
-// ANTES:
-'Robert Kiyosaki dice: "Un activo pone dinero en tu bolsillo..."'
-// DESPUÉS:
-'Principio clave: "Un activo pone dinero en tu bolsillo, un pasivo saca dinero." Tu auto personal saca dinero cada mes.'
+// ES: "✨ EvoFinz funciona en cualquier país. Solo las herramientas fiscales son exclusivas de Chile y Canadá por ahora."
+// EN: "✨ EvoFinz works in any country. Only tax tools are currently exclusive to Chile and Canada."
 ```
 
-### 4. `src/components/UpgradePrompt.tsx` — Despersonalizar copy de venta
+## Archivos a modificar (2)
 
-```
-// ANTES: 'Principios Kiyosaki', 'Metas Tracy'
-// DESPUÉS: 'Principios de libertad financiera', 'Metodología de metas SMART'
-
-// ANTES: 'Los principios de Kiyosaki, Tracy y los grandes han transformado...'
-// DESPUÉS: 'Los principios de finanzas personales han transformado millones de vidas...'
-```
-
-### 5. `src/components/landing/FAQSection.tsx` — Despersonalizar descripciones
-
-```
-// ANTES: 'principios de Kiyosaki, hábitos de James Clear, metas de Brian Tracy'
-// DESPUÉS: 'principios de libertad financiera, hábitos inteligentes, metas SMART'
-```
-
-### 6. `src/components/ui/info-tooltip.tsx` — Despersonalizar
-
-```
-// ANTES: 'Aprende de los mejores: Kiyosaki, Brian Tracy, Jim Rohn'
-// DESPUÉS: 'Aprende de los mejores: hábitos, estrategias y bienestar financiero'
-```
-
-### 7. `src/components/gamification/StreakCounter.tsx` — Quitar nombres de autores
-
-Las citas motivacionales en el streak counter no están en contexto educativo. Cambiar atribuciones a genérico o quitar el campo author de las que no son universalmente conocidas.
-
-## Lo que NO se toca (ya está bien)
-
-- `MentorshipLevelBanner` — contexto educativo explícito, tiene disclaimer
-- `mentor-quotes.ts` — catálogo educativo interno
-- `CashflowQuadrantCard` / `DebtClassificationCard` / `FinancialFreedomCard` — badges con tooltip "No afiliado" + `LegalDisclaimer`
-- `FinancialEducationResources` — referencias bibliográficas legítimas
-- Página `/legal` — Fair Use bien explicado
-- `WeeklyChallengesCard` — dentro de mentoría
-
-## Archivos a modificar (7)
-
-1. `src/hooks/data/useCashflowQuadrant.ts` — Quitar prefijo "Kiyosaki:"
-2. `src/hooks/data/useDebtClassification.ts` — Quitar prefijo "Kiyosaki:"
-3. `src/components/net-worth/AssetDialog.tsx` — Reformular tip
-4. `src/components/UpgradePrompt.tsx` — Despersonalizar copy de venta
-5. `src/components/landing/FAQSection.tsx` — Despersonalizar descripciones
-6. `src/components/ui/info-tooltip.tsx` — Despersonalizar tooltip
-7. `src/components/gamification/StreakCounter.tsx` — Quitar nombres de autores
+1. **`src/components/quiz/QuizResults.tsx`** — Reescribir 12 mensajes `default` con propuesta de valor global + aclaración fiscal
+2. **`src/components/quiz/QuizModal.tsx`** — Agregar nota informativa al seleccionar "Otro/Other"
 
