@@ -160,8 +160,8 @@ export function useAddToSavingsGoal() {
       if (!authUser) throw new Error('Not authenticated');
 
       const { error } = await supabase
-        .from('savings_contributions' as any)
-        .insert({ goal_id: id, amount, notes, user_id: authUser.id } as any);
+        .from('savings_contributions')
+        .insert({ goal_id: id, amount, notes, user_id: authUser.id });
 
       if (error) throw error;
     },
@@ -183,7 +183,7 @@ export function useSavingsContributions(goalId?: string) {
     queryKey: ['savings-contributions', goalId],
     queryFn: async () => {
       let q = supabase
-        .from('savings_contributions' as any)
+        .from('savings_contributions')
         .select('*')
         .eq('user_id', user!.id)
         .order('contribution_date', { ascending: false });
