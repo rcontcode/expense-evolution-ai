@@ -292,7 +292,7 @@ async function getTagManagementProgress(userId: string): Promise<WorkflowProgres
     { data: expenses }
   ] = await Promise.all([
     supabase.from('tags').select('id').eq('user_id', userId),
-    supabase.from('expense_tags').select('id, tag_id, expense_id').eq('user_id', userId),
+    supabase.from('expense_tags').select('id, tag_id, expense_id'),
     supabase.from('expenses').select('id').eq('user_id', userId).is('deleted_at', null),
   ]);
 
