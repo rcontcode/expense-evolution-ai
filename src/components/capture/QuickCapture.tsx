@@ -431,7 +431,24 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
                   />
                 ) : (
                   <div className={cn("border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors border-muted-foreground/25 hover:border-primary/50")} onClick={() => fileInputRef.current?.click()}>
-                    <div className="space-y-2"><ImageIcon className="h-10 w-10 mx-auto text-muted-foreground" /><p className="text-sm text-muted-foreground">{t('quickCapture.dropOrClick')}</p></div>
+                    <div className="space-y-2">
+                      <ImageIcon className="h-10 w-10 mx-auto text-muted-foreground" />
+                      <p className="text-sm text-muted-foreground">{t('quickCapture.dropOrClick')}</p>
+                      <div className="flex flex-wrap justify-center gap-1.5 pt-1">
+                        <Badge variant="outline" className="text-[10px] px-2 py-0.5">
+                          {language === 'es' ? '🧾 Recibos' : '🧾 Receipts'}
+                        </Badge>
+                        <Badge variant="outline" className="text-[10px] px-2 py-0.5">
+                          {language === 'es' ? '📄 Facturas' : '📄 Invoices'}
+                        </Badge>
+                        <Badge variant="outline" className="text-[10px] px-2 py-0.5">
+                          {language === 'es' ? '💳 E-transfers' : '💳 E-transfers'}
+                        </Badge>
+                        <Badge variant="outline" className="text-[10px] px-2 py-0.5">
+                          {language === 'es' ? '📋 Boletas' : '📋 Bills'}
+                        </Badge>
+                      </div>
+                    </div>
                   </div>
                 )}
                 <input ref={fileInputRef} type="file" accept="image/*" capture={isMobile ? "environment" : undefined} onChange={handleFileSelect} className="hidden" />
