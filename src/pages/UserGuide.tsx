@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Layout } from '@/components/Layout';
 import { motion } from 'framer-motion';
 import { Search, ChevronRight, BookOpen, CheckCircle2, Lightbulb, HelpCircle, ArrowRight, Sparkles, ArrowUp } from 'lucide-react';
+import { DataFlowMap } from '@/components/diagrams/DataFlowMap';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -357,27 +358,13 @@ export default function UserGuide() {
             </div>
           )}
 
-          {/* ── BLOQUE 3: Connections Diagram ── */}
+          {/* ── BLOQUE 3: Mapa Visual de Flujos ── */}
           {!search.trim() && (
             <div ref={el => { sectionRefs.current['connections'] = el; }}>
               <motion.div variants={fadeIn} initial="hidden" whileInView="visible" viewport={{ once: true }}>
-                <h2 className="text-xl font-bold flex items-center gap-2 mb-4">
-                  🔗 {t(connectionsDiagram.title)}
-                </h2>
-                <div className="space-y-3">
-                  {connectionsDiagram.flows.map((flow, i) => (
-                    <Card key={i} className="p-4">
-                      <div className="flex items-center gap-2 text-sm font-medium mb-1">
-                        <span>{flow.from}</span>
-                        <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                        <span>{flow.to}</span>
-                        <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                        <span>{flow.to2}</span>
-                      </div>
-                      <p className="text-xs text-muted-foreground">{t(flow)}</p>
-                    </Card>
-                  ))}
-                </div>
+                <Card className="p-6">
+                  <DataFlowMap />
+                </Card>
               </motion.div>
             </div>
           )}
