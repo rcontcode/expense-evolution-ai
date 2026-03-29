@@ -89,9 +89,18 @@ export function LearningPathCard() {
 
     const inProgressResources = eduStats?.inProgress || 0;
     if (inProgressResources === 0) {
+      const BOOK_SUGGESTIONS = [
+        { es: '📖 Lee "El Hombre Más Rico de Babilonia"', en: '📖 Read "The Richest Man in Babylon"' },
+        { es: '📖 Lee "Hábitos Atómicos"', en: '📖 Read "Atomic Habits"' },
+        { es: '📖 Lee "Los Secretos de la Mente Millonaria"', en: '📖 Read "Secrets of the Millionaire Mind"' },
+        { es: '📖 Lee "The Psychology of Money"', en: '📖 Read "The Psychology of Money"' },
+        { es: '📖 Lee "The Compound Effect"', en: '📖 Read "The Compound Effect"' },
+      ];
+      const weekIndex = Math.floor(Date.now() / (1000 * 60 * 60 * 24 * 7));
+      const book = BOOK_SUGGESTIONS[weekIndex % BOOK_SUGGESTIONS.length];
       items.push({
-        priority: 2, titleEs: '📖 Activa el Acompañante de Lectura', titleEn: '📖 Activate the Reading Companion',
-        descEs: 'Trackea tu ritmo de lectura y compara con el promedio global', descEn: 'Track your reading pace and compare with global average',
+        priority: 2, titleEs: book.es, titleEn: book.en,
+        descEs: 'Activa el Acompañante de Lectura y trackea tu progreso', descEn: 'Activate the Reading Companion and track your progress',
         tab: 'rohn', scrollTarget: 'mentorship-education', icon: '📊', color: 'border-indigo-500/30 bg-indigo-500/5',
       });
     }

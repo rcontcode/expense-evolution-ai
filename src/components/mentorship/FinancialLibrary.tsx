@@ -105,6 +105,21 @@ const BOOKS: Resource[] = [
   { title: "Un Paso por Delante de Wall Street", author: "Peter Lynch", description: "Cómo invertir en la bolsa usando el sentido común.", link: "https://www.amazon.com/dp/8423427668", platform: "Amazon", language: 'es', category: 'investing' },
   { title: "El Inversor Dhandho", author: "Mohnish Pabrai", description: "Estrategias de inversión en valor de bajo riesgo y alto retorno, respaldado por Warren Buffett.", link: "https://www.amazon.com/dp/8423427072", platform: "Amazon", language: 'es', category: 'investing' },
   
+  // ========== ADDITIONAL CLASSICS (ES) ==========
+  { title: "Los Secretos de la Mente Millonaria", author: "T. Harv Eker", description: "Cómo dominar el juego interior de la riqueza cambiando tu modelo mental del dinero.", link: "https://www.amazon.com/dp/8478086080", platform: "Amazon", language: 'es', category: 'mindset' },
+  { title: "El Código del Dinero", author: "Raimon Samsó", description: "Conquista tu libertad financiera desarrollando múltiples fuentes de ingresos.", link: "https://www.amazon.com/dp/8497775767", platform: "Amazon", language: 'es', category: 'wealth' },
+  { title: "Dinero y Conciencia", author: "Joan Antoni Melé", description: "A quién beneficia tu dinero: reflexiones sobre banca ética y economía consciente.", link: "https://www.amazon.com/dp/8496981673", platform: "Amazon", language: 'es', category: 'mindset' },
+  { title: "Ten Pesatisfecho, Vive Con Holgura", author: "Jeff Yeager", description: "La guía del tacaño definitivo para vivir mejor gastando menos.", link: "https://www.amazon.com/dp/0767928687", platform: "Amazon", language: 'es', category: 'basics' },
+  { title: "El Monje que Vendió su Ferrari", author: "Robin Sharma", description: "Fábula sobre cómo alcanzar tus sueños y vivir con propósito.", link: "https://www.amazon.com/dp/8425343399", platform: "Amazon", language: 'es', category: 'mindset' },
+  
+  // ========== ADDITIONAL CLASSICS (EN) ==========
+  { title: "The Compound Effect", author: "Darren Hardy", description: "Jumpstart your income, your life, your success through small consistent actions.", link: "https://www.amazon.com/dp/159315724X", platform: "Amazon", language: 'en', category: 'habits' },
+  { title: "Profit First", author: "Mike Michalowicz", description: "Transform your business from a cash-eating monster to a money-making machine.", link: "https://www.amazon.com/dp/073521414X", platform: "Amazon", language: 'en', category: 'business' },
+  { title: "Secrets of the Millionaire Mind", author: "T. Harv Eker", description: "Mastering the inner game of wealth by resetting your money blueprint.", link: "https://www.amazon.com/dp/0060763280", platform: "Amazon", language: 'en', category: 'mindset' },
+  { title: "Unshakeable", author: "Tony Robbins", description: "Your financial freedom playbook — how to profit in times of crisis.", link: "https://www.amazon.com/dp/1501164589", platform: "Amazon", language: 'en', category: 'investing' },
+  { title: "The Monk Who Sold His Ferrari", author: "Robin Sharma", description: "A fable about fulfilling your dreams and reaching your destiny.", link: "https://www.amazon.com/dp/0062515675", platform: "Amazon", language: 'en', category: 'mindset' },
+  
+  
   // English Books
   { title: "The Psychology of Money", author: "Morgan Housel", description: "Timeless lessons on wealth, greed, and happiness.", link: "https://www.amazon.com/dp/0857197681", platform: "Amazon", language: 'en', category: 'mindset' },
   { title: "The Intelligent Investor", author: "Benjamin Graham", description: "The definitive book on value investing, recommended by Warren Buffett.", link: "https://www.amazon.com/dp/0060555661", platform: "Amazon", language: 'en', category: 'investing' },
@@ -510,6 +525,13 @@ export function FinancialLibrary() {
             <TabsContent value="youtube"><ResourceSection resources={YOUTUBE_CHANNELS} /></TabsContent>
           </ScrollArea>
         </Tabs>
+
+        {/* Educational disclaimer */}
+        <p className="text-[10px] text-muted-foreground/60 text-center mt-4 px-2">
+          {appLanguage === 'es' 
+            ? 'Los nombres de autores y obras se mencionan con fines educativos y de referencia. Esta aplicación no está afiliada, respaldada ni asociada con los autores citados.'
+            : 'Author names and works are mentioned for educational and reference purposes. This application is not affiliated with, endorsed by, or associated with the cited authors.'}
+        </p>
       </CardContent>
     </Card>
   );
