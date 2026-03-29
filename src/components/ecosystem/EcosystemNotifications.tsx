@@ -27,7 +27,8 @@ export const EcosystemNotifications = memo(() => {
 
   const markReadMutation = useMutation({
     mutationFn: async (id: string) => {
-      await supabase.from('ecosystem_notifications').update({ is_read: true }).eq('id', id);
+      if (!user) return;
+      await supabase.from('ecosystem_notifications').update({ is_read: true }).eq('id', id).eq('user_id', user.id);
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['ecosystem-dashboard'] }),
   });

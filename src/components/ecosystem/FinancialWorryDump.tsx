@@ -80,7 +80,8 @@ export function FinancialWorryDump() {
   };
 
   const release = async (id: string) => {
-    await supabase.from('financial_worry_entries').update({ released: true }).eq('id', id);
+    if (!user?.id) return;
+    await supabase.from('financial_worry_entries').update({ released: true }).eq('id', id).eq('user_id', user.id);
     queryClient.invalidateQueries({ queryKey: ['worry-entries'] });
   };
 
@@ -93,7 +94,7 @@ export function FinancialWorryDump() {
         entry_type: 'reflection',
         mood: 'anxious',
       });
-      await supabase.from('financial_worry_entries').update({ converted_to_journal: true }).eq('id', entry.id);
+      await supabase.from('financial_worry_entries').update({ converted_to_journal: true }).eq('id', entry.id).eq('user_id', user.id);
       queryClient.invalidateQueries({ queryKey: ['worry-entries'] });
       toast.success(language === 'es' ? '📓 Convertido en reflexión' : '📓 Converted to reflection');
     } catch {
