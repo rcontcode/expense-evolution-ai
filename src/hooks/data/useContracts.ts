@@ -14,11 +14,32 @@ export const useContracts = () => {
       const { data, error } = await supabase
         .from('contracts').select(`*, client:clients(id, name)`)
         .eq('user_id', user!.id).is('deleted_at', null)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .order('page_order', { ascending: true });
       if (error) throw error;
       return data as ContractWithClient[];
     },
     enabled: !!user,
+  });
+};
+
+export const useContractGroup = (groupId: string | null) => {
+  const { user } = useAuth();
+
+  return useQuery({
+    queryKey: ['contract-group', groupId],
+    queryFn: async () => {
+      if (!groupId) return [];
+      const { data, error } = await supabase
+        .from('contracts').select(`*, client:clients(id, name)`)
+        .eq('user_id', user!.id)
+        .eq('group_id', groupId)
+        .is('deleted_at', null)
+        .order('page_order', { ascending: true });
+      if (error) throw error;
+      return data as ContractWithClient[];
+    },
+    enabled: !!user && !!groupId,
   });
 };
 
@@ -40,20 +61,35 @@ export const useCreateContract = () => {
         uploadedFiles.push({ fileName: file.name, filePath, fileType: file.type });
       }
 
+      // Generate shared group_id when uploading multiple files
+      const groupId = uploadedFiles.length > 1 ? crypto.randomUUID() : null;
+
       const contracts = [];
-      for (const uploadedFile of uploadedFiles) {
+      for (let i = 0; i < uploadedFiles.length; i++) {
+        const uploadedFile = uploadedFiles[i];
+        const isFirst = i === 0;
+
         const { data: contract, error: insertError } = await supabase
           .from('contracts')
           .insert({
-            user_id: user.id, client_id: data.client_id,
-            file_name: uploadedFile.fileName, file_path: uploadedFile.filePath,
-            file_type: uploadedFile.fileType, billing_profile: data.billing_profile || {},
-            status: 'uploaded', title: data.title || null,
-            contract_type: data.contract_type || 'services',
-            start_date: data.start_date ? data.start_date.toISOString().split('T')[0] : null,
-            end_date: data.end_date ? data.end_date.toISOString().split('T')[0] : null,
-            auto_renew: data.auto_renew || false, renewal_notice_days: data.renewal_notice_days || 30,
-            value: data.value || null, description: data.description || null,
+            user_id: user.id, 
+            client_id: data.client_id,
+            file_name: uploadedFile.fileName, 
+            file_path: uploadedFile.filePath,
+            file_type: uploadedFile.fileType, 
+            billing_profile: data.billing_profile || {},
+            status: 'uploaded', 
+            // Only the first page carries full metadata
+            title: isFirst ? (data.title || null) : null,
+            contract_type: isFirst ? (data.contract_type || 'services') : 'services',
+            start_date: isFirst && data.start_date ? data.start_date.toISOString().split('T')[0] : null,
+            end_date: isFirst && data.end_date ? data.end_date.toISOString().split('T')[0] : null,
+            auto_renew: isFirst ? (data.auto_renew || false) : false, 
+            renewal_notice_days: isFirst ? (data.renewal_notice_days || 30) : 30,
+            value: isFirst ? (data.value || null) : null, 
+            description: isFirst ? (data.description || null) : null,
+            group_id: groupId,
+            page_order: i,
           })
           .select().single();
         if (insertError) throw insertError;
@@ -103,12 +139,36 @@ export const useDeleteContract = () => {
   return useMutation({
     mutationFn: async (id: string) => {
       if (!user) throw new Error('Not authenticated');
-      const { data: contract } = await supabase.from('contracts').select('file_path').eq('id', id).eq('user_id', user.id).single();
-      if (contract?.file_path) {
-        await supabase.storage.from('contracts').remove([contract.file_path]);
+      const { data: contract } = await supabase.from('contracts').select('file_path, group_id').eq('id', id).eq('user_id', user.id).single();
+      
+      if (contract?.group_id) {
+        // Delete all pages in the group
+        const { data: groupContracts } = await supabase
+          .from('contracts')
+          .select('id, file_path')
+          .eq('group_id', contract.group_id)
+          .eq('user_id', user.id);
+        
+        if (groupContracts) {
+          const filePaths = groupContracts.map(c => c.file_path).filter(Boolean);
+          if (filePaths.length > 0) {
+            await supabase.storage.from('contracts').remove(filePaths);
+          }
+          const ids = groupContracts.map(c => c.id);
+          const { error } = await supabase
+            .from('contracts')
+            .update({ deleted_at: new Date().toISOString() })
+            .in('id', ids)
+            .eq('user_id', user.id);
+          if (error) throw error;
+        }
+      } else {
+        if (contract?.file_path) {
+          await supabase.storage.from('contracts').remove([contract.file_path]);
+        }
+        const { error } = await supabase.from('contracts').update({ deleted_at: new Date().toISOString() }).eq('id', id).eq('user_id', user.id);
+        if (error) throw error;
       }
-      const { error } = await supabase.from('contracts').update({ deleted_at: new Date().toISOString() }).eq('id', id).eq('user_id', user.id);
-      if (error) throw error;
     },
     onSuccess: () => {
       afterContract();
