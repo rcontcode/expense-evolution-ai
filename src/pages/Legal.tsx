@@ -204,6 +204,26 @@ export default function Legal() {
               </a>
             </Badge>
           </div>
+          <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-500/20 mb-4">
+            <p className="text-sm font-medium mb-2">🇨🇱 Regulación Chile:</p>
+            <p className="text-sm">
+              Conforme a la <strong>Ley 18.045</strong>, esta herramienta NO constituye asesoría de inversiones 
+              regulada por la <strong>CMF (Comisión para el Mercado Financiero)</strong>. EvoFinz no es una entidad 
+              registrada ante la CMF ni opera como intermediario de valores.
+            </p>
+          </div>
+          <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 mb-4">
+            <p className="text-sm font-medium mb-2">🇨🇦 Regulación Canadá:</p>
+            <p className="text-sm">
+              Esta herramienta no proporciona asesoría de valores (securities advice) según lo definido por la 
+              legislación provincial de valores (OSC, BCSC, AMF, etc.). Para recomendaciones de inversión, 
+              consulte a un asesor financiero con licencia provincial.
+            </p>
+          </div>
+          <p className="text-sm text-muted-foreground mb-4">
+            ⚠️ Las tasas y reglas fiscales se actualizan periódicamente pero pueden no reflejar cambios legislativos recientes. 
+            Verifique siempre con las fuentes oficiales (CRA, SII).
+          </p>
           <p className="text-sm text-muted-foreground">
             Para declaraciones de impuestos precisas, siempre consulte con un Contador Público Certificado (CPA) 
             o preparador de impuestos autorizado.
@@ -238,6 +258,26 @@ export default function Legal() {
               </a>
             </Badge>
           </div>
+          <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-500/20 mb-4">
+            <p className="text-sm font-medium mb-2">🇨🇱 Chile Regulation:</p>
+            <p className="text-sm">
+              Pursuant to <strong>Law 18.045</strong>, this tool does NOT constitute investment advice 
+              regulated by the <strong>CMF (Comisión para el Mercado Financiero)</strong>. EvoFinz is not 
+              an entity registered with the CMF nor does it operate as a securities intermediary.
+            </p>
+          </div>
+          <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 mb-4">
+            <p className="text-sm font-medium mb-2">🇨🇦 Canada Regulation:</p>
+            <p className="text-sm">
+              This tool does not provide securities advice as defined by provincial securities legislation 
+              (OSC, BCSC, AMF, etc.). For investment recommendations, consult a provincially licensed 
+              financial advisor.
+            </p>
+          </div>
+          <p className="text-sm text-muted-foreground mb-4">
+            ⚠️ Tax rates and rules are updated periodically but may not reflect recent legislative changes. 
+            Always verify with official sources (CRA, SII).
+          </p>
           <p className="text-sm text-muted-foreground">
             For accurate tax filings, always consult with a Certified Public Accountant (CPA) 
             or authorized tax preparer.

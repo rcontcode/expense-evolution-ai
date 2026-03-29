@@ -187,7 +187,8 @@ serve(async (req) => {
           marginalRates,
           rrspRoom: calculateRRSPRoom(annualIncome),
           tfsaLimit: TFSA_ANNUAL_LIMIT_2024
-        }
+        },
+        disclaimer: 'This estimate is approximate and for educational purposes only. It does NOT constitute financial, tax, or securities advice as defined by provincial securities legislation. Consult a licensed financial advisor or CPA for your specific situation.'
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
