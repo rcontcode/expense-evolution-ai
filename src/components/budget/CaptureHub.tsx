@@ -135,6 +135,9 @@ export function CaptureHub() {
                 <span className="text-xs text-muted-foreground leading-tight">
                   {btn.description}
                 </span>
+                <span className="text-[10px] text-primary/70 font-medium leading-tight">
+                  {btn.destination}
+                </span>
               </motion.button>
             ))}
           </div>
