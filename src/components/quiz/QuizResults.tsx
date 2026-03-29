@@ -339,6 +339,7 @@ export const QuizResults = ({ result, onRetake, referralInfo, onNavigateToAuth }
     language
   );
 
+  const isSupportedTaxCountry = result.data.country.includes("Chile") || result.data.country.includes("Canadá") || result.data.country.includes("Canada");
   const hasVipReferral = referralInfo?.isValid && referralInfo?.referrerName;
 
   useEffect(() => {
