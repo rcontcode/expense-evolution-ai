@@ -274,7 +274,9 @@ export const useLeadsManagement = () => {
 
     return { 
       total, 
-      contacted, 
+      contacted,
+      contactedManual,
+      contactedAuto,
       converted, 
       synced, 
       withComments,
