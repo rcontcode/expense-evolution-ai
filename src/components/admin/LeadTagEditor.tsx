@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { X, Plus, Tag } from 'lucide-react';
 import { toast } from 'sonner';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const PRESET_TAGS = [
   { label: 'VIP', color: 'bg-amber-100 text-amber-800 border-amber-300' },
@@ -29,6 +30,8 @@ interface LeadTagEditorProps {
 }
 
 export function LeadTagEditor({ leadId, tags }: LeadTagEditorProps) {
+  const { language } = useLanguage();
+  const es = language === 'es';
   const [newTag, setNewTag] = useState('');
   const [showPresets, setShowPresets] = useState(false);
   const queryClient = useQueryClient();
@@ -45,7 +48,7 @@ export function LeadTagEditor({ leadId, tags }: LeadTagEditorProps) {
       queryClient.invalidateQueries({ queryKey: ['admin-leads'] });
     },
     onError: () => {
-      toast.error('Error al actualizar tags');
+      toast.error(es ? 'Error al actualizar tags' : 'Error updating tags');
     },
   });
 
@@ -83,7 +86,7 @@ export function LeadTagEditor({ leadId, tags }: LeadTagEditorProps) {
           </Badge>
         ))}
         {tags.length === 0 && (
-          <span className="text-xs text-muted-foreground italic">Sin tags</span>
+          <span className="text-xs text-muted-foreground italic">{es ? 'Sin tags' : 'No tags'}</span>
         )}
       </div>
 
@@ -92,7 +95,7 @@ export function LeadTagEditor({ leadId, tags }: LeadTagEditorProps) {
         <Input
           value={newTag}
           onChange={(e) => setNewTag(e.target.value)}
-          placeholder="Nuevo tag..."
+          placeholder={es ? 'Nuevo tag...' : 'New tag...'}
           className="h-7 text-xs"
           onKeyDown={(e) => { if (e.key === 'Enter') addTag(newTag); }}
         />

@@ -1,13 +1,11 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Download, FileSpreadsheet, FileText, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useLanguage } from '@/contexts/LanguageContext';
 import type { QuizLead } from '@/hooks/admin/useLeadsManagement';
 import { calculateLeadScore, getLeadPriority, getPriorityLabel } from '@/hooks/admin/useLeadScoring';
 
@@ -17,6 +15,8 @@ interface LeadsExportProps {
 }
 
 export function LeadsExport({ leads, filename = 'quiz-leads' }: LeadsExportProps) {
+  const { language } = useLanguage();
+  const es = language === 'es';
   const [isExporting, setIsExporting] = useState(false);
 
   const prepareData = () => {
@@ -76,10 +76,10 @@ export function LeadsExport({ leads, filename = 'quiz-leads' }: LeadsExportProps
       link.click();
       URL.revokeObjectURL(link.href);
 
-      toast.success(`${data.length} leads exportados a Excel`);
+      toast.success(es ? `${data.length} leads exportados a Excel` : `${data.length} leads exported to Excel`);
     } catch (error) {
       console.error('Export error:', error);
-      toast.error('Error al exportar');
+      toast.error(es ? 'Error al exportar' : 'Export error');
     } finally {
       setIsExporting(false);
     }
@@ -108,10 +108,10 @@ export function LeadsExport({ leads, filename = 'quiz-leads' }: LeadsExportProps
       link.click();
       URL.revokeObjectURL(link.href);
 
-      toast.success(`${data.length} leads exportados a CSV`);
+      toast.success(es ? `${data.length} leads exportados a CSV` : `${data.length} leads exported to CSV`);
     } catch (error) {
       console.error('Export error:', error);
-      toast.error('Error al exportar');
+      toast.error(es ? 'Error al exportar' : 'Export error');
     } finally {
       setIsExporting(false);
     }
@@ -121,7 +121,7 @@ export function LeadsExport({ leads, filename = 'quiz-leads' }: LeadsExportProps
     return (
       <Button variant="outline" disabled>
         <Download className="mr-2 h-4 w-4" />
-        Exportar
+        {es ? 'Exportar' : 'Export'}
       </Button>
     );
   }
@@ -135,7 +135,7 @@ export function LeadsExport({ leads, filename = 'quiz-leads' }: LeadsExportProps
           ) : (
             <Download className="mr-2 h-4 w-4" />
           )}
-          Exportar ({leads.length})
+          {es ? 'Exportar' : 'Export'} ({leads.length})
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
