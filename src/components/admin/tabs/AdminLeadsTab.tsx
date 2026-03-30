@@ -47,7 +47,7 @@ export const AdminLeadsTab = ({ language, sourceFilter, onClearFilter }: Props) 
 
   const stats = useMemo(() => {
     const total = leads.length;
-    const contacted = leads.filter((l: any) => l.contacted_at).length;
+    const contacted = leads.filter((l: any) => l.contacted_at && !l.contact_notes?.startsWith('[AUTO]')).length;
     const converted = leads.filter((l: any) => l.converted_to_user).length;
     const withComments = leads.filter((l: any) => l.comments).length;
     const priorities = { hot: 0, warm: 0, cool: 0, cold: 0 };
@@ -190,7 +190,12 @@ export const AdminLeadsTab = ({ language, sourceFilter, onClearFilter }: Props) 
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-1">
-                        {lead.contacted_at && <Badge variant="outline" className="text-[10px]"><Phone className="h-2.5 w-2.5 mr-0.5" />✓</Badge>}
+                        {lead.contacted_at && lead.contact_notes?.startsWith('[AUTO]') && (
+                          <Badge variant="secondary" className="text-[10px] text-muted-foreground"><Phone className="h-2.5 w-2.5 mr-0.5" />Auto</Badge>
+                        )}
+                        {lead.contacted_at && !lead.contact_notes?.startsWith('[AUTO]') && (
+                          <Badge variant="outline" className="text-[10px] border-emerald-500 text-emerald-600"><Phone className="h-2.5 w-2.5 mr-0.5" />✓</Badge>
+                        )}
                         {lead.converted_to_user && <Badge className="text-[10px] bg-emerald-600"><UserCheck className="h-2.5 w-2.5 mr-0.5" />✓</Badge>}
                         {!lead.contacted_at && !lead.converted_to_user && <Badge variant="secondary" className="text-[10px]">{isEs ? 'Nuevo' : 'New'}</Badge>}
                       </div>

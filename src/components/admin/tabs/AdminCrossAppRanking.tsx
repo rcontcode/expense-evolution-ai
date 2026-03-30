@@ -68,7 +68,7 @@ export const AdminCrossAppRanking = ({ language }: Props) => {
       }
       const app = byApp[src];
       app.total++;
-      if (lead.contacted_at) app.contacted++;
+      if (lead.contacted_at && !lead.contact_notes?.startsWith('[AUTO]')) app.contacted++;
       if (lead.converted_to_user) app.converted++;
       if (lead.comments) app.withComments++;
       if (new Date(lead.created_at) > sevenDaysAgo) app.recentLeads++;
@@ -93,7 +93,7 @@ export const AdminCrossAppRanking = ({ language }: Props) => {
   // Funnel data
   const funnelData = useMemo(() => {
     const total = allLeads.length;
-    const contacted = allLeads.filter((l: any) => l.contacted_at).length;
+    const contacted = allLeads.filter((l: any) => l.contacted_at && !l.contact_notes?.startsWith('[AUTO]')).length;
     const converted = allLeads.filter((l: any) => l.converted_to_user).length;
     return [
       { name: isEs ? 'Total Leads' : 'Total Leads', value: total, fill: '#6366f1' },

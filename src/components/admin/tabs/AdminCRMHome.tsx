@@ -58,14 +58,15 @@ export const AdminCRMHome = ({ language, onNavigateTab }: Props) => {
       const d = new Date(l.created_at);
       return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
     });
-    const contactedThisMonth = thisMonth.filter((l: any) => l.contacted_at).length;
+    const contactedThisMonth = thisMonth.filter((l: any) => l.contacted_at && !l.contact_notes?.startsWith('[AUTO]')).length;
     const convertedThisMonth = thisMonth.filter((l: any) => l.converted_to_user).length;
     const contactRate = thisMonth.length > 0 ? Math.round((contactedThisMonth / thisMonth.length) * 100) : 0;
     const conversionRate = thisMonth.length > 0 ? Math.round((convertedThisMonth / thisMonth.length) * 100) : 0;
 
     const hotUncontacted = leads.filter((l: any) => {
       const score = calculateLeadScore(l);
-      return getLeadPriority(score) === 'hot' && !l.contacted_at;
+      const isManuallyContacted = l.contacted_at && !l.contact_notes?.startsWith('[AUTO]');
+      return getLeadPriority(score) === 'hot' && !isManuallyContacted;
     }).length;
 
     return { leadsToday, leadsThisWeek, overdueFollowUps, contactRate, conversionRate, hotUncontacted };
