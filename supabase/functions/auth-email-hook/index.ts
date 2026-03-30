@@ -36,7 +36,7 @@ const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
 }
 
 // Configuration
-const SITE_NAME = "expense-evolution-ai"
+const SITE_NAME = "EvoFinz"
 const SENDER_DOMAIN = "notify.evofinz.com"
 const ROOT_DOMAIN = "evofinz.com"
 const FROM_DOMAIN = "evofinz.com" // Domain shown in From address (may be root or sender subdomain)
