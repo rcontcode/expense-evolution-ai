@@ -25,7 +25,7 @@ const getStoryContent = (language: string) => language === 'es' ? {
     {
       icon: 'receipt',
       title: 'De Caos a Claridad en Segundos',
-      description: 'Fotografía un recibo y nuestra IA extrae monto, fecha, proveedor y categoría automáticamente. Sin tipear. Sin errores. 5 segundos vs 5 minutos.',
+      description: 'Fotografía un recibo y nuestro sistema extrae monto, fecha, proveedor y categoría automáticamente. Sin tipear. Sin errores. 5 segundos vs 5 minutos.',
       stat: '95% de precisión OCR'
     },
     {
@@ -63,12 +63,12 @@ const getStoryContent = (language: string) => language === 'es' ? {
     title: 'EvoFinz vs. El Resto del Mercado',
     items: [
       { feature: 'Captura por voz en español/inglés', evofinz: true, others: 'Raro o inexistente' },
-      { feature: 'OCR para recibos con IA', evofinz: true, others: 'Solo planes premium caros' },
+      { feature: 'OCR inteligente para recibos', evofinz: true, others: 'Solo planes premium caros' },
       { feature: 'Optimización fiscal automática', evofinz: true, others: 'Requiere contador' },
       { feature: 'Calculadora FIRE personalizada', evofinz: true, others: 'No incluido' },
       { feature: 'Gamificación y hábitos', evofinz: true, others: 'Muy básico o inexistente' },
       { feature: 'Soporte CRA + SII', evofinz: true, others: 'Solo un país' },
-      { feature: 'Análisis de contratos con IA', evofinz: true, others: 'No existe' },
+      { feature: 'Análisis inteligente de contratos', evofinz: true, others: 'No existe' },
       { feature: 'Precio accesible', evofinz: 'Desde $0/mes', others: '$15-50/mes' }
     ]
   },
@@ -93,7 +93,7 @@ const getStoryContent = (language: string) => language === 'es' ? {
         plan: 'Pro',
         price: '$14.99',
         description: 'Poder total',
-        features: ['Todo ilimitado', 'OCR ilimitado', 'Optimizador fiscal IA', 'Calculadora FIRE', 'Análisis de contratos'],
+        features: ['Todo ilimitado', 'OCR ilimitado', 'Optimizador fiscal inteligente', 'Calculadora FIRE', 'Análisis de contratos'],
         cta: 'Para freelancers y emprendedores'
       }
     ]
@@ -117,7 +117,7 @@ const getStoryContent = (language: string) => language === 'es' ? {
     {
       icon: 'receipt',
       title: 'From Chaos to Clarity in Seconds',
-      description: 'Photograph a receipt and our AI extracts amount, date, vendor and category automatically. No typing. No errors. 5 seconds vs 5 minutes.',
+      description: 'Photograph a receipt and our system extracts amount, date, vendor and category automatically. No typing. No errors. 5 seconds vs 5 minutes.',
       stat: '95% OCR accuracy'
     },
     {
@@ -155,12 +155,12 @@ const getStoryContent = (language: string) => language === 'es' ? {
     title: 'EvoFinz vs. The Rest of the Market',
     items: [
       { feature: 'Voice capture in Spanish/English', evofinz: true, others: 'Rare or non-existent' },
-      { feature: 'AI-powered receipt OCR', evofinz: true, others: 'Only expensive premium plans' },
+      { feature: 'Smart receipt OCR', evofinz: true, others: 'Only expensive premium plans' },
       { feature: 'Automatic tax optimization', evofinz: true, others: 'Requires accountant' },
       { feature: 'Personalized FIRE calculator', evofinz: true, others: 'Not included' },
       { feature: 'Gamification and habits', evofinz: true, others: 'Very basic or non-existent' },
       { feature: 'CRA + SII support', evofinz: true, others: 'Only one country' },
-      { feature: 'AI contract analysis', evofinz: true, others: 'Doesn\'t exist' },
+      { feature: 'Smart contract analysis', evofinz: true, others: 'Doesn\'t exist' },
       { feature: 'Affordable pricing', evofinz: 'From $0/mo', others: '$15-50/mo' }
     ]
   },
@@ -185,7 +185,7 @@ const getStoryContent = (language: string) => language === 'es' ? {
         plan: 'Pro',
         price: '$14.99',
         description: 'Total power',
-        features: ['Everything unlimited', 'Unlimited OCR', 'AI Tax Optimizer', 'FIRE Calculator', 'Contract analysis'],
+        features: ['Everything unlimited', 'Unlimited OCR', 'Smart Tax Optimizer', 'FIRE Calculator', 'Contract analysis'],
         cta: 'For freelancers and entrepreneurs'
       }
     ]

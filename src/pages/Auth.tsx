@@ -376,7 +376,7 @@ export default function Auth() {
   const features = [
     { icon: Sparkles, text: t('auth.smartCapture') },
     { icon: Receipt, text: t('auth.autoCategories') },
-    { icon: TrendingUp, text: t('auth.craReports') },
+    { icon: Target, text: t('auth.craReports') },
   ];
 
   // Password strength indicator
