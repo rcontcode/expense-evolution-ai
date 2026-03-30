@@ -1,62 +1,55 @@
 
 
-# Plan: Corregir errores de datos en el CRM
+# Plan: Completar email real + fix "contactado falso"
 
-## Problemas encontrados
+## Estado actual
+- `send-crm-email` existe pero no está desplegada
+- `run-automations` llama a `send-crm-email` para emails, pero **sigue marcando `contacted_at` incluso si el email NO se envió** (líneas 333-337)
+- Dominio `notify.universmind.com` sigue pendiente DNS — no se puede enviar aún, pero podemos dejar todo listo
+- No hay template de email ni infraestructura de email configurada
 
-### 1. ROI Dashboard: Leads "pagando" inflados (CRÍTICO)
-El dashboard cruza leads con suscripciones **por email**. Tu email (`rcontreraslittle@gmail.com`) aparece en **39 leads** (tests). Como tienes 1 suscripción activa, el sistema cuenta 39 "leads pagando" cuando en realidad es 1 persona.
+## Cambios
 
-**Solución**: Deduplicar por email antes de contar. Un email = 1 lead único para el cálculo de ROI/MRR.
+### 1. Fix "contactado falso" en `run-automations/index.ts`
+Líneas 333-337: Solo marcar `contacted_at` si el email realmente se envió:
+```
+// ANTES: siempre marca contactado
+if (result.status === 'success') {
+  contacted_at = now()  // ← SIEMPRE, aunque email_sent = false
+}
 
-### 2. "Contactado" falso por automatizaciones
-"roco" aparece como contactado porque la regla de automatización "🔥 HOT Lead → WhatsApp IA" setea `contacted_at` automáticamente en segundos. No distingue entre contacto real (manual) y auto-contacto.
+// DESPUÉS: solo si se envió realmente
+if (result.status === 'success' && result.data.email_sent === true) {
+  contacted_at = now()
+}
+// Si no se envió, marcar con nota de que fue generado pero no enviado
+```
+Para WhatsApp (que no tiene envío real aún), NO marcar como contactado.
 
-**Solución**: Diferenciar en las métricas. Si `contact_notes` empieza con `[AUTO]`, es auto-contacto. Las métricas de "Tasa contacto" y "Tiempo avg contacto" deben filtrar auto-contactos o mostrar ambos por separado.
+### 2. Configurar infraestructura de email
+- Llamar `setup_email_infra` para crear las tablas, colas pgmq, y cron job
+- Llamar `scaffold_transactional_email` para crear el Edge Function `send-transactional-email` y la estructura de templates
 
-### 3. Métricas: "Tasa conversión 0.0%" pero ROI muestra "66.1%"
-- Métricas usa `converted_to_user` (campo de la DB, todos en `false`) → 0%
-- ROI cruza por email con Stripe → 66.1% (pero inflado por duplicados)
-- Son dos fuentes de verdad diferentes y contradictorias
+### 3. Crear template `crm-lead-outreach`
+Template React Email en `_shared/transactional-email-templates/` que reciba:
+- `recipientName`, `subject`, `body`, `ruleName`
+- Estilo consistente con la marca EvoFinz
 
-**Solución**: Unificar la lógica. Ambos dashboards deben usar el cruce por email con Stripe (deduplicado) como fuente de verdad para "convertido/pagando".
+### 4. Actualizar `send-crm-email` para usar `send-transactional-email`
+Ya está apuntando a `send-transactional-email` — solo necesita el template registrado en el registry.
 
-## Cambios por archivo
+### 5. Desplegar todas las funciones
+- `send-crm-email`
+- `run-automations`
+- `send-transactional-email` (creada por scaffold)
+- `process-email-queue` (creada por scaffold)
 
-### `src/components/admin/tabs/AdminROIDashboard.tsx`
-- Deduplicar leads por email antes de calcular métricas
-- Un email único = 1 lead para ROI
-- Recalcular `totalLeads`, `payingCount`, `conversionOverall`, `bySource` con leads únicos
-- La tabla "Leads Convertidos" debe mostrar 1 fila por email (no 39)
+## Sobre el DNS pendiente
+Todo quedará configurado y listo. Los emails se encolarán pero no se entregarán hasta que el DNS de `notify.universmind.com` se verifique. En ese momento, empezarán a enviarse automáticamente.
 
-### `src/components/admin/tabs/AdminAdvancedMetrics.tsx`
-- Separar "contactados manualmente" vs "auto-contactados" (`contact_notes` con `[AUTO]`)
-- "Tasa contacto" = solo contactos manuales / total
-- Agregar sub-label "Auto: X%" para los auto-contactados
-- "Tasa conversión" = usar cruce email↔suscripción (misma lógica de ROI, deduplicada)
-
-### `src/components/admin/tabs/AdminCrossAppRanking.tsx`
-- Ajustar conteo de `contacted` para excluir `[AUTO]`
-- Ajustar conteo de `converted` usando cruce email↔suscripción
-
-### `src/components/admin/tabs/AdminLeadsTab.tsx`
-- Distinguir visualmente contacto auto vs manual (badge diferente)
-- Badge "Auto ✓" gris vs "Contactado ✓" verde
-
-### `src/components/admin/tabs/AdminCRMHome.tsx`
-- Ajustar KPIs: tasa contacto sin auto-contactos, conversión real via Stripe
-
-### `src/hooks/admin/useLeadsManagement.ts`
-- En stats: separar `contactedManual` vs `contactedAuto`
-- Conversión basada en cruce real (no en `converted_to_user` que nadie setea)
-
-## Resumen
-
-| Problema | Causa | Fix |
-|----------|-------|-----|
-| 39 leads pagando | Duplicados por email | Deduplicar por email |
-| roco contactado | Automatización [AUTO] | Separar auto vs manual |
-| 0% vs 66.1% conversión | Dos fuentes de verdad | Unificar con cruce Stripe |
-
-**Total**: ~6 archivos, lógica de deduplicación + filtrado de auto-contactos. Sin cambios de base de datos.
+## Resultado final
+- Automatizaciones generan mensajes con IA ✅
+- Emails se envían realmente (cuando DNS esté listo) ✅
+- `contacted_at` SOLO se marca si el email se entregó ✅
+- WhatsApp: genera mensaje pero NO marca como contactado ✅
 
