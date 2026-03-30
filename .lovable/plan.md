@@ -1,25 +1,57 @@
 
-# Pulir el Producto — Plan Completado ✅
 
-## ✅ Fase 1: Vulnerabilidades de Seguridad
-- Removido `quiz_leads` de la publicación Realtime (prevenía fuga de PII)
-- Agregada política `Block client UPDATE on usage_tracking` (prevenía reseteo de contadores)
-- `data_health_check` confirmado como VIEW (seguridad heredada de tablas subyacentes)
-- `user_roles` confirmado seguro: INSERT/UPDATE/DELETE bloqueados a nivel cliente
+# Plan: Migración `.single()` + Internacionalización CRM
 
-## ✅ Fase 2: Estabilidad — `.single()` → `.maybeSingle()`
-- `useProfile.ts` — perfil del usuario
-- `useUserSettings.ts` — settings + preferences (2 queries)
-- `useReadingReminders.ts` — fetch + update preferences (2 queries)
-- `useConversationalOnboarding.ts` — fiscal entity lookup
-- `AddressAutocomplete.tsx` — dirección existente
-- `UserDetailSheet.tsx` — profile, subscription, usage, admin role, beta points (5 queries)
+## Tarea 1: Migrar `.single()` → `.maybeSingle()` en queries de lectura
 
-## ✅ Fase 3: Limpieza Index.tsx
-- Reemplazado placeholder "Welcome to Your Blank App" con redirect a `/quiz`
+Hay ~290 usos de `.single()` en `src/hooks`. La mayoría son en **insert/update** (donde esperamos exactamente 1 resultado y `.single()` es correcto). Solo los **SELECTs puros** (fetches, lookups) deben migrar.
 
-## ✅ Fase 4: Admin Rate Limiting + Audit Logging
-- Nuevo hook `useAdminAccessGuard` con contador de intentos por sesión
-- Log en `audit_log` de cada intento no autorizado (user_id, path, número de intento)
-- Bloqueo visual con mensaje "Acceso Restringido" después de 3 intentos
-- `AdminRoute.tsx` actualizado con integración del guard
+### Archivos a modificar (queries de lectura con `.single()`):
+
+| Archivo | Contexto | Riesgo si no se migra |
+|---------|----------|----------------------|
+| `useBetaSystem.ts` L99 | Fetch referral code por user_id | Crash si user no tiene código |
+| `useDocumentUrl.ts` L25 | Fetch documento por ID | Crash si doc fue eliminado |
+| `useProjects.ts` L104 | Fetch proyecto antes de delete | Crash si proyecto ya borrado |
+| `useProjects.ts` L131 | Fetch proyecto para duplicar | Crash si no existe |
+| `useRecurringBills.ts` L197 | Fetch bill para calcular next_due | Crash si bill eliminada |
+| `DataPrivacyCard.tsx` L50 | Fetch perfil para export de datos | Crash si perfil no existe |
+
+**Nota**: Los `.single()` en `.insert().select().single()` y `.update().select().single()` se mantienen — son write operations que deben devolver exactamente 1 resultado.
+
+### Cambio por archivo
+Reemplazar `.single()` por `.maybeSingle()` y agregar null-checks donde el resultado se use directamente.
+
+---
+
+## Tarea 2: Internacionalizar strings hardcoded en CRM admin
+
+10 archivos de admin tienen ~96 strings hardcoded en español (toasts, labels, botones). Dado que el admin **solo lo usa el dueño**, la prioridad es:
+
+### Archivos a modificar:
+
+| Archivo | Strings hardcoded | Ejemplo |
+|---------|-------------------|---------|
+| `LeadsBulkActions.tsx` | 12 | "Marcar contactados", "Etiquetar", "Exportar", pipeline labels |
+| `FollowUpsList.tsx` | 4 | "Seguimiento completado/eliminado" |
+| `FollowUpModal.tsx` | 4 | "Seguimiento programado", "Selecciona una fecha" |
+| `InteractionTimeline.tsx` | 2 | "Interacción registrada" |
+| `LeadMergeDialog.tsx` | 1 | "Error al fusionar leads" |
+| `LeadsExport.tsx` | 2 | "Error al exportar" |
+| `LeadTagEditor.tsx` | 1 | "Error al actualizar tags" |
+| `QuickContact.tsx` | 2 | "Este lead no tiene teléfono..." |
+
+### Approach
+Cada componente recibirá `useLanguage()` (o ya lo tiene) y usará `const es = language === 'es'` para ternarios inline — mismo patrón ya usado en `AdminContactQueueTab.tsx`, `AdminQuickActions.tsx`, y `AdminUserOverview.tsx`.
+
+---
+
+## Resumen de esfuerzo
+
+| Tarea | Archivos | Cambios |
+|-------|----------|---------|
+| `.single()` → `.maybeSingle()` | 6 archivos | ~6 líneas cada uno + null checks |
+| Internacionalización CRM | 8 archivos | ~50 strings con ternarios es/en |
+
+**Total**: ~14 archivos modificados. Sin cambios de base de datos.
+
