@@ -11,7 +11,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { ArrowRight, Sparkles, Receipt, TrendingUp, ChevronDown, Gift, Loader2, CheckCircle2, XCircle, AlertCircle, Flame } from 'lucide-react';
+import { ArrowRight, Sparkles, Receipt, Target, ChevronDown, Gift, Loader2, CheckCircle2, XCircle, AlertCircle, Flame } from 'lucide-react';
 import { PhoenixLogo } from '@/components/ui/phoenix-logo';
 import { VipReferralLanding } from '@/components/auth/VipReferralLanding';
 import { 
@@ -376,7 +376,7 @@ export default function Auth() {
   const features = [
     { icon: Sparkles, text: t('auth.smartCapture') },
     { icon: Receipt, text: t('auth.autoCategories') },
-    { icon: TrendingUp, text: t('auth.craReports') },
+    { icon: Target, text: t('auth.craReports') },
   ];
 
   // Password strength indicator

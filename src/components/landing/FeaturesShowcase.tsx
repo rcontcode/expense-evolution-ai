@@ -117,10 +117,10 @@ const getShowcaseItems = (language: string) => [
   },
   {
     icon: BarChart3,
-    title: language === 'es' ? "Reporte Mensual IA" : "AI Monthly Report",
+    title: language === 'es' ? "Reporte Mensual Inteligente" : "Smart Monthly Report",
     why: language === 'es' ? "Entiende tu mes en 30 segundos" : "Understand your month in 30 seconds",
     what: language === 'es' ? "Score financiero + comparativas automáticas" : "Financial score + automatic comparisons",
-    how: language === 'es' ? "Análisis IA personalizado con logros y alertas" : "Personalized AI analysis with achievements and alerts",
+    how: language === 'es' ? "Análisis inteligente personalizado con logros y alertas" : "Personalized smart analysis with achievements and alerts",
     gradient: "from-sky-500 to-cyan-500",
     bgGlow: "bg-sky-500/20"
   },
