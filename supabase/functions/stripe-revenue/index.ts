@@ -139,21 +139,37 @@ serve(async (req) => {
         } catch { /* ignore */ }
       }
 
-      const createdDate = sub.created ? new Date(sub.created * 1000) : null;
-      const periodEndDate = sub.current_period_end ? new Date(sub.current_period_end * 1000) : null;
+      let createdISO = new Date().toISOString();
+      let periodEndISO = new Date().toISOString();
+      try {
+        if (sub.created && typeof sub.created === 'number') {
+          createdISO = new Date(sub.created * 1000).toISOString();
+        }
+      } catch { /* fallback to now */ }
+      try {
+        if (sub.current_period_end && typeof sub.current_period_end === 'number') {
+          periodEndISO = new Date(sub.current_period_end * 1000).toISOString();
+        }
+      } catch { /* fallback to now */ }
 
       recentSubscriptions.push({
         id: sub.id,
         email,
         plan: mapping ? (mapping.bundle ? `Bundle (${mapping.period})` : `${mapping.plan} (${mapping.period})`) : "Other",
         mrr: Math.round(monthlyAmount * 100) / 100,
-        created: createdDate && !isNaN(createdDate.getTime()) ? createdDate.toISOString() : new Date().toISOString(),
-        current_period_end: periodEndDate && !isNaN(periodEndDate.getTime()) ? periodEndDate.toISOString() : new Date().toISOString(),
+        created: createdISO,
+        current_period_end: periodEndISO,
       });
     }
 
     // Sort recent subs by creation date desc
-    recentSubscriptions.sort((a, b) => new Date(b.created).getTime() - new Date(a.created).getTime());
+    recentSubscriptions.sort((a, b) => {
+      try {
+        return new Date(b.created).getTime() - new Date(a.created).getTime();
+      } catch {
+        return 0;
+      }
+    });
 
     // Get balance
     const balance = await stripe.balance.retrieve();
