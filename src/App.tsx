@@ -97,6 +97,7 @@ const Income = lazyWithRetry(() => import("./pages/Income"));
 const Install = lazyWithRetry(() => import("./pages/Install"));
 const MobileCapture = lazyWithRetry(() => import("./pages/MobileCapture"));
 const NotFound = lazyWithRetry(() => import("./pages/NotFound"));
+const Unsubscribe = lazyWithRetry(() => import("./pages/Unsubscribe"));
 const NetWorth = lazyWithRetry(() => import("./pages/NetWorth"));
 const Banking = lazyWithRetry(() => import("./pages/Banking"));
 const BudgetPage = lazyWithRetry(() => import("./pages/Budget"));
@@ -400,6 +401,7 @@ const App = () => (
                         <Route path="/user-guide" element={<ProtectedRoute><UserGuide /></ProtectedRoute>} />
                         <Route path="/tax-report-flow" element={<ProtectedRoute><TaxReportFlow /></ProtectedRoute>} />
                         <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
+                        <Route path="/unsubscribe" element={<Unsubscribe />} />
                         <Route path="*" element={<NotFound />} />
                     </Routes>
                   </Suspense>
