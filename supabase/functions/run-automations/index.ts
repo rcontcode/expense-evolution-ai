@@ -90,6 +90,8 @@ async function executeAIMessage(
   if (!lovableApiKey) {
     return { status: 'skipped', data: { reason: 'LOVABLE_API_KEY not configured' } };
   }
+
+  // Step 1: Generate the message with AI
   const msgRes = await fetch(`${supabaseUrl}/functions/v1/generate-lead-message`, {
     method: 'POST',
     headers: { 'Authorization': `Bearer ${serviceKey}`, 'Content-Type': 'application/json' },
@@ -107,9 +109,85 @@ async function executeAIMessage(
     return { status: 'failed', data: { error: errText } };
   }
   const msgData = await msgRes.json();
+  const generatedMessage = msgData.message || '';
+
+  // Step 2: For email type, attempt actual email delivery
+  if (actionType === 'email' && lead.email) {
+    // Parse subject from [SUBJECT: ...] format
+    let subject = `${rule.name}`;
+    let body = generatedMessage;
+    const subjectMatch = generatedMessage.match(/\[SUBJECT:\s*(.+?)\]/i);
+    if (subjectMatch) {
+      subject = subjectMatch[1].trim();
+      body = generatedMessage.replace(subjectMatch[0], '').trim();
+    }
+
+    try {
+      const sendRes = await fetch(`${supabaseUrl}/functions/v1/send-crm-email`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${serviceKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          recipientEmail: lead.email,
+          recipientName: lead.name || '',
+          subject,
+          textBody: body,
+          leadId: lead.id,
+          ruleName: rule.name,
+        }),
+      });
+
+      if (sendRes.ok) {
+        const sendData = await sendRes.json();
+        if (sendData.success && sendData.status === 'sent') {
+          return {
+            status: 'success',
+            data: {
+              message: generatedMessage,
+              messageType: actionType,
+              templateType: actionConfig.template_type,
+              email_sent: true,
+            },
+          };
+        }
+        // Email infra not configured or failed — message generated but NOT sent
+        return {
+          status: 'success',
+          data: {
+            message: generatedMessage,
+            messageType: actionType,
+            templateType: actionConfig.template_type,
+            email_sent: false,
+            email_status: sendData.status,
+            email_error: sendData.error,
+          },
+        };
+      }
+    } catch (sendErr) {
+      console.error(`Email send error for ${lead.email}:`, sendErr);
+    }
+
+    // Email sending failed but message was generated
+    return {
+      status: 'success',
+      data: {
+        message: generatedMessage,
+        messageType: actionType,
+        templateType: actionConfig.template_type,
+        email_sent: false,
+        email_status: 'error',
+      },
+    };
+  }
+
+  // For whatsapp or other types: message generated only (no real delivery yet)
   return {
     status: 'success',
-    data: { message: msgData.message, messageType: actionType, templateType: actionConfig.template_type },
+    data: {
+      message: generatedMessage,
+      messageType: actionType,
+      templateType: actionConfig.template_type,
+      email_sent: false,
+    },
   };
 }
 
