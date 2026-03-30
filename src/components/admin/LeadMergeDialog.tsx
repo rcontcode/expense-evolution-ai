@@ -11,6 +11,7 @@ import { Search, Merge, AlertTriangle, Check, ArrowRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
+import { useLanguage } from '@/contexts/LanguageContext';
 import type { QuizLead } from '@/hooks/admin/useLeadsManagement';
 import { calculateLeadScore, getLeadPriority, getPriorityColors } from '@/hooks/admin/useLeadScoring';
 import { format } from 'date-fns';
@@ -22,6 +23,8 @@ interface Props {
 }
 
 export function LeadMergeDialog({ open, onOpenChange, allLeads }: Props) {
+  const { language } = useLanguage();
+  const es = language === 'es';
   const queryClient = useQueryClient();
   const [searchEmail, setSearchEmail] = useState('');
   const [primaryId, setPrimaryId] = useState<string | null>(null);
@@ -114,14 +117,14 @@ export function LeadMergeDialog({ open, onOpenChange, allLeads }: Props) {
       }
 
       queryClient.invalidateQueries({ queryKey: ['admin-leads'] });
-      toast.success(`${secondaryIds.length} lead(s) fusionados en el registro principal`);
+      toast.success(es ? `${secondaryIds.length} lead(s) fusionados en el registro principal` : `${secondaryIds.length} lead(s) merged into primary record`);
       setStep('search');
       setPrimaryId(null);
       setSearchEmail('');
       onOpenChange(false);
     } catch (err) {
       console.error('Merge error:', err);
-      toast.error('Error al fusionar leads');
+      toast.error(es ? 'Error al fusionar leads' : 'Error merging leads');
     } finally {
       setMerging(false);
     }

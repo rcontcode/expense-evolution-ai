@@ -1,20 +1,14 @@
 import { Button } from '@/components/ui/button';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
+  Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { MessageCircle, Mail, Phone, Send } from 'lucide-react';
 import type { QuizLead } from '@/hooks/admin/useLeadsManagement';
 import { toast } from 'sonner';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface QuickContactProps {
   lead: QuizLead;
@@ -119,6 +113,8 @@ function formatPhoneForWhatsApp(phone: string): string {
 }
 
 export function QuickContact({ lead, variant = 'buttons', size = 'default' }: QuickContactProps) {
+  const { language } = useLanguage();
+  const es = language === 'es';
   const hasPhone = lead.phone && lead.phone.trim().length > 0;
   const whatsappUrl = hasPhone
     ? `https://wa.me/${formatPhoneForWhatsApp(lead.phone!).replace(/^\+/, '')}?text=${generateWhatsAppMessage(lead)}`
@@ -128,13 +124,15 @@ export function QuickContact({ lead, variant = 'buttons', size = 'default' }: Qu
 
   const handleWhatsApp = () => {
     if (whatsappUrl) return;
-
-    toast.error('Este lead no tiene teléfono registrado. Usa email para contactarlo.', {
-      action: {
-        label: 'Enviar Email',
-        onClick: handleEmail,
-      },
-    });
+    toast.error(
+      es ? 'Este lead no tiene teléfono registrado. Usa email para contactarlo.' : 'This lead has no phone number. Use email to contact them.',
+      {
+        action: {
+          label: es ? 'Enviar Email' : 'Send Email',
+          onClick: handleEmail,
+        },
+      }
+    );
   };
 
   const handleEmail = () => {
@@ -144,7 +142,7 @@ export function QuickContact({ lead, variant = 'buttons', size = 'default' }: Qu
 
   const handleCall = () => {
     if (!hasPhone) {
-      toast.error('Este lead no tiene teléfono registrado. Usa email para contactarlo.');
+      toast.error(es ? 'Este lead no tiene teléfono registrado. Usa email para contactarlo.' : 'This lead has no phone number. Use email to contact them.');
       return;
     }
     window.open(`tel:${lead.phone}`, '_blank');
@@ -156,7 +154,7 @@ export function QuickContact({ lead, variant = 'buttons', size = 'default' }: Qu
         <DropdownMenuTrigger asChild>
           <Button variant="outline" size={size}>
             <Send className="mr-2 h-4 w-4" />
-            Contactar
+            {es ? 'Contactar' : 'Contact'}
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">

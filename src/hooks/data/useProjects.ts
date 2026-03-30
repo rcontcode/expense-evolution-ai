@@ -101,7 +101,7 @@ export function useDeleteProject() {
   return useMutation({
     mutationFn: async (id: string) => {
       if (!user) throw new Error('Not authenticated');
-      const { data: existing } = await supabase.from('projects').select('name').eq('id', id).eq('user_id', user.id).single();
+      const { data: existing } = await supabase.from('projects').select('name').eq('id', id).eq('user_id', user.id).maybeSingle();
       const { error } = await supabase.from('projects').update({ deleted_at: new Date().toISOString() }).eq('id', id).eq('user_id', user.id);
       if (error) throw error;
 
@@ -128,8 +128,9 @@ export function useDuplicateProject() {
   return useMutation({
     mutationFn: async (projectId: string) => {
       const { data: originalProject, error: fetchError } = await supabase
-        .from('projects').select('*').eq('id', projectId).single();
+        .from('projects').select('*').eq('id', projectId).maybeSingle();
       if (fetchError) throw fetchError;
+      if (!originalProject) throw new Error('Project not found');
 
       const { data: newProject, error: insertError } = await supabase
         .from('projects')
