@@ -111,16 +111,27 @@ export function AdminROIDashboard({ language }: Props) {
       if (email) emailSubMap.set(email, sub);
     });
 
-    // Cross-reference leads with subscriptions
-    const totalLeads = leads.length;
-    const convertedLeads = leads.filter(l => l.converted_to_user);
+    // DEDUPLICATION: Group leads by unique email
+    const emailLeadMap = new Map<string, QuizLead>();
+    leads.forEach(lead => {
+      if (!lead.email) return;
+      const emailKey = lead.email.toLowerCase();
+      // Keep the most recent lead per email
+      if (!emailLeadMap.has(emailKey)) {
+        emailLeadMap.set(emailKey, lead);
+      }
+    });
+    const uniqueLeads = Array.from(emailLeadMap.values());
+
+    const totalLeads = uniqueLeads.length;
+    const convertedLeads = uniqueLeads.filter(l => l.converted_to_user);
     const registeredCount = convertedLeads.length;
 
-    // Leads that became paying subscribers
+    // Leads that became paying subscribers (deduplicated by email)
     const payingLeads: Array<QuizLead & { subscription: Subscription; mrr: number }> = [];
     let totalMRR = 0;
 
-    leads.forEach(lead => {
+    uniqueLeads.forEach(lead => {
       if (!lead.email) return;
       const sub = emailSubMap.get(lead.email.toLowerCase());
       if (sub && sub.is_active && sub.plan_type !== 'free') {
@@ -130,9 +141,9 @@ export function AdminROIDashboard({ language }: Props) {
       }
     });
 
-    // By source
+    // By source (deduplicated)
     const sourceMap = new Map<string, { leads: number; converted: number; paying: number; mrr: number }>();
-    leads.forEach(lead => {
+    uniqueLeads.forEach(lead => {
       const src = lead.source || 'evofinz';
       if (!sourceMap.has(src)) sourceMap.set(src, { leads: 0, converted: 0, paying: 0, mrr: 0 });
       const entry = sourceMap.get(src)!;

@@ -244,6 +244,8 @@ export const useLeadsManagement = () => {
   const stats = useMemo(() => {
     const total = leads.length;
     const contacted = leads.filter((l) => l.contacted_at).length;
+    const contactedManual = leads.filter((l) => l.contacted_at && !l.contact_notes?.startsWith('[AUTO]')).length;
+    const contactedAuto = leads.filter((l) => l.contacted_at && l.contact_notes?.startsWith('[AUTO]')).length;
     const converted = leads.filter((l) => l.converted_to_user).length;
     const synced = leads.filter((l) => l.ghl_synced).length;
     const withComments = leads.filter((l) => l.comments).length;
@@ -272,7 +274,9 @@ export const useLeadsManagement = () => {
 
     return { 
       total, 
-      contacted, 
+      contacted,
+      contactedManual,
+      contactedAuto,
       converted, 
       synced, 
       withComments,

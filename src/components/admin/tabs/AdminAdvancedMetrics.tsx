@@ -34,16 +34,19 @@ export const AdminAdvancedMetrics = ({ language }: Props) => {
   const metrics = useMemo(() => {
     if (!leads.length) return null;
 
-    // 1. Conversion funnel
+    // 1. Conversion funnel — separate auto vs manual contacts
     const total = leads.length;
-    const contacted = leads.filter((l: any) => l.contacted_at);
+    const allContacted = leads.filter((l: any) => l.contacted_at);
+    const manualContacted = allContacted.filter((l: any) => !l.contact_notes?.startsWith('[AUTO]'));
+    const autoContacted = allContacted.filter((l: any) => l.contact_notes?.startsWith('[AUTO]'));
     const converted = leads.filter((l: any) => l.converted_to_user);
-    const contactRate = total > 0 ? (contacted.length / total) * 100 : 0;
-    const conversionRate = contacted.length > 0 ? (converted.length / contacted.length) * 100 : 0;
+    const contactRate = total > 0 ? (manualContacted.length / total) * 100 : 0;
+    const autoContactRate = total > 0 ? (autoContacted.length / total) * 100 : 0;
+    const conversionRate = manualContacted.length > 0 ? (converted.length / manualContacted.length) * 100 : 0;
     const overallConversion = total > 0 ? (converted.length / total) * 100 : 0;
 
-    // 2. Avg time to contact (hours)
-    const contactTimes = contacted
+    // 2. Avg time to contact (hours) — only manual contacts
+    const contactTimes = manualContacted
       .filter((l: any) => l.contacted_at && l.created_at)
       .map((l: any) => differenceInHours(new Date(l.contacted_at), new Date(l.created_at)));
     const avgContactTime = contactTimes.length > 0 ? contactTimes.reduce((a, b) => a + b, 0) / contactTimes.length : 0;
@@ -77,7 +80,7 @@ export const AdminAdvancedMetrics = ({ language }: Props) => {
       const src = l.source || 'evofinz';
       if (!sources[src]) sources[src] = { total: 0, contacted: 0, converted: 0 };
       sources[src].total++;
-      if (l.contacted_at) sources[src].contacted++;
+      if (l.contacted_at && !l.contact_notes?.startsWith('[AUTO]')) sources[src].contacted++;
       if (l.converted_to_user) sources[src].converted++;
     });
     const sourceData = Object.entries(sources).map(([name, data]) => ({
@@ -100,10 +103,10 @@ export const AdminAdvancedMetrics = ({ language }: Props) => {
       { name: 'Cold 🧊', value: priorityDist.cold, color: '#6b7280' },
     ];
 
-    // 7. Best day/hour to contact
+    // 7. Best day/hour to contact (manual only)
     const contactedByDay: Record<number, number> = {};
     const contactedByHour: Record<number, number> = {};
-    contacted.forEach((l: any) => {
+    manualContacted.forEach((l: any) => {
       const d = new Date(l.contacted_at);
       contactedByDay[d.getDay()] = (contactedByDay[d.getDay()] || 0) + 1;
       contactedByHour[d.getHours()] = (contactedByHour[d.getHours()] || 0) + 1;
@@ -121,7 +124,8 @@ export const AdminAdvancedMetrics = ({ language }: Props) => {
 
     return {
       total, contactRate, conversionRate, overallConversion,
-      contactedCount: contacted.length, convertedCount: converted.length,
+      contactedCount: manualContacted.length, convertedCount: converted.length,
+      autoContactedCount: autoContacted.length, autoContactRate,
       avgContactTime, avgConversionDays, weeklyData, sourceData, pieData,
       bestDay: bestDay ? dayNames[parseInt(bestDay[0])] : '-',
       bestHour: bestHour ? `${bestHour[0]}:00` : '-',
@@ -138,7 +142,7 @@ export const AdminAdvancedMetrics = ({ language }: Props) => {
       {/* KPI Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { label: isEs ? 'Tasa contacto' : 'Contact Rate', value: `${metrics.contactRate.toFixed(1)}%`, sub: `${metrics.contactedCount}/${metrics.total}`, icon: Phone, color: 'text-amber-600' },
+          { label: isEs ? 'Tasa contacto (manual)' : 'Contact Rate (manual)', value: `${metrics.contactRate.toFixed(1)}%`, sub: `${metrics.contactedCount}/${metrics.total} · Auto: ${metrics.autoContactedCount}`, icon: Phone, color: 'text-amber-600' },
           { label: isEs ? 'Tasa conversión' : 'Conversion Rate', value: `${metrics.overallConversion.toFixed(1)}%`, sub: `${metrics.convertedCount}/${metrics.total}`, icon: Target, color: 'text-emerald-600' },
           { label: isEs ? 'Tiempo avg contacto' : 'Avg Contact Time', value: `${metrics.avgContactTime.toFixed(0)}h`, sub: isEs ? 'horas promedio' : 'average hours', icon: Clock, color: 'text-blue-600' },
           { label: isEs ? 'Tiempo avg conversión' : 'Avg Conversion Time', value: `${metrics.avgConversionDays.toFixed(0)}d`, sub: isEs ? 'días promedio' : 'average days', icon: Zap, color: 'text-violet-600' },
