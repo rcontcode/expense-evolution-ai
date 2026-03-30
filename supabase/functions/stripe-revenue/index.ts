@@ -139,13 +139,16 @@ serve(async (req) => {
         } catch { /* ignore */ }
       }
 
+      const createdDate = sub.created ? new Date(sub.created * 1000) : null;
+      const periodEndDate = sub.current_period_end ? new Date(sub.current_period_end * 1000) : null;
+
       recentSubscriptions.push({
         id: sub.id,
         email,
         plan: mapping ? (mapping.bundle ? `Bundle (${mapping.period})` : `${mapping.plan} (${mapping.period})`) : "Other",
         mrr: Math.round(monthlyAmount * 100) / 100,
-        created: new Date(sub.created * 1000).toISOString(),
-        current_period_end: new Date(sub.current_period_end * 1000).toISOString(),
+        created: createdDate && !isNaN(createdDate.getTime()) ? createdDate.toISOString() : new Date().toISOString(),
+        current_period_end: periodEndDate && !isNaN(periodEndDate.getTime()) ? periodEndDate.toISOString() : new Date().toISOString(),
       });
     }
 
