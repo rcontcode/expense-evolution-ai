@@ -47,7 +47,7 @@ export function DataPrivacyCard() {
         { data: investmentGoals },
         { data: tags },
       ] = await Promise.all([
-        supabase.from('profiles').select('*').eq('id', user.id).single(),
+        supabase.from('profiles').select('*').eq('id', user.id).maybeSingle(),
         supabase.from('expenses').select('*').eq('user_id', user.id),
         supabase.from('income').select('*').eq('user_id', user.id),
         supabase.from('clients').select('*').eq('user_id', user.id),

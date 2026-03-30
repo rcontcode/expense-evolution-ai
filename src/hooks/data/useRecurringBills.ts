@@ -194,8 +194,9 @@ export function useMarkBillPaid() {
         .select('*')
         .eq('id', billId)
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
       if (billError) throw billError;
+      if (!bill) throw new Error('Bill not found');
 
       const currentDue = new Date(bill.next_due_date);
       const { getNextDueDate } = await import('@/lib/constants/bill-categories');

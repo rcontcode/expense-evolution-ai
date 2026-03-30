@@ -22,7 +22,7 @@ export function useDocumentUrl(documentId: string | null | undefined) {
           .from('documents')
           .select('file_path, file_name')
           .eq('id', documentId)
-          .single();
+          .maybeSingle();
 
         if (docError || !document) {
           setError('Document not found');
