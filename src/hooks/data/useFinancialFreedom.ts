@@ -109,8 +109,8 @@ export function useFinancialFreedom(language: 'es' | 'en' = 'es'): FinancialFree
 
     if (freedomPercentage < 10) {
       recommendations.push(language === 'es' 
-        ? 'Kiyosaki: "La libertad financiera es cuando tus ingresos pasivos superan tus gastos"'
-        : 'Kiyosaki: "Financial freedom is when your passive income exceeds your expenses"');
+        ? '"La libertad financiera es cuando tus ingresos pasivos superan tus gastos"'
+        : '"Financial freedom is when your passive income exceeds your expenses"');
       recommendations.push(language === 'es'
         ? 'Comienza invirtiendo al menos 10% de tu ingreso en activos que generen flujo de efectivo'
         : 'Start investing at least 10% of your income in cash-flow generating assets');

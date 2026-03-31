@@ -49,7 +49,7 @@ export function usePayYourselfFirst(): PayYourselfFirstData {
 
   const recommendations: string[] = [];
   if (!hasPaidThisMonth && incomeThisMonth > 0) {
-    recommendations.push(`Jim Rohn: "No gastes lo que queda después de ahorrar; ahorra primero"`);
+    recommendations.push(`"No gastes lo que queda después de ahorrar; ahorra primero"`);
     recommendations.push(`Deberías apartar $${targetSavedThisMonth.toFixed(0)} este mes (${targetPercentage}% de tu ingreso)`);
   } else if (hasPaidThisMonth && !isOnTrack) {
     recommendations.push(`Te faltan $${(targetSavedThisMonth - actualSavedThisMonth).toFixed(0)} para alcanzar tu meta`);

@@ -117,7 +117,7 @@ const features = [
   {
     icon: TrendingUp,
     title: 'Patrimonio Neto',
-    description: 'Trackea activos vs pasivos con proyecciones y clasificación Kiyosaki.',
+    description: 'Trackea activos vs pasivos con proyecciones y clasificación inteligente.',
     tier: 'Premium',
     gradient: 'from-emerald-500 to-teal-500',
     emoji: '📈',

@@ -315,8 +315,8 @@ const VOICE_TUTORIALS: Tutorial[] = [
       {
         title: { es: 'Paso 1: Explora la mentoría', en: 'Step 1: Explore mentorship' },
         description: {
-          es: 'Ve a la sección de Mentoría. Aquí encontrarás herramientas basadas en principios de Robert Kiyosaki, Jim Rohn, y Brian Tracy.',
-          en: 'Go to the Mentorship section. Here you\'ll find tools based on principles from Robert Kiyosaki, Jim Rohn, and Brian Tracy.'
+          es: 'Ve a la sección de Mentoría. Aquí encontrarás herramientas basadas en principios de expertos financieros para activos, desarrollo personal y metas.',
+          en: 'Go to the Mentorship section. Here you\'ll find tools based on expert financial principles for assets, personal development, and goals.'
         },
         action: '/mentorship'
       },
