@@ -66,8 +66,8 @@ export const FINANCIAL_GLOSSARY: Record<string, GlossaryTerm> = {
     definitionEn: "Something that PUTS money in your pocket. A true asset generates income or increases in value over time.",
     example: "Inversiones que dan dividendos, propiedades que rentas, un negocio que genera ganancias.",
     exampleEn: "Investments that pay dividends, rental properties, a business that generates profits.",
-    tip: "Robert Kiyosaki: 'Los ricos compran activos. Los pobres solo tienen gastos. La clase media compra pasivos creyendo que son activos.'",
-    tipEn: "Robert Kiyosaki: 'The rich buy assets. The poor only have expenses. The middle class buys liabilities thinking they are assets.'"
+    tip: "'Los ricos compran activos. Los pobres solo tienen gastos. La clase media compra pasivos creyendo que son activos.'",
+    tipEn: "'The rich buy assets. The poor only have expenses. The middle class buys liabilities thinking they are assets.'"
   },
 
   liability: {

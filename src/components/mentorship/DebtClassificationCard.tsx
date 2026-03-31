@@ -66,7 +66,7 @@ export function DebtClassificationCard() {
               "{language === 'es' 
                 ? 'La deuda buena pone dinero en tu bolsillo. La deuda mala lo saca.'
                 : 'Good debt puts money in your pocket. Bad debt takes it out.'}"
-              <span className="block mt-1 font-medium not-italic">— Robert Kiyosaki</span>
+              <span className="block mt-1 font-medium not-italic text-primary">💰</span>
             </p>
             <div className="space-y-1">
               <p className="text-sm font-medium text-green-600">
@@ -108,8 +108,8 @@ export function DebtClassificationCard() {
             <Scale className="h-5 w-5 text-primary" />
             {language === 'es' ? 'Deuda Buena vs Mala' : 'Good vs Bad Debt'}
           </CardTitle>
-          <Badge variant="outline" className="text-xs" title={language === 'es' ? 'Inspirado en obra de Robert Kiyosaki. No afiliado.' : 'Inspired by Robert Kiyosaki\'s work. Not affiliated.'}>
-            📖 Kiyosaki*
+          <Badge variant="outline" className="text-xs">
+            💰 {language === 'es' ? 'Activos' : 'Assets'}
           </Badge>
         </div>
         <p className="text-xs text-muted-foreground italic">

@@ -62,7 +62,7 @@ const features = [
   },
   {
     icon: GraduationCap,
-    title: 'Mentoría Kiyosaki/Tracy/Rohn',
+    title: 'Mentoría Financiera Avanzada',
     description: 'Sistema de 8 módulos basados en principios de los mejores mentores financieros.',
     tier: 'Pro',
     gradient: 'from-purple-500 to-pink-500',
@@ -117,7 +117,7 @@ const features = [
   {
     icon: TrendingUp,
     title: 'Patrimonio Neto',
-    description: 'Trackea activos vs pasivos con proyecciones y clasificación Kiyosaki.',
+    description: 'Trackea activos vs pasivos con proyecciones y clasificación inteligente.',
     tier: 'Premium',
     gradient: 'from-emerald-500 to-teal-500',
     emoji: '📈',

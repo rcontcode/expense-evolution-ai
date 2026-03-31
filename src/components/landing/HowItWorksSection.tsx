@@ -146,11 +146,11 @@ const getWorkflows = (language: string): Workflow[] => [
       badgeText: 'text-rose-400'
     },
     steps: language === 'es' ? [
-      { number: '01', icon: BookOpen, title: 'Lee & Consume', description: 'Trackea libros, cursos y podcasts. Kiyosaki, Rohn, Tracy te guían.' },
+      { number: '01', icon: BookOpen, title: 'Lee & Consume', description: 'Trackea libros, cursos y podcasts. Expertos financieros te guían.' },
       { number: '02', icon: Brain, title: 'Practica', description: 'Aplica conceptos en tu vida real. El diario financiero captura tus aprendizajes.' },
       { number: '03', icon: Award, title: 'Domina', description: 'Desbloquea logros, sube de nivel y transforma tu mentalidad de dinero.' }
     ] : [
-      { number: '01', icon: BookOpen, title: 'Read & Consume', description: 'Track books, courses and podcasts. Kiyosaki, Rohn, Tracy guide you.' },
+      { number: '01', icon: BookOpen, title: 'Read & Consume', description: 'Track books, courses and podcasts. Financial experts guide you.' },
       { number: '02', icon: Brain, title: 'Practice', description: 'Apply concepts in your real life. The financial journal captures your learnings.' },
       { number: '03', icon: Award, title: 'Master', description: 'Unlock achievements, level up and transform your money mindset.' }
     ]

@@ -45,7 +45,7 @@ const EXPERT_WISDOM = {
       { quote: "Financial education is more valuable than money.", tip: "Dedicate time every day to learning about finance" },
       { quote: "Wealth is the ability to survive a certain number of days in the future.", tip: "How many days could you live without working?" },
     ],
-    author: "Robert Kiyosaki",
+    author: "Sabiduría financiera",
     emoji: "💎",
     color: "from-violet-500 to-purple-600"
   },
@@ -64,7 +64,7 @@ const EXPERT_WISDOM = {
       { quote: "Winners don't quit when they have problems. They find a way.", tip: "Every financial obstacle has a solution" },
       { quote: "Money isn't good or bad. It's an amplifier.", tip: "Develop good financial habits now" },
     ],
-    author: "Dave Ramsey",
+    author: "Sabiduría financiera",
     emoji: "🎯",
     color: "from-emerald-500 to-teal-600"
   },
@@ -83,7 +83,7 @@ const EXPERT_WISDOM = {
       { quote: "Success is not doing extraordinary things, but doing ordinary things extraordinarily well.", tip: "Master the basics: spend less than you earn" },
       { quote: "Poor people spend and save what's left. Rich people save first.", tip: "Pay yourself first, always" },
     ],
-    author: "Jim Rohn",
+    author: "Sabiduría financiera",
     emoji: "🌟",
     color: "from-amber-500 to-orange-600"
   },
@@ -102,7 +102,7 @@ const EXPERT_WISDOM = {
       { quote: "Develop an obsession about serving others.", tip: "Increase your income by solving problems" },
       { quote: "There's never enough time to do everything, but there's always time for what's important.", tip: "Prioritize your financial health" },
     ],
-    author: "Brian Tracy",
+    author: "Sabiduría financiera",
     emoji: "🚀",
     color: "from-blue-500 to-indigo-600"
   }

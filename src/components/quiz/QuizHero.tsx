@@ -89,7 +89,7 @@ export const QuizHero = ({ onStartQuiz, referralInfo, isLoadingReferral }: QuizH
         {
           icon: Users,
           title: "Metodología Experta",
-          description: "Basado en Kiyosaki, Tracy y más",
+          description: "Basado en expertos financieros",
         },
       ],
     },
@@ -123,7 +123,7 @@ export const QuizHero = ({ onStartQuiz, referralInfo, isLoadingReferral }: QuizH
         {
           icon: Users,
           title: "Expert Methodology",
-          description: "Based on Kiyosaki, Tracy and more",
+          description: "Based on financial experts",
         },
       ],
     },

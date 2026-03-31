@@ -105,12 +105,12 @@ const MENTOR_TIPS: Record<string, { es: string[]; en: string[] }> = {
   },
   atomic: {
     es: [
-      '💡 "No subes al nivel de tus metas, caes al nivel de tus sistemas" — James Clear',
+      '💡 "No subes al nivel de tus metas, caes al nivel de tus sistemas"',
       '💡 Mejora 1% cada día: en un año serás 37 veces mejor',
       '💡 Vincula un hábito nuevo a uno que ya tienes (habit stacking)',
     ],
     en: [
-      '💡 "You don\'t rise to the level of your goals, you fall to the level of your systems" — Clear',
+      '💡 "You don\'t rise to the level of your goals, you fall to the level of your systems"',
       '💡 Improve 1% daily: in a year you\'ll be 37x better',
       '💡 Link a new habit to one you already have (habit stacking)',
     ],
@@ -129,24 +129,24 @@ const MENTOR_TIPS: Record<string, { es: string[]; en: string[] }> = {
   },
   rohn: {
     es: [
-      '💡 "La disciplina es el puente entre metas y logros" — Jim Rohn',
+      '💡 "La disciplina es el puente entre metas y logros"',
       '💡 Eres el promedio de las 5 personas con las que más convives',
       '💡 Cuida tu mente como cuidas tu cuenta bancaria',
     ],
     en: [
-      '💡 "Discipline is the bridge between goals and accomplishments" — Jim Rohn',
+      '💡 "Discipline is the bridge between goals and accomplishments"',
       '💡 You\'re the average of the 5 people you spend the most time with',
       '💡 Guard your mind like you guard your bank account',
     ],
   },
   tracy: {
     es: [
-      '💡 "El 3% más rico tiene metas escritas; el resto solo deseos" — Brian Tracy',
+      '💡 "El 3% más rico tiene metas escritas; el resto solo deseos"',
       '💡 Usa el método ABCDE para priorizar tus tareas financieras',
       '💡 Una meta sin plazo es solo un sueño',
     ],
     en: [
-      '💡 "The top 3% have written goals; the rest only have wishes" — Brian Tracy',
+      '💡 "The top 3% have written goals; the rest only have wishes"',
       '💡 Use the ABCDE method to prioritize your financial tasks',
       '💡 A goal without a deadline is just a dream',
     ],
@@ -197,16 +197,16 @@ function TabBanner({ tab, isMobile }: { tab: string; isMobile: boolean }) {
   };
 
   const SUBTITLES: Record<string, { es: string; en: string }> = {
-    atomic: { es: 'Método Atomic Habits', en: 'Atomic Habits Method' },
-    kiyosaki: { es: 'Método Rich Dad', en: 'Rich Dad Method' },
-    rohn: { es: 'Filosofía Jim Rohn', en: 'Jim Rohn Philosophy' },
-    tracy: { es: 'Método Brian Tracy', en: 'Brian Tracy Method' },
+    atomic: { es: 'Método de Micro-Hábitos', en: 'Micro-Habits Method' },
+    kiyosaki: { es: 'Activos y Flujo de Caja', en: 'Assets & Cashflow' },
+    rohn: { es: 'Desarrollo Personal', en: 'Personal Development' },
+    tracy: { es: 'Metas y Productividad', en: 'Goals & Productivity' },
   };
 
   const DESCS: Record<string, { es: string; en: string }> = {
     library: { es: '100+ recursos curados para tu educación financiera 🎓', en: '100+ curated resources for your financial education 🎓' },
     atomic: { es: 'Las 4 leyes del cambio de comportamiento aplicadas a tus finanzas 🧬', en: 'The 4 laws of behavior change applied to your finances 🧬' },
-    kiyosaki: { es: '"Padre Rico, Padre Pobre" - Cuadrante y libertad financiera 🏦', en: '"Rich Dad Poor Dad" - Cashflow quadrant and freedom 🏦' },
+    kiyosaki: { es: 'Cuadrante del flujo de efectivo y libertad financiera 🏦', en: 'Cashflow quadrant and financial freedom 🏦' },
     rohn: { es: 'Filosofía de desarrollo personal y disciplina financiera ✨', en: 'Personal development philosophy and financial discipline ✨' },
     tracy: { es: 'Los 7 pasos para el éxito, método ABCDE y productividad financiera 🏆', en: 'The 7 steps to success, ABCDE method, and financial productivity 🏆' },
     wellbeing: { es: 'Calma tu mente para tomar mejores decisiones financieras 🧠', en: 'Calm your mind to make better financial decisions 🧠' },
@@ -362,7 +362,7 @@ export default function Mentorship() {
             </div>
           </TabsContent>
 
-          {/* Jim Rohn Tab */}
+          {/* Development Tab */}
           <TabsContent value="rohn" className="space-y-4 sm:space-y-6">
             <TabBanner tab="rohn" isMobile={isMobile} />
             <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
@@ -399,7 +399,7 @@ export default function Mentorship() {
             </div>
           </TabsContent>
 
-          {/* Brian Tracy Tab */}
+          {/* Goals Tab */}
           <TabsContent value="tracy" className="space-y-4 sm:space-y-6">
             <TabBanner tab="tracy" isMobile={isMobile} />
             <div id="mentorship-goal-wizard">

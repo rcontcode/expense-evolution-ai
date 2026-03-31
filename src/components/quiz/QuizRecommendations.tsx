@@ -166,8 +166,8 @@ const getRecommendations = (language: string) => [
       en: "Financial Goals",
     },
     description: {
-      es: "Sin metas claras, no hay dirección. Sistema SMART de metas con metodología Tracy + Atomic Habits integrada.",
-      en: "Without clear goals, there's no direction. SMART goal system with Tracy + Atomic Habits methodology integrated.",
+      es: "Sin metas claras, no hay dirección. Sistema SMART de metas con metodología de productividad + micro-hábitos integrada.",
+      en: "Without clear goals, there's no direction. SMART goal system with productivity + micro-habits methodology integrated.",
     },
     feature: {
       es: "📚 Mentoría de expertos integrada",
@@ -187,8 +187,8 @@ const getRecommendations = (language: string) => [
       en: "Your net worth is the true indicator of your financial health. Asset and liability tracking with projections.",
     },
     feature: {
-      es: "📈 Clasificación Kiyosaki incluida",
-      en: "📈 Kiyosaki classification included",
+      es: "📈 Clasificación inteligente incluida",
+      en: "📈 Smart classification included",
     },
   },
 ];

@@ -51,10 +51,10 @@ const DIFFICULTY_LABELS = {
 };
 
 const MENTOR_NAMES: Record<string, { es: string; en: string }> = {
-  kiyosaki: { es: 'Kiyosaki', en: 'Kiyosaki' },
-  rohn: { es: 'Jim Rohn', en: 'Jim Rohn' },
-  tracy: { es: 'Brian Tracy', en: 'Brian Tracy' },
-  atomic: { es: 'Hábitos Atómicos', en: 'Atomic Habits' },
+  kiyosaki: { es: 'Activos', en: 'Assets' },
+  rohn: { es: 'Desarrollo', en: 'Growth' },
+  tracy: { es: 'Metas', en: 'Goals' },
+  atomic: { es: 'Micro-Hábitos', en: 'Micro-Habits' },
 };
 
 function WeekDateRange({ es }: { es: boolean }) {

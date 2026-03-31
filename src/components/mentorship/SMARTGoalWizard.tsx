@@ -512,8 +512,8 @@ export function SMARTGoalWizard({ open, onOpenChange, goalType = 'savings' }: SM
                 <Lightbulb className="h-4 w-4 text-yellow-600 mt-0.5 flex-shrink-0" />
                 <p className="text-xs text-muted-foreground">
                   {language === 'es'
-                    ? 'Brian Tracy: "Las metas son sueños con fecha límite. Una meta sin un \'por qué\' poderoso es solo un deseo."'
-                    : 'Brian Tracy: "Goals are dreams with deadlines. A goal without a powerful \'why\' is just a wish."'}
+                    ? '"Las metas son sueños con fecha límite. Una meta sin un \'por qué\' poderoso es solo un deseo."'
+                    : '"Goals are dreams with deadlines. A goal without a powerful \'why\' is just a wish."'}
                 </p>
               </div>
             </div>

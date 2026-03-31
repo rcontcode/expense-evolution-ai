@@ -24,20 +24,20 @@ import { useNavigate } from 'react-router-dom';
 // Expert wisdom for the adventure
 const EXPERT_WISDOM = {
   es: [
-    { quote: 'No es cuánto dinero ganas, sino cuánto dinero conservas.', author: 'Robert Kiyosaki', icon: '💎' },
-    { quote: 'La libertad financiera es un estado mental antes que uno monetario.', author: 'Dave Ramsey', icon: '🧠' },
-    { quote: 'Los ricos adquieren activos. Los pobres adquieren pasivos que creen son activos.', author: 'Robert Kiyosaki', icon: '📈' },
-    { quote: 'Un presupuesto es decirle a tu dinero a dónde ir en lugar de preguntarte a dónde fue.', author: 'Dave Ramsey', icon: '🎯' },
-    { quote: 'La disciplina es el puente entre metas y logros.', author: 'Jim Rohn', icon: '🌉' },
-    { quote: 'Tu nivel de éxito rara vez excederá tu nivel de desarrollo personal.', author: 'Jim Rohn', icon: '📚' },
+    { quote: 'No es cuánto dinero ganas, sino cuánto dinero conservas.', author: 'Sabiduría financiera', icon: '💎' },
+    { quote: 'La libertad financiera es un estado mental antes que uno monetario.', author: 'Sabiduría financiera', icon: '🧠' },
+    { quote: 'Los ricos adquieren activos. Los pobres adquieren pasivos que creen son activos.', author: 'Sabiduría financiera', icon: '📈' },
+    { quote: 'Un presupuesto es decirle a tu dinero a dónde ir en lugar de preguntarte a dónde fue.', author: 'Sabiduría financiera', icon: '🎯' },
+    { quote: 'La disciplina es el puente entre metas y logros.', author: 'Sabiduría financiera', icon: '🌉' },
+    { quote: 'Tu nivel de éxito rara vez excederá tu nivel de desarrollo personal.', author: 'Sabiduría financiera', icon: '📚' },
   ],
   en: [
-    { quote: "It's not how much money you make, but how much money you keep.", author: 'Robert Kiyosaki', icon: '💎' },
-    { quote: 'Financial freedom is a mental state before a monetary one.', author: 'Dave Ramsey', icon: '🧠' },
-    { quote: 'The rich acquire assets. The poor acquire liabilities that they think are assets.', author: 'Robert Kiyosaki', icon: '📈' },
-    { quote: "A budget is telling your money where to go instead of wondering where it went.", author: 'Dave Ramsey', icon: '🎯' },
-    { quote: 'Discipline is the bridge between goals and accomplishment.', author: 'Jim Rohn', icon: '🌉' },
-    { quote: 'Your level of success will rarely exceed your level of personal development.', author: 'Jim Rohn', icon: '📚' },
+    { quote: "It's not how much money you make, but how much money you keep.", author: 'Financial wisdom', icon: '💎' },
+    { quote: 'Financial freedom is a mental state before a monetary one.', author: 'Financial wisdom', icon: '🧠' },
+    { quote: 'The rich acquire assets. The poor acquire liabilities that they think are assets.', author: 'Financial wisdom', icon: '📈' },
+    { quote: "A budget is telling your money where to go instead of wondering where it went.", author: 'Financial wisdom', icon: '🎯' },
+    { quote: 'Discipline is the bridge between goals and accomplishment.', author: 'Financial wisdom', icon: '🌉' },
+    { quote: 'Your level of success will rarely exceed your level of personal development.', author: 'Financial wisdom', icon: '📚' },
   ],
 };
 

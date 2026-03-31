@@ -46,7 +46,7 @@ export const CrecimientoAreaContent = memo(({ forcedTab }: { forcedTab?: string 
       id: 'mentorship',
       label: es ? 'Mentoría' : 'Mentorship',
       emoji: '📖',
-      description: es ? 'Cuadrante Kiyosaki, libertad financiera, págate primero y clasificación de deuda' : 'Kiyosaki quadrant, financial freedom, pay yourself first and debt classification',
+      description: es ? 'Cuadrante de flujo de efectivo, libertad financiera, págate primero y clasificación de deuda' : 'Cashflow quadrant, financial freedom, pay yourself first and debt classification',
       content: (
         <div className="space-y-6">
           <div className="grid gap-6 md:grid-cols-2">

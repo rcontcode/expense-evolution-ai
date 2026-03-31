@@ -747,8 +747,8 @@ export function useGenerateSampleData() {
         { type: 'insight', title: `${SAMPLE_MARKER} Gasto inusual detectado`, message: 'Tu gasto en "Comidas" este mes es 45% mayor que el promedio. Revisa los detalles.', read: false, action_url: '/expenses' },
         
         // Mentorship/Education
-        { type: 'education', title: `${SAMPLE_MARKER} 📚 Continúa tu lectura`, message: 'Llevas 3 días sin registrar progreso en "Rich Dad Poor Dad". ¡No pierdas el hábito!', read: false, action_url: '/mentorship' },
-        { type: 'tip', title: `${SAMPLE_MARKER} Consejo del día`, message: '"Los ricos adquieren activos. Los pobres y la clase media adquieren pasivos que creen son activos." - Robert Kiyosaki', read: true },
+        { type: 'education', title: `${SAMPLE_MARKER} 📚 Continúa tu lectura`, message: 'Llevas 3 días sin registrar progreso en tu libro actual. ¡No pierdas el hábito!', read: false, action_url: '/mentorship' },
+        { type: 'tip', title: `${SAMPLE_MARKER} Consejo del día`, message: '"Los ricos adquieren activos. Los pobres y la clase media adquieren pasivos que creen son activos."', read: true },
         
         // System notifications
         { type: 'system', title: `${SAMPLE_MARKER} Bienvenido a EvoFinz`, message: '¡Gracias por unirte! Explora los datos de ejemplo para conocer todas las funcionalidades.', read: true, action_url: '/dashboard' },
@@ -798,7 +798,7 @@ export function useGenerateSampleData() {
         { entry_type: 'reflection', content: `${SAMPLE_MARKER} Today I realized I've been spending too much on subscription services. Need to review and cancel unused ones.`, mood: 'thoughtful', lessons_learned: 'Small recurring expenses add up quickly over the year', entry_date: new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1).toISOString().split('T')[0] },
         { entry_type: 'gratitude', content: `${SAMPLE_MARKER} Grateful for the new client project! This will significantly boost my quarterly income.`, mood: 'happy', entry_date: new Date(today.getFullYear(), today.getMonth(), today.getDate() - 3).toISOString().split('T')[0] },
         { entry_type: 'decision', content: `${SAMPLE_MARKER} Decided to increase my monthly RRSP contribution from $500 to $750. Tax benefits plus compound growth!`, mood: 'motivated', lessons_learned: 'Automating savings removes the temptation to spend', entry_date: new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7).toISOString().split('T')[0] },
-        { entry_type: 'lesson', content: `${SAMPLE_MARKER} Read chapter 5 of Rich Dad Poor Dad. Key insight: Focus on building assets that generate passive income.`, mood: 'inspired', lessons_learned: 'Assets put money in your pocket; liabilities take money out', entry_date: new Date(today.getFullYear(), today.getMonth(), today.getDate() - 10).toISOString().split('T')[0] },
+        { entry_type: 'lesson', content: `${SAMPLE_MARKER} Read chapter 5 of a financial book. Key insight: Focus on building assets that generate passive income.`, mood: 'inspired', lessons_learned: 'Assets put money in your pocket; liabilities take money out', entry_date: new Date(today.getFullYear(), today.getMonth(), today.getDate() - 10).toISOString().split('T')[0] },
         { entry_type: 'reflection', content: `${SAMPLE_MARKER} Reviewed my expense categories this month. Food spending is 15% over budget - need to meal prep more.`, mood: 'determined', lessons_learned: 'Tracking expenses reveals patterns invisible to memory', entry_date: new Date(today.getFullYear(), today.getMonth(), today.getDate() - 14).toISOString().split('T')[0] },
       ];
 
@@ -810,7 +810,7 @@ export function useGenerateSampleData() {
       // ============================================
       console.log('[SAMPLE DATA] Creating education resources...');
       const educationResources = [
-        { title: `${SAMPLE_MARKER} Rich Dad Poor Dad`, author: 'Robert Kiyosaki', resource_type: 'book', category: 'mindset', total_pages: 336, pages_read: 248, progress_percentage: 74, daily_goal_pages: 15, status: 'in_progress', started_date: new Date(today.getFullYear(), today.getMonth() - 1, 10).toISOString().split('T')[0], key_lessons: 'Assets vs liabilities, cash flow quadrant, financial education importance', notes: 'Essential reading for understanding wealth building mindset' },
+        { title: `${SAMPLE_MARKER} Padre Rico, Padre Pobre`, author: 'Autor reconocido', resource_type: 'book', category: 'mindset', total_pages: 336, pages_read: 248, progress_percentage: 74, daily_goal_pages: 15, status: 'in_progress', started_date: new Date(today.getFullYear(), today.getMonth() - 1, 10).toISOString().split('T')[0], key_lessons: 'Assets vs liabilities, cash flow quadrant, financial education importance', notes: 'Essential reading for understanding wealth building mindset' },
         { title: `${SAMPLE_MARKER} The Intelligent Investor`, author: 'Benjamin Graham', resource_type: 'book', category: 'investing', total_pages: 640, pages_read: 640, progress_percentage: 100, status: 'completed', started_date: new Date(today.getFullYear(), today.getMonth() - 3, 1).toISOString().split('T')[0], completed_date: new Date(today.getFullYear(), today.getMonth() - 1, 15).toISOString().split('T')[0], impact_rating: 5, key_lessons: 'Value investing, margin of safety, Mr. Market concept' },
         { title: `${SAMPLE_MARKER} Financial Freedom Course`, resource_type: 'course', category: 'planning', total_minutes: 480, minutes_consumed: 320, progress_percentage: 67, daily_goal_minutes: 30, status: 'in_progress', url: 'https://example.com/course' },
         { title: `${SAMPLE_MARKER} The Psychology of Money`, author: 'Morgan Housel', resource_type: 'book', category: 'mindset', total_pages: 256, pages_read: 0, progress_percentage: 0, status: 'not_started', notes: 'Next on my reading list' },
@@ -1371,7 +1371,7 @@ export function useGenerateSampleDataBySection() {
 
         case 'education':
           const educationResources = [
-            { title: `${SAMPLE_MARKER} Rich Dad Poor Dad`, author: 'Robert Kiyosaki', resource_type: 'book', category: 'mindset', total_pages: 336, pages_read: 248, progress_percentage: 74, status: 'in_progress' },
+            { title: `${SAMPLE_MARKER} Padre Rico, Padre Pobre`, author: 'Autor reconocido', resource_type: 'book', category: 'mindset', total_pages: 336, pages_read: 248, progress_percentage: 74, status: 'in_progress' },
             { title: `${SAMPLE_MARKER} The Intelligent Investor`, author: 'Benjamin Graham', resource_type: 'book', category: 'investing', total_pages: 640, pages_read: 640, progress_percentage: 100, status: 'completed', impact_rating: 5 },
           ];
           await supabase.from('financial_education').insert(educationResources.map(e => ({ ...e, user_id: userId })));

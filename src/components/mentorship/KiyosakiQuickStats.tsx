@@ -66,7 +66,7 @@ export function KiyosakiQuickStats() {
         <div className="flex items-center gap-2 mb-3">
           <span className="text-lg">💰</span>
           <h3 className="text-sm font-semibold">
-            {es ? 'Resumen Kiyosaki' : 'Kiyosaki Summary'}
+            {es ? 'Resumen de Activos' : 'Assets Summary'}
           </h3>
         </div>
         <div className="grid grid-cols-2 gap-2">

@@ -338,14 +338,14 @@ export const guideSections: GuideSection[] = [
     title: { es: 'Mentoría Financiera', en: 'Financial Mentorship' },
     shortDesc: { es: 'Sistema de niveles con sabiduría de expertos', en: 'Level system with expert wisdom' },
     purpose: {
-      es: 'Un sistema de mentoría progresivo donde subes de nivel según tu actividad financiera. En cada nivel recibes tips rotativos de expertos financieros reconocidos (Robert Kiyosaki, Dave Ramsey, Jim Rohn, Brian Tracy). Incluye logros desbloqueables, metas de progreso y celebraciones épicas.',
-      en: 'A progressive mentorship system where you level up based on your financial activity. At each level you receive rotating tips from recognized financial experts (Robert Kiyosaki, Dave Ramsey, Jim Rohn, Brian Tracy). Includes unlockable achievements, progress goals, and epic celebrations.'
+      es: 'Un sistema de mentoría progresivo donde subes de nivel según tu actividad financiera. En cada nivel recibes tips rotativos de expertos financieros. Incluye logros desbloqueables, metas de progreso y celebraciones épicas.',
+      en: 'A progressive mentorship system where you level up based on your financial activity. At each level you receive rotating tips from financial experts. Includes unlockable achievements, progress goals, and epic celebrations.'
     },
     steps: [
       { es: 'Accede desde el menú → Mentoría o desde el banner en el Dashboard', en: 'Access from the menu → Mentorship or from the Dashboard banner' },
       { es: 'Revisa tu nivel actual y los tips del experto del momento', en: 'Review your current level and tips from the current expert' },
       { es: 'Completa los Desafíos Semanales — retos automáticos que miden tu progreso real', en: 'Complete Weekly Challenges — automatic challenges that measure your real progress' },
-      { es: 'Usa el Acompañante de Lectura (tab Rohn → Educación) para trackear tu ritmo de lectura vs promedio global', en: 'Use the Reading Companion (Rohn tab → Education) to track your reading pace vs global average' },
+      { es: 'Usa el Acompañante de Lectura (tab Desarrollo → Educación) para trackear tu ritmo de lectura vs promedio global', en: 'Use the Reading Companion (Growth tab → Education) to track your reading pace vs global average' },
       { es: 'Sigue tu Ruta de Aprendizaje personalizada con sugerencias dinámicas', en: 'Follow your personalized Learning Path with dynamic suggestions' },
       { es: 'Los tips rotan cada 8 segundos con sabiduría práctica aplicable', en: 'Tips rotate every 8 seconds with practical applicable wisdom' },
     ],
@@ -818,7 +818,7 @@ export const guideSections: GuideSection[] = [
     steps: [
       { es: 'Agrega recursos de aprendizaje: libros, cursos, podcasts, videos, artículos', en: 'Add learning resources: books, courses, podcasts, videos, articles' },
       { es: 'Establece metas diarias de lectura (páginas) o estudio (minutos)', en: 'Set daily reading (pages) or study (minutes) goals' },
-      { es: 'Activa el Acompañante de Lectura: ve a Mentoría → tab Rohn → Educación Financiera → selecciona un recurso "En progreso"', en: 'Activate the Reading Companion: go to Mentorship → Rohn tab → Financial Education → select an "In progress" resource' },
+      { es: 'Activa el Acompañante de Lectura: ve a Mentoría → tab Desarrollo → Educación Financiera → selecciona un recurso "En progreso"', en: 'Activate the Reading Companion: go to Mentorship → Growth tab → Financial Education → select an "In progress" resource' },
       { es: 'El tracker muestra tu ritmo de lectura, predicción de finalización y comparación con promedio global', en: 'The tracker shows your reading pace, completion prediction, and comparison with global average' },
       { es: 'Registra tu progreso diario con notas y reflexiones', en: 'Log your daily progress with notes and reflections' },
       { es: 'Crea entradas en el Diario de Práctica para aplicar lo aprendido', en: 'Create Practice Diary entries to apply what you\'ve learned' },

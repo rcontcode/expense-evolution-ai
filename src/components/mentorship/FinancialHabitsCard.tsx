@@ -69,7 +69,7 @@ export function FinancialHabitsCard() {
             {language === 'es' ? 'Hábitos Financieros' : 'Financial Habits'}
           </CardTitle>
           <Badge variant="outline" className="text-xs">
-            Brian Tracy
+            🎯 {language === 'es' ? 'Productividad' : 'Productivity'}
           </Badge>
         </div>
         <p className="text-xs text-muted-foreground italic">

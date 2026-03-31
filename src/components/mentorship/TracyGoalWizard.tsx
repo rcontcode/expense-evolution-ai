@@ -455,7 +455,7 @@ export const TracyGoalWizard = () => {
           </div>
           <div>
             <CardTitle className="text-2xl font-bold">
-              {language === 'es' ? 'Sistema de Metas Brian Tracy' : 'Brian Tracy Goal System'}
+              {language === 'es' ? 'Sistema de Metas y Productividad' : 'Goals & Productivity System'}
             </CardTitle>
             <CardDescription className="text-white/80">
               {language === 'es' 
@@ -1028,8 +1028,8 @@ export const TracyGoalWizard = () => {
                     </p>
                     <p className="text-sm text-muted-foreground">
                       {language === 'es' 
-                        ? '"La disciplina es el puente entre metas y logros" - Jim Rohn'
-                        : '"Discipline is the bridge between goals and accomplishment" - Jim Rohn'}
+                        ? '"La disciplina es el puente entre metas y logros"'
+                        : '"Discipline is the bridge between goals and accomplishment"'}
                     </p>
                   </div>
                 </div>
@@ -1106,14 +1106,13 @@ export const TracyGoalWizard = () => {
                 ))}
               </div>
 
-              {/* Brian Tracy Quote */}
+              {/* Inspirational Quote */}
               <div className="p-4 rounded-lg bg-muted/50 text-center">
                 <p className="italic text-muted-foreground">
                   {language === 'es' 
                     ? '"Tu habilidad para disciplinarte a ti mismo para establecer metas claras y luego trabajar hacia ellas cada día, te garantizará más éxito que cualquier otro factor."'
                     : '"Your ability to discipline yourself to set clear goals and then work towards them every day will guarantee you more success than any other factor."'}
                 </p>
-                <p className="text-sm font-medium mt-2">— Brian Tracy</p>
               </div>
 
               <div className="flex justify-between">
