@@ -82,8 +82,8 @@ export function CashflowQuadrantCard() {
             <Target className="h-5 w-5 text-primary" />
             {language === 'es' ? 'Cuadrante del Flujo de Dinero' : 'Cashflow Quadrant'}
           </CardTitle>
-          <Badge variant="outline" className="text-xs" title={language === 'es' ? 'Inspirado en obra de Robert Kiyosaki. No afiliado.' : 'Inspired by Robert Kiyosaki\'s work. Not affiliated.'}>
-            📖 Kiyosaki*
+          <Badge variant="outline" className="text-xs">
+            💰 {language === 'es' ? 'Activos' : 'Assets'}
           </Badge>
         </div>
         <p className="text-xs text-muted-foreground">

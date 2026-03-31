@@ -76,7 +76,7 @@ export function FinancialJournalCard() {
             {language === 'es' ? 'Diario Financiero' : 'Financial Journal'}
           </CardTitle>
           <Badge variant="outline" className="text-xs">
-            Jim Rohn
+            🌟 {language === 'es' ? 'Desarrollo' : 'Growth'}
           </Badge>
         </div>
         <p className="text-xs text-muted-foreground italic">

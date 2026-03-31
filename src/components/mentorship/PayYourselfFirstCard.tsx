@@ -74,8 +74,8 @@ export function PayYourselfFirstCard() {
             {language === 'es' ? 'Págate Primero' : 'Pay Yourself First'}
           </CardTitle>
           <div className="flex items-center gap-2">
-            <Badge variant="outline" className="text-xs" title={language === 'es' ? 'Inspirado en filosofía de Jim Rohn. No afiliado.' : 'Inspired by Jim Rohn\'s philosophy. Not affiliated.'}>
-              📖 Rohn*
+            <Badge variant="outline" className="text-xs">
+              🌟 {language === 'es' ? 'Desarrollo' : 'Growth'}
             </Badge>
             <Dialog open={showSettings} onOpenChange={setShowSettings}>
               <DialogTrigger asChild>

@@ -51,7 +51,7 @@ export function TracyQuickStats() {
         <CardHeader className="pb-3">
           <CardTitle className="text-sm sm:text-base flex items-center gap-2">
             <Clock className="h-4 w-4 text-blue-500" />
-            {es ? 'Resumen de Metas Tracy' : 'Tracy Goals Summary'}
+            {es ? 'Resumen de Metas' : 'Goals Summary'}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">

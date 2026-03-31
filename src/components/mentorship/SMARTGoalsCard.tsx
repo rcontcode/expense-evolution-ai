@@ -103,8 +103,8 @@ export function SMARTGoalsCard() {
               <Target className="h-5 w-5 text-primary" />
               {language === 'es' ? 'Metas SMART' : 'SMART Goals'}
             </CardTitle>
-            <Badge variant="outline" className="text-xs" title={language === 'es' ? 'Inspirado en obra de Brian Tracy. No afiliado.' : 'Inspired by Brian Tracy\'s work. Not affiliated.'}>
-              📖 Tracy*
+            <Badge variant="outline" className="text-xs">
+              🎯 {language === 'es' ? 'Metas' : 'Goals'}
             </Badge>
           </div>
           <p className="text-xs text-muted-foreground italic">
