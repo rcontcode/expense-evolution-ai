@@ -345,7 +345,7 @@ export const guideSections: GuideSection[] = [
       { es: 'Accede desde el menú → Mentoría o desde el banner en el Dashboard', en: 'Access from the menu → Mentorship or from the Dashboard banner' },
       { es: 'Revisa tu nivel actual y los tips del experto del momento', en: 'Review your current level and tips from the current expert' },
       { es: 'Completa los Desafíos Semanales — retos automáticos que miden tu progreso real', en: 'Complete Weekly Challenges — automatic challenges that measure your real progress' },
-      { es: 'Usa el Acompañante de Lectura (tab Rohn → Educación) para trackear tu ritmo de lectura vs promedio global', en: 'Use the Reading Companion (Rohn tab → Education) to track your reading pace vs global average' },
+      { es: 'Usa el Acompañante de Lectura (tab Desarrollo → Educación) para trackear tu ritmo de lectura vs promedio global', en: 'Use the Reading Companion (Growth tab → Education) to track your reading pace vs global average' },
       { es: 'Sigue tu Ruta de Aprendizaje personalizada con sugerencias dinámicas', en: 'Follow your personalized Learning Path with dynamic suggestions' },
       { es: 'Los tips rotan cada 8 segundos con sabiduría práctica aplicable', en: 'Tips rotate every 8 seconds with practical applicable wisdom' },
     ],
