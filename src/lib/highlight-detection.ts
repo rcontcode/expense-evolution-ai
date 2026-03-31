@@ -156,8 +156,8 @@ const HIGHLIGHT_KEYWORDS: Record<string, { es: string[]; en: string[] }> = {
     en: ['mentorship tabs', 'mentorship sections', 'mentors'],
   },
   'mentor-selector': {
-    es: ['selector de mentor', 'elegir mentor', 'kiyosaki', 'jim rohn', 'brian tracy'],
-    en: ['mentor selector', 'choose mentor', 'kiyosaki', 'jim rohn', 'brian tracy'],
+    es: ['selector de mentor', 'elegir mentor', 'activos', 'desarrollo', 'metas'],
+    en: ['mentor selector', 'choose mentor', 'assets', 'growth', 'goals'],
   },
   'financial-library': {
     es: ['biblioteca financiera', 'libros', 'recursos educativos', 'biblioteca'],

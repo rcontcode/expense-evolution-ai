@@ -28,7 +28,7 @@
      { quote: "Your future self will thank you for this!", author: "Financial wisdom", emoji: "👑" },
     { quote: "Money is a terrible master but an excellent servant!", author: "Financial wisdom", emoji: "⚡" },
     { quote: "Don't work for money, make money work for you!", author: "Financial wisdom", emoji: "🏦" },
-    { quote: "Wealth is not measured in money, but in free time!", author: "Bodo Schäfer", emoji: "⏰" },
+    { quote: "Wealth is not measured in money, but in free time!", author: "Financial wisdom", emoji: "⏰" },
    ],
  };
  
