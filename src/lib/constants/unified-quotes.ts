@@ -25,7 +25,7 @@ const fokusparkQuotes: UnifiedQuote[] = [
   { text: "El éxito es ir de fracaso en fracaso sin perder el entusiasmo.", author: "Winston Churchill", category: "mindset", source: "fokuspark" },
   { text: "La vida es lo que pasa mientras estás ocupado haciendo otros planes.", author: "John Lennon", category: "general", source: "fokuspark" },
   { text: "No cuentes los días, haz que los días cuenten.", author: "Muhammad Ali", category: "mindset", source: "fokuspark" },
-  { text: "La disciplina es el puente entre las metas y los logros.", author: "Jim Rohn", category: "planning", source: "fokuspark" },
+  { text: "La disciplina es el puente entre las metas y los logros.", author: "Sabiduría financiera", category: "planning", source: "fokuspark" },
   { text: "Tu tiempo es limitado, no lo desperdicies viviendo la vida de otro.", author: "Steve Jobs", category: "freedom", source: "fokuspark" },
   { text: "El secreto del éxito es la constancia del propósito.", author: "Benjamin Disraeli", category: "planning", source: "fokuspark" },
   { text: "La mente es todo. En lo que piensas, te conviertes.", author: "Buda", category: "mindset", source: "fokuspark" },
