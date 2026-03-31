@@ -699,8 +699,8 @@ export function IncomeAnalyticsDashboard({ year, month }: IncomeAnalyticsDashboa
                   <Info className="h-4 w-4 flex-shrink-0 mt-0.5" />
                   <span>
                     {language === 'es' 
-                      ? 'Robert Kiyosaki recomienda migrar del lado izquierdo (E, S) al lado derecho (B, I) para alcanzar la libertad financiera.'
-                      : 'Robert Kiyosaki recommends migrating from the left side (E, S) to the right side (B, I) to achieve financial freedom.'}
+                      ? 'Se recomienda migrar del lado izquierdo (E, S) al lado derecho (B, I) para alcanzar la libertad financiera.'
+                      : 'It is recommended to migrate from the left side (E, S) to the right side (B, I) to achieve financial freedom.'}
                   </span>
                 </p>
               </div>
