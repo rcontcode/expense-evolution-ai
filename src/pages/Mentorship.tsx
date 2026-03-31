@@ -362,7 +362,7 @@ export default function Mentorship() {
             </div>
           </TabsContent>
 
-          {/* Jim Rohn Tab */}
+          {/* Development Tab */}
           <TabsContent value="rohn" className="space-y-4 sm:space-y-6">
             <TabBanner tab="rohn" isMobile={isMobile} />
             <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
