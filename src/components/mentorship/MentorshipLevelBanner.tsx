@@ -102,7 +102,7 @@ const EXPERT_WISDOM = {
       { quote: "Develop an obsession about serving others.", tip: "Increase your income by solving problems" },
       { quote: "There's never enough time to do everything, but there's always time for what's important.", tip: "Prioritize your financial health" },
     ],
-    author: "Brian Tracy",
+    author: "Sabiduría financiera",
     emoji: "🚀",
     color: "from-blue-500 to-indigo-600"
   }

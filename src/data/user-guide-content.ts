@@ -818,7 +818,7 @@ export const guideSections: GuideSection[] = [
     steps: [
       { es: 'Agrega recursos de aprendizaje: libros, cursos, podcasts, videos, artículos', en: 'Add learning resources: books, courses, podcasts, videos, articles' },
       { es: 'Establece metas diarias de lectura (páginas) o estudio (minutos)', en: 'Set daily reading (pages) or study (minutes) goals' },
-      { es: 'Activa el Acompañante de Lectura: ve a Mentoría → tab Rohn → Educación Financiera → selecciona un recurso "En progreso"', en: 'Activate the Reading Companion: go to Mentorship → Rohn tab → Financial Education → select an "In progress" resource' },
+      { es: 'Activa el Acompañante de Lectura: ve a Mentoría → tab Desarrollo → Educación Financiera → selecciona un recurso "En progreso"', en: 'Activate the Reading Companion: go to Mentorship → Growth tab → Financial Education → select an "In progress" resource' },
       { es: 'El tracker muestra tu ritmo de lectura, predicción de finalización y comparación con promedio global', en: 'The tracker shows your reading pace, completion prediction, and comparison with global average' },
       { es: 'Registra tu progreso diario con notas y reflexiones', en: 'Log your daily progress with notes and reflections' },
       { es: 'Crea entradas en el Diario de Práctica para aplicar lo aprendido', en: 'Create Practice Diary entries to apply what you\'ve learned' },
