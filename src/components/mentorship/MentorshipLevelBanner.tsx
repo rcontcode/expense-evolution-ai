@@ -45,7 +45,7 @@ const EXPERT_WISDOM = {
       { quote: "Financial education is more valuable than money.", tip: "Dedicate time every day to learning about finance" },
       { quote: "Wealth is the ability to survive a certain number of days in the future.", tip: "How many days could you live without working?" },
     ],
-    author: "Robert Kiyosaki",
+    author: "Sabiduría financiera",
     emoji: "💎",
     color: "from-violet-500 to-purple-600"
   },
