@@ -105,12 +105,12 @@ const MENTOR_TIPS: Record<string, { es: string[]; en: string[] }> = {
   },
   atomic: {
     es: [
-      '💡 "No subes al nivel de tus metas, caes al nivel de tus sistemas" — James Clear',
+      '💡 "No subes al nivel de tus metas, caes al nivel de tus sistemas"',
       '💡 Mejora 1% cada día: en un año serás 37 veces mejor',
       '💡 Vincula un hábito nuevo a uno que ya tienes (habit stacking)',
     ],
     en: [
-      '💡 "You don\'t rise to the level of your goals, you fall to the level of your systems" — Clear',
+      '💡 "You don\'t rise to the level of your goals, you fall to the level of your systems"',
       '💡 Improve 1% daily: in a year you\'ll be 37x better',
       '💡 Link a new habit to one you already have (habit stacking)',
     ],
@@ -129,24 +129,24 @@ const MENTOR_TIPS: Record<string, { es: string[]; en: string[] }> = {
   },
   rohn: {
     es: [
-      '💡 "La disciplina es el puente entre metas y logros" — Jim Rohn',
+      '💡 "La disciplina es el puente entre metas y logros"',
       '💡 Eres el promedio de las 5 personas con las que más convives',
       '💡 Cuida tu mente como cuidas tu cuenta bancaria',
     ],
     en: [
-      '💡 "Discipline is the bridge between goals and accomplishments" — Jim Rohn',
+      '💡 "Discipline is the bridge between goals and accomplishments"',
       '💡 You\'re the average of the 5 people you spend the most time with',
       '💡 Guard your mind like you guard your bank account',
     ],
   },
   tracy: {
     es: [
-      '💡 "El 3% más rico tiene metas escritas; el resto solo deseos" — Brian Tracy',
+      '💡 "El 3% más rico tiene metas escritas; el resto solo deseos"',
       '💡 Usa el método ABCDE para priorizar tus tareas financieras',
       '💡 Una meta sin plazo es solo un sueño',
     ],
     en: [
-      '💡 "The top 3% have written goals; the rest only have wishes" — Brian Tracy',
+      '💡 "The top 3% have written goals; the rest only have wishes"',
       '💡 Use the ABCDE method to prioritize your financial tasks',
       '💡 A goal without a deadline is just a dream',
     ],
