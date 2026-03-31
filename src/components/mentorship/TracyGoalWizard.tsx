@@ -1106,14 +1106,13 @@ export const TracyGoalWizard = () => {
                 ))}
               </div>
 
-              {/* Brian Tracy Quote */}
+              {/* Inspirational Quote */}
               <div className="p-4 rounded-lg bg-muted/50 text-center">
                 <p className="italic text-muted-foreground">
                   {language === 'es' 
                     ? '"Tu habilidad para disciplinarte a ti mismo para establecer metas claras y luego trabajar hacia ellas cada día, te garantizará más éxito que cualquier otro factor."'
                     : '"Your ability to discipline yourself to set clear goals and then work towards them every day will guarantee you more success than any other factor."'}
                 </p>
-                <p className="text-sm font-medium mt-2">— Brian Tracy</p>
               </div>
 
               <div className="flex justify-between">

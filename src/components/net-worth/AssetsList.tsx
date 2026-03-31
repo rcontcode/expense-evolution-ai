@@ -803,9 +803,9 @@ export function AssetsList({ assets, onAdd, onEdit }: AssetsListProps) {
                 </div>
               ))}
               
-              {/* Kiyosaki Quote */}
+              {/* Asset Quote */}
               <div className="p-3 rounded-lg bg-muted/50 border text-xs text-muted-foreground italic">
-                <p>"Un activo pone dinero en tu bolsillo. Un pasivo saca dinero de tu bolsillo." — Robert Kiyosaki</p>
+                <p>"Un activo pone dinero en tu bolsillo. Un pasivo saca dinero de tu bolsillo."</p>
               </div>
             </div>
           );

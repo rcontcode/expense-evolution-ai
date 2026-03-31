@@ -351,10 +351,9 @@ export function AtomicHabitsCard() {
           </CardTitle>
           <Badge 
             className="text-xs bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border-cyan-500/30 hover:from-cyan-500/30 hover:to-blue-500/30 transition-all"
-            title={language === 'es' ? 'Inspirado en "Hábitos Atómicos" de James Clear. No afiliado.' : 'Inspired by "Atomic Habits" by James Clear. Not affiliated.'}
           >
             <BookOpen className="h-3 w-3 mr-1" />
-            📖 Clear*
+            ⚛️ {language === 'es' ? 'Hábitos' : 'Habits'}
           </Badge>
         </div>
         
