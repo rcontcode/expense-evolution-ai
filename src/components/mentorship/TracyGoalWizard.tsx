@@ -455,7 +455,7 @@ export const TracyGoalWizard = () => {
           </div>
           <div>
             <CardTitle className="text-2xl font-bold">
-              {language === 'es' ? 'Sistema de Metas Brian Tracy' : 'Brian Tracy Goal System'}
+              {language === 'es' ? 'Sistema de Metas y Productividad' : 'Goals & Productivity System'}
             </CardTitle>
             <CardDescription className="text-white/80">
               {language === 'es' 
