@@ -66,7 +66,7 @@ export function DebtClassificationCard() {
               "{language === 'es' 
                 ? 'La deuda buena pone dinero en tu bolsillo. La deuda mala lo saca.'
                 : 'Good debt puts money in your pocket. Bad debt takes it out.'}"
-              <span className="block mt-1 font-medium not-italic">— Robert Kiyosaki</span>
+              <span className="block mt-1 font-medium not-italic text-primary">💰</span>
             </p>
             <div className="space-y-1">
               <p className="text-sm font-medium text-green-600">
