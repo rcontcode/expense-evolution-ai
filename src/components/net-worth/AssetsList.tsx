@@ -129,7 +129,7 @@ const generateRecommendations = (
     recommendations.push({
       asset: nonProductiveAssets[0],
       suggestion: `${userName}, convierte tus activos en generadores de ingresos`,
-      strategy: 'Robert Kiyosaki dice: "Los ricos adquieren activos que generan ingresos. Los pobres y clase media adquieren pasivos pensando que son activos." Evalúa cada posesión preguntándote: ¿Esto pone dinero en mi bolsillo?',
+      strategy: '"Los ricos adquieren activos que generan ingresos. Los pobres y clase media adquieren pasivos pensando que son activos." Evalúa cada posesión preguntándote: ¿Esto pone dinero en mi bolsillo?',
       icon: <Sparkles className="h-4 w-4" />,
       difficulty: 'moderado'
     });
