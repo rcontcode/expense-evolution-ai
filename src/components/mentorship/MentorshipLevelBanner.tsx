@@ -83,7 +83,7 @@ const EXPERT_WISDOM = {
       { quote: "Success is not doing extraordinary things, but doing ordinary things extraordinarily well.", tip: "Master the basics: spend less than you earn" },
       { quote: "Poor people spend and save what's left. Rich people save first.", tip: "Pay yourself first, always" },
     ],
-    author: "Jim Rohn",
+    author: "Sabiduría financiera",
     emoji: "🌟",
     color: "from-amber-500 to-orange-600"
   },
