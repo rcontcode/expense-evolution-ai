@@ -1,55 +1,83 @@
 
 
-# Plan: Completar email real + fix "contactado falso"
+# Plan: Despersonalizar nombres de famosos en toda la app EvoFinz
 
-## Estado actual
-- `send-crm-email` existe pero no está desplegada
-- `run-automations` llama a `send-crm-email` para emails, pero **sigue marcando `contacted_at` incluso si el email NO se envió** (líneas 333-337)
-- Dominio `notify.universmind.com` sigue pendiente DNS — no se puede enviar aún, pero podemos dejar todo listo
-- No hay template de email ni infraestructura de email configurada
+## Contexto
+Actualmente la app muestra nombres como "Kiyosaki", "Jim Rohn", "Brian Tracy", "Hábitos Atómicos" (James Clear) en múltiples lugares: sidebar, badges, citas, desafíos semanales, tips, wizard titles, etc. Según la política de marca ya establecida, estos nombres deben eliminarse de la interfaz pública, manteniendo las atribuciones solo en la sección Legal y en la Biblioteca (donde son autores de libros reales).
 
-## Cambios
+## Estrategia de reemplazo
 
-### 1. Fix "contactado falso" en `run-automations/index.ts`
-Líneas 333-337: Solo marcar `contacted_at` si el email realmente se envió:
-```
-// ANTES: siempre marca contactado
-if (result.status === 'success') {
-  contacted_at = now()  // ← SIEMPRE, aunque email_sent = false
-}
+Los nombres de famosos se reemplazan por **nombres genéricos descriptivos** de las metodologías:
 
-// DESPUÉS: solo si se envió realmente
-if (result.status === 'success' && result.data.email_sent === true) {
-  contacted_at = now()
-}
-// Si no se envió, marcar con nota de que fue generado pero no enviado
-```
-Para WhatsApp (que no tiene envío real aún), NO marcar como contactado.
+| Actual | Nuevo (UI) | ID interno (sin cambio) |
+|--------|-----------|------------------------|
+| Kiyosaki / Rich Dad | Activos y Flujo de Caja | `kiyosaki` |
+| Jim Rohn | Desarrollo Personal | `rohn` |
+| Brian Tracy | Metas y Productividad | `tracy` |
+| Hábitos Atómicos | Micro-Hábitos | `atomic` |
 
-### 2. Configurar infraestructura de email
-- Llamar `setup_email_infra` para crear las tablas, colas pgmq, y cron job
-- Llamar `scaffold_transactional_email` para crear el Edge Function `send-transactional-email` y la estructura de templates
+**IDs internos** (`kiyosaki`, `rohn`, `tracy`, `atomic`) no se cambian para evitar romper rutas, queries y lógica.
 
-### 3. Crear template `crm-lead-outreach`
-Template React Email en `_shared/transactional-email-templates/` que reciba:
-- `recipientName`, `subject`, `body`, `ruleName`
-- Estilo consistente con la marca EvoFinz
+## Áreas a NO tocar
+- **`src/pages/Legal.tsx`** — Las atribuciones legales se mantienen intactas
+- **`src/components/mentorship/FinancialLibrary.tsx`** — Los autores de libros reales se mantienen (son datos bibliográficos)
+- **`src/components/settings/FinancialEducationResources.tsx`** — Autores de recursos reales
+- **`src/lib/constants/mentor-quotes.ts`** — Archivo de datos interno (no visible al usuario directamente); se pueden anonimizar las citas que se muestran en UI
+- **Comentarios de código** — No afectan la UI
 
-### 4. Actualizar `send-crm-email` para usar `send-transactional-email`
-Ya está apuntando a `send-transactional-email` — solo necesita el template registrado en el registry.
+## Archivos a modificar (~30 archivos)
 
-### 5. Desplegar todas las funciones
-- `send-crm-email`
-- `run-automations`
-- `send-transactional-email` (creada por scaffold)
-- `process-email-queue` (creada por scaffold)
+### Grupo 1: Navegación y estructura principal
+1. **Sidebar/Menu** — Encontrar donde se definen los sub-items "Kiyosaki", "Jim Rohn", "Brian Tracy", "Hábitos Atómicos" del menú lateral y reemplazar labels
+2. **`src/pages/Mentorship.tsx`** — Tab labels, subtitles, tips con atribuciones, section descriptions
+3. **`src/pages/BetaFeatures.tsx`** — Título "Mentoría Kiyosaki/Tracy/Rohn" → "Mentoría Financiera Avanzada"
+4. **`src/pages/FinancialAdventure.tsx`** — `EXPERT_WISDOM` authors → genéricos
 
-## Sobre el DNS pendiente
-Todo quedará configurado y listo. Los emails se encolarán pero no se entregarán hasta que el DNS de `notify.universmind.com` se verifique. En ese momento, empezarán a enviarse automáticamente.
+### Grupo 2: Tarjetas de mentoría (badges y citas)
+5. **`CashflowQuadrantCard.tsx`** — Badge "📖 Kiyosaki*" → "💰 Activos", quitar "— Robert Kiyosaki"
+6. **`FinancialFreedomCard.tsx`** — Badge y cita attribution
+7. **`DebtClassificationCard.tsx`** — Badge y cita attribution
+8. **`PayYourselfFirstCard.tsx`** — Badge "📖 Rohn*" → "🌟 Desarrollo Personal"
+9. **`SMARTGoalsCard.tsx`** — Badge "📖 Tracy*" → "🎯 Metas"
+10. **`SMARTGoalWizard.tsx`** — Cita "Brian Tracy: ..."
+11. **`AtomicHabitsCard.tsx`** — Título y badge "Hábitos Atómicos"
+12. **`FinancialJournalCard.tsx`** — Badge "Jim Rohn"
+13. **`FinancialHabitsCard.tsx`** — Badge "Brian Tracy"
+14. **`TracyGoalWizard.tsx`** — Título "Sistema de Metas Brian Tracy", citas con atribución
+15. **`KiyosakiQuickStats.tsx`** — Título "Resumen Kiyosaki" → "Resumen de Activos"
+16. **`TracyQuickStats.tsx`** — Título "Tracy Goals Summary" → "Resumen de Metas"
+17. **`WeeklyChallengesCard.tsx`** — `MENTOR_NAMES` map con nombres famosos
+18. **`LearningPathCard.tsx`** — Libro "Hábitos Atómicos" (se mantiene como título de libro), tab `kiyosaki`
 
-## Resultado final
-- Automatizaciones generan mensajes con IA ✅
-- Emails se envían realmente (cuando DNS esté listo) ✅
-- `contacted_at` SOLO se marca si el email se entregó ✅
-- WhatsApp: genera mensaje pero NO marca como contactado ✅
+### Grupo 3: Landing y marketing
+19. **`FeaturesShowcase.tsx`** — "Principios Kiyosaki, Tracy, Rohn" → "Principios de expertos financieros"
+20. **`FeatureDemosCarousel.tsx`** — "Hábitos Atómicos"
+
+### Grupo 4: Hooks y contexto
+21. **`useSmartGuidance.ts`** — Descripción con nombres
+22. **`useAssistantContext.ts`** — Sugerencias y descripciones
+23. **`usePayYourselfFirst.ts`** — Cita "Jim Rohn: ..."
+24. **`useGenerateSampleData.ts`** — Cita y notificaciones con atribución
+
+### Grupo 5: Datos y constantes
+25. **`mentorship-challenges.ts`** — Button labels "Ir a Kiyosaki" → "Ir a Activos"
+26. **`user-guide-content.ts`** — Descripciones con nombres
+27. **`src/data/tutorials.ts`** — Referencias en narración
+
+### Grupo 6: Contexto de gamificación
+28. **`GamificationContext.tsx`** — Si hay nombres en helpers de celebración
+29. **`MentorshipLevelBanner`** — Quotes de expertos con nombres
+
+### Grupo 7: Otros
+30. **`src/components/focus/areas/CrecimientoAreaContent.tsx`** — Descripción con "Kiyosaki"
+31. **`src/components/net-worth/AssetsList.tsx`** — Cita de Kiyosaki en assets
+32. **`src/components/quiz/QuizHero.tsx`** — "Basado en Kiyosaki, Tracy y más"
+
+## Criterio para citas
+- Las citas **se mantienen** como contenido inspiracional pero **sin atribución visible** (sin "— Robert Kiyosaki")
+- Se pueden presentar como "Sabiduría financiera" o simplemente como citas sin autor
+- En tooltips de badges, cambiar "Inspirado en obra de X. No afiliado." → eliminar o genericizar
+
+## Resultado esperado
+La app presentará las mismas metodologías y herramientas pero con nombres genéricos descriptivos, cumpliendo la política de despersonalización. Solo la página Legal y la Biblioteca mantendrán atribuciones de autores reales.
 
