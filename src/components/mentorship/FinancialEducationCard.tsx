@@ -722,7 +722,7 @@ export function FinancialEducationCard() {
                 <Input
                   value={newResource.author}
                   onChange={(e) => setNewResource({ ...newResource, author: e.target.value })}
-                  placeholder={language === 'es' ? 'Ej: Robert Kiyosaki' : 'Ex: Robert Kiyosaki'}
+                  placeholder={language === 'es' ? 'Ej: Autor del libro' : 'Ex: Book Author'}
                   className="mt-1"
                 />
               </div>

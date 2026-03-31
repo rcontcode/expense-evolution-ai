@@ -64,7 +64,7 @@ const EXPERT_WISDOM = {
       { quote: "Winners don't quit when they have problems. They find a way.", tip: "Every financial obstacle has a solution" },
       { quote: "Money isn't good or bad. It's an amplifier.", tip: "Develop good financial habits now" },
     ],
-    author: "Dave Ramsey",
+    author: "Sabiduría financiera",
     emoji: "🎯",
     color: "from-emerald-500 to-teal-600"
   },
