@@ -671,7 +671,7 @@ export const QuizModal = ({ isOpen, onClose, onComplete, referralInfo }: QuizMod
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent 
-        className="max-w-lg bg-gradient-to-b from-slate-900 to-slate-950 border-slate-800 p-0 overflow-hidden"
+        className="max-w-lg max-h-[90vh] bg-gradient-to-b from-slate-900 to-slate-950 border-slate-800 p-0 overflow-y-auto"
         onKeyDown={handleKeyDown}
       >
         {/* Progress bar */}
