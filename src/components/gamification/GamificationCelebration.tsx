@@ -497,7 +497,7 @@ const triggerStarburst = () => {
                            {randomQuote.emoji} "{randomQuote.quote}"
                          </p>
                           <p className="text-sm text-primary font-bold mt-2 flex items-center justify-center gap-2">
-                            <span className="text-lg">📚</span> — {randomQuote.author}
+                            <span className="text-lg">📚</span> — {language === 'es' ? 'Sabiduría financiera' : 'Financial wisdom'}
                          </p>
                        </motion.div>
                      )}

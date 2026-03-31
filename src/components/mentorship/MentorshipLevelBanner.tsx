@@ -325,7 +325,7 @@ export function MentorshipLevelBanner() {
             <div className="flex items-center gap-2 mb-1">
               <Quote className="h-4 w-4 text-white/70" />
               <span className="text-xs font-bold text-white/90 uppercase tracking-wider">
-                {language === 'es' ? 'Sabiduría de' : 'Wisdom from'} {expert.author}
+                {language === 'es' ? 'Sabiduría financiera' : 'Financial wisdom'}
               </span>
               <BookOpen className="h-3 w-3 text-white/50" />
             </div>

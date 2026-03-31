@@ -241,7 +241,7 @@ export default function FinancialAdventure() {
               <div>
                 <p className="text-sm font-medium text-muted-foreground">{text.expertWisdom}</p>
                 <p className="italic">"{wisdom.quote}"</p>
-                <p className="text-sm text-primary font-medium mt-1">— {wisdom.author}</p>
+                <p className="text-sm text-primary font-medium mt-1">— {language === 'es' ? 'Sabiduría financiera' : 'Financial wisdom'}</p>
               </div>
             </div>
           </div>
