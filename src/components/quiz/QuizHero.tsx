@@ -89,7 +89,7 @@ export const QuizHero = ({ onStartQuiz, referralInfo, isLoadingReferral }: QuizH
         {
           icon: Users,
           title: "Metodología Experta",
-          description: "Basado en Kiyosaki, Tracy y más",
+          description: "Basado en expertos financieros",
         },
       ],
     },
