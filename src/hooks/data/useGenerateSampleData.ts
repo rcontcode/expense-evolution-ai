@@ -1371,7 +1371,7 @@ export function useGenerateSampleDataBySection() {
 
         case 'education':
           const educationResources = [
-            { title: `${SAMPLE_MARKER} Rich Dad Poor Dad`, author: 'Robert Kiyosaki', resource_type: 'book', category: 'mindset', total_pages: 336, pages_read: 248, progress_percentage: 74, status: 'in_progress' },
+            { title: `${SAMPLE_MARKER} Padre Rico, Padre Pobre`, author: 'Autor reconocido', resource_type: 'book', category: 'mindset', total_pages: 336, pages_read: 248, progress_percentage: 74, status: 'in_progress' },
             { title: `${SAMPLE_MARKER} The Intelligent Investor`, author: 'Benjamin Graham', resource_type: 'book', category: 'investing', total_pages: 640, pages_read: 640, progress_percentage: 100, status: 'completed', impact_rating: 5 },
           ];
           await supabase.from('financial_education').insert(educationResources.map(e => ({ ...e, user_id: userId })));

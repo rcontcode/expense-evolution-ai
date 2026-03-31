@@ -36,7 +36,7 @@ const fokusparkQuotes: UnifiedQuote[] = [
   { text: "La meditación no es escapar de la realidad, es ver la realidad con claridad.", author: "Bhante Gunaratana", category: "general", source: "fokuspark" },
   { text: "El enfoque no es decir sí a lo importante, es decir no a todo lo demás.", author: "Steve Jobs", category: "planning", source: "fokuspark" },
   { text: "La productividad nunca es accidental. Es el resultado del compromiso.", author: "Paul J. Meyer", category: "planning", source: "fokuspark" },
-  { text: "Cuida tu cuerpo, es el único lugar donde tienes que vivir.", author: "Jim Rohn", category: "general", source: "fokuspark" },
+  { text: "Cuida tu cuerpo, es el único lugar donde tienes que vivir.", author: "Sabiduría financiera", category: "general", source: "fokuspark" },
   { text: "La gratitud convierte lo que tenemos en suficiente.", author: "Melody Beattie", category: "saving", source: "fokuspark" },
   { text: "Haz de cada día tu obra maestra.", author: "John Wooden", category: "mindset", source: "fokuspark" },
   { text: "El progreso, no la perfección, es lo que importa.", author: "Anónimo", category: "mindset", source: "fokuspark" },
