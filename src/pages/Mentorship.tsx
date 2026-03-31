@@ -399,7 +399,7 @@ export default function Mentorship() {
             </div>
           </TabsContent>
 
-          {/* Brian Tracy Tab */}
+          {/* Goals Tab */}
           <TabsContent value="tracy" className="space-y-4 sm:space-y-6">
             <TabBanner tab="tracy" isMobile={isMobile} />
             <div id="mentorship-goal-wizard">

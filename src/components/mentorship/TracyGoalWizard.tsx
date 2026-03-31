@@ -1028,8 +1028,8 @@ export const TracyGoalWizard = () => {
                     </p>
                     <p className="text-sm text-muted-foreground">
                       {language === 'es' 
-                        ? '"La disciplina es el puente entre metas y logros" - Jim Rohn'
-                        : '"Discipline is the bridge between goals and accomplishment" - Jim Rohn'}
+                        ? '"La disciplina es el puente entre metas y logros"'
+                        : '"Discipline is the bridge between goals and accomplishment"'}
                     </p>
                   </div>
                 </div>
