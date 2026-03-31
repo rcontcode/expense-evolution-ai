@@ -197,16 +197,16 @@ function TabBanner({ tab, isMobile }: { tab: string; isMobile: boolean }) {
   };
 
   const SUBTITLES: Record<string, { es: string; en: string }> = {
-    atomic: { es: 'Método Atomic Habits', en: 'Atomic Habits Method' },
-    kiyosaki: { es: 'Método Rich Dad', en: 'Rich Dad Method' },
-    rohn: { es: 'Filosofía Jim Rohn', en: 'Jim Rohn Philosophy' },
-    tracy: { es: 'Método Brian Tracy', en: 'Brian Tracy Method' },
+    atomic: { es: 'Método de Micro-Hábitos', en: 'Micro-Habits Method' },
+    kiyosaki: { es: 'Activos y Flujo de Caja', en: 'Assets & Cashflow' },
+    rohn: { es: 'Desarrollo Personal', en: 'Personal Development' },
+    tracy: { es: 'Metas y Productividad', en: 'Goals & Productivity' },
   };
 
   const DESCS: Record<string, { es: string; en: string }> = {
     library: { es: '100+ recursos curados para tu educación financiera 🎓', en: '100+ curated resources for your financial education 🎓' },
     atomic: { es: 'Las 4 leyes del cambio de comportamiento aplicadas a tus finanzas 🧬', en: 'The 4 laws of behavior change applied to your finances 🧬' },
-    kiyosaki: { es: '"Padre Rico, Padre Pobre" - Cuadrante y libertad financiera 🏦', en: '"Rich Dad Poor Dad" - Cashflow quadrant and freedom 🏦' },
+    kiyosaki: { es: 'Cuadrante del flujo de efectivo y libertad financiera 🏦', en: 'Cashflow quadrant and financial freedom 🏦' },
     rohn: { es: 'Filosofía de desarrollo personal y disciplina financiera ✨', en: 'Personal development philosophy and financial discipline ✨' },
     tracy: { es: 'Los 7 pasos para el éxito, método ABCDE y productividad financiera 🏆', en: 'The 7 steps to success, ABCDE method, and financial productivity 🏆' },
     wellbeing: { es: 'Calma tu mente para tomar mejores decisiones financieras 🧠', en: 'Calm your mind to make better financial decisions 🧠' },

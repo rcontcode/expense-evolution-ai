@@ -32,8 +32,8 @@ const getAudiences = (language: string) => [
       ? 'No te conformes con un sueldo. Visualiza tu patrimonio, planifica tu retiro anticipado y transforma cada peso en un paso hacia la independencia.'
       : 'Don\'t settle for a paycheck. Visualize your wealth, plan early retirement and transform every dollar into a step towards independence.',
     benefits: language === 'es'
-      ? ['🔥 Calculadora FIRE para retiro temprano', '📈 Tracking de patrimonio neto', '🎯 Metas de ahorro SMART', '💎 Clasificación de activos Kiyosaki', '📚 Mentoría financiera integrada', '🏆 Gamificación y logros']
-      : ['🔥 FIRE Calculator for early retirement', '📈 Net worth tracking', '🎯 SMART savings goals', '💎 Kiyosaki asset classification', '📚 Integrated financial mentorship', '🏆 Gamification & achievements'],
+      ? ['🔥 Calculadora FIRE para retiro temprano', '📈 Tracking de patrimonio neto', '🎯 Metas de ahorro SMART', '💎 Clasificación de activos inteligente', '📚 Mentoría financiera integrada', '🏆 Gamificación y logros']
+      : ['🔥 FIRE Calculator for early retirement', '📈 Net worth tracking', '🎯 SMART savings goals', '💎 Smart asset classification', '📚 Integrated financial mentorship', '🏆 Gamification & achievements'],
     color: 'from-orange-500 to-amber-500',
     bgColor: 'bg-gradient-to-br from-orange-500/10 to-amber-500/10',
     accentColor: 'text-orange-600'

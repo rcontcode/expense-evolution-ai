@@ -74,7 +74,7 @@ const getShowcaseItems = (language: string) => [
     icon: Brain,
     title: language === 'es' ? "Mentoría Financiera" : "Financial Mentorship",
     why: language === 'es' ? "Aprende de los mejores" : "Learn from the best",
-    what: language === 'es' ? "Principios Kiyosaki, Tracy, Rohn" : "Kiyosaki, Tracy, Rohn principles",
+    what: language === 'es' ? "Principios de expertos financieros" : "Expert financial principles",
     how: language === 'es' ? "Cuadrante cashflow + diario + hábitos" : "Cashflow quadrant + journal + habits",
     gradient: "from-fuchsia-500 to-pink-500",
     bgGlow: "bg-fuchsia-500/20"

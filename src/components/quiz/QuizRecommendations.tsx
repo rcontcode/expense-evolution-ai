@@ -187,8 +187,8 @@ const getRecommendations = (language: string) => [
       en: "Your net worth is the true indicator of your financial health. Asset and liability tracking with projections.",
     },
     feature: {
-      es: "📈 Clasificación Kiyosaki incluida",
-      en: "📈 Kiyosaki classification included",
+      es: "📈 Clasificación inteligente incluida",
+      en: "📈 Smart classification included",
     },
   },
 ];

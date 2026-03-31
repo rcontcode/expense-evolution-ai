@@ -75,7 +75,7 @@ const getDemos = (language: string) => [
   },
   { 
     id: "habits", 
-    title: language === 'es' ? "Hábitos Atómicos" : "Atomic Habits", 
+    title: language === 'es' ? "Micro-Hábitos" : "Micro-Habits", 
     subtitle: language === 'es' ? "Construye hábitos financieros ganadores" : "Build winning financial habits",
     icon: Target,
     color: "from-indigo-500 to-violet-600",

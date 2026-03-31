@@ -6,7 +6,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 type Step = "idle" | "resources" | "reading" | "complete";
 
 const getResources = (language: string) => [
-  { icon: BookOpen, title: language === 'es' ? "Padre Rico, Padre Pobre" : "Rich Dad, Poor Dad", author: "R. Kiyosaki", type: language === 'es' ? "Libro" : "Book", progress: 100, color: "from-amber-400 to-orange-500" },
+  { icon: BookOpen, title: language === 'es' ? "Padre Rico, Padre Pobre" : "Rich Dad, Poor Dad", author: "R.K.", type: language === 'es' ? "Libro" : "Book", progress: 100, color: "from-amber-400 to-orange-500" },
   { icon: BookOpen, title: language === 'es' ? "El Hombre Más Rico de Babilonia" : "The Richest Man in Babylon", author: "G. Clason", type: language === 'es' ? "Libro" : "Book", progress: 65, color: "from-emerald-400 to-green-500" },
   { icon: Headphones, title: "Financial Freedom", author: "Grant Sabatier", type: "Podcast", progress: 45, color: "from-violet-400 to-purple-500" },
 ];

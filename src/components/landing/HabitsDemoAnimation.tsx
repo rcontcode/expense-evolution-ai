@@ -97,7 +97,7 @@ export function HabitsDemoAnimation() {
             <div className="flex items-center justify-between text-white">
               <div className="flex items-center gap-2">
                 <Target className="w-5 h-5" />
-                <span className="font-bold">{language === 'es' ? 'Hábitos Atómicos' : 'Atomic Habits'}</span>
+                <span className="font-bold">{language === 'es' ? 'Micro-Hábitos' : 'Micro-Habits'}</span>
               </div>
               <motion.div 
                 key={totalXP}
