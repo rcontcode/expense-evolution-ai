@@ -1,83 +1,40 @@
 
 
-# Plan: Despersonalizar nombres de famosos en toda la app EvoFinz
+# Estado actual y lo que falta para echar a andar los emails
 
-## Contexto
-Actualmente la app muestra nombres como "Kiyosaki", "Jim Rohn", "Brian Tracy", "Hábitos Atómicos" (James Clear) en múltiples lugares: sidebar, badges, citas, desafíos semanales, tips, wizard titles, etc. Según la política de marca ya establecida, estos nombres deben eliminarse de la interfaz pública, manteniendo las atribuciones solo en la sección Legal y en la Biblioteca (donde son autores de libros reales).
+## ✅ Lo que YA está listo
 
-## Estrategia de reemplazo
+| Componente | Estado |
+|---|---|
+| **evofinz.com** — dominio de email | ✅ Verificado y activo |
+| **Infraestructura de colas** (pgmq, cron job cada 5s) | ✅ Funcionando |
+| **Edge Functions** (send-transactional-email, auth-email-hook, process-email-queue, send-crm-email, handle-email-unsubscribe, handle-email-suppression) | ✅ Desplegadas |
+| **Plantilla CRM** (crm-lead-outreach) | ✅ Registrada |
+| **Cloudflare** — 3 dominios activos | ✅ Confirmado |
 
-Los nombres de famosos se reemplazan por **nombres genéricos descriptivos** de las metodologías:
+## ⚠️ Lo que hay que corregir
 
-| Actual | Nuevo (UI) | ID interno (sin cambio) |
-|--------|-----------|------------------------|
-| Kiyosaki / Rich Dad | Activos y Flujo de Caja | `kiyosaki` |
-| Jim Rohn | Desarrollo Personal | `rohn` |
-| Brian Tracy | Metas y Productividad | `tracy` |
-| Hábitos Atómicos | Micro-Hábitos | `atomic` |
+### 1. SITE_NAME incorrecto en send-transactional-email
+El `From:` de los correos transaccionales aparece como **"expense-evolution-ai"** en vez de **"EvoFinz"**. Hay que cambiar la línea 8 de `send-transactional-email/index.ts`:
+- `"expense-evolution-ai"` → `"EvoFinz"`
 
-**IDs internos** (`kiyosaki`, `rohn`, `tracy`, `atomic`) no se cambian para evitar romper rutas, queries y lógica.
+### 2. universmind.com — dominio de email aún pendiente
+El dominio `universmind.com` aparece con status **"initiated"** (no verificado). Esto significa que la delegación DNS todavía no se ha verificado. Hay que ir a **Cloud → Emails → Manage Domains** y hacer clic en **Verify Domain** para `universmind.com`.
 
-## Áreas a NO tocar
-- **`src/pages/Legal.tsx`** — Las atribuciones legales se mantienen intactas
-- **`src/components/mentorship/FinancialLibrary.tsx`** — Los autores de libros reales se mantienen (son datos bibliográficos)
-- **`src/components/settings/FinancialEducationResources.tsx`** — Autores de recursos reales
-- **`src/lib/constants/mentor-quotes.ts`** — Archivo de datos interno (no visible al usuario directamente); se pueden anonimizar las citas que se muestran en UI
-- **Comentarios de código** — No afectan la UI
+### 3. fokuspark.com — dominio de email no configurado aún
+`fokuspark.com` no tiene dominio de email configurado en este proyecto. Pero como Fokuspark es un **proyecto diferente en Lovable**, su configuración de email se hace desde ese proyecto, no desde este.
 
-## Archivos a modificar (~30 archivos)
+## 📋 Acciones a ejecutar (en este proyecto EvoFinz)
 
-### Grupo 1: Navegación y estructura principal
-1. **Sidebar/Menu** — Encontrar donde se definen los sub-items "Kiyosaki", "Jim Rohn", "Brian Tracy", "Hábitos Atómicos" del menú lateral y reemplazar labels
-2. **`src/pages/Mentorship.tsx`** — Tab labels, subtitles, tips con atribuciones, section descriptions
-3. **`src/pages/BetaFeatures.tsx`** — Título "Mentoría Kiyosaki/Tracy/Rohn" → "Mentoría Financiera Avanzada"
-4. **`src/pages/FinancialAdventure.tsx`** — `EXPERT_WISDOM` authors → genéricos
+1. **Corregir SITE_NAME** en `send-transactional-email/index.ts` — cambiar `"expense-evolution-ai"` a `"EvoFinz"`
+2. **Redesplegar** las edge functions afectadas (`send-transactional-email`)
+3. **Verificar universmind.com** — pedirte que vayas a Cloud → Emails y hagas clic en "Verify Domain"
 
-### Grupo 2: Tarjetas de mentoría (badges y citas)
-5. **`CashflowQuadrantCard.tsx`** — Badge "📖 Kiyosaki*" → "💰 Activos", quitar "— Robert Kiyosaki"
-6. **`FinancialFreedomCard.tsx`** — Badge y cita attribution
-7. **`DebtClassificationCard.tsx`** — Badge y cita attribution
-8. **`PayYourselfFirstCard.tsx`** — Badge "📖 Rohn*" → "🌟 Desarrollo Personal"
-9. **`SMARTGoalsCard.tsx`** — Badge "📖 Tracy*" → "🎯 Metas"
-10. **`SMARTGoalWizard.tsx`** — Cita "Brian Tracy: ..."
-11. **`AtomicHabitsCard.tsx`** — Título y badge "Hábitos Atómicos"
-12. **`FinancialJournalCard.tsx`** — Badge "Jim Rohn"
-13. **`FinancialHabitsCard.tsx`** — Badge "Brian Tracy"
-14. **`TracyGoalWizard.tsx`** — Título "Sistema de Metas Brian Tracy", citas con atribución
-15. **`KiyosakiQuickStats.tsx`** — Título "Resumen Kiyosaki" → "Resumen de Activos"
-16. **`TracyQuickStats.tsx`** — Título "Tracy Goals Summary" → "Resumen de Metas"
-17. **`WeeklyChallengesCard.tsx`** — `MENTOR_NAMES` map con nombres famosos
-18. **`LearningPathCard.tsx`** — Libro "Hábitos Atómicos" (se mantiene como título de libro), tab `kiyosaki`
+## 🔑 Sobre los otros proyectos
 
-### Grupo 3: Landing y marketing
-19. **`FeaturesShowcase.tsx`** — "Principios Kiyosaki, Tracy, Rohn" → "Principios de expertos financieros"
-20. **`FeatureDemosCarousel.tsx`** — "Hábitos Atómicos"
+- **Universmind**: El dominio de email está en este mismo proyecto pero pendiente de verificación DNS. Una vez verificado, los correos CRM podrán enviarse desde `notify.universmind.com`.
+- **Fokuspark**: Se configura desde su propio proyecto en Lovable. Cuando lo hagas, seguirás el mismo flujo: configurar dominio de email, agregar NS records en Cloudflare, verificar, y scaffoldear las plantillas.
 
-### Grupo 4: Hooks y contexto
-21. **`useSmartGuidance.ts`** — Descripción con nombres
-22. **`useAssistantContext.ts`** — Sugerencias y descripciones
-23. **`usePayYourselfFirst.ts`** — Cita "Jim Rohn: ..."
-24. **`useGenerateSampleData.ts`** — Cita y notificaciones con atribución
-
-### Grupo 5: Datos y constantes
-25. **`mentorship-challenges.ts`** — Button labels "Ir a Kiyosaki" → "Ir a Activos"
-26. **`user-guide-content.ts`** — Descripciones con nombres
-27. **`src/data/tutorials.ts`** — Referencias en narración
-
-### Grupo 6: Contexto de gamificación
-28. **`GamificationContext.tsx`** — Si hay nombres en helpers de celebración
-29. **`MentorshipLevelBanner`** — Quotes de expertos con nombres
-
-### Grupo 7: Otros
-30. **`src/components/focus/areas/CrecimientoAreaContent.tsx`** — Descripción con "Kiyosaki"
-31. **`src/components/net-worth/AssetsList.tsx`** — Cita de Kiyosaki en assets
-32. **`src/components/quiz/QuizHero.tsx`** — "Basado en Kiyosaki, Tracy y más"
-
-## Criterio para citas
-- Las citas **se mantienen** como contenido inspiracional pero **sin atribución visible** (sin "— Robert Kiyosaki")
-- Se pueden presentar como "Sabiduría financiera" o simplemente como citas sin autor
-- En tooltips de badges, cambiar "Inspirado en obra de X. No afiliado." → eliminar o genericizar
-
-## Resultado esperado
-La app presentará las mismas metodologías y herramientas pero con nombres genéricos descriptivos, cumpliendo la política de despersonalización. Solo la página Legal y la Biblioteca mantendrán atribuciones de autores reales.
+## Resultado
+Tras estos cambios, el sistema de emails automatizados del CRM estará listo para enviar correos a leads desde `noreply@evofinz.com` con el nombre "EvoFinz".
 
