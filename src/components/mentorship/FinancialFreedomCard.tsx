@@ -59,7 +59,7 @@ export function FinancialFreedomCard() {
               "{language === 'es' 
                 ? 'La libertad financiera es cuando tus ingresos pasivos cubren todos tus gastos'
                 : 'Financial freedom is when your passive income covers all your expenses'}"
-              <span className="block mt-1 font-medium not-italic">— Robert Kiyosaki</span>
+              <span className="block mt-1 font-medium not-italic text-primary">✨</span>
             </p>
             <div className="space-y-1">
               <p className="text-sm font-medium">
