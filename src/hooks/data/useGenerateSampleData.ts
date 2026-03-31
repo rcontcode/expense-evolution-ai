@@ -747,8 +747,8 @@ export function useGenerateSampleData() {
         { type: 'insight', title: `${SAMPLE_MARKER} Gasto inusual detectado`, message: 'Tu gasto en "Comidas" este mes es 45% mayor que el promedio. Revisa los detalles.', read: false, action_url: '/expenses' },
         
         // Mentorship/Education
-        { type: 'education', title: `${SAMPLE_MARKER} 📚 Continúa tu lectura`, message: 'Llevas 3 días sin registrar progreso en "Rich Dad Poor Dad". ¡No pierdas el hábito!', read: false, action_url: '/mentorship' },
-        { type: 'tip', title: `${SAMPLE_MARKER} Consejo del día`, message: '"Los ricos adquieren activos. Los pobres y la clase media adquieren pasivos que creen son activos." - Robert Kiyosaki', read: true },
+        { type: 'education', title: `${SAMPLE_MARKER} 📚 Continúa tu lectura`, message: 'Llevas 3 días sin registrar progreso en tu libro actual. ¡No pierdas el hábito!', read: false, action_url: '/mentorship' },
+        { type: 'tip', title: `${SAMPLE_MARKER} Consejo del día`, message: '"Los ricos adquieren activos. Los pobres y la clase media adquieren pasivos que creen son activos."', read: true },
         
         // System notifications
         { type: 'system', title: `${SAMPLE_MARKER} Bienvenido a EvoFinz`, message: '¡Gracias por unirte! Explora los datos de ejemplo para conocer todas las funcionalidades.', read: true, action_url: '/dashboard' },
