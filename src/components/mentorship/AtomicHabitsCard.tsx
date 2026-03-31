@@ -346,7 +346,7 @@ export function AtomicHabitsCard() {
               <Atom className="h-6 w-6 text-cyan-500" />
             </motion.div>
             <span className="bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent font-bold">
-              {language === 'es' ? 'Hábitos Atómicos' : 'Atomic Habits'}
+              {language === 'es' ? 'Micro-Hábitos' : 'Micro-Habits'}
             </span>
           </CardTitle>
           <Badge 
