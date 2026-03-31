@@ -338,8 +338,8 @@ export const guideSections: GuideSection[] = [
     title: { es: 'Mentoría Financiera', en: 'Financial Mentorship' },
     shortDesc: { es: 'Sistema de niveles con sabiduría de expertos', en: 'Level system with expert wisdom' },
     purpose: {
-      es: 'Un sistema de mentoría progresivo donde subes de nivel según tu actividad financiera. En cada nivel recibes tips rotativos de expertos financieros reconocidos (Robert Kiyosaki, Dave Ramsey, Jim Rohn, Brian Tracy). Incluye logros desbloqueables, metas de progreso y celebraciones épicas.',
-      en: 'A progressive mentorship system where you level up based on your financial activity. At each level you receive rotating tips from recognized financial experts (Robert Kiyosaki, Dave Ramsey, Jim Rohn, Brian Tracy). Includes unlockable achievements, progress goals, and epic celebrations.'
+      es: 'Un sistema de mentoría progresivo donde subes de nivel según tu actividad financiera. En cada nivel recibes tips rotativos de expertos financieros. Incluye logros desbloqueables, metas de progreso y celebraciones épicas.',
+      en: 'A progressive mentorship system where you level up based on your financial activity. At each level you receive rotating tips from financial experts. Includes unlockable achievements, progress goals, and epic celebrations.'
     },
     steps: [
       { es: 'Accede desde el menú → Mentoría o desde el banner en el Dashboard', en: 'Access from the menu → Mentorship or from the Dashboard banner' },
