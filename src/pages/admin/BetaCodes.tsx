@@ -48,6 +48,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useBetaCodes } from '@/hooks/data/useBetaCodes';
 import { useAuth } from '@/contexts/AuthContext';
 import { Skeleton } from '@/components/ui/skeleton';
+import { BetaInviteTab } from '@/components/admin/BetaInviteTab';
 
 export default function BetaCodesAdmin() {
   const navigate = useNavigate();
