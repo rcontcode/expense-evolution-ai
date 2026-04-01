@@ -222,11 +222,10 @@ export function PageHeader({ title, description, showBack = true, children }: Pa
               <p className="text-sm text-muted-foreground mt-0.5 line-clamp-1">{description}</p>
             )}
           </div>
-          {children && (
-            <div className="flex items-center gap-2 shrink-0 flex-wrap justify-start sm:justify-end">
-              {children}
-            </div>
-          )}
+          <div className="flex items-center gap-2 shrink-0 flex-wrap justify-start sm:justify-end">
+            {children}
+            <GlobalControls />
+          </div>
         </div>
       )}
     </div>

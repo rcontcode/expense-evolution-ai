@@ -71,7 +71,6 @@ export default function UserGuide() {
             title={`📖 ${t(heroContent.title)}`}
             description={lang === 'es' ? 'Tu guía completa para dominar EvoFinz' : 'Your complete guide to mastering EvoFinz'}
           >
-            <LanguageSelector />
           </PageHeader>
       </div>
 
