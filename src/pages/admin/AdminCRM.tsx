@@ -795,6 +795,19 @@ const AdminCRM = () => {
                   <span className="hidden md:inline">{isEs ? 'WH Out' : 'WH Out'}</span>
                   <span className="md:hidden">📤</span>
                 </TabsTrigger>
+                <TabsTrigger value="pnl" className="flex items-center gap-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-600 data-[state=active]:to-green-700 data-[state=active]:text-white rounded-lg font-semibold text-[10px] md:text-xs">
+                  <DollarSign className="h-3.5 w-3.5" />
+                  <span className="hidden md:inline">P&L</span>
+                  <span className="md:hidden">📊</span>
+                </TabsTrigger>
+                <TabsTrigger value="health" className="flex items-center gap-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-pink-500 data-[state=active]:to-rose-600 data-[state=active]:text-white rounded-lg font-semibold text-[10px] md:text-xs">
+                  <span className="hidden md:inline">{isEs ? 'Salud' : 'Health'}</span>
+                  <span className="md:hidden">❤️</span>
+                </TabsTrigger>
+                <TabsTrigger value="simulator" className="flex items-center gap-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-blue-600 data-[state=active]:text-white rounded-lg font-semibold text-[10px] md:text-xs">
+                  <span className="hidden md:inline">{isEs ? 'Simulador' : 'Simulator'}</span>
+                  <span className="md:hidden">🧮</span>
+                </TabsTrigger>
               </TabsList>
               <TabsContent value="home"><AdminCRMHome language={language} onNavigateTab={setActiveTab} /></TabsContent>
               <TabsContent value="agenda"><AdminFollowUpsAgenda language={language} /></TabsContent>
