@@ -1,11 +1,13 @@
-import { ChevronLeft, ChevronRight, Home, Sun, Moon } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Home, Sun, Moon, Undo2, Redo2 } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useUndoRedo } from '@/contexts/UndoRedoContext';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { useSafeNavigation } from '@/hooks/useSafeNavigation';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   Breadcrumb,
   BreadcrumbList,
