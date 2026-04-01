@@ -6,7 +6,7 @@ import { es } from 'date-fns/locale';
 import { 
   Plus, Ticket, Users, CheckCircle2, XCircle,
   Copy, Trash2, ToggleLeft, ToggleRight, Calendar, Hash,
-  TrendingUp, Shield, Clock
+  TrendingUp, Shield, Clock, MessageSquare
 } from 'lucide-react';
 import { PageHeader } from '@/components/PageHeader';
 import { Layout } from '@/components/Layout';
@@ -48,6 +48,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useBetaCodes } from '@/hooks/data/useBetaCodes';
 import { useAuth } from '@/contexts/AuthContext';
 import { Skeleton } from '@/components/ui/skeleton';
+import { BetaInviteTab } from '@/components/admin/BetaInviteTab';
 
 export default function BetaCodesAdmin() {
   const navigate = useNavigate();
@@ -270,6 +271,10 @@ export default function BetaCodesAdmin() {
               <Users className="h-4 w-4" />
               Historial de Usos
             </TabsTrigger>
+            <TabsTrigger value="invite" className="gap-2">
+              <MessageSquare className="h-4 w-4" />
+              Invitar
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="codes">
@@ -456,6 +461,10 @@ export default function BetaCodesAdmin() {
                 </Table>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="invite">
+            <BetaInviteTab codes={codes} />
           </TabsContent>
         </Tabs>
       </div>
