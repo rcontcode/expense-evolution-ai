@@ -186,6 +186,10 @@ What's expected?
 • Comments must be at least 80 characters to ensure quality
 • First 14 days are a grace period to explore without pressure
 
+Want to learn more before signing up?
+• See what the app does: https://evofinz.com/landing
+• Take a free financial quiz: https://evofinz.com/quiz
+
 How to get started:
 1. Go to: https://evofinz.com/auth?beta=${code}
 2. Create your account using the code: ${code}
