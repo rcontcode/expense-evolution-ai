@@ -54,6 +54,25 @@ const BILLING_MULTIPLIER: Record<string, number> = {
 
 const PIE_COLORS = ['hsl(142, 76%, 36%)', 'hsl(217, 91%, 60%)', 'hsl(45, 93%, 47%)', 'hsl(0, 84%, 60%)', 'hsl(280, 67%, 51%)'];
 
+const SOURCE_COLORS: Record<string, string> = {
+  evofinz: '#10b981',
+  fokuspark: '#8b5cf6',
+  universmind: '#7c3aed',
+};
+
+const SOURCE_LABELS: Record<string, string> = {
+  evofinz: '💰 EvoFinz',
+  fokuspark: '🧠 Fokuspark',
+  universmind: '🌌 UniversMind',
+};
+
+const getSourceKey = (source: string) => {
+  const s = (source || 'evofinz').toLowerCase();
+  if (s.includes('fokus')) return 'fokuspark';
+  if (s.includes('univers')) return 'universmind';
+  return 'evofinz';
+};
+
 export function AdminROIDashboard({ language }: Props) {
   const isEs = language === 'es';
 
