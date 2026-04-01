@@ -10,7 +10,13 @@ export interface TemplateEntry {
 }
 
 import { template as crmLeadOutreach } from './crm-lead-outreach.tsx'
+import { template as crmFokusparkOutreach } from './crm-fokuspark-outreach.tsx'
+import { template as crmUniversmindOutreach } from './crm-universmind-outreach.tsx'
+import { template as crmFollowUp } from './crm-follow-up.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'crm-lead-outreach': crmLeadOutreach,
+  'crm-fokuspark-outreach': crmFokusparkOutreach,
+  'crm-universmind-outreach': crmUniversmindOutreach,
+  'crm-follow-up': crmFollowUp,
 }

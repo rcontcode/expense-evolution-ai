@@ -59,6 +59,7 @@ const TRIGGER_OPTIONS = [
 const ACTION_OPTIONS = [
   { value: 'whatsapp', label: 'WhatsApp IA', icon: <MessageCircle className="h-4 w-4 text-green-600" /> },
   { value: 'email', label: 'Email IA', icon: <Mail className="h-4 w-4 text-blue-600" /> },
+  { value: 'email_sequence', label: 'Secuencia Email', icon: <RefreshCw className="h-4 w-4 text-cyan-600" /> },
   { value: 'auto_contact', label: 'Auto-contactar', icon: <CheckCircle2 className="h-4 w-4 text-emerald-600" /> },
   { value: 'auto_tag', label: 'Auto-etiquetar', icon: <Tag className="h-4 w-4 text-purple-600" /> },
   { value: 'auto_stage', label: 'Auto-pipeline', icon: <GitBranch className="h-4 w-4 text-indigo-600" /> },
@@ -94,6 +95,7 @@ const TRIGGER_ICONS: Record<string, React.ReactNode> = {
 const ACTION_ICONS: Record<string, React.ReactNode> = {
   whatsapp: <MessageCircle className="h-4 w-4 text-green-600" />,
   email: <Mail className="h-4 w-4 text-blue-600" />,
+  email_sequence: <RefreshCw className="h-4 w-4 text-cyan-600" />,
   auto_contact: <CheckCircle2 className="h-4 w-4 text-emerald-600" />,
   auto_tag: <Tag className="h-4 w-4 text-purple-600" />,
   auto_stage: <GitBranch className="h-4 w-4 text-indigo-600" />,
@@ -475,8 +477,9 @@ export const AdminAutomationTab = ({ language }: Props) => {
             <Select value={formData.action_config.target_app || 'evofinz'} onValueChange={(v) => setFormData(p => ({ ...p, action_config: { ...p.action_config, target_app: v } }))}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="evofinz">EvoFinz</SelectItem>
-                <SelectItem value="fokuspark">FokusPark</SelectItem>
+                <SelectItem value="evofinz">EvoFinz 🔥</SelectItem>
+                <SelectItem value="fokuspark">Fokuspark 🧠</SelectItem>
+                <SelectItem value="universmind">UniversMind 🌌</SelectItem>
                 <SelectItem value="bundle">Bundle (EvoFinz + FokusPark)</SelectItem>
               </SelectContent>
             </Select>
@@ -526,6 +529,39 @@ export const AdminAutomationTab = ({ language }: Props) => {
               </SelectContent>
             </Select>
           </div>
+        </div>
+      );
+    }
+    if (action_type === 'email_sequence') {
+      return (
+        <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label className="text-xs">{isEs ? 'Pasos en la secuencia' : 'Sequence steps'}</Label>
+              <Input type="number" min={2} max={5} value={formData.action_config.sequence_steps || 3} onChange={(e) => setFormData(p => ({ ...p, action_config: { ...p.action_config, sequence_steps: parseInt(e.target.value) || 3 } }))} />
+            </div>
+            <div>
+              <Label className="text-xs">{isEs ? 'Días entre emails' : 'Days between emails'}</Label>
+              <Input type="number" min={1} max={14} value={formData.action_config.days_between || 3} onChange={(e) => setFormData(p => ({ ...p, action_config: { ...p.action_config, days_between: parseInt(e.target.value) || 3 } }))} />
+            </div>
+          </div>
+          <div>
+            <Label className="text-xs">{isEs ? 'App destino' : 'Target app'}</Label>
+            <Select value={formData.action_config.target_app || 'auto'} onValueChange={(v) => setFormData(p => ({ ...p, action_config: { ...p.action_config, target_app: v } }))}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="auto">{isEs ? '🤖 Auto (según fuente del lead)' : '🤖 Auto (by lead source)'}</SelectItem>
+                <SelectItem value="evofinz">EvoFinz 🔥</SelectItem>
+                <SelectItem value="fokuspark">Fokuspark 🧠</SelectItem>
+                <SelectItem value="universmind">UniversMind 🌌</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <p className="text-[10px] text-muted-foreground">
+            {isEs 
+              ? '📧 Envía secuencia de follow-up automática. Cada email usa IA para generar contenido personalizado. Se detiene si el lead responde o se convierte.'
+              : '📧 Sends automatic follow-up sequence. Each email uses AI for personalized content. Stops if lead responds or converts.'}
+          </p>
         </div>
       );
     }

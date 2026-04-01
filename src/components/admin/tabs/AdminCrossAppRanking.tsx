@@ -17,7 +17,14 @@ interface Props {
 const APP_COLORS_MAP: Record<string, string> = {
   evofinz: '#10b981',
   fokuspark: '#8b5cf6',
+  universmind: '#7c3aed',
   default: '#6b7280',
+};
+
+const APP_LABELS: Record<string, string> = {
+  evofinz: 'EvoFinz 🔥',
+  fokuspark: 'Fokuspark 🧠',
+  universmind: 'UniversMind 🌌',
 };
 
 const getAppColor = (source: string) => {
@@ -235,7 +242,7 @@ export const AdminCrossAppRanking = ({ language }: Props) => {
                     {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i + 1}`}
                   </div>
                   <div>
-                    <p className="font-bold text-sm capitalize">{app.source}</p>
+                    <p className="font-bold text-sm">{APP_LABELS[app.source.toLowerCase()] || app.source}</p>
                     <p className="text-xs text-muted-foreground">
                       {app.total} leads • {app.recentLeads} {isEs ? 'esta semana' : 'this week'}
                     </p>
