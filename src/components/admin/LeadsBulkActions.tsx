@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { Phone, Tag, GitBranch, Download, X, Loader2 } from 'lucide-react';
+import { Phone, Tag, GitBranch, Download, X, Loader2, Mail, MinusCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
 import type { QuizLead } from '@/hooks/admin/useLeadsManagement';
@@ -22,7 +22,6 @@ export function LeadsBulkActions({ selectedIds, allLeads, onClearSelection, allT
   const es = language === 'es';
   const queryClient = useQueryClient();
   const [isProcessing, setIsProcessing] = useState(false);
-  const [action, setAction] = useState<string | null>(null);
 
   const PIPELINE_STAGES = [
     { value: 'new', label: es ? 'Nuevo' : 'New', color: 'bg-gray-500' },
@@ -44,14 +43,13 @@ export function LeadsBulkActions({ selectedIds, allLeads, onClearSelection, allT
     setIsProcessing(true);
     try {
       const now = new Date().toISOString();
-      const updates = Array.from(selectedIds).map(id =>
+      await Promise.all(Array.from(selectedIds).map(id =>
         supabase.from('quiz_leads').update({ contacted_at: now }).eq('id', id)
-      );
-      await Promise.all(updates);
+      ));
       invalidateAll();
       toast.success(es ? `✅ ${count} leads marcados como contactados` : `✅ ${count} leads marked as contacted`);
       onClearSelection();
-    } catch (err) {
+    } catch {
       toast.error(es ? 'Error al marcar contactados' : 'Error marking as contacted');
     } finally {
       setIsProcessing(false);
@@ -61,20 +59,36 @@ export function LeadsBulkActions({ selectedIds, allLeads, onClearSelection, allT
   const handleBulkTag = async (tag: string) => {
     setIsProcessing(true);
     try {
-      const updates = Array.from(selectedIds).map(async (id) => {
+      await Promise.all(Array.from(selectedIds).map(async (id) => {
         const lead = allLeads.find(l => l.id === id);
         const currentTags: string[] = (lead?.tags as string[]) || [];
         if (currentTags.includes(tag)) return;
-        const newTags = [...currentTags, tag];
-        return supabase.from('quiz_leads').update({ tags: newTags }).eq('id', id);
-      });
-      await Promise.all(updates);
+        return supabase.from('quiz_leads').update({ tags: [...currentTags, tag] }).eq('id', id);
+      }));
       invalidateAll();
       toast.success(es ? `🏷️ Tag "${tag}" aplicado a ${count} leads` : `🏷️ Tag "${tag}" applied to ${count} leads`);
       onClearSelection();
-      setAction(null);
-    } catch (err) {
+    } catch {
       toast.error(es ? 'Error al etiquetar' : 'Error applying tag');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleBulkRemoveTag = async (tag: string) => {
+    setIsProcessing(true);
+    try {
+      await Promise.all(Array.from(selectedIds).map(async (id) => {
+        const lead = allLeads.find(l => l.id === id);
+        const currentTags: string[] = (lead?.tags as string[]) || [];
+        if (!currentTags.includes(tag)) return;
+        return supabase.from('quiz_leads').update({ tags: currentTags.filter(t => t !== tag) }).eq('id', id);
+      }));
+      invalidateAll();
+      toast.success(es ? `🏷️ Tag "${tag}" removido de ${count} leads` : `🏷️ Tag "${tag}" removed from ${count} leads`);
+      onClearSelection();
+    } catch {
+      toast.error(es ? 'Error al remover tag' : 'Error removing tag');
     } finally {
       setIsProcessing(false);
     }
@@ -83,17 +97,49 @@ export function LeadsBulkActions({ selectedIds, allLeads, onClearSelection, allT
   const handleBulkPipeline = async (stage: string) => {
     setIsProcessing(true);
     try {
-      const updates = Array.from(selectedIds).map(id =>
+      await Promise.all(Array.from(selectedIds).map(id =>
         supabase.from('quiz_leads').update({ pipeline_stage: stage }).eq('id', id)
-      );
-      await Promise.all(updates);
+      ));
       invalidateAll();
       const label = PIPELINE_STAGES.find(s => s.value === stage)?.label || stage;
       toast.success(es ? `📊 ${count} leads movidos a "${label}"` : `📊 ${count} leads moved to "${label}"`);
       onClearSelection();
-      setAction(null);
-    } catch (err) {
+    } catch {
       toast.error(es ? 'Error al mover pipeline' : 'Error moving pipeline');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleBulkEmail = async () => {
+    if (!confirm(es ? `¿Enviar email CRM a ${count} leads seleccionados?` : `Send CRM email to ${count} selected leads?`)) return;
+    setIsProcessing(true);
+    try {
+      const selected = allLeads.filter(l => selectedIds.has(l.id));
+      let sent = 0;
+      for (const lead of selected) {
+        if (!lead.email) continue;
+        try {
+          await supabase.functions.invoke('send-crm-email', {
+            body: {
+              recipientEmail: lead.email,
+              recipientName: lead.name || '',
+              subject: es ? 'Tenemos algo para ti' : 'We have something for you',
+              textBody: '',
+              leadId: lead.id,
+              leadSource: lead.source || 'evofinz',
+            },
+          });
+          sent++;
+        } catch (e) {
+          console.error(`Failed to send to ${lead.email}:`, e);
+        }
+      }
+      invalidateAll();
+      toast.success(es ? `📧 ${sent}/${count} emails enviados` : `📧 ${sent}/${count} emails sent`);
+      onClearSelection();
+    } catch {
+      toast.error(es ? 'Error al enviar emails' : 'Error sending emails');
     } finally {
       setIsProcessing(false);
     }
@@ -128,33 +174,41 @@ export function LeadsBulkActions({ selectedIds, allLeads, onClearSelection, allT
       </Badge>
 
       <div className="flex flex-wrap gap-1.5 ml-auto">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleBulkContact}
-          disabled={isProcessing}
-          className="h-8 text-xs gap-1.5"
-        >
-          {isProcessing && action === 'contact' ? <Loader2 className="h-3 w-3 animate-spin" /> : <Phone className="h-3 w-3" />}
-          {es ? 'Marcar contactados' : 'Mark contacted'}
+        <Button variant="outline" size="sm" onClick={handleBulkContact} disabled={isProcessing} className="h-8 text-xs gap-1.5">
+          <Phone className="h-3 w-3" />
+          {es ? 'Contactados' : 'Contacted'}
+        </Button>
+
+        <Button variant="outline" size="sm" onClick={handleBulkEmail} disabled={isProcessing} className="h-8 text-xs gap-1.5">
+          <Mail className="h-3 w-3" />
+          {es ? 'Enviar Email' : 'Send Email'}
         </Button>
 
         {allTags.length > 0 && (
-          <Select onValueChange={handleBulkTag} disabled={isProcessing}>
-            <SelectTrigger className="h-8 w-[140px] text-xs">
-              <Tag className="h-3 w-3 mr-1" />
-              {es ? 'Etiquetar' : 'Tag'}
-            </SelectTrigger>
-            <SelectContent>
-              {allTags.map(tag => (
-                <SelectItem key={tag} value={tag}>{tag}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <>
+            <Select onValueChange={handleBulkTag} disabled={isProcessing}>
+              <SelectTrigger className="h-8 w-[110px] text-xs">
+                <Tag className="h-3 w-3 mr-1" />
+                + Tag
+              </SelectTrigger>
+              <SelectContent>
+                {allTags.map(tag => <SelectItem key={tag} value={tag}>{tag}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <Select onValueChange={handleBulkRemoveTag} disabled={isProcessing}>
+              <SelectTrigger className="h-8 w-[110px] text-xs">
+                <MinusCircle className="h-3 w-3 mr-1" />
+                - Tag
+              </SelectTrigger>
+              <SelectContent>
+                {allTags.map(tag => <SelectItem key={tag} value={tag}>{tag}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </>
         )}
 
         <Select onValueChange={handleBulkPipeline} disabled={isProcessing}>
-          <SelectTrigger className="h-8 w-[140px] text-xs">
+          <SelectTrigger className="h-8 w-[130px] text-xs">
             <GitBranch className="h-3 w-3 mr-1" />
             Pipeline
           </SelectTrigger>

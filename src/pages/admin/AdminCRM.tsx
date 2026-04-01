@@ -41,6 +41,8 @@ import { AdminCRMHome } from '@/components/admin/tabs/AdminCRMHome';
 import { AdminFollowUpsAgenda } from '@/components/admin/tabs/AdminFollowUpsAgenda';
 import { AdminEmailDashboard } from '@/components/admin/tabs/AdminEmailDashboard';
 import { AdminWebhookSnippet } from '@/components/admin/tabs/AdminWebhookSnippet';
+import { AdminABTestingTab } from '@/components/admin/tabs/AdminABTestingTab';
+import { AdminOutgoingWebhooks } from '@/components/admin/tabs/AdminOutgoingWebhooks';
 import { LeadMergeDialog } from '@/components/admin/LeadMergeDialog';
 import { useHotLeadRealtime } from '@/hooks/admin/useHotLeadRealtime';
 import { useUncontactedHotCount } from '@/hooks/admin/useUncontactedHotCount';
@@ -782,6 +784,14 @@ const AdminCRM = () => {
                   <span className="hidden md:inline">Webhook</span>
                   <span className="md:hidden">🔗</span>
                 </TabsTrigger>
+                <TabsTrigger value="abtests" className="flex items-center gap-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-fuchsia-500 data-[state=active]:to-pink-600 data-[state=active]:text-white rounded-lg font-semibold text-[10px] md:text-xs">
+                  <span className="hidden md:inline">A/B</span>
+                  <span className="md:hidden">🧪</span>
+                </TabsTrigger>
+                <TabsTrigger value="webhooksout" className="flex items-center gap-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-600 data-[state=active]:text-white rounded-lg font-semibold text-[10px] md:text-xs">
+                  <span className="hidden md:inline">{isEs ? 'WH Out' : 'WH Out'}</span>
+                  <span className="md:hidden">📤</span>
+                </TabsTrigger>
               </TabsList>
               <TabsContent value="home"><AdminCRMHome language={language} onNavigateTab={setActiveTab} /></TabsContent>
               <TabsContent value="agenda"><AdminFollowUpsAgenda language={language} /></TabsContent>
@@ -800,6 +810,8 @@ const AdminCRM = () => {
               <TabsContent value="nurturing"><AdminNurturingTab language={language} /></TabsContent>
               <TabsContent value="emails"><AdminEmailDashboard language={language} /></TabsContent>
               <TabsContent value="webhook"><AdminWebhookSnippet language={language} /></TabsContent>
+              <TabsContent value="abtests"><AdminABTestingTab language={language} /></TabsContent>
+              <TabsContent value="webhooksout"><AdminOutgoingWebhooks language={language} /></TabsContent>
             </Tabs>
             <div className="sticky top-6"><AdminActivityFeed language={language} /></div>
           </motion.div>

@@ -1498,6 +1498,80 @@ export type Database = {
           },
         ]
       }
+      email_ab_results: {
+        Row: {
+          clicked: boolean | null
+          converted: boolean | null
+          id: string
+          lead_id: string
+          opened: boolean | null
+          sent_at: string | null
+          test_id: string
+          variant: string
+        }
+        Insert: {
+          clicked?: boolean | null
+          converted?: boolean | null
+          id?: string
+          lead_id: string
+          opened?: boolean | null
+          sent_at?: string | null
+          test_id: string
+          variant: string
+        }
+        Update: {
+          clicked?: boolean | null
+          converted?: boolean | null
+          id?: string
+          lead_id?: string
+          opened?: boolean | null
+          sent_at?: string | null
+          test_id?: string
+          variant?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_ab_results_test_id_fkey"
+            columns: ["test_id"]
+            isOneToOne: false
+            referencedRelation: "email_ab_tests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      email_ab_tests: {
+        Row: {
+          created_at: string | null
+          id: string
+          name: string
+          split_ratio: number
+          started_at: string | null
+          status: string
+          template_a: string
+          template_b: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          name: string
+          split_ratio?: number
+          started_at?: string | null
+          status?: string
+          template_a: string
+          template_b: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          name?: string
+          split_ratio?: number
+          started_at?: string | null
+          status?: string
+          template_a?: string
+          template_b?: string
+        }
+        Relationships: []
+      }
       email_send_log: {
         Row: {
           created_at: string
@@ -2924,6 +2998,74 @@ export type Database = {
         }
         Relationships: []
       }
+      outgoing_webhook_logs: {
+        Row: {
+          created_at: string | null
+          event: string
+          id: string
+          payload: Json | null
+          response_body: string | null
+          response_status: number | null
+          webhook_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          event: string
+          id?: string
+          payload?: Json | null
+          response_body?: string | null
+          response_status?: number | null
+          webhook_id: string
+        }
+        Update: {
+          created_at?: string | null
+          event?: string
+          id?: string
+          payload?: Json | null
+          response_body?: string | null
+          response_status?: number | null
+          webhook_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "outgoing_webhook_logs_webhook_id_fkey"
+            columns: ["webhook_id"]
+            isOneToOne: false
+            referencedRelation: "outgoing_webhooks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      outgoing_webhooks: {
+        Row: {
+          created_at: string | null
+          events: string[]
+          id: string
+          is_active: boolean | null
+          name: string
+          secret_key: string
+          url: string
+        }
+        Insert: {
+          created_at?: string | null
+          events?: string[]
+          id?: string
+          is_active?: boolean | null
+          name: string
+          secret_key?: string
+          url: string
+        }
+        Update: {
+          created_at?: string | null
+          events?: string[]
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          secret_key?: string
+          url?: string
+        }
+        Relationships: []
+      }
       pay_yourself_first_settings: {
         Row: {
           best_streak_months: number | null
@@ -4343,6 +4485,30 @@ export type Database = {
           stripe_subscription_id?: string | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      webhook_rate_limits: {
+        Row: {
+          id: string
+          identifier: string
+          identifier_type: string
+          request_count: number
+          window_start: string
+        }
+        Insert: {
+          id?: string
+          identifier: string
+          identifier_type?: string
+          request_count?: number
+          window_start?: string
+        }
+        Update: {
+          id?: string
+          identifier?: string
+          identifier_type?: string
+          request_count?: number
+          window_start?: string
         }
         Relationships: []
       }
