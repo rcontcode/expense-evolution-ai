@@ -1,58 +1,53 @@
 
 
-# Plan: Actualizar Búsqueda Global con todas las secciones y datos
+# Plan: Corregir menú lateral — enlaces, títulos y consistencia
 
-## Problema
-La búsqueda global (`GlobalSearch.tsx` + `useGlobalSearch.ts`) solo busca en **3 tipos de datos**: gastos, clientes y proyectos. Faltan muchas rutas y tipos de datos que existen en la app.
+## Problemas encontrados
 
-## Rutas/datos faltantes en la búsqueda
+### Errores de navegación (el enlace no lleva donde dice)
+1. **"Deudas"** → va a `/dashboard?area=familia&atab=debts` (deep-link al dashboard, no página propia). Nunca se marca como "activo".
+2. **"Ahorro"** → va a `/budget?tab=savings` — correcto, pero no se verifica que exista esa tab.
+3. **Sub-items de Presupuesto** → van al Dashboard (`/dashboard?area=...`), no a `/budget`. Confuso porque el padre sí va a `/budget`.
+4. **Sub-items de Inversiones**: "Págate Primero" y "Clasificación Deuda" van a tabs de **Mentoría**, no de Inversiones.
+5. **Sub-item de Patrimonio** "Análisis Familiar" va al Dashboard, no tiene relación con Net Worth.
+6. **Sub-item de Gastos** "Gráficos Día a Día" va al Dashboard control view, no a gráficos de gastos.
 
-**Datos que no se buscan** (el hook `useGlobalSearch` no los incluye):
-- Ingresos (`useIncome`)
-- Facturas recurrentes (`useRecurringBills`)
-- Contratos (`useContracts`)
-- Kilometraje (`useMileage`)
-- Etiquetas (`useTags`)
-- Documentos (`useDocumentsForReview`)
+### Duplicados
+7. **Proyectos** y **Contratos** aparecen como items independientes Y como sub-items de Clientes (misma ruta).
 
-**Navegación faltante en `NAVIGATION_ITEMS`:**
-- `/bills` — Facturas/Bills
-- `/budget` — Presupuesto
-- `/analytics` — Analíticas
-- `/tax-optimizer` — Optimizador Fiscal
-- `/investments` — Inversiones
-- `/subscriptions` — Suscripciones
-- `/data-health` — Salud de Datos
-- `/files` — Archivos
-- `/reports` — Centro de Reportes
-- `/user-guide` — Guía de Usuario
-- `/tax-calendar` — Calendario Fiscal
-- `/tax-report-flow` — Reporte Fiscal
-- `/business-profile` — Perfil de Negocio
-- `/beta-feedback` — Feedback Beta
-- `/capture` — Captura Móvil
+### Iconos repetidos/incorrectos
+8. **Análisis** usa icono `Scale` (balanza) — igual que Patrimonio. Debería usar un icono de gráficos.
+9. **Impuestos** usa icono `Receipt` — igual que Gastos.
+10. **Reportes** y **Calendario Fiscal** ambos usan `FileText`.
 
-**Acciones rápidas faltantes:**
-- Agregar factura/bill
-- Agregar contrato
-- Agregar kilometraje
+### Tooltip incorrecto
+11. **Reportes** tiene `tooltipKey: 'analytics'` — muestra tooltip de Analytics en vez de Reportes.
 
-## Implementación
+## Cambios propuestos en `src/components/Layout.tsx`
 
-### 1. `src/hooks/utils/useGlobalSearch.ts`
-- Agregar imports: `useIncome`, `useRecurringBills`, `useContracts`, `useMileage`, `useTags`
-- Expandir `SearchResult.type` para incluir: `'income' | 'bill' | 'contract' | 'mileage' | 'tag'`
-- Agregar bloques de búsqueda para cada tipo de dato nuevo (mismo patrón que expenses/clients/projects)
-- Retornar las 8 categorías en el resultado
+### Eliminar sub-items que confunden (no llevan a donde dicen)
+- **Gastos**: quitar sub-item "Gráficos Día a Día" (lleva al dashboard, no a gráficos de gastos)
+- **Presupuesto**: quitar sub-items que apuntan al dashboard; dejar solo accesos a tabs reales de `/budget`
+- **Patrimonio**: quitar sub-item "Análisis Familiar" (no tiene relación)
+- **Inversiones**: quitar "Págate Primero" y "Clasificación Deuda" (son de Mentoría, no de Inversiones)
 
-### 2. `src/components/search/GlobalSearch.tsx`
-- Agregar las categorías de datos nuevas al renderizado (income, bills, contracts, mileage, tags) con iconos y colores distintos
-- Agregar a `NAVIGATION_ITEMS` todas las rutas faltantes (~15 rutas)
-- Agregar acciones rápidas nuevas (agregar bill, contrato, kilometraje)
-- Actualizar el placeholder del input para reflejar que busca en todo
-- Agregar imports de iconos necesarios (`Wallet`, `Calendar`, `FileBarChart`, etc.)
+### Eliminar duplicados
+- Quitar **Proyectos** y **Contratos** como sub-items de Clientes (ya existen como items independientes justo debajo)
 
-## Archivos a modificar (2)
-- `src/hooks/utils/useGlobalSearch.ts` — Agregar 5 fuentes de datos nuevas
-- `src/components/search/GlobalSearch.tsx` — Agregar categorías de resultados, rutas y acciones faltantes
+### Corregir iconos
+- **Análisis**: cambiar `Scale` → `BarChart3` o similar
+- **Impuestos**: cambiar `Receipt` → `Calculator` o `Landmark`
+- **Reportes**: cambiar a `FileBarChart`
+- **Calendario Fiscal**: mantener `FileText` o usar `CalendarDays`
+
+### Corregir tooltip
+- **Reportes**: cambiar `tooltipKey` de `'analytics'` a `'reports'` (agregar entrada si no existe en TOOLTIP_CONTENT)
+
+### Mover "Deudas" a sub-item de Patrimonio
+- En vez de ser item independiente apuntando al dashboard, convertirlo en sub-item de Patrimonio con ruta `/net-worth` (la página ya tiene un DebtManager)
+
+## Archivos a modificar
+
+1. **`src/components/Layout.tsx`** — Corregir `getNavSections()`: iconos, sub-items, tooltipKey, eliminar duplicados
+2. **`src/components/ui/info-tooltip.ts`** — Agregar entrada `reports` si no existe (verificar)
 
