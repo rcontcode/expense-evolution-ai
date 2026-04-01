@@ -266,23 +266,19 @@ export function useAllExpensesForReport(year: number, entityId?: string | null) 
       const startDate = `${year}-01-01`;
       const endDate = `${year}-12-31`;
 
-      let query = supabase
-        .from('expenses')
-        .select(`*, client:clients(*), expense_tags(tag:tags(*))`)
-        .eq('user_id', user!.id)
-        .is('deleted_at', null)
-        .gte('date', startDate)
-        .lte('date', endDate)
-        .order('date', { ascending: false });
+      const { paginatedFetch } = await import('@/lib/utils/paginatedQuery');
 
-      if (entityId) {
-        query = query.eq('entity_id', entityId);
-      }
+      const data = await paginatedFetch('expenses', user!.id, {
+        select: '*, client:clients(*), expense_tags(tag:tags(*))',
+        filters: (q: any) => {
+          let query = q.gte('date', startDate).lte('date', endDate);
+          if (entityId) query = query.eq('entity_id', entityId);
+          return query;
+        },
+        orderBy: 'date',
+      });
 
-      const { data, error } = await query;
-      if (error) throw error;
-
-      return (data || []).map(expense => ({
+      return (data || []).map((expense: any) => ({
         ...expense,
         tags: expense.expense_tags?.map((et: any) => et.tag).filter(Boolean) || [],
       })) as ExpenseWithRelations[];

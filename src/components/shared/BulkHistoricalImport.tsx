@@ -6,13 +6,15 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Trash2, Upload, Loader2, FileSpreadsheet } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import { Plus, Trash2, Upload, Loader2, FileSpreadsheet, AlertTriangle } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEntity } from '@/contexts/EntityContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { EXPENSE_CATEGORIES } from '@/lib/constants/expense-categories';
+import { MAX_BULK_IMPORT_ROWS, BATCH_INSERT_SIZE } from '@/lib/constants/resource-limits';
 
 interface HistoricalRow {
   id: string;
@@ -47,10 +49,18 @@ export function BulkHistoricalImport({ open, onClose, type, onComplete }: BulkHi
 
   const [rows, setRows] = useState<HistoricalRow[]>([newRow(), newRow(), newRow()]);
   const [saving, setSaving] = useState(false);
+  const [progress, setProgress] = useState(0);
   const [pasteMode, setPasteMode] = useState(false);
   const [pasteText, setPasteText] = useState('');
+  const [truncatedWarning, setTruncatedWarning] = useState(false);
 
-  const addRow = () => setRows(r => [...r, newRow()]);
+  const addRow = () => {
+    if (rows.length >= MAX_BULK_IMPORT_ROWS) {
+      toast.warning(l ? `Máximo ${MAX_BULK_IMPORT_ROWS} filas` : `Maximum ${MAX_BULK_IMPORT_ROWS} rows`);
+      return;
+    }
+    setRows(r => [...r, newRow()]);
+  };
   const removeRow = (id: string) => setRows(r => r.filter(row => row.id !== id));
   const updateRow = (id: string, field: keyof HistoricalRow, value: any) => {
     setRows(r => r.map(row => row.id === id ? { ...row, [field]: value } : row));
@@ -59,7 +69,9 @@ export function BulkHistoricalImport({ open, onClose, type, onComplete }: BulkHi
   const handlePaste = () => {
     if (!pasteText.trim()) return;
     const lines = pasteText.trim().split('\n');
-    const parsed: HistoricalRow[] = lines.map(line => {
+    const wasTruncated = lines.length > MAX_BULK_IMPORT_ROWS;
+    const limitedLines = lines.slice(0, MAX_BULK_IMPORT_ROWS);
+    const parsed: HistoricalRow[] = limitedLines.map(line => {
       const parts = line.split(/[\t,;]/).map(s => s.trim());
       return {
         id: crypto.randomUUID(),
@@ -75,7 +87,13 @@ export function BulkHistoricalImport({ open, onClose, type, onComplete }: BulkHi
       setRows(parsed);
       setPasteMode(false);
       setPasteText('');
+      setTruncatedWarning(wasTruncated);
       toast.success(l ? `${parsed.length} filas importadas` : `${parsed.length} rows imported`);
+      if (wasTruncated) {
+        toast.warning(l
+          ? `Se truncaron a ${MAX_BULK_IMPORT_ROWS} filas (máximo permitido)`
+          : `Truncated to ${MAX_BULK_IMPORT_ROWS} rows (maximum allowed)`);
+      }
     }
   };
 
@@ -84,37 +102,36 @@ export function BulkHistoricalImport({ open, onClose, type, onComplete }: BulkHi
   const handleSave = async () => {
     if (!user || validRows.length === 0) return;
     setSaving(true);
+    setProgress(0);
     try {
       const currency = currentEntity?.default_currency || 'CAD';
+      const totalBatches = Math.ceil(validRows.length / BATCH_INSERT_SIZE);
 
-      if (type === 'expense') {
-        const { error } = await supabase.from('expenses').insert(
-          validRows.map(r => ({
-            user_id: user.id,
-            date: r.date,
-            amount: r.amount,
-            description: r.description || null,
-            category: r.category,
-            vendor: r.vendor || null,
-            currency,
-            entity_id: currentEntity?.id || null,
-          }))
-        );
-        if (error) throw error;
-      } else {
-        const { error } = await supabase.from('income').insert(
-          validRows.map(r => ({
-            user_id: user.id,
-            date: r.date,
-            amount: r.amount,
-            description: r.description || null,
-            source: r.vendor || 'Other',
-            income_type: 'other' as const,
-            currency,
-            entity_id: currentEntity?.id || null,
-          }))
-        );
-        if (error) throw error;
+      for (let batch = 0; batch < totalBatches; batch++) {
+        const start = batch * BATCH_INSERT_SIZE;
+        const batchRows = validRows.slice(start, start + BATCH_INSERT_SIZE);
+
+        if (type === 'expense') {
+          const { error } = await supabase.from('expenses').insert(
+            batchRows.map(r => ({
+              user_id: user.id, date: r.date, amount: r.amount,
+              description: r.description || null, category: r.category,
+              vendor: r.vendor || null, currency, entity_id: currentEntity?.id || null,
+            }))
+          );
+          if (error) throw error;
+        } else {
+          const { error } = await supabase.from('income').insert(
+            batchRows.map(r => ({
+              user_id: user.id, date: r.date, amount: r.amount,
+              description: r.description || null, source: r.vendor || 'Other',
+              income_type: 'other' as const, currency, entity_id: currentEntity?.id || null,
+            }))
+          );
+          if (error) throw error;
+        }
+
+        setProgress(Math.round(((batch + 1) / totalBatches) * 100));
       }
 
       toast.success(l
@@ -129,6 +146,7 @@ export function BulkHistoricalImport({ open, onClose, type, onComplete }: BulkHi
       toast.error(l ? 'Error al importar' : 'Error importing');
     } finally {
       setSaving(false);
+      setProgress(0);
     }
   };
 
@@ -256,6 +274,20 @@ export function BulkHistoricalImport({ open, onClose, type, onComplete }: BulkHi
         <Button variant="outline" size="sm" onClick={addRow} className="w-full">
           <Plus className="h-3 w-3 mr-1" /> {l ? 'Agregar fila' : 'Add row'}
         </Button>
+
+        {saving && progress > 0 && (
+          <div className="space-y-1">
+            <Progress value={progress} className="h-2" />
+            <p className="text-xs text-muted-foreground text-center">{progress}%</p>
+          </div>
+        )}
+
+        {truncatedWarning && (
+          <div className="flex items-center gap-2 text-xs text-amber-600 bg-amber-50 dark:bg-amber-950/30 p-2 rounded">
+            <AlertTriangle className="h-3 w-3 shrink-0" />
+            {l ? `Datos truncados al máximo de ${MAX_BULK_IMPORT_ROWS} filas` : `Data truncated to max ${MAX_BULK_IMPORT_ROWS} rows`}
+          </div>
+        )}
 
         <DialogFooter className="gap-2 sm:gap-0">
           <Button variant="outline" onClick={onClose}>{l ? 'Cancelar' : 'Cancel'}</Button>
