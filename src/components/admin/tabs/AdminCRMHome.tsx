@@ -347,6 +347,49 @@ export const AdminCRMHome = ({ language, onNavigateTab }: Props) => {
         </motion.div>
       </div>
 
+      {/* Activity Heatmap */}
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.38 }}>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Flame className="h-4 w-4 text-orange-500" />
+              {isEs ? '🗓️ Actividad de leads (7 semanas)' : '🗓️ Lead Activity (7 weeks)'}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pb-4">
+            <div className="flex gap-1">
+              {Array.from({ length: 7 }, (_, w) => (
+                <div key={w} className="flex flex-col gap-1 flex-1">
+                  {Array.from({ length: 7 }, (_, d) => {
+                    const cell = heatmapData.find(c => c.week === w && c.day === d);
+                    const intensity = cell ? cell.count / maxHeat : 0;
+                    return (
+                      <div
+                        key={d}
+                        className="aspect-square rounded-sm cursor-default"
+                        style={{
+                          backgroundColor: intensity === 0
+                            ? 'hsl(var(--muted))'
+                            : `rgba(16, 185, 129, ${0.15 + intensity * 0.85})`,
+                        }}
+                        title={cell ? `${cell.label}: ${cell.count} leads` : ''}
+                      />
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+            <div className="flex items-center gap-2 mt-2 justify-end">
+              <span className="text-[9px] text-muted-foreground">{isEs ? 'Menos' : 'Less'}</span>
+              {[0, 0.25, 0.5, 0.75, 1].map((v, i) => (
+                <div key={i} className="w-3 h-3 rounded-sm" style={{ backgroundColor: v === 0 ? 'hsl(var(--muted))' : `rgba(16, 185, 129, ${0.15 + v * 0.85})` }} />
+              ))}
+              <span className="text-[9px] text-muted-foreground">{isEs ? 'Más' : 'More'}</span>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+
       {/* Leads Sparkline */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
         <Card>
