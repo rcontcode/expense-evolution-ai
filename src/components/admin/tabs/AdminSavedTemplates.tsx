@@ -315,9 +315,10 @@ export const AdminSavedTemplates = ({ language }: Props) => {
               <Select value={formTargetApp} onValueChange={setFormTargetApp}>
                 <SelectTrigger className="text-xs"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="evofinz">EvoFinz</SelectItem>
-                  <SelectItem value="fokuspark">FokusPark</SelectItem>
-                  <SelectItem value="bundle">Bundle</SelectItem>
+                  <SelectItem value="evofinz">💰 EvoFinz</SelectItem>
+                  <SelectItem value="fokuspark">🧘 FokusPark</SelectItem>
+                  <SelectItem value="universmind">🧠 UniversMind</SelectItem>
+                  <SelectItem value="bundle">🔥 Bundle</SelectItem>
                 </SelectContent>
               </Select>
             </div>
