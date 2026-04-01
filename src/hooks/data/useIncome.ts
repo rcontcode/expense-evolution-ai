@@ -139,6 +139,7 @@ export function useDeleteIncome() {
   const { user } = useAuth();
   const { afterIncome } = useInvalidateRelated();
   const t = useLocalizedToast();
+  const { showUndoToast } = useUndoableDelete();
 
   return useMutation({
     mutationFn: async (id: string) => {
@@ -152,10 +153,11 @@ export function useDeleteIncome() {
         entity_name: existing?.source || null,
         old_values: existing ? { source: existing.source, amount: existing.amount } : null,
       });
+      return id;
     },
-    onSuccess: () => {
+    onSuccess: (deletedId) => {
       afterIncome();
-      t.success('Ingreso movido a la papelera', 'Income moved to trash');
+      showUndoToast('income', deletedId, 'Ingreso movido a la papelera', 'Income moved to trash');
     },
     onError: (error) => {
       t.error('Error al eliminar ingreso', 'Error deleting income');

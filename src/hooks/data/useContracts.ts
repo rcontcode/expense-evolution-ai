@@ -136,14 +136,16 @@ export const useDeleteContract = () => {
   const { user } = useAuth();
   const { afterContract } = useInvalidateRelated();
   const t = useLocalizedToast();
+  const { showUndoToast } = useUndoableDelete();
 
   return useMutation({
     mutationFn: async (id: string) => {
       if (!user) throw new Error('Not authenticated');
       const { data: contract } = await supabase.from('contracts').select('file_path, group_id').eq('id', id).eq('user_id', user.id).maybeSingle();
       
+      const deletedIds: string[] = [];
+      
       if (contract?.group_id) {
-        // Delete all pages in the group
         const { data: groupContracts } = await supabase
           .from('contracts')
           .select('id, file_path')
@@ -151,10 +153,6 @@ export const useDeleteContract = () => {
           .eq('user_id', user.id);
         
         if (groupContracts) {
-          const filePaths = groupContracts.map(c => c.file_path).filter(Boolean);
-          if (filePaths.length > 0) {
-            await supabase.storage.from('contracts').remove(filePaths);
-          }
           const ids = groupContracts.map(c => c.id);
           const { error } = await supabase
             .from('contracts')
@@ -162,18 +160,18 @@ export const useDeleteContract = () => {
             .in('id', ids)
             .eq('user_id', user.id);
           if (error) throw error;
+          deletedIds.push(...ids);
         }
       } else {
-        if (contract?.file_path) {
-          await supabase.storage.from('contracts').remove([contract.file_path]);
-        }
         const { error } = await supabase.from('contracts').update({ deleted_at: new Date().toISOString() }).eq('id', id).eq('user_id', user.id);
         if (error) throw error;
+        deletedIds.push(id);
       }
+      return deletedIds;
     },
-    onSuccess: () => {
+    onSuccess: (deletedIds) => {
       afterContract();
-      t.success('Contrato movido a la papelera', 'Contract moved to trash');
+      showUndoToast('contracts', deletedIds, 'Contrato movido a la papelera', 'Contract moved to trash');
     },
     onError: () => {
       t.error('No se pudo eliminar el contrato', 'Could not delete contract');

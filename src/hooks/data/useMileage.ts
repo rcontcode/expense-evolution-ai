@@ -209,6 +209,7 @@ export const useDeleteMileage = () => {
   const { user } = useAuth();
   const { afterMileage } = useInvalidateRelated();
   const t = useLocalizedToast();
+  const { showUndoToast } = useUndoableDelete();
 
   return useMutation({
     mutationFn: async (id: string) => {
@@ -221,10 +222,11 @@ export const useDeleteMileage = () => {
         action: 'delete', entity_type: 'mileage', entity_id: id,
         entity_name: existing?.purpose || null, old_values: existing ? { purpose: existing.purpose, kilometers: existing.kilometers } : null,
       });
+      return id;
     },
-    onSuccess: () => {
+    onSuccess: (deletedId) => {
       afterMileage();
-      t.success('Viaje eliminado', 'Trip deleted');
+      showUndoToast('mileage', deletedId, 'Viaje movido a la papelera', 'Trip moved to trash');
     },
     onError: () => {
       t.error('Error al eliminar viaje', 'Error deleting trip');

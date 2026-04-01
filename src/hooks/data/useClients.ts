@@ -94,6 +94,7 @@ export function useDeleteClient() {
   const { user } = useAuth();
   const { afterClientDelete } = useInvalidateRelated();
   const t = useLocalizedToast();
+  const { showUndoToast } = useUndoableDelete();
 
   return useMutation({
     mutationFn: async (id: string) => {
@@ -107,10 +108,11 @@ export function useDeleteClient() {
         action: 'delete', entity_type: 'client', entity_id: id,
         entity_name: existing?.name || null,
       });
+      return id;
     },
-    onSuccess: () => {
+    onSuccess: (deletedId) => {
       afterClientDelete();
-      t.success('Cliente movido a la papelera', 'Client moved to trash');
+      showUndoToast('clients', deletedId, 'Cliente movido a la papelera', 'Client moved to trash');
     },
     onError: (error: Error) => {
       t.error(error.message || 'Error al eliminar cliente', error.message || 'Error deleting client');

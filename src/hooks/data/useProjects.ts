@@ -98,6 +98,7 @@ export function useDeleteProject() {
   const { user } = useAuth();
   const { afterProjectDelete } = useInvalidateRelated();
   const t = useLocalizedToast();
+  const { showUndoToast } = useUndoableDelete();
 
   return useMutation({
     mutationFn: async (id: string) => {
@@ -110,10 +111,11 @@ export function useDeleteProject() {
         action: 'delete', entity_type: 'project', entity_id: id,
         entity_name: existing?.name || null,
       });
+      return id;
     },
-    onSuccess: () => {
+    onSuccess: (deletedId) => {
       afterProjectDelete();
-      t.success('Proyecto movido a la papelera', 'Project moved to trash');
+      showUndoToast('projects', deletedId, 'Proyecto movido a la papelera', 'Project moved to trash');
     },
     onError: () => {
       t.error('Error al eliminar proyecto', 'Error deleting project');
