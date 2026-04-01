@@ -47,21 +47,28 @@ export async function generateHistoricalPayments(
   frequency: string,
   frequencyMonths: number | null,
   amount: number,
-): Promise<{ paid_date: string; amount_paid: number }[]> {
+): Promise<{ payments: { paid_date: string; amount_paid: number }[]; truncated: boolean }> {
+  const { MAX_HISTORICAL_PAYMENTS } = await import('@/lib/constants/resource-limits');
   const payments: { paid_date: string; amount_paid: number }[] = [];
   const { getNextDueDate } = await import('@/lib/constants/bill-categories');
   let current = new Date(startDate);
   const today = new Date();
   today.setHours(23, 59, 59, 999);
 
-  while (current < today) {
+  let iterations = 0;
+  while (current < today && payments.length < MAX_HISTORICAL_PAYMENTS) {
     payments.push({
       paid_date: current.toISOString().split('T')[0],
       amount_paid: amount,
     });
+    const prev = current.getTime();
     current = getNextDueDate(current, frequency, frequencyMonths || undefined);
+    // Safety: break if date didn't advance (prevents infinite loop)
+    if (current.getTime() <= prev) break;
+    iterations++;
+    if (iterations > MAX_HISTORICAL_PAYMENTS) break;
   }
-  return payments;
+  return { payments, truncated: payments.length >= MAX_HISTORICAL_PAYMENTS };
 }
 
 export interface BillPayment {

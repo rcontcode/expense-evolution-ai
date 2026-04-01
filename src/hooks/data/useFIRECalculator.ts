@@ -155,12 +155,13 @@ export function useFIRECalculator() {
     const coastFIREAge = currentSavings >= coastFIRENumber ? currentAge : 
       currentAge + Math.log(coastFIRENumber / currentSavings) / Math.log(1 + realReturn);
     
-    // Generate yearly projections
+    // Generate yearly projections (capped at MAX_PROJECTION_YEARS)
     const yearlyProjections: YearlyProjection[] = [];
     let runningBalance = currentSavings;
     const currentYear = new Date().getFullYear();
+    const maxYears = Math.min(yearsToTarget + 10, MAX_PROJECTION_YEARS);
     
-    for (let i = 0; i <= yearsToTarget + 10; i++) {
+    for (let i = 0; i <= maxYears; i++) {
       const age = currentAge + i;
       const year = currentYear + i;
       
