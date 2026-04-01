@@ -155,13 +155,14 @@ function DroppableColumn({ stageKey, stage, leads, isEs, onCardClick }: {
 }
 
 /* ─── Lead Detail Dialog ─── */
-function LeadDetailDialog({ lead, isEs, open, onClose, onMove, isPending }: {
+function LeadDetailDialog({ lead, isEs, open, onClose, onMove, isPending, interactions = [] }: {
   lead: PipelineLead | null;
   isEs: boolean;
   open: boolean;
   onClose: () => void;
   onMove: (stage: PipelineStage, note?: string) => void;
   isPending: boolean;
+  interactions?: any[];
 }) {
   const [noteText, setNoteText] = useState('');
   const [activeTab, setActiveTab] = useState('details');
