@@ -80,10 +80,10 @@ const REPORT_CARDS: ReportCard[] = [
   {
     id: 'tax',
     icon: <DollarSign className="h-6 w-6" />,
-    titleEs: 'Reporte Fiscal / T2125',
-    titleEn: 'Tax Report / T2125',
-    descEs: 'Gastos de negocio formateados para CRA con líneas T2125.',
-    descEn: 'Business expenses formatted for CRA with T2125 lines.',
+    titleEs: 'Reporte Fiscal',
+    titleEn: 'Tax Report',
+    descEs: 'Ingresos gravables vs deducciones con ingreso neto imponible.',
+    descEn: 'Taxable income vs deductions with net taxable income.',
     formats: ['pdf', 'excel'],
     badge: { es: 'Contador', en: 'Accountant' },
     badgeVariant: 'secondary',
@@ -96,7 +96,7 @@ const REPORT_CARDS: ReportCard[] = [
     titleEn: 'Income Summary',
     descEs: 'Todos los ingresos del año por tipo, fuente y cliente.',
     descEn: 'All income for the year by type, source, and client.',
-    formats: ['excel'],
+    formats: ['pdf', 'excel'],
     color: 'green',
   },
   {
@@ -108,6 +108,18 @@ const REPORT_CARDS: ReportCard[] = [
     descEn: 'Business trips with km, routes, and tax deductions.',
     formats: ['pdf', 'excel'],
     color: 'sky',
+  },
+  {
+    id: 'reimbursement',
+    icon: <Users className="h-6 w-6" />,
+    titleEs: 'Rendición por Cliente',
+    titleEn: 'Client Reimbursement',
+    descEs: 'Gastos reembolsables agrupados por cliente para rendición.',
+    descEn: 'Reimbursable expenses grouped by client for reporting.',
+    formats: ['pdf', 'excel'],
+    badge: { es: 'Pro', en: 'Pro' },
+    badgeVariant: 'default',
+    color: 'indigo',
   },
 ];
 
