@@ -271,6 +271,10 @@ export default function BetaCodesAdmin() {
               <Users className="h-4 w-4" />
               Historial de Usos
             </TabsTrigger>
+            <TabsTrigger value="invite" className="gap-2">
+              <MessageSquare className="h-4 w-4" />
+              Invitar
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="codes">
