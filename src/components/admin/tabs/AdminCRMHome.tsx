@@ -177,18 +177,44 @@ export const AdminCRMHome = ({ language, onNavigateTab }: Props) => {
     return days;
   }, [leads, isEs]);
 
+  // Weekly activity heatmap (last 7 weeks × 7 days)
+  const heatmapData = useMemo(() => {
+    const weeks: { day: number; week: number; count: number; label: string }[] = [];
+    for (let w = 6; w >= 0; w--) {
+      for (let d = 0; d < 7; d++) {
+        const date = subDays(new Date(), w * 7 + (6 - d));
+        const dayStr = format(date, 'yyyy-MM-dd');
+        const count = leads.filter((l: any) => format(new Date(l.created_at), 'yyyy-MM-dd') === dayStr).length;
+        weeks.push({ day: d, week: 6 - w, count, label: format(date, 'dd MMM') });
+      }
+    }
+    return weeks;
+  }, [leads]);
+
+  const maxHeat = Math.max(1, ...heatmapData.map(d => d.count));
+
+  const MomBadge = ({ delta, suffix = '' }: { delta: number; suffix?: string }) => {
+    if (delta === 0) return null;
+    return (
+      <span className={`text-[9px] font-bold ${delta > 0 ? 'text-white/90' : 'text-white/70'}`}>
+        {delta > 0 ? '↑' : '↓'}{Math.abs(delta)}{suffix} vs {isEs ? 'mes ant.' : 'prev mo.'}
+      </span>
+    );
+  };
+
   const cards = [
     { 
       label: isEs ? 'Leads hoy' : 'Leads today', 
       value: kpis.leadsToday, 
       gradient: 'from-blue-500 to-cyan-500',
-      emoji: '📥'
+      emoji: '📥',
     },
     { 
       label: isEs ? 'Esta semana' : 'This week', 
       value: kpis.leadsThisWeek, 
       gradient: 'from-violet-500 to-purple-500',
-      emoji: '📊'
+      emoji: '📊',
+      mom: kpis.weekDelta,
     },
     { 
       label: isEs ? 'Follow-ups vencidos' : 'Overdue follow-ups', 
@@ -208,13 +234,17 @@ export const AdminCRMHome = ({ language, onNavigateTab }: Props) => {
       label: isEs ? 'Tasa contacto' : 'Contact rate', 
       value: `${kpis.contactRate}%`, 
       gradient: 'from-amber-500 to-yellow-500',
-      emoji: '📞'
+      emoji: '📞',
+      mom: kpis.contactRateDelta,
+      momSuffix: 'pp',
     },
     { 
       label: isEs ? 'Conversión mes' : 'Monthly conversion', 
       value: `${kpis.conversionRate}%`, 
       gradient: 'from-emerald-500 to-teal-600',
-      emoji: '💰'
+      emoji: '💰',
+      mom: kpis.conversionRateDelta,
+      momSuffix: 'pp',
     },
   ];
 
