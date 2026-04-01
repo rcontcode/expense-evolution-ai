@@ -130,8 +130,46 @@ export const AdminContactQueueTab = ({ language }: Props) => {
     // Auto-select app based on source
     if (lead.source?.toLowerCase().includes('fokus')) {
       setTargetApp('fokuspark');
+    } else if (lead.source?.toLowerCase().includes('univers')) {
+      setTargetApp('universmind');
     } else {
       setTargetApp('evofinz');
+    }
+  };
+
+  const sendCrmEmail = async (lead: QueueLead, message: string) => {
+    setSendingCrmEmail(true);
+    try {
+      // Extract subject from [SUBJECT: ...] pattern if present
+      let subject = '';
+      let body = message;
+      const subjectMatch = message.match(/\[SUBJECT:\s*(.+?)\]/);
+      if (subjectMatch) {
+        subject = subjectMatch[1];
+        body = message.replace(subjectMatch[0], '').trim();
+      }
+
+      const { data, error } = await supabase.functions.invoke('send-crm-email', {
+        body: {
+          recipientEmail: lead.email,
+          recipientName: lead.name,
+          subject: subject || `${lead.name.split(' ')[0]}, tenemos algo para ti`,
+          textBody: body,
+          leadId: lead.id,
+          leadSource: lead.source || 'evofinz',
+        },
+      });
+      if (error) throw error;
+      if (data?.success) {
+        toast.success(isEs ? '📧 Email CRM enviado correctamente' : '📧 CRM email sent successfully');
+        if (!lead.contacted_at) markAsContacted.mutate(lead.id);
+      } else {
+        toast.error(data?.error || (isEs ? 'Error al enviar email' : 'Error sending email'));
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Error sending CRM email');
+    } finally {
+      setSendingCrmEmail(false);
     }
   };
 
