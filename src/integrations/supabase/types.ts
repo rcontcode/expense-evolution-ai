@@ -3535,6 +3535,7 @@ export type Database = {
           currency: string | null
           description: string | null
           due_day: number | null
+          end_date: string | null
           entity_id: string | null
           frequency: string
           frequency_months: number | null
@@ -3550,6 +3551,7 @@ export type Database = {
           payment_method_type: string
           priority: string | null
           reminder_days_before: number | null
+          start_date: string | null
           status: string
           updated_at: string
           user_id: string
@@ -3566,6 +3568,7 @@ export type Database = {
           currency?: string | null
           description?: string | null
           due_day?: number | null
+          end_date?: string | null
           entity_id?: string | null
           frequency?: string
           frequency_months?: number | null
@@ -3581,6 +3584,7 @@ export type Database = {
           payment_method_type?: string
           priority?: string | null
           reminder_days_before?: number | null
+          start_date?: string | null
           status?: string
           updated_at?: string
           user_id: string
@@ -3597,6 +3601,7 @@ export type Database = {
           currency?: string | null
           description?: string | null
           due_day?: number | null
+          end_date?: string | null
           entity_id?: string | null
           frequency?: string
           frequency_months?: number | null
@@ -3612,6 +3617,7 @@ export type Database = {
           payment_method_type?: string
           priority?: string | null
           reminder_days_before?: number | null
+          start_date?: string | null
           status?: string
           updated_at?: string
           user_id?: string
