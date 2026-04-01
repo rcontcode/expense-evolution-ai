@@ -95,6 +95,7 @@ const TRIGGER_ICONS: Record<string, React.ReactNode> = {
 const ACTION_ICONS: Record<string, React.ReactNode> = {
   whatsapp: <MessageCircle className="h-4 w-4 text-green-600" />,
   email: <Mail className="h-4 w-4 text-blue-600" />,
+  email_sequence: <RefreshCw className="h-4 w-4 text-cyan-600" />,
   auto_contact: <CheckCircle2 className="h-4 w-4 text-emerald-600" />,
   auto_tag: <Tag className="h-4 w-4 text-purple-600" />,
   auto_stage: <GitBranch className="h-4 w-4 text-indigo-600" />,
