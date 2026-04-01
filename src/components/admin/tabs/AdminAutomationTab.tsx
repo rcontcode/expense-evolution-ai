@@ -414,14 +414,18 @@ export const AdminAutomationTab = ({ language }: Props) => {
     const parsedCond: TriggerCondition[] = rawCond
       ? (Array.isArray(rawCond) ? rawCond : [rawCond]).map((c: any) => ({ field: c.field || '', operator: c.operator || 'eq', value: c.value ?? '' }))
       : [];
+    const actionConfig = (rule.action_config as Record<string, any>) || {};
     setFormData({
       name: rule.name,
       trigger_type: rule.trigger_type,
       action_type: rule.action_type,
       delay_minutes: rule.delay_minutes || 0,
       description: rule.description || '',
-      action_config: (rule.action_config as Record<string, any>) || {},
+      action_config: actionConfig,
       trigger_condition: parsedCond,
+      schedule_active_hours_start: actionConfig.schedule_active_hours_start ?? 8,
+      schedule_active_hours_end: actionConfig.schedule_active_hours_end ?? 20,
+      schedule_active_days: actionConfig.schedule_active_days ?? [1, 2, 3, 4, 5],
     });
     setDialogOpen(true);
   };
