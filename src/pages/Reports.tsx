@@ -1020,3 +1020,97 @@ async function exportMileageExcel(
   a.click();
   URL.revokeObjectURL(url);
 }
+
+async function exportIncomeSummaryPDF(l: boolean, incomes: any[], year: number, fc: (n: number) => string, userName?: string | null, businessName?: string | null) {
+  const yearIncomes = incomes.filter((i: any) => new Date(i.date).getFullYear() === year);
+  if (yearIncomes.length === 0) { toast.info(l ? 'No hay ingresos para exportar' : 'No income to export'); return; }
+  const { default: jsPDF } = await import('jspdf');
+  const { default: autoTable } = await import('jspdf-autotable');
+  const doc = new jsPDF();
+  const now = new Date();
+  doc.setFontSize(18);
+  doc.text(l ? 'Resumen de Ingresos' : 'Income Summary', 14, 20);
+  doc.setFontSize(10);
+  doc.setTextColor(100);
+  const subtitle = [businessName, userName].filter(Boolean).join(' — ');
+  doc.text(`${subtitle ? subtitle + ' · ' : ''}${year}`, 14, 27);
+  doc.setTextColor(0);
+  const totalInc = yearIncomes.reduce((s: number, i: any) => s + i.amount, 0);
+  doc.setFontSize(12);
+  doc.text(`${l ? 'Total' : 'Total'}: ${fc(totalInc)}`, 14, 35);
+  autoTable(doc, {
+    startY: 42,
+    head: [[l ? 'Fecha' : 'Date', l ? 'Tipo' : 'Type', l ? 'Fuente' : 'Source', l ? 'Descripción' : 'Description', l ? 'Monto' : 'Amount']],
+    body: yearIncomes.sort((a: any, b: any) => a.date.localeCompare(b.date)).map((inc: any) => [
+      inc.date, inc.income_type || '-', inc.source || '-', inc.description || '-', fc(inc.amount),
+    ]),
+    foot: [[l ? 'Total' : 'Total', '', '', '', fc(totalInc)]],
+    theme: 'striped',
+    headStyles: { fillColor: [34, 197, 94] },
+    styles: { fontSize: 8 },
+  });
+  const ph = doc.internal.pageSize.height;
+  doc.setFontSize(8);
+  doc.setTextColor(150);
+  doc.text(`EvoFinz — ${format(now, 'PPp', { locale: l ? es : enUS })}`, 14, ph - 10);
+  doc.save(`income-${year}.pdf`);
+}
+
+async function exportReimbursementPDF(l: boolean, expenses: any[], year: number, fc: (n: number) => string, userName?: string | null, businessName?: string | null) {
+  const { default: jsPDF } = await import('jspdf');
+  const { default: autoTable } = await import('jspdf-autotable');
+  const doc = new jsPDF();
+  const now = new Date();
+  doc.setFontSize(18);
+  doc.text(l ? 'Rendición de Gastos por Cliente' : 'Client Reimbursement Report', 14, 20);
+  doc.setFontSize(10);
+  doc.setTextColor(100);
+  const subtitle = [businessName, userName].filter(Boolean).join(' — ');
+  doc.text(`${subtitle ? subtitle + ' · ' : ''}${year}`, 14, 27);
+  doc.setTextColor(0);
+  const total = expenses.reduce((s: number, e: any) => s + Number(e.amount), 0);
+  doc.setFontSize(12);
+  doc.text(`${l ? 'Total Reembolsable' : 'Total Reimbursable'}: ${fc(total)}`, 14, 35);
+  autoTable(doc, {
+    startY: 42,
+    head: [[l ? 'Fecha' : 'Date', l ? 'Proveedor' : 'Vendor', l ? 'Categoría' : 'Category', l ? 'Descripción' : 'Description', l ? 'Monto' : 'Amount']],
+    body: expenses.map((e: any) => [e.date, e.vendor || '-', e.category || '-', e.description || '-', fc(Number(e.amount))]),
+    foot: [[l ? 'Total' : 'Total', '', '', '', fc(total)]],
+    theme: 'striped',
+    headStyles: { fillColor: [99, 102, 241] },
+    styles: { fontSize: 8 },
+  });
+  const ph = doc.internal.pageSize.height;
+  doc.setFontSize(8);
+  doc.setTextColor(150);
+  doc.text(`EvoFinz — ${format(now, 'PPp', { locale: l ? es : enUS })}`, 14, ph - 10);
+  doc.save(`reimbursement-${year}.pdf`);
+}
+
+async function exportReimbursementExcel(l: boolean, expenses: any[], year: number) {
+  const ExcelJS = await import('exceljs');
+  const wb = new ExcelJS.Workbook();
+  const ws = wb.addWorksheet(l ? 'Rendición' : 'Reimbursement');
+  ws.columns = [
+    { header: l ? 'Fecha' : 'Date', width: 14 },
+    { header: l ? 'Proveedor' : 'Vendor', width: 20 },
+    { header: l ? 'Categoría' : 'Category', width: 18 },
+    { header: l ? 'Descripción' : 'Description', width: 30 },
+    { header: l ? 'Monto' : 'Amount', width: 14 },
+    { header: l ? 'Moneda' : 'Currency', width: 8 },
+  ];
+  ws.getRow(1).font = { bold: true };
+  expenses.forEach((e: any) => {
+    ws.addRow([e.date, e.vendor || '', e.category || '', e.description || '', Number(e.amount), e.currency || 'CAD']);
+  });
+  ws.addRow([]);
+  ws.addRow([l ? 'Total' : 'Total', '', '', '', expenses.reduce((s: number, e: any) => s + Number(e.amount), 0)]).font = { bold: true };
+  const buffer = await wb.xlsx.writeBuffer();
+  const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `reimbursement-${year}.xlsx`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
