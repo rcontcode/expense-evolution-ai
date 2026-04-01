@@ -312,6 +312,8 @@ export function ReceiptReviewDialog({
 
   const handleSaveChanges = async () => {
     try {
+      const isIncomeDocument = (editedData as any)?.invoice_direction === 'income';
+
       // Update the document's extracted_data
       const { error: docError } = await supabase
         .from('documents')
@@ -320,8 +322,30 @@ export function ReceiptReviewDialog({
 
       if (docError) throw docError;
 
-      // If there's an associated expense, update it too
-      if (document.expense_id) {
+      if (isIncomeDocument) {
+        // Find and update the linked income record
+        const { data: linkedIncome } = await supabase
+          .from('income')
+          .select('id')
+          .eq('document_id', document.id)
+          .maybeSingle();
+
+        if (linkedIncome) {
+          const incomeUpdates: any = {};
+          if (editedData.vendor || (editedData as any).source) incomeUpdates.source = (editedData as any).source || editedData.vendor;
+          if (editedData.amount) incomeUpdates.amount = editedData.amount;
+          if (editedData.date) incomeUpdates.date = editedData.date;
+          if (editedData.description) incomeUpdates.description = editedData.description;
+          if (editedData.client_id) incomeUpdates.client_id = editedData.client_id;
+          if (editedData.project_id) incomeUpdates.project_id = editedData.project_id;
+          if (editedData.currency) incomeUpdates.currency = editedData.currency;
+
+          if (Object.keys(incomeUpdates).length > 0) {
+            await supabase.from('income').update(incomeUpdates).eq('id', linkedIncome.id);
+          }
+        }
+      } else if (document.expense_id) {
+        // Update the associated expense
         const expenseUpdates: any = {};
         if (editedData.vendor) expenseUpdates.vendor = editedData.vendor;
         if (editedData.amount) expenseUpdates.amount = editedData.amount;
