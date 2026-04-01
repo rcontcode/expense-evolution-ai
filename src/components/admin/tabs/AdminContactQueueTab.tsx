@@ -54,7 +54,8 @@ export const AdminContactQueueTab = ({ language }: Props) => {
   const [aiMessage, setAiMessage] = useState('');
   const [aiLoading, setAiLoading] = useState(false);
   const [messageType, setMessageType] = useState<'whatsapp' | 'email' | 'offer'>('whatsapp');
-  const [targetApp, setTargetApp] = useState<'evofinz' | 'fokuspark' | 'bundle'>('evofinz');
+  const [targetApp, setTargetApp] = useState<'evofinz' | 'fokuspark' | 'universmind' | 'bundle'>('evofinz');
+  const [sendingCrmEmail, setSendingCrmEmail] = useState(false);
   const [templateType, setTemplateType] = useState<'first_contact' | 'follow_up' | 'reactivation' | 'invitation' | 'offer'>('first_contact');
 
   const { data: rawLeads = [], isLoading } = useQuery({
@@ -129,8 +130,46 @@ export const AdminContactQueueTab = ({ language }: Props) => {
     // Auto-select app based on source
     if (lead.source?.toLowerCase().includes('fokus')) {
       setTargetApp('fokuspark');
+    } else if (lead.source?.toLowerCase().includes('univers')) {
+      setTargetApp('universmind');
     } else {
       setTargetApp('evofinz');
+    }
+  };
+
+  const sendCrmEmail = async (lead: QueueLead, message: string) => {
+    setSendingCrmEmail(true);
+    try {
+      // Extract subject from [SUBJECT: ...] pattern if present
+      let subject = '';
+      let body = message;
+      const subjectMatch = message.match(/\[SUBJECT:\s*(.+?)\]/);
+      if (subjectMatch) {
+        subject = subjectMatch[1];
+        body = message.replace(subjectMatch[0], '').trim();
+      }
+
+      const { data, error } = await supabase.functions.invoke('send-crm-email', {
+        body: {
+          recipientEmail: lead.email,
+          recipientName: lead.name,
+          subject: subject || `${lead.name.split(' ')[0]}, tenemos algo para ti`,
+          textBody: body,
+          leadId: lead.id,
+          leadSource: lead.source || 'evofinz',
+        },
+      });
+      if (error) throw error;
+      if (data?.success) {
+        toast.success(isEs ? '📧 Email CRM enviado correctamente' : '📧 CRM email sent successfully');
+        if (!lead.contacted_at) markAsContacted.mutate(lead.id);
+      } else {
+        toast.error(data?.error || (isEs ? 'Error al enviar email' : 'Error sending email'));
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Error sending CRM email');
+    } finally {
+      setSendingCrmEmail(false);
     }
   };
 
@@ -380,9 +419,10 @@ export const AdminContactQueueTab = ({ language }: Props) => {
                   </p>
                   <div className="flex gap-1.5 flex-wrap">
                     {([
-                      { key: 'evofinz' as const, label: '💰 EvoFinz', desc: isEs ? 'Finanzas' : 'Finance' },
-                      { key: 'fokuspark' as const, label: '🧘 FokusPark', desc: isEs ? 'Productividad' : 'Productivity' },
-                      { key: 'bundle' as const, label: '🔥 Bundle', desc: isEs ? 'Ambas' : 'Both' },
+                      { key: 'evofinz' as const, label: '💰 EvoFinz' },
+                      { key: 'fokuspark' as const, label: '🧠 Fokuspark' },
+                      { key: 'universmind' as const, label: '🌌 UniversMind' },
+                      { key: 'bundle' as const, label: '🔥 Bundle' },
                     ]).map((app) => (
                       <Button
                         key={app.key}
@@ -463,7 +503,7 @@ export const AdminContactQueueTab = ({ language }: Props) => {
                   {/* Context badge */}
                   <div className="flex items-center gap-1.5 mt-2 flex-wrap">
                     <Badge variant="outline" className="text-[10px]">
-                      📱 {targetApp === 'bundle' ? 'EvoFinz + FokusPark' : targetApp === 'fokuspark' ? 'FokusPark' : 'EvoFinz'}
+                      📱 {targetApp === 'bundle' ? 'EvoFinz + Fokuspark + UniversMind' : targetApp === 'fokuspark' ? 'Fokuspark' : targetApp === 'universmind' ? 'UniversMind' : 'EvoFinz'}
                     </Badge>
                     <Badge variant="outline" className="text-[10px]">
                       📋 {templateType.replace('_', ' ')}
@@ -509,7 +549,16 @@ export const AdminContactQueueTab = ({ language }: Props) => {
                         className="text-xs gap-1"
                         onClick={() => handleEmail(selectedLead, aiMessage)}
                       >
-                        <Mail className="h-3 w-3" /> Email
+                        <Mail className="h-3 w-3" /> Email (mailto)
+                      </Button>
+                      <Button
+                        size="sm"
+                        className="text-xs gap-1 bg-blue-600 hover:bg-blue-700 text-white"
+                        onClick={() => sendCrmEmail(selectedLead, aiMessage)}
+                        disabled={sendingCrmEmail}
+                      >
+                        {sendingCrmEmail ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
+                        {isEs ? 'Enviar CRM' : 'Send CRM'}
                       </Button>
                       <Button
                         size="sm"
