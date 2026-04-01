@@ -1,11 +1,13 @@
-import { ChevronLeft, ChevronRight, Home, Sun, Moon } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Home, Sun, Moon, Undo2, Redo2 } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useUndoRedo } from '@/contexts/UndoRedoContext';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { useSafeNavigation } from '@/hooks/useSafeNavigation';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -67,8 +69,47 @@ export function PageHeader({ title, description, showBack = true, children }: Pa
   const { resolvedMode, setMode } = useTheme();
   const isMobile = useIsMobile();
   
+  const { undo, redo, canUndo, canRedo } = useUndoRedo();
+  const isEs = language === 'es';
+  
   const GlobalControls = () => (
     <div className="flex items-center gap-1">
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={undo}
+            disabled={!canUndo}
+            className={cn("h-8 w-8 relative", canUndo && "text-foreground")}
+            aria-label={isEs ? 'Deshacer (Ctrl+Z)' : 'Undo (Ctrl+Z)'}
+          >
+            <Undo2 className="h-4 w-4" />
+            {canUndo && (
+              <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-primary animate-pulse" />
+            )}
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>{isEs ? 'Deshacer (Ctrl+Z)' : 'Undo (Ctrl+Z)'}</TooltipContent>
+      </Tooltip>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={redo}
+            disabled={!canRedo}
+            className={cn("h-8 w-8 relative", canRedo && "text-foreground")}
+            aria-label={isEs ? 'Rehacer (Ctrl+Shift+Z)' : 'Redo (Ctrl+Shift+Z)'}
+          >
+            <Redo2 className="h-4 w-4" />
+            {canRedo && (
+              <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-primary animate-pulse" />
+            )}
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>{isEs ? 'Rehacer (Ctrl+Shift+Z)' : 'Redo (Ctrl+Shift+Z)'}</TooltipContent>
+      </Tooltip>
       <LanguageSelector />
       <Button
         variant="ghost"

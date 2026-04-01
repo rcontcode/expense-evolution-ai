@@ -10,6 +10,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { EntityProvider } from "@/contexts/EntityContext";
 import { HighlightProvider } from "@/contexts/HighlightContext";
 import { GamificationProvider } from "@/contexts/GamificationContext";
+import { UndoRedoProvider } from "@/contexts/UndoRedoContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AdminRoute } from "@/components/AdminRoute";
 import { AuthenticatedRedirect } from "@/components/AuthenticatedRedirect";
@@ -338,6 +339,7 @@ const App = () => (
         <Router>
           <LanguageProvider>
             <AuthProvider>
+              <UndoRedoProvider>
               <EntityProvider>
                 <HighlightProvider>
                   <GamificationProvider>
@@ -418,6 +420,7 @@ const App = () => (
                   </GamificationProvider>
                 </HighlightProvider>
               </EntityProvider>
+              </UndoRedoProvider>
             </AuthProvider>
           </LanguageProvider>
         </Router>
