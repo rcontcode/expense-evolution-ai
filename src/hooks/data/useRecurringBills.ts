@@ -42,14 +42,14 @@ export interface RecurringBill {
 }
 
 /** Generate historical bill_payments between startDate and today */
-export function generateHistoricalPayments(
+export async function generateHistoricalPayments(
   startDate: string,
   frequency: string,
   frequencyMonths: number | null,
   amount: number,
-): { paid_date: string; amount_paid: number }[] {
+): Promise<{ paid_date: string; amount_paid: number }[]> {
   const payments: { paid_date: string; amount_paid: number }[] = [];
-  const { getNextDueDate } = require('@/lib/constants/bill-categories');
+  const { getNextDueDate } = await import('@/lib/constants/bill-categories');
   let current = new Date(startDate);
   const today = new Date();
   today.setHours(23, 59, 59, 999);
