@@ -406,5 +406,7 @@ function billToForm(bill: RecurringBill): BillInsert {
     payee_name: bill.payee_name,
     payee_account: bill.payee_account,
     beneficiary: bill.beneficiary,
+    start_date: bill.start_date,
+    end_date: bill.end_date,
   };
 }
