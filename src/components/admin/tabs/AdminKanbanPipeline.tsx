@@ -530,6 +530,20 @@ export const AdminKanbanPipeline = ({ language }: Props) => {
     },
   });
 
+  // Fetch lead interactions for timeline
+  const { data: allInteractions = [] } = useQuery({
+    queryKey: ['pipeline-interactions'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('lead_interactions')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(500);
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
   const stageLeads = useMemo(() => {
     const filteredByApp = filterLeadsByApp(rawLeads, appFilter);
     const grouped: Record<PipelineStage, PipelineLead[]> = { new: [], contacted: [], qualified: [], converted: [] };
@@ -541,6 +555,45 @@ export const AdminKanbanPipeline = ({ language }: Props) => {
     Object.values(grouped).forEach(arr => arr.sort((a, b) => b.score - a.score));
     return grouped;
   }, [rawLeads, appFilter]);
+
+  // Pipeline velocity metrics
+  const pipelineVelocity = useMemo(() => {
+    const stageOrder: PipelineStage[] = ['new', 'contacted', 'qualified', 'converted'];
+    const stageMetrics: Record<PipelineStage, { avgDays: number; count: number; conversionRate: number }> = {
+      new: { avgDays: 0, count: 0, conversionRate: 0 },
+      contacted: { avgDays: 0, count: 0, conversionRate: 0 },
+      qualified: { avgDays: 0, count: 0, conversionRate: 0 },
+      converted: { avgDays: 0, count: 0, conversionRate: 0 },
+    };
+
+    // Calculate avg time from creation to contacted
+    const contactedLeads = rawLeads.filter(l => l.contacted_at);
+    if (contactedLeads.length > 0) {
+      const totalHours = contactedLeads.reduce((sum, l) => {
+        return sum + Math.max(0, (new Date(l.contacted_at!).getTime() - new Date(l.created_at).getTime()) / (1000 * 60 * 60 * 24));
+      }, 0);
+      stageMetrics.new.avgDays = totalHours / contactedLeads.length;
+    }
+
+    // Conversion rates between stages
+    const total = rawLeads.length;
+    const contactedCount = stageLeads.contacted.length + stageLeads.qualified.length + stageLeads.converted.length;
+    const qualifiedCount = stageLeads.qualified.length + stageLeads.converted.length;
+    const convertedCount = stageLeads.converted.length;
+
+    stageMetrics.new.conversionRate = total > 0 ? (contactedCount / total) * 100 : 0;
+    stageMetrics.contacted.conversionRate = contactedCount > 0 ? (qualifiedCount / contactedCount) * 100 : 0;
+    stageMetrics.qualified.conversionRate = qualifiedCount > 0 ? (convertedCount / qualifiedCount) * 100 : 0;
+    stageMetrics.converted.conversionRate = 100;
+
+    // Overall velocity (days from new to converted)
+    const convertedWithDates = rawLeads.filter(l => l.pipeline_stage === 'converted' && l.contacted_at);
+    const overallVelocity = convertedWithDates.length > 0
+      ? convertedWithDates.reduce((sum, l) => sum + Math.max(0, (new Date(l.contacted_at!).getTime() - new Date(l.created_at).getTime()) / (1000 * 60 * 60 * 24)), 0) / convertedWithDates.length
+      : 0;
+
+    return { stageMetrics, overallVelocity, totalLeads: total };
+  }, [rawLeads, stageLeads]);
 
   const moveToStage = useMutation({
     mutationFn: async ({ leadId, stage, note }: { leadId: string; stage: PipelineStage; note?: string }) => {
