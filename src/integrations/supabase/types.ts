@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_operational_costs: {
+        Row: {
+          amount_usd: number
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          month: string
+          period: string
+          updated_at: string
+        }
+        Insert: {
+          amount_usd?: number
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          month?: string
+          period?: string
+          updated_at?: string
+        }
+        Update: {
+          amount_usd?: number
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          month?: string
+          period?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       ai_usage_logs: {
         Row: {
           action_type: string
