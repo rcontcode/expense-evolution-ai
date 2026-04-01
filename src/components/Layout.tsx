@@ -836,7 +836,7 @@ export const Layout = ({ children }: LayoutProps) => {
 
           {/* Collapse button */}
           <button
-            onClick={() => setCollapsed(!collapsed)}
+            onClick={() => { const next = !collapsed; setCollapsed(next); try { localStorage.setItem('sidebar-collapsed', String(next)); } catch {} }}
             className="absolute -right-3 top-20 z-10 flex h-7 w-7 items-center justify-center rounded-full border-2 border-primary/20 bg-card shadow-lg shadow-primary/10 hover:bg-primary hover:text-primary-foreground hover:border-primary hover:shadow-primary/30 transition-all duration-200 hover:scale-110"
           >
             {collapsed ? (
