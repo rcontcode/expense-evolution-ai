@@ -132,6 +132,7 @@ const COLOR_MAP: Record<string, { bg: string; border: string; icon: string; text
   red: { bg: 'bg-red-500/10', border: 'border-l-red-500', icon: 'bg-red-500/20 text-red-600 dark:text-red-400', text: 'text-red-600 dark:text-red-400', light: 'bg-red-50 dark:bg-red-950/30' },
   green: { bg: 'bg-green-500/10', border: 'border-l-green-500', icon: 'bg-green-500/20 text-green-600 dark:text-green-400', text: 'text-green-600 dark:text-green-400', light: 'bg-green-50 dark:bg-green-950/30' },
   sky: { bg: 'bg-sky-500/10', border: 'border-l-sky-500', icon: 'bg-sky-500/20 text-sky-600 dark:text-sky-400', text: 'text-sky-600 dark:text-sky-400', light: 'bg-sky-50 dark:bg-sky-950/30' },
+  indigo: { bg: 'bg-indigo-500/10', border: 'border-l-indigo-500', icon: 'bg-indigo-500/20 text-indigo-600 dark:text-indigo-400', text: 'text-indigo-600 dark:text-indigo-400', light: 'bg-indigo-50 dark:bg-indigo-950/30' },
 };
 
 interface PreviewData {
