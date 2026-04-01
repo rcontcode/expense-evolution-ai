@@ -182,6 +182,8 @@ export default function ChaosInbox() {
   const [showApproved, setShowApproved] = useState(false);
   const [showRejected, setShowRejected] = useState(false);
   const [activeTab, setActiveTab] = useState('unified');
+  const [recurringCandidate, setRecurringCandidate] = useState<RecurringBillCandidate | null>(null);
+  const [recurringDialogOpen, setRecurringDialogOpen] = useState(false);
   
   const { data: documents = [], isLoading, refetch } = useDocumentsForReview();
   const { approveDocument, rejectDocument, addComment, deleteDocument } = useDocumentReviewActions();
