@@ -1,7 +1,9 @@
-import { ChevronLeft, ChevronRight, Home } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Home, Sun, Moon } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useTheme } from '@/contexts/ThemeContext';
+import { LanguageSelector } from '@/components/LanguageSelector';
 import { useSafeNavigation } from '@/hooks/useSafeNavigation';
 import { useIsMobile } from '@/hooks/use-mobile';
 import {
