@@ -155,13 +155,14 @@ function DroppableColumn({ stageKey, stage, leads, isEs, onCardClick }: {
 }
 
 /* ─── Lead Detail Dialog ─── */
-function LeadDetailDialog({ lead, isEs, open, onClose, onMove, isPending }: {
+function LeadDetailDialog({ lead, isEs, open, onClose, onMove, isPending, interactions = [] }: {
   lead: PipelineLead | null;
   isEs: boolean;
   open: boolean;
   onClose: () => void;
   onMove: (stage: PipelineStage, note?: string) => void;
   isPending: boolean;
+  interactions?: any[];
 }) {
   const [noteText, setNoteText] = useState('');
   const [activeTab, setActiveTab] = useState('details');
@@ -225,8 +226,9 @@ function LeadDetailDialog({ lead, isEs, open, onClose, onMove, isPending }: {
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-2">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="details">{isEs ? '📋 Info' : '📋 Info'}</TabsTrigger>
+            <TabsTrigger value="timeline">{isEs ? '📅 Timeline' : '📅 Timeline'}</TabsTrigger>
             <TabsTrigger value="actions">{isEs ? '⚡ Acciones' : '⚡ Actions'}</TabsTrigger>
             <TabsTrigger value="move">{isEs ? '🚀 Mover' : '🚀 Move'}</TabsTrigger>
           </TabsList>
@@ -313,7 +315,60 @@ function LeadDetailDialog({ lead, isEs, open, onClose, onMove, isPending }: {
             )}
           </TabsContent>
 
-          {/* ── Actions Tab ── */}
+          {/* ── Timeline Tab ── */}
+          <TabsContent value="timeline" className="space-y-3 mt-3">
+            {(() => {
+              const leadInteractions = interactions.filter((i: any) => i.lead_id === lead.id);
+              const INTERACTION_ICONS: Record<string, { icon: string; color: string }> = {
+                stage_change: { icon: '🔄', color: 'border-l-violet-500' },
+                email: { icon: '📧', color: 'border-l-blue-500' },
+                whatsapp: { icon: '💬', color: 'border-l-green-500' },
+                call: { icon: '📞', color: 'border-l-amber-500' },
+                note: { icon: '📝', color: 'border-l-gray-500' },
+                auto_contact: { icon: '🤖', color: 'border-l-cyan-500' },
+              };
+              
+              // Build timeline from interactions + lead events
+              const events: { date: string; type: string; label: string; detail?: string }[] = [];
+              events.push({ date: lead.created_at, type: 'created', label: isEs ? 'Lead creado' : 'Lead created', detail: `${lead.source} • Score: ${lead.score}` });
+              if (lead.contacted_at) {
+                events.push({ date: lead.contacted_at, type: 'contacted', label: isEs ? 'Primer contacto' : 'First contact' });
+              }
+              leadInteractions.forEach((i: any) => {
+                events.push({ date: i.created_at, type: i.interaction_type, label: i.interaction_type, detail: i.notes || undefined });
+              });
+              events.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+              return events.length > 0 ? (
+                <ScrollArea className="h-[300px]">
+                  <div className="space-y-0 relative">
+                    <div className="absolute left-3 top-2 bottom-2 w-px bg-border" />
+                    {events.map((ev, idx) => {
+                      const iconInfo = INTERACTION_ICONS[ev.type] || { icon: '📌', color: 'border-l-gray-400' };
+                      return (
+                        <div key={idx} className={`relative pl-8 py-2 border-l-2 ml-3 ${iconInfo.color}`}>
+                          <div className="absolute left-[-9px] top-3 w-4 h-4 rounded-full bg-background border-2 border-muted-foreground/20 flex items-center justify-center text-[8px]">
+                            {iconInfo.icon}
+                          </div>
+                          <p className="text-xs font-semibold capitalize">{ev.label}</p>
+                          {ev.detail && <p className="text-[10px] text-muted-foreground mt-0.5">{ev.detail}</p>}
+                          <p className="text-[9px] text-muted-foreground">
+                            {format(new Date(ev.date), 'dd MMM yyyy HH:mm', { locale: isEs ? esLocale : enUS })}
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </ScrollArea>
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Clock className="h-8 w-8 mx-auto mb-2 opacity-30" />
+                  <p className="text-xs">{isEs ? 'Sin actividad registrada' : 'No activity recorded'}</p>
+                </div>
+              );
+            })()}
+          </TabsContent>
+
           <TabsContent value="actions" className="space-y-3 mt-3">
             <p className="text-xs text-muted-foreground">{isEs ? 'Acciones rápidas para este lead:' : 'Quick actions for this lead:'}</p>
 
@@ -530,6 +585,20 @@ export const AdminKanbanPipeline = ({ language }: Props) => {
     },
   });
 
+  // Fetch lead interactions for timeline
+  const { data: allInteractions = [] } = useQuery({
+    queryKey: ['pipeline-interactions'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('lead_interactions')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(500);
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
   const stageLeads = useMemo(() => {
     const filteredByApp = filterLeadsByApp(rawLeads, appFilter);
     const grouped: Record<PipelineStage, PipelineLead[]> = { new: [], contacted: [], qualified: [], converted: [] };
@@ -541,6 +610,45 @@ export const AdminKanbanPipeline = ({ language }: Props) => {
     Object.values(grouped).forEach(arr => arr.sort((a, b) => b.score - a.score));
     return grouped;
   }, [rawLeads, appFilter]);
+
+  // Pipeline velocity metrics
+  const pipelineVelocity = useMemo(() => {
+    const stageOrder: PipelineStage[] = ['new', 'contacted', 'qualified', 'converted'];
+    const stageMetrics: Record<PipelineStage, { avgDays: number; count: number; conversionRate: number }> = {
+      new: { avgDays: 0, count: 0, conversionRate: 0 },
+      contacted: { avgDays: 0, count: 0, conversionRate: 0 },
+      qualified: { avgDays: 0, count: 0, conversionRate: 0 },
+      converted: { avgDays: 0, count: 0, conversionRate: 0 },
+    };
+
+    // Calculate avg time from creation to contacted
+    const contactedLeads = rawLeads.filter(l => l.contacted_at);
+    if (contactedLeads.length > 0) {
+      const totalHours = contactedLeads.reduce((sum, l) => {
+        return sum + Math.max(0, (new Date(l.contacted_at!).getTime() - new Date(l.created_at).getTime()) / (1000 * 60 * 60 * 24));
+      }, 0);
+      stageMetrics.new.avgDays = totalHours / contactedLeads.length;
+    }
+
+    // Conversion rates between stages
+    const total = rawLeads.length;
+    const contactedCount = stageLeads.contacted.length + stageLeads.qualified.length + stageLeads.converted.length;
+    const qualifiedCount = stageLeads.qualified.length + stageLeads.converted.length;
+    const convertedCount = stageLeads.converted.length;
+
+    stageMetrics.new.conversionRate = total > 0 ? (contactedCount / total) * 100 : 0;
+    stageMetrics.contacted.conversionRate = contactedCount > 0 ? (qualifiedCount / contactedCount) * 100 : 0;
+    stageMetrics.qualified.conversionRate = qualifiedCount > 0 ? (convertedCount / qualifiedCount) * 100 : 0;
+    stageMetrics.converted.conversionRate = 100;
+
+    // Overall velocity (days from new to converted)
+    const convertedWithDates = rawLeads.filter(l => l.pipeline_stage === 'converted' && l.contacted_at);
+    const overallVelocity = convertedWithDates.length > 0
+      ? convertedWithDates.reduce((sum, l) => sum + Math.max(0, (new Date(l.contacted_at!).getTime() - new Date(l.created_at).getTime()) / (1000 * 60 * 60 * 24)), 0) / convertedWithDates.length
+      : 0;
+
+    return { stageMetrics, overallVelocity, totalLeads: total };
+  }, [rawLeads, stageLeads]);
 
   const moveToStage = useMutation({
     mutationFn: async ({ leadId, stage, note }: { leadId: string; stage: PipelineStage; note?: string }) => {
@@ -619,18 +727,42 @@ export const AdminKanbanPipeline = ({ language }: Props) => {
         </span>
       </div>
 
-      {/* Pipeline Stats */}
+      {/* Pipeline Stats with Velocity */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         {STAGES.map((stage) => {
           const count = stageLeads[stage.key].length;
+          const velocity = pipelineVelocity.stageMetrics[stage.key];
           return (
-            <div key={stage.key} className={`text-center p-3 rounded-xl bg-gradient-to-br ${stage.gradient} text-white`}>
-              <span className="text-2xl font-black">{count}</span>
+            <div key={stage.key} className={`p-3 rounded-xl bg-gradient-to-br ${stage.gradient} text-white`}>
+              <div className="flex items-center justify-between">
+                <span className="text-2xl font-black">{count}</span>
+                {velocity.conversionRate > 0 && stage.key !== 'converted' && (
+                  <span className="text-[10px] font-bold bg-white/20 rounded-full px-1.5 py-0.5">
+                    {velocity.conversionRate.toFixed(0)}% →
+                  </span>
+                )}
+              </div>
               <p className="text-[11px] font-bold opacity-90">{stage.emoji} {isEs ? stage.labelEs : stage.labelEn}</p>
+              {stage.key === 'new' && velocity.avgDays > 0 && (
+                <p className="text-[9px] opacity-75 mt-0.5">⏱ {velocity.avgDays.toFixed(1)}d avg</p>
+              )}
             </div>
           );
         })}
       </div>
+
+      {/* Pipeline Velocity Summary */}
+      {pipelineVelocity.overallVelocity > 0 && (
+        <div className="flex items-center gap-3 px-3 py-2 rounded-lg bg-muted/50 border border-dashed">
+          <Zap className="h-4 w-4 text-amber-500" />
+          <span className="text-xs font-medium">
+            {isEs ? 'Velocidad del pipeline' : 'Pipeline velocity'}: <span className="font-black text-primary">{pipelineVelocity.overallVelocity.toFixed(1)} {isEs ? 'días' : 'days'}</span> {isEs ? 'promedio hasta conversión' : 'avg to conversion'}
+          </span>
+          <span className="text-[10px] text-muted-foreground ml-auto">
+            {pipelineVelocity.totalLeads} leads
+          </span>
+        </div>
+      )}
 
       {/* Kanban Board - horizontal scroll on smaller screens */}
       <DndContext
@@ -676,6 +808,7 @@ export const AdminKanbanPipeline = ({ language }: Props) => {
           }
         }}
         isPending={moveToStage.isPending}
+        interactions={allInteractions}
       />
 
       {/* Stage Change Note Dialog (on drag) */}

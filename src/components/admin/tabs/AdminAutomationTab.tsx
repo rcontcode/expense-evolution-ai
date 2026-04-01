@@ -40,6 +40,9 @@ interface RuleFormData {
   description: string;
   action_config: Record<string, any>;
   trigger_condition: TriggerCondition[];
+  schedule_active_hours_start: number;
+  schedule_active_hours_end: number;
+  schedule_active_days: number[];
 }
 
 interface TriggerCondition {
@@ -128,9 +131,11 @@ export const AdminAutomationTab = ({ language }: Props) => {
   const [bulkFilter, setBulkFilter] = useState('hot_uncontacted');
   const [bulkProgress, setBulkProgress] = useState<{ total: number; done: number; running: boolean } | null>(null);
   const [expandedRuleId, setExpandedRuleId] = useState<string | null>(null);
-  const [formData, setFormData] = useState<RuleFormData>({
+  const defaultFormData: RuleFormData = {
     name: '', trigger_type: 'new_lead', action_type: 'whatsapp', delay_minutes: 0, description: '', action_config: {}, trigger_condition: [],
-  });
+    schedule_active_hours_start: 8, schedule_active_hours_end: 20, schedule_active_days: [1, 2, 3, 4, 5],
+  };
+  const [formData, setFormData] = useState<RuleFormData>(defaultFormData);
 
   // ===== QUERIES =====
   const { data: rules = [], isLoading: rulesLoading } = useQuery({
@@ -399,7 +404,7 @@ export const AdminAutomationTab = ({ language }: Props) => {
   // ===== DIALOG HANDLERS =====
   const openCreateDialog = () => {
     setEditingRule(null);
-    setFormData({ name: '', trigger_type: 'new_lead', action_type: 'whatsapp', delay_minutes: 0, description: '', action_config: {}, trigger_condition: [] });
+    setFormData({ ...defaultFormData });
     setDialogOpen(true);
   };
 
@@ -409,14 +414,18 @@ export const AdminAutomationTab = ({ language }: Props) => {
     const parsedCond: TriggerCondition[] = rawCond
       ? (Array.isArray(rawCond) ? rawCond : [rawCond]).map((c: any) => ({ field: c.field || '', operator: c.operator || 'eq', value: c.value ?? '' }))
       : [];
+    const actionConfig = (rule.action_config as Record<string, any>) || {};
     setFormData({
       name: rule.name,
       trigger_type: rule.trigger_type,
       action_type: rule.action_type,
       delay_minutes: rule.delay_minutes || 0,
       description: rule.description || '',
-      action_config: (rule.action_config as Record<string, any>) || {},
+      action_config: actionConfig,
       trigger_condition: parsedCond,
+      schedule_active_hours_start: actionConfig.schedule_active_hours_start ?? 8,
+      schedule_active_hours_end: actionConfig.schedule_active_hours_end ?? 20,
+      schedule_active_days: actionConfig.schedule_active_days ?? [1, 2, 3, 4, 5],
     });
     setDialogOpen(true);
   };
@@ -426,6 +435,10 @@ export const AdminAutomationTab = ({ language }: Props) => {
     let config = { ...formData.action_config };
     if (formData.action_type === 'whatsapp') config = { ...config, message_type: 'whatsapp', template_type: config.template_type || 'first_contact', language: config.language || 'es' };
     if (formData.action_type === 'email') config = { ...config, message_type: 'email', template_type: config.template_type || 'first_contact', language: config.language || 'es' };
+    // Include schedule in action_config
+    config.schedule_active_hours_start = formData.schedule_active_hours_start;
+    config.schedule_active_hours_end = formData.schedule_active_hours_end;
+    config.schedule_active_days = formData.schedule_active_days;
     saveMutation.mutate({ ...formData, action_config: config, id: editingRule?.id });
   };
 
@@ -954,6 +967,66 @@ export const AdminAutomationTab = ({ language }: Props) => {
               </div>
 
               {renderActionConfig()}
+
+              {/* Schedule Configuration */}
+              <div className="border rounded-lg p-3 space-y-3">
+                <Label className="text-xs font-bold flex items-center gap-1.5">
+                  <Clock className="h-3.5 w-3.5" />
+                  {isEs ? '🕐 Horario de ejecución' : '🕐 Execution Schedule'}
+                </Label>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label className="text-[10px]">{isEs ? 'Hora inicio' : 'Start hour'}</Label>
+                    <Select value={String(formData.schedule_active_hours_start)} onValueChange={(v) => setFormData(p => ({ ...p, schedule_active_hours_start: parseInt(v) }))}>
+                      <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {Array.from({ length: 24 }, (_, i) => (
+                          <SelectItem key={i} value={String(i)}>{String(i).padStart(2, '0')}:00</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label className="text-[10px]">{isEs ? 'Hora fin' : 'End hour'}</Label>
+                    <Select value={String(formData.schedule_active_hours_end)} onValueChange={(v) => setFormData(p => ({ ...p, schedule_active_hours_end: parseInt(v) }))}>
+                      <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {Array.from({ length: 24 }, (_, i) => (
+                          <SelectItem key={i} value={String(i)}>{String(i).padStart(2, '0')}:00</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-[10px] mb-1.5 block">{isEs ? 'Días activos' : 'Active days'}</Label>
+                  <div className="flex gap-1.5">
+                    {(isEs ? ['L', 'M', 'X', 'J', 'V', 'S', 'D'] : ['M', 'T', 'W', 'T', 'F', 'S', 'S']).map((day, idx) => {
+                      const dayNum = idx + 1;
+                      const isActive = formData.schedule_active_days.includes(dayNum);
+                      return (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => setFormData(p => ({
+                            ...p,
+                            schedule_active_days: isActive
+                              ? p.schedule_active_days.filter(d => d !== dayNum)
+                              : [...p.schedule_active_days, dayNum].sort()
+                          }))}
+                          className={`w-8 h-8 rounded-full text-[10px] font-bold transition-all ${isActive ? 'bg-primary text-primary-foreground shadow-sm' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
+                        >
+                          {day}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+                <p className="text-[9px] text-muted-foreground">
+                  {isEs ? 'Las reglas solo se ejecutarán dentro de este horario. Fuera de horario, los leads quedan en cola.' : 'Rules only fire within this schedule. Off-hours leads are queued.'}
+                </p>
+              </div>
+
               <div>
                 <Label>{isEs ? 'Descripción' : 'Description'}</Label>
                 <Textarea value={formData.description} onChange={(e) => setFormData(p => ({ ...p, description: e.target.value }))} rows={2} />
