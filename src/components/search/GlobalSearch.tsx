@@ -377,6 +377,100 @@ export function GlobalSearch({ open, onOpenChange, onQuickCapture }: GlobalSearc
                 ))}
               </CommandGroup>
             )}
+
+            {/* Income Results */}
+            {searchResults.income.length > 0 && (
+              <CommandGroup heading={language === 'es' ? '💰 Ingresos' : '💰 Income'}>
+                {searchResults.income.map((result) => (
+                  <CommandItem key={result.id} value={`income-${result.id}`} onSelect={() => handleSelect(result.path)} className="cursor-pointer">
+                    <div className="flex items-center gap-3 w-full">
+                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-green-500 flex items-center justify-center shadow-sm">
+                        <TrendingUp className="h-4 w-4 text-white" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium truncate">{result.title}</p>
+                        {result.subtitle && <p className="text-xs text-muted-foreground truncate">{result.subtitle}</p>}
+                      </div>
+                    </div>
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            )}
+
+            {/* Bills Results */}
+            {searchResults.bills.length > 0 && (
+              <CommandGroup heading={language === 'es' ? '🧾 Facturas' : '🧾 Bills'}>
+                {searchResults.bills.map((result) => (
+                  <CommandItem key={result.id} value={`bill-${result.id}`} onSelect={() => handleSelect(result.path)} className="cursor-pointer">
+                    <div className="flex items-center gap-3 w-full">
+                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-sm">
+                        <Wallet className="h-4 w-4 text-white" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium truncate">{result.title}</p>
+                        {result.subtitle && <p className="text-xs text-muted-foreground truncate">{result.subtitle}</p>}
+                      </div>
+                    </div>
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            )}
+
+            {/* Contracts Results */}
+            {searchResults.contracts.length > 0 && (
+              <CommandGroup heading={language === 'es' ? '📄 Contratos' : '📄 Contracts'}>
+                {searchResults.contracts.map((result) => (
+                  <CommandItem key={result.id} value={`contract-${result.id}`} onSelect={() => handleSelect(result.path)} className="cursor-pointer">
+                    <div className="flex items-center gap-3 w-full">
+                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-sky-400 to-blue-600 flex items-center justify-center shadow-sm">
+                        <FileText className="h-4 w-4 text-white" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium truncate">{result.title}</p>
+                        {result.subtitle && <p className="text-xs text-muted-foreground truncate">{result.subtitle}</p>}
+                      </div>
+                    </div>
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            )}
+
+            {/* Mileage Results */}
+            {searchResults.mileage.length > 0 && (
+              <CommandGroup heading={language === 'es' ? '🚗 Kilometraje' : '🚗 Mileage'}>
+                {searchResults.mileage.map((result) => (
+                  <CommandItem key={result.id} value={`mileage-${result.id}`} onSelect={() => handleSelect(result.path)} className="cursor-pointer">
+                    <div className="flex items-center gap-3 w-full">
+                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-400 to-emerald-600 flex items-center justify-center shadow-sm">
+                        <Car className="h-4 w-4 text-white" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium truncate">{result.title}</p>
+                        {result.subtitle && <p className="text-xs text-muted-foreground truncate">{result.subtitle}</p>}
+                      </div>
+                    </div>
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            )}
+
+            {/* Tags Results */}
+            {searchResults.tags.length > 0 && (
+              <CommandGroup heading={language === 'es' ? '🏷️ Etiquetas' : '🏷️ Tags'}>
+                {searchResults.tags.map((result) => (
+                  <CommandItem key={result.id} value={`tag-${result.id}`} onSelect={() => handleSelect(result.path)} className="cursor-pointer">
+                    <div className="flex items-center gap-3 w-full">
+                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-pink-400 to-fuchsia-500 flex items-center justify-center shadow-sm">
+                        <Tag className="h-4 w-4 text-white" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium truncate">{result.title}</p>
+                      </div>
+                    </div>
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            )}
             
             <CommandSeparator />
           </>
