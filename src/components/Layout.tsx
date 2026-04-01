@@ -211,17 +211,11 @@ const getNavSections = (language: string, isBetaTester: boolean = false) => {
       { icon: Users, label: 'nav.clients', path: '/clients', badge: null, tooltipKey: 'clients' as const,
         children: [
           { label: language === 'es' ? '📊 Rentabilidad Clientes' : '📊 Client Profitability', path: '/analytics#profitability' },
-          { label: language === 'es' ? '📁 Proyectos' : '📁 Projects', path: '/projects' },
-          { label: language === 'es' ? '📄 Contratos' : '📄 Contracts', path: '/contracts' },
         ],
       },
       { icon: FolderKanban, label: 'nav.projects', path: '/projects', badge: null, tooltipKey: 'projects' as const },
       { icon: FileText, label: 'nav.contracts', path: '/contracts', badge: null, tooltipKey: 'contracts' as const },
-      { icon: Car, label: 'nav.mileage', path: '/mileage', badge: null, tooltipKey: 'mileage' as const,
-        children: [
-          { label: language === 'es' ? '🛣️ Resumen Kilometraje' : '🛣️ Mileage Summary', path: '/dashboard?area=negocio&atab=mileage' },
-        ],
-      },
+      { icon: Car, label: 'nav.mileage', path: '/mileage', badge: null, tooltipKey: 'mileage' as const },
       { icon: Tag, label: 'nav.tags', path: '/tags', badge: null, tooltipKey: 'tags' as const },
       { icon: Building2, label: language === 'es' ? 'Perfil Empresa' : 'Business Profile', path: '/business-profile', badge: null, tooltipKey: 'businessProfile' as const },
     ]
