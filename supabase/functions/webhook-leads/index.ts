@@ -219,6 +219,66 @@ Deno.serve(async (req) => {
       );
     }
 
+    // 🛡️ Rate limiting
+    const { createClient: createRLClient } = await import("https://esm.sh/@supabase/supabase-js@2");
+    const rlSupabase = createRLClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
+
+    const clientIP = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    const cleanEmailRL = payload.email.trim().toLowerCase();
+    const oneMinuteAgo = new Date(Date.now() - 60 * 1000).toISOString();
+    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+
+    // IP rate limit: max 10/min
+    const { data: ipLimits } = await rlSupabase
+      .from('webhook_rate_limits')
+      .select('request_count, window_start')
+      .eq('identifier', clientIP)
+      .eq('identifier_type', 'ip')
+      .gte('window_start', oneMinuteAgo)
+      .maybeSingle();
+
+    if (ipLimits && ipLimits.request_count >= 10) {
+      return new Response(
+        JSON.stringify({ error: 'Rate limit exceeded. Try again later.' }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json', 'X-RateLimit-Remaining': '0' } }
+      );
+    }
+
+    // Email rate limit: max 3/24h
+    const { data: emailLimits } = await rlSupabase
+      .from('webhook_rate_limits')
+      .select('request_count, window_start')
+      .eq('identifier', cleanEmailRL)
+      .eq('identifier_type', 'email')
+      .gte('window_start', oneDayAgo)
+      .maybeSingle();
+
+    if (emailLimits && emailLimits.request_count >= 3) {
+      return new Response(
+        JSON.stringify({ error: 'This email has been submitted too many times.' }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json', 'X-RateLimit-Remaining': '0' } }
+      );
+    }
+
+    // Upsert rate limit counters
+    const upsertRL = async (identifier: string, type: string, windowThreshold: string) => {
+      const { data: existing } = await rlSupabase.from('webhook_rate_limits')
+        .select('id, request_count').eq('identifier', identifier).eq('identifier_type', type).gte('window_start', windowThreshold).maybeSingle();
+      if (existing) {
+        await rlSupabase.from('webhook_rate_limits').update({ request_count: existing.request_count + 1 }).eq('id', existing.id);
+      } else {
+        await rlSupabase.from('webhook_rate_limits').upsert({ identifier, identifier_type: type, window_start: new Date().toISOString(), request_count: 1 }, { onConflict: 'identifier,identifier_type' });
+      }
+    };
+
+    await Promise.all([
+      upsertRL(clientIP, 'ip', oneMinuteAgo),
+      upsertRL(cleanEmailRL, 'email', oneDayAgo),
+    ]);
+
     // Extract fields from direct OR metadata (with alias mapping per app)
     const cleanName = sanitize(payload.name);
     const cleanEmail = payload.email.trim().toLowerCase();
