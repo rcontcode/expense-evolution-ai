@@ -503,7 +503,7 @@ export const AdminContactQueueTab = ({ language }: Props) => {
                   {/* Context badge */}
                   <div className="flex items-center gap-1.5 mt-2 flex-wrap">
                     <Badge variant="outline" className="text-[10px]">
-                      📱 {targetApp === 'bundle' ? 'EvoFinz + FokusPark' : targetApp === 'fokuspark' ? 'FokusPark' : 'EvoFinz'}
+                      📱 {targetApp === 'bundle' ? 'EvoFinz + Fokuspark + UniversMind' : targetApp === 'fokuspark' ? 'Fokuspark' : targetApp === 'universmind' ? 'UniversMind' : 'EvoFinz'}
                     </Badge>
                     <Badge variant="outline" className="text-[10px]">
                       📋 {templateType.replace('_', ' ')}
