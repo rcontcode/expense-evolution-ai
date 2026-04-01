@@ -59,6 +59,7 @@ const TRIGGER_OPTIONS = [
 const ACTION_OPTIONS = [
   { value: 'whatsapp', label: 'WhatsApp IA', icon: <MessageCircle className="h-4 w-4 text-green-600" /> },
   { value: 'email', label: 'Email IA', icon: <Mail className="h-4 w-4 text-blue-600" /> },
+  { value: 'email_sequence', label: 'Secuencia Email', icon: <RefreshCw className="h-4 w-4 text-cyan-600" /> },
   { value: 'auto_contact', label: 'Auto-contactar', icon: <CheckCircle2 className="h-4 w-4 text-emerald-600" /> },
   { value: 'auto_tag', label: 'Auto-etiquetar', icon: <Tag className="h-4 w-4 text-purple-600" /> },
   { value: 'auto_stage', label: 'Auto-pipeline', icon: <GitBranch className="h-4 w-4 text-indigo-600" /> },
