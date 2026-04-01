@@ -17,6 +17,7 @@ import {
   Edit3, ChevronDown, ChevronUp, Eye, MessageSquare, MoreHorizontal,
   Sparkles, Receipt
 } from 'lucide-react';
+import { RecurringBillConfirmDialog, type RecurringBillCandidate } from '@/components/bills/RecurringBillConfirmDialog';
 import { toast } from 'sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
