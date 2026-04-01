@@ -12,7 +12,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useEntity } from '@/contexts/EntityContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useUpsertCategoryBudget } from '@/hooks/data/useCategoryBudgets';
-import { useCreateBill } from '@/hooks/data/useRecurringBills';
+import { useCreateBill, generateHistoricalPayments } from '@/hooks/data/useRecurringBills';
 import { toast } from 'sonner';
 import { HistoricalInsightPanel } from './HistoricalInsightPanel';
 import { 
