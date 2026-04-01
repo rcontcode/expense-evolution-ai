@@ -380,9 +380,10 @@ export const AdminContactQueueTab = ({ language }: Props) => {
                   </p>
                   <div className="flex gap-1.5 flex-wrap">
                     {([
-                      { key: 'evofinz' as const, label: '💰 EvoFinz', desc: isEs ? 'Finanzas' : 'Finance' },
-                      { key: 'fokuspark' as const, label: '🧘 FokusPark', desc: isEs ? 'Productividad' : 'Productivity' },
-                      { key: 'bundle' as const, label: '🔥 Bundle', desc: isEs ? 'Ambas' : 'Both' },
+                      { key: 'evofinz' as const, label: '💰 EvoFinz' },
+                      { key: 'fokuspark' as const, label: '🧠 Fokuspark' },
+                      { key: 'universmind' as const, label: '🌌 UniversMind' },
+                      { key: 'bundle' as const, label: '🔥 Bundle' },
                     ]).map((app) => (
                       <Button
                         key={app.key}
