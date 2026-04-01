@@ -122,6 +122,34 @@ export const AdminAdvancedMetrics = ({ language }: Props) => {
     leads.forEach((l: any) => { countryMap[l.country] = (countryMap[l.country] || 0) + 1; });
     const topCountries = Object.entries(countryMap).sort(([, a], [, b]) => b - a).slice(0, 5);
 
+    // 9. Conversion funnel data
+    const funnelData = [
+      { stage: isEs ? 'Leads totales' : 'Total Leads', value: total, color: '#6366f1', percent: 100 },
+      { stage: isEs ? 'Contactados (manual)' : 'Contacted (manual)', value: manualContacted.length, color: '#f59e0b', percent: total > 0 ? Math.round((manualContacted.length / total) * 100) : 0 },
+      { stage: isEs ? 'Convertidos' : 'Converted', value: converted.length, color: '#10b981', percent: total > 0 ? Math.round((converted.length / total) * 100) : 0 },
+    ];
+
+    // 10. Mini sparkline for KPI cards (daily leads last 14 days)
+    const kpiSparkline = Array.from({ length: 14 }, (_, i) => {
+      const date = new Date();
+      date.setDate(date.getDate() - (13 - i));
+      const dayStr = format(date, 'yyyy-MM-dd');
+      return { d: i, v: leads.filter((l: any) => format(new Date(l.created_at), 'yyyy-MM-dd') === dayStr).length };
+    });
+
+    // 11. MoM comparison
+    const lastMonthDate = subMonths(new Date(), 1);
+    const lastMonthLeads = leads.filter((l: any) => {
+      const d = new Date(l.created_at);
+      return d.getMonth() === lastMonthDate.getMonth() && d.getFullYear() === lastMonthDate.getFullYear();
+    });
+    const lastMonthTotal = lastMonthLeads.length;
+    const lastMonthContacted = lastMonthLeads.filter((l: any) => l.contacted_at && !l.contact_notes?.startsWith('[AUTO]')).length;
+    const lastContactRate = lastMonthTotal > 0 ? (lastMonthContacted / lastMonthTotal) * 100 : 0;
+    const contactRateDelta = contactRate - lastContactRate;
+    const lastConversionRate = lastMonthTotal > 0 ? (lastMonthLeads.filter((l: any) => l.converted_to_user).length / lastMonthTotal) * 100 : 0;
+    const conversionDelta = overallConversion - lastConversionRate;
+
     return {
       total, contactRate, conversionRate, overallConversion,
       contactedCount: manualContacted.length, convertedCount: converted.length,
@@ -129,7 +157,8 @@ export const AdminAdvancedMetrics = ({ language }: Props) => {
       avgContactTime, avgConversionDays, weeklyData, sourceData, pieData,
       bestDay: bestDay ? dayNames[parseInt(bestDay[0])] : '-',
       bestHour: bestHour ? `${bestHour[0]}:00` : '-',
-      topCountries,
+      topCountries, funnelData, kpiSparkline,
+      contactRateDelta, conversionDelta,
     };
   }, [leads, isEs]);
 
