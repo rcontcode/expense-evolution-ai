@@ -828,6 +828,9 @@ const AdminCRM = () => {
               <TabsContent value="webhook"><AdminWebhookSnippet language={language} /></TabsContent>
               <TabsContent value="abtests"><AdminABTestingTab language={language} /></TabsContent>
               <TabsContent value="webhooksout"><AdminOutgoingWebhooks language={language} /></TabsContent>
+              <TabsContent value="pnl"><AdminBusinessPnL language={language} /></TabsContent>
+              <TabsContent value="health"><AdminCustomerHealth language={language} /></TabsContent>
+              <TabsContent value="simulator"><AdminCostSimulator language={language} /></TabsContent>
             </Tabs>
             <div className="sticky top-6"><AdminActivityFeed language={language} /></div>
           </motion.div>
