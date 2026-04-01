@@ -243,7 +243,7 @@ const getNavSections = (language: string, isBetaTester: boolean = false) => {
     emoji: '📊',
     themeKey: 'analytics' as keyof typeof sectionThemes,
     items: [
-      { icon: Scale, label: language === 'es' ? 'Análisis' : 'Analytics', path: '/analytics', badge: null, tooltipKey: 'analytics' as const,
+      { icon: BarChart3, label: language === 'es' ? 'Análisis' : 'Analytics', path: '/analytics', badge: null, tooltipKey: 'analytics' as const,
         children: [
           { label: language === 'es' ? '📊 Ingresos vs Gastos' : '📊 Income vs Expenses', path: '/analytics#income-vs-expenses' },
           { label: language === 'es' ? '🔮 Predicciones' : '🔮 Predictions', path: '/analytics#predictions' },
@@ -252,15 +252,13 @@ const getNavSections = (language: string, isBetaTester: boolean = false) => {
           { label: language === 'es' ? '🎛️ Simulador' : '🎛️ Simulator', path: '/analytics#simulator' },
         ],
       },
-      { icon: FileText, label: 'nav.taxCalendar', path: '/tax-calendar', badge: null, tooltipKey: 'taxCalendar' as const },
-      { icon: Receipt, label: language === 'es' ? 'Impuestos' : 'Taxes', path: '/tax-optimizer', badge: null, tooltipKey: 'taxes' as const,
+      { icon: CalendarDays, label: 'nav.taxCalendar', path: '/tax-calendar', badge: null, tooltipKey: 'taxCalendar' as const },
+      { icon: Calculator, label: language === 'es' ? 'Impuestos' : 'Taxes', path: '/tax-optimizer', badge: null, tooltipKey: 'taxes' as const,
         children: [
           { label: language === 'es' ? '📋 Flujo Reporte Contador' : '📋 Accountant Report Flow', path: '/tax-report-flow' },
-          { label: language === 'es' ? '🛡️ Optimización Fiscal' : '🛡️ Tax Optimization', path: '/dashboard?area=impuestos&atab=optimization' },
-          { label: language === 'es' ? '📋 Resumen Fiscal' : '📋 Tax Summary', path: '/dashboard?area=impuestos&atab=summary' },
         ],
       },
-      { icon: FileText, label: language === 'es' ? 'Reportes' : 'Reports', path: '/reports', badge: null, tooltipKey: 'analytics' as const },
+      { icon: FileBarChart, label: language === 'es' ? 'Reportes' : 'Reports', path: '/reports', badge: null, tooltipKey: 'reports' as const },
     ]
   },
   {
