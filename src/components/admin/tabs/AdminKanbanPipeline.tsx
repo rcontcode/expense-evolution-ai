@@ -505,6 +505,7 @@ export const AdminKanbanPipeline = ({ language }: Props) => {
   const [selectedLead, setSelectedLead] = useState<PipelineLead | null>(null);
   const [activeLead, setActiveLead] = useState<PipelineLead | null>(null);
   const [pendingDrag, setPendingDrag] = useState<{ lead: PipelineLead; targetStage: PipelineStage } | null>(null);
+  const [appFilter, setAppFilter] = useState('all');
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
