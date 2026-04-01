@@ -54,6 +54,10 @@ export function RecurringBillConfirmDialog({ open, onClose, candidate, onCreated
   const [nextDueDate, setNextDueDate] = useState('');
   const [creating, setCreating] = useState(false);
   const [linkToBudget, setLinkToBudget] = useState(true);
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [showVigencia, setShowVigencia] = useState(false);
+  const [backfillPayments, setBackfillPayments] = useState(false);
   const upsertBudget = useUpsertCategoryBudget();
   const createBill = useCreateBill();
 
