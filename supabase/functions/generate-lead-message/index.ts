@@ -16,16 +16,33 @@ Deno.serve(async (req) => {
     const { lead, messageType, language, targetApp, templateType } = await req.json();
     // messageType: 'whatsapp' | 'email' | 'offer'
     // language: 'es' | 'en'
-    // targetApp: 'evofinz' | 'fokuspark' | 'bundle' (optional)
+    // targetApp: 'evofinz' | 'fokuspark' | 'universmind' | 'bundle' (optional)
     // templateType: 'first_contact' | 'follow_up' | 'reactivation' | 'invitation' | 'offer' (optional)
 
     const isEs = language === "es";
-    const appName = targetApp === "fokuspark" ? "FokusPark" : targetApp === "bundle" ? "EvoFinz + FokusPark" : "EvoFinz";
-    const appDescription = targetApp === "fokuspark"
-      ? (isEs ? "una app de productividad y bienestar financiero con focus timers, journaling y hábitos" : "a productivity & financial wellness app with focus timers, journaling and habits")
-      : targetApp === "bundle"
-        ? (isEs ? "el ecosistema completo de finanzas + productividad (EvoFinz + FokusPark)" : "the complete finance + productivity ecosystem (EvoFinz + FokusPark)")
-        : (isEs ? "una app de finanzas personales con IA, tracking de gastos y contratos" : "a personal finance app with AI, expense tracking and contracts");
+    const appNames: Record<string, string> = { fokuspark: "Fokuspark", universmind: "UniversMind", bundle: "EvoFinz + Fokuspark", evofinz: "EvoFinz" };
+    const appName = appNames[targetApp] || "EvoFinz";
+
+    const appDescriptions: Record<string, { es: string; en: string }> = {
+      fokuspark: {
+        es: "una app de productividad y bienestar financiero con focus timers, journaling y hábitos",
+        en: "a productivity & financial wellness app with focus timers, journaling and habits",
+      },
+      universmind: {
+        es: "una plataforma de bienestar mental con meditación guiada, journaling reflexivo y herramientas de crecimiento personal",
+        en: "a mental wellness platform with guided meditation, reflective journaling and personal growth tools",
+      },
+      bundle: {
+        es: "el ecosistema completo de finanzas + productividad (EvoFinz + Fokuspark)",
+        en: "the complete finance + productivity ecosystem (EvoFinz + Fokuspark)",
+      },
+      evofinz: {
+        es: "una app de finanzas personales con IA, tracking de gastos y contratos",
+        en: "a personal finance app with AI, expense tracking and contracts",
+      },
+    };
+    const descEntry = appDescriptions[targetApp] || appDescriptions.evofinz;
+    const appDescription = isEs ? descEntry.es : descEntry.en;
 
     // Template context
     const tType = templateType || "first_contact";

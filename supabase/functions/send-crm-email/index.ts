@@ -3,21 +3,34 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
-// Map lead source to the correct branded template
-const SOURCE_TEMPLATE_MAP: Record<string, string> = {
-  fokuspark: 'crm-fokuspark-outreach',
-  universmind: 'crm-universmind-outreach',
-  evofinz: 'crm-lead-outreach',
-};
-
-function getTemplateForSource(source?: string, isFollowUp?: boolean): string {
-  if (isFollowUp) return 'crm-follow-up';
-  if (!source) return 'crm-lead-outreach';
+// Map lead source → app key
+function detectAppKey(source?: string): string {
+  if (!source) return 'evofinz';
   const key = source.toLowerCase().replace(/[_\- ]/g, '');
-  for (const [prefix, template] of Object.entries(SOURCE_TEMPLATE_MAP)) {
-    if (key.includes(prefix)) return template;
-  }
-  return 'crm-lead-outreach';
+  if (key.includes('fokuspark')) return 'fokuspark';
+  if (key.includes('universmind')) return 'universmind';
+  return 'evofinz';
+}
+
+// Build template name from app + type
+function getTemplateName(appKey: string, templateType?: string, isFollowUp?: boolean): string {
+  if (isFollowUp) return 'crm-follow-up';
+
+  const typeMap: Record<string, string> = {
+    welcome: `crm-${appKey}-welcome`,
+    reactivation: `crm-${appKey}-reactivation`,
+    offer: `crm-${appKey}-offer`,
+  };
+
+  if (templateType && typeMap[templateType]) return typeMap[templateType];
+
+  // Default outreach per app
+  const outreachMap: Record<string, string> = {
+    fokuspark: 'crm-fokuspark-outreach',
+    universmind: 'crm-universmind-outreach',
+    evofinz: 'crm-lead-outreach',
+  };
+  return outreachMap[appKey] || 'crm-lead-outreach';
 }
 
 const APP_NAME_MAP: Record<string, string> = {
@@ -26,22 +39,13 @@ const APP_NAME_MAP: Record<string, string> = {
   evofinz: 'EvoFinz',
 };
 
-function getAppName(source?: string): string {
-  if (!source) return 'EvoFinz';
-  const key = source.toLowerCase().replace(/[_\- ]/g, '');
-  for (const [prefix, name] of Object.entries(APP_NAME_MAP)) {
-    if (key.includes(prefix)) return name;
-  }
-  return 'EvoFinz';
-}
-
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { recipientEmail, recipientName, subject, htmlBody, textBody, leadId, ruleName, leadSource, isFollowUp, stepNumber } = await req.json();
+    const { recipientEmail, recipientName, subject, htmlBody, textBody, leadId, ruleName, leadSource, isFollowUp, stepNumber, templateType } = await req.json();
 
     if (!recipientEmail) {
       return new Response(
@@ -53,17 +57,16 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
-    // Import supabase client for logging interactions
     const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
     const supabaseAdmin = createClient(supabaseUrl, serviceKey);
 
-    // Pick template based on lead source
-    let templateName = getTemplateForSource(leadSource, isFollowUp);
-    const appName = getAppName(leadSource);
+    const appKey = detectAppKey(leadSource);
+    const appName = APP_NAME_MAP[appKey] || 'EvoFinz';
+    let templateName = getTemplateName(appKey, templateType, isFollowUp);
     let abVariant: string | null = null;
     let abTestId: string | null = null;
 
-    // A/B Test routing: check if there's an active test for this template
+    // A/B Test routing
     try {
       const { data: abTests } = await supabaseAdmin
         .from('email_ab_tests')
@@ -94,7 +97,7 @@ Deno.serve(async (req) => {
         body: JSON.stringify({
           templateName,
           recipientEmail,
-          idempotencyKey: `crm-${isFollowUp ? 'followup' : 'outreach'}-${leadId}-${Date.now()}`,
+          idempotencyKey: `crm-${isFollowUp ? 'followup' : templateType || 'outreach'}-${leadId}-${Date.now()}`,
           templateData: {
             recipientName: recipientName || '',
             subject: subject || (isFollowUp ? '¿Pudiste revisar nuestro mensaje?' : 'Tenemos algo para ti'),
@@ -110,21 +113,19 @@ Deno.serve(async (req) => {
         const sendData = await sendRes.json();
         console.log(`CRM email queued (${templateName}) for ${recipientEmail}:`, sendData);
 
-        // Auto-log to lead_interactions if leadId provided
         if (leadId) {
           try {
             await supabaseAdmin.from('lead_interactions').insert({
               lead_id: leadId,
               interaction_type: 'email',
-              content: `[CRM ${isFollowUp ? 'Follow-up' : 'Outreach'}] ${subject || 'Sin asunto'} (${appName})`,
-              metadata: { template: templateName, appName, stepNumber, isFollowUp },
+              content: `[CRM ${isFollowUp ? 'Follow-up' : templateType || 'Outreach'}] ${subject || 'Sin asunto'} (${appName})`,
+              metadata: { template: templateName, appName, stepNumber, isFollowUp, templateType },
             });
           } catch (logErr) {
             console.error('Failed to log interaction:', logErr);
           }
         }
 
-        // Log A/B result if applicable
         if (abTestId && abVariant && leadId) {
           try {
             await supabaseAdmin.from('email_ab_results').insert({
