@@ -265,6 +265,30 @@ export function BillsManager({ selectedMonth }: BillsManagerProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Confirm mark as paid */}
+      <AlertDialog open={!!markPaidBill} onOpenChange={() => setMarkPaidBill(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {l ? '¿Marcar como pagado?' : 'Mark as paid?'}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {l 
+                ? `Se registrará un pago de ${markPaidBill ? formatCurrency(markPaidBill.amount) : ''} para "${markPaidBill?.name}".`
+                : `A payment of ${markPaidBill ? formatCurrency(markPaidBill.amount) : ''} will be recorded for "${markPaidBill?.name}".`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{l ? 'Cancelar' : 'Cancel'}</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={() => { if (markPaidBill) { markPaid.mutate({ billId: markPaidBill.id, amount: markPaidBill.amount }); setMarkPaidBill(null); } }}
+            >
+              {l ? 'Confirmar pago' : 'Confirm payment'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
