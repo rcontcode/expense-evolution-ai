@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, AreaChart, Area } from 'recharts';
 import { calculateLeadScore, getLeadPriority } from '@/hooks/admin/useLeadScoring';
 import { TrendingUp, Clock, Target, Zap, BarChart3, Users, ArrowUpRight, Calendar, Phone } from 'lucide-react';
 import { differenceInDays, differenceInHours, format, eachWeekOfInterval, subMonths } from 'date-fns';
