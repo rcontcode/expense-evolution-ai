@@ -81,6 +81,7 @@ const Terms = lazyWithRetry(() => import("./pages/Terms"));
 const Status = lazyWithRetry(() => import("./pages/Status"));
 const About = lazyWithRetry(() => import("./pages/About"));
 const Auth = lazyWithRetry(() => import("./pages/Auth"));
+const ResetPassword = lazyWithRetry(() => import("./pages/ResetPassword"));
 const Onboarding = lazyWithRetry(() => import("./pages/Onboarding"));
 const Dashboard = lazyWithRetry(() => import("./pages/Dashboard"));
 const ChaosInbox = lazyWithRetry(() => import("./pages/ChaosInbox"));
