@@ -49,7 +49,7 @@ export function BulkHistoricalImport({ open, onClose, type, onComplete }: BulkHi
 
   const [rows, setRows] = useState<HistoricalRow[]>([newRow(), newRow(), newRow()]);
   const [saving, setSaving] = useState(false);
-  const [pasteMode, setPasteMode] = useState(false);
+  const [progress, setProgress] = useState(0);
   const [pasteText, setPasteText] = useState('');
 
   const addRow = () => setRows(r => [...r, newRow()]);
