@@ -73,6 +73,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(session?.user ?? null);
       setLoading(false);
       
+      // On PASSWORD_RECOVERY, redirect to reset-password page instead of auto-login
+      if (event === 'PASSWORD_RECOVERY') {
+        // Don't track login or do anything else — let the reset page handle it
+        return;
+      }
+
       // Track login for missions on SIGNED_IN event
       if (event === 'SIGNED_IN') {
         trackLoginAction();
