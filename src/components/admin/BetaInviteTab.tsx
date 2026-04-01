@@ -96,6 +96,10 @@ EvoFinz is a personal finance platform that helps you:
 👉 Sign up here: https://evofinz.com/auth?beta=${code}
 🔑 Your access code: ${code}
 
+🔍 Want to learn more before signing up?
+• See what the app does: https://evofinz.com/landing
+• Take a free financial quiz: https://evofinz.com/quiz
+
 📋 Steps:
 1. Click the link → create your account with the code
 2. Explore the app freely (14-day grace period, no obligations)
