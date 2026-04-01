@@ -339,6 +339,7 @@ const App = () => (
         <Router>
           <LanguageProvider>
             <AuthProvider>
+              <UndoRedoProvider>
               <EntityProvider>
                 <HighlightProvider>
                   <GamificationProvider>
