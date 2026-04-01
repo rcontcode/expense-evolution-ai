@@ -58,6 +58,7 @@ export const AdminContactQueueTab = ({ language }: Props) => {
   const [targetApp, setTargetApp] = useState<'evofinz' | 'fokuspark' | 'universmind' | 'bundle'>('evofinz');
   const [sendingCrmEmail, setSendingCrmEmail] = useState(false);
   const [templateType, setTemplateType] = useState<'first_contact' | 'follow_up' | 'reactivation' | 'invitation' | 'offer'>('first_contact');
+  const [appFilter, setAppFilter] = useState('all');
 
   const { data: rawLeads = [], isLoading } = useQuery({
     queryKey: ['contact-queue-leads'],
