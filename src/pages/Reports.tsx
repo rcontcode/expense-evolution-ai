@@ -301,17 +301,28 @@ export default function Reports() {
         break;
       }
       case 'tax': {
-        const deductible = (expenses || []).filter(e => e.status === 'deductible');
+        const deductible = (expenses || []).filter(e => e.status === 'deductible' || (e as any).cra_deductible);
         const totalDed = deductible.reduce((s, e) => s + Number(e.amount), 0);
+        const taxableIncomes = yearIncomes.filter(i => i.is_taxable !== false);
+        const totalTaxableIncome = taxableIncomes.reduce((s, i) => s + i.amount, 0);
+        const netTaxable = totalTaxableIncome - totalDed;
+        const taxLabel = currentCountry === 'CL' ? 'SII / F29' : 'CRA / T2125';
         setPreviewData({
-          type: 'tax', title, color,
+          type: 'tax', title: `${title} — ${taxLabel}`, color,
           kpis: [
-            { label: l ? 'Deducibles' : 'Deductible', value: String(deductible.length) },
-            { label: l ? 'Total Deducido' : 'Total Deducted', value: fc(totalDed), accent: true },
+            { label: l ? 'Ingresos Gravables' : 'Taxable Income', value: fc(totalTaxableIncome) },
+            { label: l ? 'Deducciones' : 'Deductions', value: fc(totalDed) },
+            { label: l ? 'Ingreso Neto Imponible' : 'Net Taxable Income', value: fc(netTaxable), accent: netTaxable >= 0 },
+            { label: l ? 'Gastos Deducibles' : 'Deductible Expenses', value: String(deductible.length) },
           ],
-          headers: [l ? 'Fecha' : 'Date', l ? 'Proveedor' : 'Vendor', l ? 'Categoría' : 'Category', l ? 'Monto' : 'Amount'],
-          rows: deductible.slice(0, 20).map(e => [e.date, e.vendor || '-', e.category || '-', fc(Number(e.amount))]),
-          footer: [l ? 'Total' : 'Total', '', '', fc(totalDed)],
+          headers: [l ? 'Sección' : 'Section', l ? 'Concepto' : 'Item', l ? 'Monto' : 'Amount'],
+          rows: [
+            [l ? '📈 Ingresos' : '📈 Income', '', ''],
+            ...taxableIncomes.slice(0, 10).map(i => ['', i.source || i.income_type || '-', fc(i.amount)]),
+            [l ? '📉 Deducciones' : '📉 Deductions', '', ''],
+            ...deductible.slice(0, 10).map(e => ['', e.vendor || e.category || '-', fc(Number(e.amount))]),
+          ],
+          footer: [l ? 'Ingreso Neto Imponible' : 'Net Taxable Income', '', fc(netTaxable)],
         });
         break;
       }
