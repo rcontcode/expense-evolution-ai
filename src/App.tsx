@@ -356,6 +356,7 @@ const App = () => (
                         <Route path="/status" element={<Status />} />
                         <Route path="/about" element={<About />} />
                         <Route path="/auth" element={<Auth />} />
+                        <Route path="/reset-password" element={<ResetPassword />} />
                         <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
                         <Route path="/beta-welcome" element={<ProtectedRoute><BetaWelcome /></ProtectedRoute>} />
                         <Route path="/beta-features" element={<ProtectedRoute><BetaFeatures /></ProtectedRoute>} />
