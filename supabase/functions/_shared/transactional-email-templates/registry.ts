@@ -12,6 +12,7 @@ export interface TemplateEntry {
 import { template as crmLeadOutreach } from './crm-lead-outreach.tsx'
 import { template as crmFokusparkOutreach } from './crm-fokuspark-outreach.tsx'
 import { template as crmUniversmindOutreach } from './crm-universmind-outreach.tsx'
+import { template as crmWeeklyReport } from './crm-weekly-report.tsx'
 import { template as crmFollowUp } from './crm-follow-up.tsx'
 import { template as crmEvofinzWelcome } from './crm-evofinz-welcome.tsx'
 import { template as crmFokusparkWelcome } from './crm-fokuspark-welcome.tsx'
