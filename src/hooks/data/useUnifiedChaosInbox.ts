@@ -391,7 +391,9 @@ export function useUnifiedChaosInbox() {
                 all_expenses: result.expenses,
                 is_utility: true,
                 suggested_recurring: true,
-              })) : {},
+                category: result.expenses[0]?.category || 'utilities',
+                invoice_direction: 'expense',
+              })) : { category: 'utilities', invoice_direction: 'expense' },
             })
             .select()
             .single();
