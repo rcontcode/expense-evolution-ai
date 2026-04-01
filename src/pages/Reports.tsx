@@ -452,7 +452,7 @@ export default function Reports() {
         case 'tax': {
           if (format === 'pdf') {
             const { exportT2125ToPDF } = await import('@/lib/export/pdf-export');
-            exportT2125ToPDF(expenses || [], selectedYear, { language: l ? 'es' : 'en', year: selectedYear, userName: profile?.full_name, businessName: profile?.business_name, incomes: yearIncomes, country: currentCountry });
+            exportT2125ToPDF(expenses || [], selectedYear, { language: l ? 'es' : 'en', year: selectedYear, userName: profile?.full_name, businessName: profile?.business_name, country: currentCountry });
           } else {
             const { exportT2125Report } = await import('@/lib/export/t2125-export');
             await exportT2125Report(expenses || [], selectedYear);
