@@ -51,6 +51,8 @@ export const AdminSavedTemplates = ({ language }: Props) => {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [filterType, setFilterType] = useState('all');
+  const [filterApp, setFilterApp] = useState('all');
+  const [filterStage, setFilterStage] = useState('all');
   const [editOpen, setEditOpen] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<any>(null);
   const [formName, setFormName] = useState('');
