@@ -139,6 +139,10 @@ Una herramienta para tomar control total de tus finanzas:
 • Los comentarios deben tener al menos 80 caracteres para garantizar calidad
 • Los primeros 14 días son de gracia para que explores sin presión
 
+¿Quieres ver más antes de registrarte?
+• Mira qué hace la app: https://evofinz.com/landing
+• Haz tu diagnóstico financiero gratis: https://evofinz.com/quiz
+
 ¿Cómo empezar?
 1. Entra a: https://evofinz.com/auth?beta=${code}
 2. Crea tu cuenta usando el código: ${code}
