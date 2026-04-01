@@ -531,15 +531,16 @@ export const AdminKanbanPipeline = ({ language }: Props) => {
   });
 
   const stageLeads = useMemo(() => {
+    const filteredByApp = filterLeadsByApp(rawLeads, appFilter);
     const grouped: Record<PipelineStage, PipelineLead[]> = { new: [], contacted: [], qualified: [], converted: [] };
-    rawLeads.forEach((lead) => {
+    filteredByApp.forEach((lead) => {
       const stage = (lead.pipeline_stage as PipelineStage) || 'new';
       if (grouped[stage]) grouped[stage].push(lead);
       else grouped.new.push(lead);
     });
     Object.values(grouped).forEach(arr => arr.sort((a, b) => b.score - a.score));
     return grouped;
-  }, [rawLeads]);
+  }, [rawLeads, appFilter]);
 
   const moveToStage = useMutation({
     mutationFn: async ({ leadId, stage, note }: { leadId: string; stage: PipelineStage; note?: string }) => {
