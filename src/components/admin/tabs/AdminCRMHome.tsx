@@ -270,6 +270,9 @@ export const AdminCRMHome = ({ language, onNavigateTab }: Props) => {
                     <span className="text-lg">{card.emoji}</span>
                     <p className="text-2xl font-black">{card.value}</p>
                   </div>
+                  {(card as any).mom !== undefined && (card as any).mom !== 0 && (
+                    <MomBadge delta={(card as any).mom} suffix={(card as any).momSuffix || ''} />
+                  )}
                 </div>
               </CardContent>
             </Card>
