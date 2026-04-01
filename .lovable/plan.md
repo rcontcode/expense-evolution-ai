@@ -1,40 +1,59 @@
 
 
-# Estado actual y lo que falta para echar a andar los emails
+# Plan: Agregar logo EvoFinz y mejorar diseño profesional de todos los emails
 
-## ✅ Lo que YA está listo
+## Problema
+Los 8 emails actuales (6 de autenticación + 1 CRM + infraestructura) no tienen logo ni header visual. Son solo texto plano con estilos básicos.
 
-| Componente | Estado |
-|---|---|
-| **evofinz.com** — dominio de email | ✅ Verificado y activo |
-| **Infraestructura de colas** (pgmq, cron job cada 5s) | ✅ Funcionando |
-| **Edge Functions** (send-transactional-email, auth-email-hook, process-email-queue, send-crm-email, handle-email-unsubscribe, handle-email-suppression) | ✅ Desplegadas |
-| **Plantilla CRM** (crm-lead-outreach) | ✅ Registrada |
-| **Cloudflare** — 3 dominios activos | ✅ Confirmado |
+## Solución
+Agregar un header profesional con el logo del fénix de EvoFinz a todas las plantillas de email, más mejoras de diseño (separadores, mejor estructura visual).
 
-## ⚠️ Lo que hay que corregir
+## Reto: Logo en emails
+Los clientes de email no pueden cargar imágenes locales. Necesitamos subir el logo (`phoenix-clean-logo.png` o `evofinz-phoenix-transparent.png`) a un bucket público de almacenamiento en la nube para obtener una URL pública accesible desde cualquier cliente de email.
 
-### 1. SITE_NAME incorrecto en send-transactional-email
-El `From:` de los correos transaccionales aparece como **"expense-evolution-ai"** en vez de **"EvoFinz"**. Hay que cambiar la línea 8 de `send-transactional-email/index.ts`:
-- `"expense-evolution-ai"` → `"EvoFinz"`
+## Archivos a modificar (8 plantillas)
 
-### 2. universmind.com — dominio de email aún pendiente
-El dominio `universmind.com` aparece con status **"initiated"** (no verificado). Esto significa que la delegación DNS todavía no se ha verificado. Hay que ir a **Cloud → Emails → Manage Domains** y hacer clic en **Verify Domain** para `universmind.com`.
+### Plantillas de autenticación (6):
+1. `supabase/functions/_shared/email-templates/signup.tsx`
+2. `supabase/functions/_shared/email-templates/recovery.tsx`
+3. `supabase/functions/_shared/email-templates/invite.tsx`
+4. `supabase/functions/_shared/email-templates/magic-link.tsx`
+5. `supabase/functions/_shared/email-templates/email-change.tsx`
+6. `supabase/functions/_shared/email-templates/reauthentication.tsx`
 
-### 3. fokuspark.com — dominio de email no configurado aún
-`fokuspark.com` no tiene dominio de email configurado en este proyecto. Pero como Fokuspark es un **proyecto diferente en Lovable**, su configuración de email se hace desde ese proyecto, no desde este.
+### Plantillas transaccionales (1):
+7. `supabase/functions/_shared/transactional-email-templates/crm-lead-outreach.tsx`
 
-## 📋 Acciones a ejecutar (en este proyecto EvoFinz)
+## Cambios de diseño en cada plantilla
 
-1. **Corregir SITE_NAME** en `send-transactional-email/index.ts` — cambiar `"expense-evolution-ai"` a `"EvoFinz"`
-2. **Redesplegar** las edge functions afectadas (`send-transactional-email`)
-3. **Verificar universmind.com** — pedirte que vayas a Cloud → Emails y hagas clic en "Verify Domain"
+- **Header con logo**: Agregar componente `Img` con el logo del fénix centrado (60x60px) + texto "EvoFinz" debajo
+- **Contenedor con borde**: Card visual con borde sutil `#e5e7eb` y border-radius
+- **Separador**: `Hr` entre contenido y footer
+- **Footer mejorado**: "EvoFinz — Tu evolución financiera" + año actual
+- **Colores consistentes**: Azul `#2563eb` para botones/acentos, `#1a2332` para títulos
 
-## 🔑 Sobre los otros proyectos
+## Pasos de implementación
 
-- **Universmind**: El dominio de email está en este mismo proyecto pero pendiente de verificación DNS. Una vez verificado, los correos CRM podrán enviarse desde `notify.universmind.com`.
-- **Fokuspark**: Se configura desde su propio proyecto en Lovable. Cuando lo hagas, seguirás el mismo flujo: configurar dominio de email, agregar NS records en Cloudflare, verificar, y scaffoldear las plantillas.
+1. **Subir logo al almacenamiento** — Crear bucket público `email-assets` y subir `phoenix-clean-logo.png`
+2. **Actualizar las 7 plantillas** — Agregar header con logo, mejorar estructura visual, unificar footer
+3. **Redesplegar Edge Functions** — `auth-email-hook` y `send-transactional-email`
 
-## Resultado
-Tras estos cambios, el sistema de emails automatizados del CRM estará listo para enviar correos a leads desde `noreply@evofinz.com` con el nombre "EvoFinz".
+## Detalle técnico
+
+Estructura visual de cada email:
+```text
+┌──────────────────────────────┐
+│       [Logo Fénix 60px]      │
+│          EvoFinz             │
+│                              │
+│  ┌────────────────────────┐  │
+│  │  Título                │  │
+│  │  Contenido / CTA       │  │
+│  │  ─────────────────     │  │
+│  │  Footer discreto       │  │
+│  └────────────────────────┘  │
+└──────────────────────────────┘
+```
+
+Se usará el componente `Img` de `@react-email/components` con la URL pública del logo almacenado en la nube.
 
