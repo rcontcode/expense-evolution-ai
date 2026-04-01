@@ -387,6 +387,7 @@ export function ReceiptReviewDialog({
   const data = isEditing ? editedData : (document.extracted_data || {});
   const hasChanges = JSON.stringify(editedData) !== JSON.stringify(document.extracted_data);
   const isPending = document.review_status === 'pending_review';
+  const isIncomeDoc = (document.extracted_data as any)?.invoice_direction === 'income';
 
   const getStatusBadge = () => {
     switch (document.review_status) {
