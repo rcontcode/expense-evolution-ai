@@ -67,6 +67,7 @@ export function BillsManager({ selectedMonth }: BillsManagerProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingBill, setEditingBill] = useState<RecurringBill | null>(null);
   const [deleteBillId, setDeleteBillId] = useState<string | null>(null);
+  const [markPaidBill, setMarkPaidBill] = useState<RecurringBill | null>(null);
   const [filter, setFilter] = useState<string>('all');
 
   const openNew = () => { setEditingBill(null); setDialogOpen(true); };
