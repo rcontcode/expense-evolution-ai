@@ -106,10 +106,10 @@ export function RecurringBillConfirmDialog({ open, onClose, candidate, onCreated
       // Backfill historical payments if requested
       if (backfillPayments && startDate && new Date(startDate) < new Date()) {
         try {
-          const historicalPayments = await generateHistoricalPayments(startDate, frequency, frequency === 'custom' ? frequencyMonths : null, amount);
-          if (historicalPayments.length > 0) {
+          const result = await generateHistoricalPayments(startDate, frequency, frequency === 'custom' ? frequencyMonths : null, amount);
+          if (result.payments.length > 0) {
             const { error } = await supabase.from('bill_payments').insert(
-              historicalPayments.map(p => ({
+              result.payments.map(p => ({
                 user_id: user!.id,
                 bill_id: billData.id,
                 amount_paid: p.amount_paid,
@@ -118,9 +118,10 @@ export function RecurringBillConfirmDialog({ open, onClose, candidate, onCreated
               }))
             );
             if (!error) {
+              const truncMsg = result.truncated ? (l ? ' (máximo alcanzado)' : ' (max reached)') : '';
               toast.success(l
-                ? `📅 ${historicalPayments.length} pagos históricos registrados`
-                : `📅 ${historicalPayments.length} historical payments recorded`
+                ? `📅 ${result.payments.length} pagos históricos registrados${truncMsg}`
+                : `📅 ${result.payments.length} historical payments recorded${truncMsg}`
               );
             }
           }
