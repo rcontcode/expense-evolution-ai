@@ -135,7 +135,6 @@ export function AdminROIDashboard({ language }: Props) {
     leads.forEach(lead => {
       if (!lead.email) return;
       const emailKey = lead.email.toLowerCase();
-      // Keep the most recent lead per email
       if (!emailLeadMap.has(emailKey)) {
         emailLeadMap.set(emailKey, lead);
       }
@@ -160,17 +159,24 @@ export function AdminROIDashboard({ language }: Props) {
       }
     });
 
-    // By source (deduplicated)
-    const sourceMap = new Map<string, { leads: number; converted: number; paying: number; mrr: number }>();
+    // By source (deduplicated) — normalized to app keys
+    const sourceMap = new Map<string, { leads: number; converted: number; paying: number; mrr: number; convertDays: number[] }>();
     uniqueLeads.forEach(lead => {
-      const src = lead.source || 'evofinz';
-      if (!sourceMap.has(src)) sourceMap.set(src, { leads: 0, converted: 0, paying: 0, mrr: 0 });
+      const src = getSourceKey(lead.source || 'evofinz');
+      if (!sourceMap.has(src)) sourceMap.set(src, { leads: 0, converted: 0, paying: 0, mrr: 0, convertDays: [] });
       const entry = sourceMap.get(src)!;
       entry.leads++;
-      if (lead.converted_to_user) entry.converted++;
+      if (lead.converted_to_user) {
+        entry.converted++;
+        // Calculate time-to-convert
+        if (lead.converted_at) {
+          const days = Math.max(0, Math.round((new Date(lead.converted_at).getTime() - new Date(lead.created_at).getTime()) / (1000 * 60 * 60 * 24)));
+          entry.convertDays.push(days);
+        }
+      }
     });
     payingLeads.forEach(pl => {
-      const src = pl.source || 'evofinz';
+      const src = getSourceKey(pl.source || 'evofinz');
       const entry = sourceMap.get(src);
       if (entry) {
         entry.paying++;
@@ -181,9 +187,17 @@ export function AdminROIDashboard({ language }: Props) {
     const bySource = Array.from(sourceMap.entries())
       .map(([source, data]) => ({
         source,
+        label: SOURCE_LABELS[source] || source,
+        color: SOURCE_COLORS[source] || '#6b7280',
         ...data,
         conversionRate: data.leads > 0 ? (data.converted / data.leads * 100) : 0,
         payingRate: data.leads > 0 ? (data.paying / data.leads * 100) : 0,
+        avgConvertDays: data.convertDays.length > 0
+          ? Math.round(data.convertDays.reduce((a, b) => a + b, 0) / data.convertDays.length)
+          : null,
+        cpa: data.paying > 0 && data.mrr > 0
+          ? (data.mrr / data.paying).toFixed(2)
+          : null,
       }))
       .sort((a, b) => b.mrr - a.mrr);
 
@@ -191,6 +205,12 @@ export function AdminROIDashboard({ language }: Props) {
     const conversionQuizToReg = totalLeads > 0 ? (registeredCount / totalLeads * 100) : 0;
     const conversionRegToPay = registeredCount > 0 ? (payingLeads.length / registeredCount * 100) : 0;
     const conversionOverall = totalLeads > 0 ? (payingLeads.length / totalLeads * 100) : 0;
+
+    // Global avg time-to-convert
+    const allConvertDays = bySource.flatMap(s => s.convertDays);
+    const avgTimeToConvert = allConvertDays.length > 0
+      ? Math.round(allConvertDays.reduce((a, b) => a + b, 0) / allConvertDays.length)
+      : null;
 
     return {
       totalLeads,
@@ -201,6 +221,7 @@ export function AdminROIDashboard({ language }: Props) {
       conversionQuizToReg,
       conversionRegToPay,
       conversionOverall,
+      avgTimeToConvert,
       bySource,
       payingLeads: payingLeads.slice(0, 20),
     };
