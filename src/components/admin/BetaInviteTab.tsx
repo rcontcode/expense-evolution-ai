@@ -57,6 +57,10 @@ EvoFinz es una plataforma de finanzas personales que te ayuda a:
 👉 Regístrate aquí: https://evofinz.com/auth?beta=${code}
 🔑 Tu código de acceso: ${code}
 
+🔍 ¿Quieres ver más antes de registrarte?
+• Mira qué hace la app: https://evofinz.com/landing
+• Haz tu diagnóstico financiero gratis: https://evofinz.com/quiz
+
 📋 Pasos:
 1. Click en el link → crea tu cuenta con el código
 2. Explora la app libremente (14 días de gracia sin obligaciones)
@@ -91,6 +95,10 @@ EvoFinz is a personal finance platform that helps you:
 
 👉 Sign up here: https://evofinz.com/auth?beta=${code}
 🔑 Your access code: ${code}
+
+🔍 Want to learn more before signing up?
+• See what the app does: https://evofinz.com/landing
+• Take a free financial quiz: https://evofinz.com/quiz
 
 📋 Steps:
 1. Click the link → create your account with the code
@@ -130,6 +138,10 @@ Una herramienta para tomar control total de tus finanzas:
 • Enviar al menos 4 reportes cada 14 días (feedback sobre secciones + al menos 1 reporte de bug)
 • Los comentarios deben tener al menos 80 caracteres para garantizar calidad
 • Los primeros 14 días son de gracia para que explores sin presión
+
+¿Quieres ver más antes de registrarte?
+• Mira qué hace la app: https://evofinz.com/landing
+• Haz tu diagnóstico financiero gratis: https://evofinz.com/quiz
 
 ¿Cómo empezar?
 1. Entra a: https://evofinz.com/auth?beta=${code}
@@ -173,6 +185,10 @@ What's expected?
 • Submit at least 4 reports every 14 days (section feedback + at least 1 bug report)
 • Comments must be at least 80 characters to ensure quality
 • First 14 days are a grace period to explore without pressure
+
+Want to learn more before signing up?
+• See what the app does: https://evofinz.com/landing
+• Take a free financial quiz: https://evofinz.com/quiz
 
 How to get started:
 1. Go to: https://evofinz.com/auth?beta=${code}
