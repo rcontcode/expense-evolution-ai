@@ -12,6 +12,7 @@ export interface TemplateEntry {
 import { template as crmLeadOutreach } from './crm-lead-outreach.tsx'
 import { template as crmFokusparkOutreach } from './crm-fokuspark-outreach.tsx'
 import { template as crmUniversmindOutreach } from './crm-universmind-outreach.tsx'
+import { template as crmWeeklyReport } from './crm-weekly-report.tsx'
 import { template as crmFollowUp } from './crm-follow-up.tsx'
 import { template as crmEvofinzWelcome } from './crm-evofinz-welcome.tsx'
 import { template as crmFokusparkWelcome } from './crm-fokuspark-welcome.tsx'
@@ -25,8 +26,10 @@ import { template as crmUniversmindOffer } from './crm-universmind-offer.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'crm-lead-outreach': crmLeadOutreach,
+  'crm-evofinz-outreach': crmLeadOutreach,
   'crm-fokuspark-outreach': crmFokusparkOutreach,
   'crm-universmind-outreach': crmUniversmindOutreach,
+  'crm-weekly-report': crmWeeklyReport,
   'crm-follow-up': crmFollowUp,
   'crm-evofinz-welcome': crmEvofinzWelcome,
   'crm-fokuspark-welcome': crmFokusparkWelcome,
