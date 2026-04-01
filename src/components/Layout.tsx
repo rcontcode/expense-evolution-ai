@@ -48,6 +48,10 @@ import {
   Landmark,
   PiggyBank,
   Mic,
+  BarChart3,
+  FileBarChart,
+  CalendarDays,
+  Calculator,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { LanguageSelector } from '@/components/LanguageSelector';
@@ -187,16 +191,10 @@ const getNavSections = (language: string, isBetaTester: boolean = false) => {
         ],
       },
       { icon: TrendingUp, label: 'nav.income', path: '/income', badge: null, tooltipKey: 'income' as const },
-      { icon: Receipt, label: 'nav.expenses', path: '/expenses', badge: null, tooltipKey: 'expenses' as const,
-        children: [
-          { label: language === 'es' ? '📊 Gráficos Día a Día' : '📊 Daily Charts', path: '/dashboard?area=diadia' },
-        ],
-      },
+      { icon: Receipt, label: 'nav.expenses', path: '/expenses', badge: null, tooltipKey: 'expenses' as const },
       { icon: Wallet, label: 'nav.budget', path: '/budget', badge: null, tooltipKey: 'budget' as const,
         children: [
-          { label: language === 'es' ? '📊 Presupuesto Global' : '📊 Global Budget', path: '/dashboard?area=familia&atab=budget' },
-          { label: language === 'es' ? '📊 Análisis Familiar' : '📊 Family Analysis', path: '/dashboard?area=familia&atab=analysis' },
-          { label: language === 'es' ? '🔄 Suscripciones' : '🔄 Subscriptions', path: '/dashboard?area=familia&atab=subscriptions' },
+          { label: language === 'es' ? '🎯 Metas de Ahorro' : '🎯 Savings Goals', path: '/budget?tab=savings' },
         ],
       },
       { icon: CalendarCheck, label: language === 'es' ? 'Pagos Fijos' : 'Bills', path: '/bills', badge: null, tooltipKey: 'bills' as const },
@@ -213,17 +211,11 @@ const getNavSections = (language: string, isBetaTester: boolean = false) => {
       { icon: Users, label: 'nav.clients', path: '/clients', badge: null, tooltipKey: 'clients' as const,
         children: [
           { label: language === 'es' ? '📊 Rentabilidad Clientes' : '📊 Client Profitability', path: '/analytics#profitability' },
-          { label: language === 'es' ? '📁 Proyectos' : '📁 Projects', path: '/projects' },
-          { label: language === 'es' ? '📄 Contratos' : '📄 Contracts', path: '/contracts' },
         ],
       },
       { icon: FolderKanban, label: 'nav.projects', path: '/projects', badge: null, tooltipKey: 'projects' as const },
       { icon: FileText, label: 'nav.contracts', path: '/contracts', badge: null, tooltipKey: 'contracts' as const },
-      { icon: Car, label: 'nav.mileage', path: '/mileage', badge: null, tooltipKey: 'mileage' as const,
-        children: [
-          { label: language === 'es' ? '🛣️ Resumen Kilometraje' : '🛣️ Mileage Summary', path: '/dashboard?area=negocio&atab=mileage' },
-        ],
-      },
+      { icon: Car, label: 'nav.mileage', path: '/mileage', badge: null, tooltipKey: 'mileage' as const },
       { icon: Tag, label: 'nav.tags', path: '/tags', badge: null, tooltipKey: 'tags' as const },
       { icon: Building2, label: language === 'es' ? 'Perfil Empresa' : 'Business Profile', path: '/business-profile', badge: null, tooltipKey: 'businessProfile' as const },
     ]
@@ -235,10 +227,9 @@ const getNavSections = (language: string, isBetaTester: boolean = false) => {
     items: [
       { icon: Scale, label: 'nav.netWorth', path: '/net-worth', badge: null, tooltipKey: 'netWorth' as const,
         children: [
-          { label: language === 'es' ? '📊 Análisis Familiar' : '📊 Family Analysis', path: '/dashboard?area=familia&atab=analysis' },
+          { label: language === 'es' ? '💳 Deudas' : '💳 Debts', path: '/net-worth' },
         ],
       },
-      { icon: CreditCard, label: language === 'es' ? 'Deudas' : 'Debts', path: '/dashboard?area=familia&atab=debts', badge: null, tooltipKey: 'debts' as const },
       { icon: PiggyBank, label: language === 'es' ? 'Ahorro' : 'Savings', path: '/budget?tab=savings', badge: null, tooltipKey: 'savings' as const },
       { icon: Building2, label: 'nav.banking', path: '/banking', badge: null, tooltipKey: 'banking' as const,
         children: [
@@ -252,7 +243,7 @@ const getNavSections = (language: string, isBetaTester: boolean = false) => {
     emoji: '📊',
     themeKey: 'analytics' as keyof typeof sectionThemes,
     items: [
-      { icon: Scale, label: language === 'es' ? 'Análisis' : 'Analytics', path: '/analytics', badge: null, tooltipKey: 'analytics' as const,
+      { icon: BarChart3, label: language === 'es' ? 'Análisis' : 'Analytics', path: '/analytics', badge: null, tooltipKey: 'analytics' as const,
         children: [
           { label: language === 'es' ? '📊 Ingresos vs Gastos' : '📊 Income vs Expenses', path: '/analytics#income-vs-expenses' },
           { label: language === 'es' ? '🔮 Predicciones' : '🔮 Predictions', path: '/analytics#predictions' },
@@ -261,15 +252,13 @@ const getNavSections = (language: string, isBetaTester: boolean = false) => {
           { label: language === 'es' ? '🎛️ Simulador' : '🎛️ Simulator', path: '/analytics#simulator' },
         ],
       },
-      { icon: FileText, label: 'nav.taxCalendar', path: '/tax-calendar', badge: null, tooltipKey: 'taxCalendar' as const },
-      { icon: Receipt, label: language === 'es' ? 'Impuestos' : 'Taxes', path: '/tax-optimizer', badge: null, tooltipKey: 'taxes' as const,
+      { icon: CalendarDays, label: 'nav.taxCalendar', path: '/tax-calendar', badge: null, tooltipKey: 'taxCalendar' as const },
+      { icon: Calculator, label: language === 'es' ? 'Impuestos' : 'Taxes', path: '/tax-optimizer', badge: null, tooltipKey: 'taxes' as const,
         children: [
           { label: language === 'es' ? '📋 Flujo Reporte Contador' : '📋 Accountant Report Flow', path: '/tax-report-flow' },
-          { label: language === 'es' ? '🛡️ Optimización Fiscal' : '🛡️ Tax Optimization', path: '/dashboard?area=impuestos&atab=optimization' },
-          { label: language === 'es' ? '📋 Resumen Fiscal' : '📋 Tax Summary', path: '/dashboard?area=impuestos&atab=summary' },
         ],
       },
-      { icon: FileText, label: language === 'es' ? 'Reportes' : 'Reports', path: '/reports', badge: null, tooltipKey: 'analytics' as const },
+      { icon: FileBarChart, label: language === 'es' ? 'Reportes' : 'Reports', path: '/reports', badge: null, tooltipKey: 'reports' as const },
     ]
   },
   {
@@ -289,12 +278,8 @@ const getNavSections = (language: string, isBetaTester: boolean = false) => {
       },
       { icon: Briefcase, label: language === 'es' ? 'Inversiones' : 'Investments', path: '/investments', badge: null, tooltipKey: 'investments' as const,
         children: [
-          { label: language === 'es' ? '🔥 Calculadora FIRE' : '🔥 FIRE Calculator', path: '/dashboard?area=crecimiento&atab=investments&tool=fire' },
-          { label: language === 'es' ? '💼 Portafolio' : '💼 Portfolio', path: '/dashboard?area=crecimiento&atab=investments&tool=portfolio' },
-          { label: language === 'es' ? '🎯 Metas SMART' : '🎯 SMART Goals', path: '/dashboard?area=crecimiento&atab=goals' },
-          { label: language === 'es' ? '📓 Diario Financiero' : '📓 Financial Journal', path: '/dashboard?area=crecimiento&atab=goals' },
-          { label: language === 'es' ? '💵 Págate Primero' : '💵 Pay Yourself First', path: '/mentorship?tab=atomic' },
-          { label: language === 'es' ? '💳 Clasificación Deuda' : '💳 Debt Classification', path: '/mentorship?tab=kiyosaki' },
+          { label: language === 'es' ? '🔥 Calculadora FIRE' : '🔥 FIRE Calculator', path: '/investments#fire' },
+          { label: language === 'es' ? '💼 Portafolio' : '💼 Portfolio', path: '/investments#portfolio' },
         ],
       },
       { icon: Trophy, label: language === 'es' ? 'Aventura' : 'Adventure', path: '/adventure', badge: null, tooltipKey: 'adventure' as const },
