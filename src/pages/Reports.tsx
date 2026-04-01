@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { FileDown, FileSpreadsheet, FileText, TrendingUp, PiggyBank, CalendarCheck, Receipt, Loader2, DollarSign, BarChart3, Car, Eye } from 'lucide-react';
+import { FileDown, FileSpreadsheet, FileText, TrendingUp, PiggyBank, CalendarCheck, Receipt, Loader2, DollarSign, BarChart3, Car, Eye, X } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { startOfYear, endOfYear, format } from 'date-fns';
@@ -31,6 +31,7 @@ interface ReportCard {
   formats: ('pdf' | 'excel')[];
   badge?: { es: string; en: string };
   badgeVariant?: 'default' | 'secondary' | 'destructive' | 'outline';
+  color: string; // tailwind color key for accents
 }
 
 const REPORT_CARDS: ReportCard[] = [
@@ -39,49 +40,54 @@ const REPORT_CARDS: ReportCard[] = [
     icon: <TrendingUp className="h-6 w-6" />,
     titleEs: 'Estado de Resultados (P&L)',
     titleEn: 'Profit & Loss Statement',
-    descEs: 'Ingresos vs gastos con desglose mensual por categoría. El reporte financiero más importante.',
-    descEn: 'Revenue vs expenses with monthly breakdown by category. The most important financial report.',
+    descEs: 'Ingresos vs gastos con desglose mensual por categoría.',
+    descEn: 'Revenue vs expenses with monthly breakdown by category.',
     formats: ['pdf', 'excel'],
     badge: { es: 'Nuevo', en: 'New' },
     badgeVariant: 'default',
+    color: 'emerald',
   },
   {
     id: 'expenses',
     icon: <Receipt className="h-6 w-6" />,
     titleEs: 'Reporte de Gastos',
     titleEn: 'Expense Report',
-    descEs: 'Todos tus gastos con categorías, clientes y estado de deducibilidad.',
-    descEn: 'All your expenses with categories, clients, and deductibility status.',
+    descEs: 'Todos tus gastos con categorías, clientes y deducibilidad.',
+    descEn: 'All your expenses with categories, clients, and deductibility.',
     formats: ['pdf', 'excel'],
+    color: 'blue',
   },
   {
     id: 'budget',
     icon: <PiggyBank className="h-6 w-6" />,
     titleEs: 'Plan de Presupuesto',
     titleEn: 'Budget Plan',
-    descEs: 'Resumen del mes actual: ingresos, gastos fijos, disponible, ahorro proyectado.',
-    descEn: 'Current month summary: income, fixed payments, available, projected savings.',
+    descEs: 'Resumen del mes: ingresos, gastos fijos, disponible, ahorro.',
+    descEn: 'Monthly summary: income, fixed payments, available, savings.',
     formats: ['pdf', 'excel'],
+    color: 'violet',
   },
   {
     id: 'bills',
     icon: <CalendarCheck className="h-6 w-6" />,
     titleEs: 'Pagos Recurrentes',
     titleEn: 'Recurring Bills',
-    descEs: 'Lista de pagos fijos activos con frecuencia, método de pago y próximo vencimiento.',
-    descEn: 'Active fixed payments with frequency, payment method, and next due date.',
+    descEs: 'Pagos fijos activos con frecuencia y próximo vencimiento.',
+    descEn: 'Active fixed payments with frequency and next due date.',
     formats: ['pdf', 'excel'],
+    color: 'amber',
   },
   {
     id: 'tax',
     icon: <DollarSign className="h-6 w-6" />,
     titleEs: 'Reporte Fiscal / T2125',
     titleEn: 'Tax Report / T2125',
-    descEs: 'Reporte de gastos de negocio formateado para CRA con líneas T2125.',
-    descEn: 'Business expenses report formatted for CRA with T2125 lines.',
+    descEs: 'Gastos de negocio formateados para CRA con líneas T2125.',
+    descEn: 'Business expenses formatted for CRA with T2125 lines.',
     formats: ['pdf', 'excel'],
     badge: { es: 'Contador', en: 'Accountant' },
     badgeVariant: 'secondary',
+    color: 'red',
   },
   {
     id: 'income_summary',
@@ -91,17 +97,40 @@ const REPORT_CARDS: ReportCard[] = [
     descEs: 'Todos los ingresos del año por tipo, fuente y cliente.',
     descEn: 'All income for the year by type, source, and client.',
     formats: ['excel'],
+    color: 'green',
   },
   {
     id: 'mileage',
     icon: <Car className="h-6 w-6" />,
     titleEs: 'Reporte de Kilometraje',
     titleEn: 'Mileage Report',
-    descEs: 'Viajes de negocio con km recorridos, rutas, clientes y deducciones fiscales.',
-    descEn: 'Business trips with km driven, routes, clients, and tax deductions.',
+    descEs: 'Viajes de negocio con km, rutas y deducciones fiscales.',
+    descEn: 'Business trips with km, routes, and tax deductions.',
     formats: ['pdf', 'excel'],
+    color: 'sky',
   },
 ];
+
+// Color maps for styling
+const COLOR_MAP: Record<string, { bg: string; border: string; icon: string; text: string; light: string }> = {
+  emerald: { bg: 'bg-emerald-500/10', border: 'border-l-emerald-500', icon: 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400', text: 'text-emerald-600 dark:text-emerald-400', light: 'bg-emerald-50 dark:bg-emerald-950/30' },
+  blue: { bg: 'bg-blue-500/10', border: 'border-l-blue-500', icon: 'bg-blue-500/20 text-blue-600 dark:text-blue-400', text: 'text-blue-600 dark:text-blue-400', light: 'bg-blue-50 dark:bg-blue-950/30' },
+  violet: { bg: 'bg-violet-500/10', border: 'border-l-violet-500', icon: 'bg-violet-500/20 text-violet-600 dark:text-violet-400', text: 'text-violet-600 dark:text-violet-400', light: 'bg-violet-50 dark:bg-violet-950/30' },
+  amber: { bg: 'bg-amber-500/10', border: 'border-l-amber-500', icon: 'bg-amber-500/20 text-amber-600 dark:text-amber-400', text: 'text-amber-600 dark:text-amber-400', light: 'bg-amber-50 dark:bg-amber-950/30' },
+  red: { bg: 'bg-red-500/10', border: 'border-l-red-500', icon: 'bg-red-500/20 text-red-600 dark:text-red-400', text: 'text-red-600 dark:text-red-400', light: 'bg-red-50 dark:bg-red-950/30' },
+  green: { bg: 'bg-green-500/10', border: 'border-l-green-500', icon: 'bg-green-500/20 text-green-600 dark:text-green-400', text: 'text-green-600 dark:text-green-400', light: 'bg-green-50 dark:bg-green-950/30' },
+  sky: { bg: 'bg-sky-500/10', border: 'border-l-sky-500', icon: 'bg-sky-500/20 text-sky-600 dark:text-sky-400', text: 'text-sky-600 dark:text-sky-400', light: 'bg-sky-50 dark:bg-sky-950/30' },
+};
+
+interface PreviewData {
+  type: string;
+  title: string;
+  color: string;
+  kpis?: { label: string; value: string; accent?: boolean }[];
+  headers: string[];
+  rows: string[][];
+  footer?: string[];
+}
 
 export default function Reports() {
   const { language } = useLanguage();
@@ -112,8 +141,7 @@ export default function Reports() {
   const currentYear = new Date().getFullYear();
   const [selectedYear, setSelectedYear] = useState(currentYear);
   const [exporting, setExporting] = useState<string | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [previewTitle, setPreviewTitle] = useState('');
+  const [previewData, setPreviewData] = useState<PreviewData | null>(null);
 
   const yearStart = startOfYear(new Date(selectedYear, 0));
   const yearEnd = endOfYear(new Date(selectedYear, 0));
@@ -170,226 +198,144 @@ export default function Reports() {
     }
   };
 
-  const handlePreview = async (reportId: string) => {
-    const key = `${reportId}-preview`;
-    setExporting(key);
-    try {
-      let pdfDataUri: string | null = null;
-      const card = REPORT_CARDS.find(c => c.id === reportId);
+  const handlePreview = (reportId: string) => {
+    const card = REPORT_CARDS.find(c => c.id === reportId);
+    if (!card) return;
+    const color = card.color;
+    const title = l ? card.titleEs : card.titleEn;
 
-      switch (reportId) {
-        case 'pnl': {
-          const yearInc = (incomes || []).filter(i => new Date(i.date).getFullYear() === selectedYear);
-          const pnlData = {
-            year: selectedYear,
-            language: l ? 'es' as const : 'en' as const,
-            userName: profile?.full_name || undefined,
-            businessName: profile?.business_name || undefined,
-            incomes: yearInc.map(i => ({ amount: i.amount, date: i.date, income_type: i.income_type, source: i.source, description: i.description })),
-            expenses: (expenses || []).map(e => ({ amount: Number(e.amount), date: e.date, category: e.category, vendor: e.vendor })),
-          };
-          const { exportPnLToPDF } = await import('@/lib/export/pnl-export');
-          // exportPnLToPDF returns void and saves — we need to generate the doc ourselves
-          // For now, use a generic approach: generate and get blob
-          const { default: jsPDF } = await import('jspdf');
-          const { default: autoTable } = await import('jspdf-autotable');
-          const doc = new jsPDF();
-          doc.setFontSize(16);
-          doc.text(l ? 'Estado de Resultados (P&L)' : 'Profit & Loss Statement', 14, 20);
-          doc.setFontSize(10);
-          doc.setTextColor(100);
-          doc.text(`${selectedYear}`, 14, 27);
-          doc.setTextColor(0);
-          const totalInc = pnlData.incomes.reduce((s, i) => s + i.amount, 0);
-          const totalExp = pnlData.expenses.reduce((s, e) => s + e.amount, 0);
-          autoTable(doc, {
-            startY: 34,
-            head: [[l ? 'Concepto' : 'Item', l ? 'Monto' : 'Amount']],
-            body: [
-              [l ? 'Ingresos Totales' : 'Total Income', fc(totalInc)],
-              [l ? 'Gastos Totales' : 'Total Expenses', fc(totalExp)],
-              [l ? 'Ganancia Neta' : 'Net Profit', fc(totalInc - totalExp)],
-              [l ? 'Margen' : 'Margin', totalInc > 0 ? `${((totalInc - totalExp) / totalInc * 100).toFixed(1)}%` : '0%'],
-            ],
-            theme: 'grid',
-            headStyles: { fillColor: [16, 185, 129] },
-          });
-          pdfDataUri = doc.output('datauristring');
-          break;
-        }
-        case 'expenses': {
-          const { default: jsPDF } = await import('jspdf');
-          const { default: autoTable } = await import('jspdf-autotable');
-          const doc = new jsPDF();
-          doc.setFontSize(16);
-          doc.text(l ? 'Reporte de Gastos' : 'Expense Report', 14, 20);
-          doc.setFontSize(10);
-          doc.setTextColor(100);
-          doc.text(`${selectedYear}`, 14, 27);
-          doc.setTextColor(0);
-          const rows = (expenses || []).slice(0, 30).map(e => [e.date, e.vendor || e.description || '', e.category || '', fc(Number(e.amount))]);
-          autoTable(doc, {
-            startY: 34,
-            head: [[l ? 'Fecha' : 'Date', l ? 'Proveedor' : 'Vendor', l ? 'Categoría' : 'Category', l ? 'Monto' : 'Amount']],
-            body: rows,
-            theme: 'striped',
-            headStyles: { fillColor: [59, 130, 246] },
-            styles: { fontSize: 8 },
-          });
-          if ((expenses || []).length > 30) {
-            const finalY = (doc as any).lastAutoTable?.finalY || 250;
-            doc.setFontSize(9);
-            doc.setTextColor(100);
-            doc.text(l ? `... y ${(expenses || []).length - 30} más. Descarga el PDF completo.` : `... and ${(expenses || []).length - 30} more. Download the full PDF.`, 14, finalY + 10);
-          }
-          pdfDataUri = doc.output('datauristring');
-          break;
-        }
-        case 'budget': {
-          const { default: jsPDF } = await import('jspdf');
-          const { default: autoTable } = await import('jspdf-autotable');
-          const doc = new jsPDF();
-          const now = new Date();
-          doc.setFontSize(16);
-          doc.text(l ? 'Plan de Presupuesto Mensual' : 'Monthly Budget Plan', 14, 20);
-          doc.setFontSize(10);
-          doc.setTextColor(100);
-          doc.text(format(now, 'MMMM yyyy', { locale: l ? es : enUS }), 14, 27);
-          doc.setTextColor(0);
-          autoTable(doc, {
-            startY: 34,
-            head: [[l ? 'Concepto' : 'Item', l ? 'Monto' : 'Amount']],
-            body: [
-              [l ? 'Ingresos' : 'Income', fc(plan.totalIncome)],
-              [l ? 'Pagos Fijos' : 'Fixed', fc(plan.totalFixed)],
-              [l ? 'Gastado' : 'Spent', fc(plan.totalSpent)],
-              [l ? 'Disponible' : 'Available', fc(plan.freeMoney - plan.totalSpent)],
-              [l ? 'Presupuesto Diario' : 'Daily Budget', fc(plan.dailyBudget)],
-              [l ? 'Ahorro Proyectado' : 'Projected Savings', fc(plan.projectedSavings)],
-              [l ? 'Tasa de Ahorro' : 'Savings Rate', `${plan.savingsRate.toFixed(1)}%`],
-            ],
-            theme: 'grid',
-            headStyles: { fillColor: [16, 185, 129] },
-          });
-          pdfDataUri = doc.output('datauristring');
-          break;
-        }
-        case 'bills': {
-          const ab = bills?.filter(b => b.status === 'active') || [];
-          if (ab.length === 0) { toast.info(l ? 'No hay pagos' : 'No bills'); setExporting(null); return; }
-          const { default: jsPDF } = await import('jspdf');
-          const { default: autoTable } = await import('jspdf-autotable');
-          const doc = new jsPDF();
-          const lang = l ? 'es' : 'en';
-          doc.setFontSize(16);
-          doc.text(l ? 'Pagos Recurrentes' : 'Recurring Bills', 14, 20);
-          autoTable(doc, {
-            startY: 30,
-            head: [[l ? 'Nombre' : 'Name', l ? 'Categoría' : 'Category', l ? 'Monto' : 'Amount', l ? 'Frecuencia' : 'Frequency']],
-            body: ab.map(b => [b.name, getBillCategoryLabel(b.category, lang), fc(b.amount), getBillFrequencyLabel(b.frequency, lang)]),
-            theme: 'striped',
-            headStyles: { fillColor: [59, 130, 246] },
-            styles: { fontSize: 8 },
-          });
-          pdfDataUri = doc.output('datauristring');
-          break;
-        }
-        case 'tax': {
-          const { default: jsPDF } = await import('jspdf');
-          const { default: autoTable } = await import('jspdf-autotable');
-          const doc = new jsPDF();
-          const deductible = (expenses || []).filter(e => e.status === 'deductible');
-          doc.setFontSize(16);
-          doc.text(l ? 'Reporte Fiscal / T2125' : 'Tax Report / T2125', 14, 20);
-          doc.setFontSize(10);
-          doc.setTextColor(100);
-          doc.text(`${selectedYear}`, 14, 27);
-          doc.setTextColor(0);
-          autoTable(doc, {
-            startY: 34,
-            head: [[l ? 'Fecha' : 'Date', l ? 'Proveedor' : 'Vendor', l ? 'Categoría' : 'Category', l ? 'Monto' : 'Amount']],
-            body: deductible.slice(0, 25).map(e => [e.date, e.vendor || '', e.category || '', fc(Number(e.amount))]),
-            foot: [[l ? 'Total' : 'Total', '', '', fc(deductible.reduce((s, e) => s + Number(e.amount), 0))]],
-            theme: 'striped',
-            headStyles: { fillColor: [220, 38, 38] },
-            styles: { fontSize: 8 },
-          });
-          pdfDataUri = doc.output('datauristring');
-          break;
-        }
-        case 'mileage': {
-          const trips = mileageData || [];
-          if (trips.length === 0) { toast.info(l ? 'No hay viajes' : 'No trips'); setExporting(null); return; }
-          const { default: jsPDF } = await import('jspdf');
-          const { default: autoTable } = await import('jspdf-autotable');
-          const doc = new jsPDF('l');
-          doc.setFontSize(16);
-          doc.text(l ? 'Reporte de Kilometraje' : 'Mileage Report', 14, 20);
-          doc.setFontSize(10);
-          doc.setTextColor(100);
-          doc.text(`${selectedYear}`, 14, 27);
-          doc.setTextColor(0);
-          const sorted = [...trips].sort((a, b) => a.date.localeCompare(b.date));
-          let runKm = 0;
-          const body = sorted.slice(0, 25).map(t => {
-            const km = parseFloat(t.kilometers.toString());
-            const ded = calculateMileageDeductionByCountry(km, runKm, currentCountry, selectedYear);
-            runKm += km;
-            return [t.date, t.route.replace('[SAMPLE] ', ''), `${km.toFixed(1)} km`, t.client?.name?.replace('[SAMPLE] ', '') || '-', ded ? fc(ded.deductible) : '-'];
-          });
-          autoTable(doc, {
-            startY: 34,
-            head: [[l ? 'Fecha' : 'Date', l ? 'Ruta' : 'Route', 'Km', l ? 'Cliente' : 'Client', l ? 'Deducción' : 'Deduction']],
-            body,
-            theme: 'striped',
-            headStyles: { fillColor: [59, 130, 246] },
-            styles: { fontSize: 8 },
-          });
-          pdfDataUri = doc.output('datauristring');
-          break;
-        }
-        case 'mileage': {
-          const trips = mileageData || [];
-          if (trips.length === 0) { toast.info(l ? 'No hay viajes' : 'No trips'); setExporting(null); return; }
-          const { default: jsPDF } = await import('jspdf');
-          const { default: autoTable } = await import('jspdf-autotable');
-          const doc = new jsPDF('l');
-          doc.setFontSize(16);
-          doc.text(l ? 'Reporte de Kilometraje' : 'Mileage Report', 14, 20);
-          doc.setFontSize(10);
-          doc.setTextColor(100);
-          doc.text(`${selectedYear}`, 14, 27);
-          doc.setTextColor(0);
-          const sorted = [...trips].sort((a, b) => a.date.localeCompare(b.date));
-          let runKm = 0;
-          const body = sorted.slice(0, 25).map(t => {
-            const km = parseFloat(t.kilometers.toString());
-            const ded = calculateMileageDeductionByCountry(km, runKm, currentCountry, selectedYear);
-            runKm += km;
-            return [t.date, t.route.replace('[SAMPLE] ', ''), `${km.toFixed(1)} km`, t.client?.name?.replace('[SAMPLE] ', '') || '-', ded ? fc(ded.deductible) : '-'];
-          });
-          autoTable(doc, {
-            startY: 34,
-            head: [[l ? 'Fecha' : 'Date', l ? 'Ruta' : 'Route', 'Km', l ? 'Cliente' : 'Client', l ? 'Deducción' : 'Deduction']],
-            body,
-            theme: 'striped',
-            headStyles: { fillColor: [59, 130, 246] },
-            styles: { fontSize: 8 },
-          });
-          pdfDataUri = doc.output('datauristring');
-          break;
-        }
+    switch (reportId) {
+      case 'pnl': {
+        const totalInc = yearIncomes.reduce((s, i) => s + i.amount, 0);
+        const totalExp = (expenses || []).reduce((s, e) => s + Number(e.amount), 0);
+        const net = totalInc - totalExp;
+        const margin = totalInc > 0 ? ((net / totalInc) * 100).toFixed(1) : '0';
+        // Group by category
+        const catMap: Record<string, number> = {};
+        (expenses || []).forEach(e => { catMap[e.category || 'Other'] = (catMap[e.category || 'Other'] || 0) + Number(e.amount); });
+        const catRows = Object.entries(catMap).sort((a, b) => b[1] - a[1]).slice(0, 10).map(([cat, amt]) => [cat, fc(amt)]);
+        setPreviewData({
+          type: 'pnl', title, color,
+          kpis: [
+            { label: l ? 'Ingresos' : 'Income', value: fc(totalInc) },
+            { label: l ? 'Gastos' : 'Expenses', value: fc(totalExp) },
+            { label: l ? 'Ganancia Neta' : 'Net Profit', value: fc(net), accent: net >= 0 },
+            { label: l ? 'Margen' : 'Margin', value: `${margin}%` },
+          ],
+          headers: [l ? 'Categoría' : 'Category', l ? 'Monto' : 'Amount'],
+          rows: catRows,
+          footer: [l ? 'Total Gastos' : 'Total Expenses', fc(totalExp)],
+        });
+        break;
       }
-
-      if (pdfDataUri) {
-        setPreviewUrl(pdfDataUri);
-        setPreviewTitle(l ? (card?.titleEs || 'Preview') : (card?.titleEn || 'Preview'));
+      case 'expenses': {
+        const total = (expenses || []).reduce((s, e) => s + Number(e.amount), 0);
+        const rows = (expenses || []).slice(0, 20).map(e => [e.date, e.vendor || e.description || '-', e.category || '-', fc(Number(e.amount))]);
+        setPreviewData({
+          type: 'expenses', title, color,
+          kpis: [
+            { label: l ? 'Total Gastos' : 'Total Expenses', value: fc(total) },
+            { label: l ? 'Registros' : 'Records', value: String((expenses || []).length) },
+          ],
+          headers: [l ? 'Fecha' : 'Date', l ? 'Proveedor' : 'Vendor', l ? 'Categoría' : 'Category', l ? 'Monto' : 'Amount'],
+          rows,
+          footer: (expenses || []).length > 20 ? [`... ${l ? 'y' : 'and'} ${(expenses || []).length - 20} ${l ? 'más' : 'more'}`, '', '', fc(total)] : undefined,
+        });
+        break;
       }
-    } catch (err) {
-      console.error(err);
-      toast.error(l ? 'Error al generar preview' : 'Preview failed');
+      case 'budget': {
+        setPreviewData({
+          type: 'budget', title, color,
+          kpis: [
+            { label: l ? 'Ingresos' : 'Income', value: fc(plan.totalIncome) },
+            { label: l ? 'Disponible' : 'Available', value: fc(plan.freeMoney - plan.totalSpent), accent: true },
+            { label: l ? 'Ahorro' : 'Savings', value: `${plan.savingsRate.toFixed(1)}%` },
+            { label: l ? 'Salud' : 'Health', value: `${plan.healthScore}/100` },
+          ],
+          headers: [l ? 'Concepto' : 'Item', l ? 'Monto' : 'Amount'],
+          rows: [
+            [l ? 'Ingresos' : 'Income', fc(plan.totalIncome)],
+            [l ? 'Pagos Fijos' : 'Fixed', fc(plan.totalFixed)],
+            [l ? 'Gastado' : 'Spent', fc(plan.totalSpent)],
+            [l ? 'Disponible' : 'Available', fc(plan.freeMoney - plan.totalSpent)],
+            [l ? 'Presupuesto Diario' : 'Daily Budget', fc(plan.dailyBudget)],
+            [l ? 'Ahorro Proyectado' : 'Projected Savings', fc(plan.projectedSavings)],
+          ],
+        });
+        break;
+      }
+      case 'bills': {
+        if (activeBills.length === 0) { toast.info(l ? 'No hay pagos' : 'No bills'); return; }
+        const lang = l ? 'es' : 'en';
+        const totalMonthly = activeBills.reduce((s, b) => s + b.amount, 0);
+        setPreviewData({
+          type: 'bills', title, color,
+          kpis: [
+            { label: l ? 'Pagos Activos' : 'Active Bills', value: String(activeBills.length) },
+            { label: l ? 'Total/Mes' : 'Total/Mo', value: fc(totalMonthly) },
+          ],
+          headers: [l ? 'Nombre' : 'Name', l ? 'Categoría' : 'Category', l ? 'Monto' : 'Amount', l ? 'Frecuencia' : 'Frequency'],
+          rows: activeBills.map(b => [b.name, getBillCategoryLabel(b.category, lang), fc(b.amount), getBillFrequencyLabel(b.frequency, lang)]),
+        });
+        break;
+      }
+      case 'tax': {
+        const deductible = (expenses || []).filter(e => e.status === 'deductible');
+        const totalDed = deductible.reduce((s, e) => s + Number(e.amount), 0);
+        setPreviewData({
+          type: 'tax', title, color,
+          kpis: [
+            { label: l ? 'Deducibles' : 'Deductible', value: String(deductible.length) },
+            { label: l ? 'Total Deducido' : 'Total Deducted', value: fc(totalDed), accent: true },
+          ],
+          headers: [l ? 'Fecha' : 'Date', l ? 'Proveedor' : 'Vendor', l ? 'Categoría' : 'Category', l ? 'Monto' : 'Amount'],
+          rows: deductible.slice(0, 20).map(e => [e.date, e.vendor || '-', e.category || '-', fc(Number(e.amount))]),
+          footer: [l ? 'Total' : 'Total', '', '', fc(totalDed)],
+        });
+        break;
+      }
+      case 'income_summary': {
+        if (yearIncomes.length === 0) { toast.info(l ? 'No hay ingresos' : 'No income'); return; }
+        const totalInc = yearIncomes.reduce((s, i) => s + i.amount, 0);
+        const typeMap: Record<string, number> = {};
+        yearIncomes.forEach(i => { typeMap[i.income_type || 'Other'] = (typeMap[i.income_type || 'Other'] || 0) + i.amount; });
+        setPreviewData({
+          type: 'income_summary', title, color,
+          kpis: [
+            { label: l ? 'Total Ingresos' : 'Total Income', value: fc(totalInc), accent: true },
+            { label: l ? 'Registros' : 'Records', value: String(yearIncomes.length) },
+          ],
+          headers: [l ? 'Tipo' : 'Type', l ? 'Monto' : 'Amount'],
+          rows: Object.entries(typeMap).sort((a, b) => b[1] - a[1]).map(([type, amt]) => [type, fc(amt)]),
+          footer: [l ? 'Total' : 'Total', fc(totalInc)],
+        });
+        break;
+      }
+      case 'mileage': {
+        const trips = mileageData || [];
+        if (trips.length === 0) { toast.info(l ? 'No hay viajes' : 'No trips'); return; }
+        const sorted = [...trips].sort((a, b) => a.date.localeCompare(b.date));
+        let runKm = 0;
+        const rows = sorted.slice(0, 15).map(t => {
+          const km = parseFloat(t.kilometers.toString());
+          const ded = calculateMileageDeductionByCountry(km, runKm, currentCountry, selectedYear);
+          runKm += km;
+          return [t.date, t.route.replace('[SAMPLE] ', ''), `${km.toFixed(1)} km`, t.client?.name?.replace('[SAMPLE] ', '') || '-', ded ? fc(ded.deductible) : '-'];
+        });
+        setPreviewData({
+          type: 'mileage', title, color,
+          kpis: [
+            { label: l ? 'Viajes' : 'Trips', value: String(trips.length) },
+            { label: 'Km', value: `${mileageSummary?.totalKilometers.toFixed(0) || '0'}` },
+            { label: l ? 'Deducción' : 'Deduction', value: mileageSummary ? fc(mileageSummary.totalDeductibleAmount) : '-', accent: true },
+          ],
+          headers: [l ? 'Fecha' : 'Date', l ? 'Ruta' : 'Route', 'Km', l ? 'Cliente' : 'Client', l ? 'Deducción' : 'Deduction'],
+          rows,
+          footer: trips.length > 15 ? [`... ${l ? 'y' : 'and'} ${trips.length - 15} ${l ? 'más' : 'more'}`, '', '', '', ''] : undefined,
+        });
+        break;
+      }
     }
-    setExporting(null);
   };
 
   const handleExport = async (reportId: string, format: 'pdf' | 'excel') => {
@@ -478,6 +424,13 @@ export default function Reports() {
     setExporting(null);
   };
 
+  const STAT_CARDS = [
+    { label: l ? 'Gastos' : 'Expenses', value: expenses?.length || 0, icon: '📊', gradient: 'from-blue-500/20 to-blue-600/5 dark:from-blue-500/10 dark:to-blue-600/5', iconBg: 'bg-blue-500/20', ring: 'ring-blue-500/20' },
+    { label: l ? 'Ingresos' : 'Incomes', value: yearIncomes.length, icon: '💰', gradient: 'from-emerald-500/20 to-emerald-600/5 dark:from-emerald-500/10 dark:to-emerald-600/5', iconBg: 'bg-emerald-500/20', ring: 'ring-emerald-500/20' },
+    { label: l ? 'Pagos Fijos' : 'Bills', value: activeBills.length, icon: '🔄', gradient: 'from-violet-500/20 to-violet-600/5 dark:from-violet-500/10 dark:to-violet-600/5', iconBg: 'bg-violet-500/20', ring: 'ring-violet-500/20' },
+    { label: l ? 'Reportes' : 'Reports', value: REPORT_CARDS.length, icon: '📋', gradient: 'from-amber-500/20 to-amber-600/5 dark:from-amber-500/10 dark:to-amber-600/5', iconBg: 'bg-amber-500/20', ring: 'ring-amber-500/20' },
+  ];
+
   return (
     <div className="container mx-auto max-w-5xl py-6 px-4 space-y-6">
       <PageHeader
@@ -496,101 +449,208 @@ export default function Reports() {
         </Select>
       </PageHeader>
 
+      {/* Stat Cards - 3D Candy Style */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <StatCard label={l ? 'Gastos' : 'Expenses'} value={expenses?.length || 0} icon="📊" />
-        <StatCard label={l ? 'Ingresos' : 'Incomes'} value={(incomes || []).filter(i => new Date(i.date).getFullYear() === selectedYear).length} icon="💰" />
-        <StatCard label={l ? 'Pagos Fijos' : 'Bills'} value={bills?.filter(b => b.status === 'active')?.length || 0} icon="🔄" />
-        <StatCard label={l ? 'Reportes' : 'Reports'} value={REPORT_CARDS.length} icon="📋" />
+        {STAT_CARDS.map((stat, i) => (
+          <div
+            key={i}
+            className={`relative bg-gradient-to-br ${stat.gradient} border rounded-xl px-4 py-3 flex items-center gap-3 shadow-sm hover:shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 ring-1 ${stat.ring}`}
+          >
+            <div className={`${stat.iconBg} rounded-full w-10 h-10 flex items-center justify-center text-xl shadow-inner`}>
+              {stat.icon}
+            </div>
+            <div>
+              <p className="text-xl font-bold text-foreground">{stat.value}</p>
+              <p className="text-[11px] text-muted-foreground font-medium">{stat.label}</p>
+            </div>
+          </div>
+        ))}
       </div>
 
+      {/* Report Cards - Colored 3D Candy */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {REPORT_CARDS.map(card => (
-          <Card key={card.id} className="hover:shadow-md transition-shadow border-border/50">
-            <CardHeader className="pb-3">
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-2.5 text-primary">
-                  {card.icon}
-                  <CardTitle className="text-sm font-semibold leading-tight">
-                    {l ? card.titleEs : card.titleEn}
-                  </CardTitle>
+        {REPORT_CARDS.map(card => {
+          const cm = COLOR_MAP[card.color] || COLOR_MAP.blue;
+          return (
+            <Card
+              key={card.id}
+              className={`border-l-4 ${cm.border} hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 overflow-hidden`}
+            >
+              <CardHeader className="pb-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-2.5">
+                    <div className={`${cm.icon} rounded-full w-9 h-9 flex items-center justify-center shadow-inner`}>
+                      {card.icon}
+                    </div>
+                    <CardTitle className="text-sm font-bold leading-tight">
+                      {l ? card.titleEs : card.titleEn}
+                    </CardTitle>
+                  </div>
+                  {card.badge && (
+                    <Badge variant={card.badgeVariant || 'default'} className="text-[10px] px-1.5 py-0 shrink-0">
+                      {l ? card.badge.es : card.badge.en}
+                    </Badge>
+                  )}
                 </div>
-                {card.badge && (
-                  <Badge variant={card.badgeVariant || 'default'} className="text-[10px] px-1.5 py-0">
-                    {l ? card.badge.es : card.badge.en}
-                  </Badge>
+                <CardDescription className="text-xs mt-1.5">
+                  {l ? card.descEs : card.descEn}
+                </CardDescription>
+                {getPreview(card.id) && (
+                  <p className={`text-xs font-semibold mt-2 ${cm.text} ${cm.bg} rounded-lg px-2.5 py-1.5`}>
+                    {getPreview(card.id)}
+                  </p>
                 )}
-              </div>
-              <CardDescription className="text-xs mt-1.5">
-                {l ? card.descEs : card.descEn}
-              </CardDescription>
-              {getPreview(card.id) && (
-                <p className="text-xs font-medium text-primary/80 mt-1.5 bg-primary/5 rounded px-2 py-1">
-                  {getPreview(card.id)}
-                </p>
-              )}
-            </CardHeader>
-            <CardContent className="pt-0">
-              <div className="flex gap-2">
-                {card.formats.includes('pdf') && (
-                  <>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <div className="flex gap-2">
+                  {card.formats.includes('pdf') && (
+                    <>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className={`gap-1 px-2.5 ${cm.text} hover:${cm.bg}`}
+                        onClick={() => handlePreview(card.id)}
+                        disabled={!!exporting}
+                        title={l ? 'Vista previa' : 'Preview'}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-1.5 flex-1 text-red-600 dark:text-red-400 border-red-200 dark:border-red-800 hover:bg-red-50 dark:hover:bg-red-950/30"
+                        onClick={() => handleExport(card.id, 'pdf')}
+                        disabled={!!exporting}
+                      >
+                        {exporting === `${card.id}-pdf` ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <FileDown className="h-3.5 w-3.5" />}
+                        PDF
+                      </Button>
+                    </>
+                  )}
+                  {/* Preview button for income_summary (no PDF) */}
+                  {!card.formats.includes('pdf') && (
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="gap-1 px-2"
+                      className={`gap-1 px-2.5 ${cm.text}`}
                       onClick={() => handlePreview(card.id)}
                       disabled={!!exporting}
                       title={l ? 'Vista previa' : 'Preview'}
                     >
-                      {exporting === `${card.id}-preview` ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Eye className="h-3.5 w-3.5" />}
+                      <Eye className="h-4 w-4" />
                     </Button>
+                  )}
+                  {card.formats.includes('excel') && (
                     <Button
                       variant="outline"
                       size="sm"
-                      className="gap-1.5 flex-1"
-                      onClick={() => handleExport(card.id, 'pdf')}
+                      className="gap-1.5 flex-1 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/30"
+                      onClick={() => handleExport(card.id, 'excel')}
                       disabled={!!exporting}
                     >
-                      {exporting === `${card.id}-pdf` ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <FileDown className="h-3.5 w-3.5" />}
-                      PDF
+                      {exporting === `${card.id}-excel` ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <FileSpreadsheet className="h-3.5 w-3.5" />}
+                      Excel
                     </Button>
-                  </>
-                )}
-                {card.formats.includes('excel') && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="gap-1.5 flex-1"
-                    onClick={() => handleExport(card.id, 'excel')}
-                    disabled={!!exporting}
-                  >
-                    {exporting === `${card.id}-excel` ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <FileSpreadsheet className="h-3.5 w-3.5" />}
-                    Excel
-                  </Button>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
-      {/* PDF Preview Dialog */}
-      <Dialog open={!!previewUrl} onOpenChange={(open) => { if (!open) { setPreviewUrl(null); } }}>
-        <DialogContent className="max-w-4xl h-[85vh] flex flex-col">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Eye className="h-5 w-5 text-primary" />
-              {previewTitle} — {l ? 'Vista Previa' : 'Preview'}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="flex-1 min-h-0">
-            {previewUrl && (
-              <iframe
-                src={previewUrl}
-                className="w-full h-full rounded-lg border"
-                title="PDF Preview"
-              />
-            )}
-          </div>
+      {/* HTML Preview Dialog */}
+      <Dialog open={!!previewData} onOpenChange={(open) => { if (!open) setPreviewData(null); }}>
+        <DialogContent className="max-w-3xl max-h-[85vh] flex flex-col p-0 gap-0 overflow-hidden">
+          {previewData && (() => {
+            const cm = COLOR_MAP[previewData.color] || COLOR_MAP.blue;
+            return (
+              <>
+                <div className={`${cm.bg} px-6 py-4 border-b`}>
+                  <DialogHeader>
+                    <DialogTitle className={`flex items-center gap-2 ${cm.text} text-lg`}>
+                      <Eye className="h-5 w-5" />
+                      {previewData.title} — {selectedYear}
+                    </DialogTitle>
+                  </DialogHeader>
+                </div>
+
+                <div className="flex-1 overflow-y-auto p-6 space-y-5">
+                  {/* KPI Cards */}
+                  {previewData.kpis && (
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      {previewData.kpis.map((kpi, i) => (
+                        <div key={i} className={`${cm.light} rounded-xl p-3 text-center border shadow-sm`}>
+                          <p className="text-[11px] text-muted-foreground font-medium mb-1">{kpi.label}</p>
+                          <p className={`text-lg font-bold ${kpi.accent ? cm.text : 'text-foreground'}`}>{kpi.value}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Data Table */}
+                  <div className="rounded-xl border overflow-hidden shadow-sm">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className={cm.bg}>
+                          {previewData.headers.map((h, i) => (
+                            <th key={i} className={`px-4 py-2.5 text-left font-semibold ${cm.text} text-xs uppercase tracking-wide`}>{h}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {previewData.rows.map((row, i) => (
+                          <tr key={i} className={`border-t ${i % 2 === 0 ? 'bg-card' : 'bg-muted/30'} hover:bg-muted/50 transition-colors`}>
+                            {row.map((cell, j) => (
+                              <td key={j} className={`px-4 py-2 ${j === row.length - 1 ? 'font-semibold text-right' : ''}`}>{cell}</td>
+                            ))}
+                          </tr>
+                        ))}
+                        {previewData.rows.length === 0 && (
+                          <tr><td colSpan={previewData.headers.length} className="px-4 py-8 text-center text-muted-foreground">{l ? 'Sin datos' : 'No data'}</td></tr>
+                        )}
+                      </tbody>
+                      {previewData.footer && (
+                        <tfoot>
+                          <tr className={`border-t-2 ${cm.bg}`}>
+                            {previewData.footer.map((cell, j) => (
+                              <td key={j} className={`px-4 py-2.5 font-bold ${cm.text} ${j === previewData.footer!.length - 1 ? 'text-right' : ''}`}>{cell}</td>
+                            ))}
+                          </tr>
+                        </tfoot>
+                      )}
+                    </table>
+                  </div>
+                </div>
+
+                <div className="border-t px-6 py-3 flex justify-between items-center bg-muted/20">
+                  <p className="text-xs text-muted-foreground">
+                    {l ? '💡 Descarga el PDF o Excel para el reporte completo' : '💡 Download PDF or Excel for the full report'}
+                  </p>
+                  <div className="flex gap-2">
+                    {REPORT_CARDS.find(c => c.id === previewData.type)?.formats.includes('pdf') && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="text-red-600 dark:text-red-400 border-red-200 dark:border-red-800"
+                        onClick={() => { setPreviewData(null); handleExport(previewData.type, 'pdf'); }}
+                      >
+                        <FileDown className="h-3.5 w-3.5 mr-1" /> PDF
+                      </Button>
+                    )}
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800"
+                      onClick={() => { setPreviewData(null); handleExport(previewData.type, 'excel'); }}
+                    >
+                      <FileSpreadsheet className="h-3.5 w-3.5 mr-1" /> Excel
+                    </Button>
+                  </div>
+                </div>
+              </>
+            );
+          })()}
         </DialogContent>
       </Dialog>
 
@@ -866,7 +926,6 @@ async function exportMileageExcel(
   ws.addRow([]);
   ws.addRow([l ? 'Total' : 'Total', '', runningKm, '', '', summary?.totalDeductibleAmount || 0]).font = { bold: true };
 
-  // Summary sheet
   if (summary) {
     const ws2 = wb.addWorksheet(l ? 'Resumen' : 'Summary');
     ws2.columns = [{ width: 25 }, { width: 18 }];
