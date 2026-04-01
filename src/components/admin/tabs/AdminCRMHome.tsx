@@ -105,6 +105,7 @@ export const AdminCRMHome = ({ language, onNavigateTab }: Props) => {
 
     const overdueFollowUps = followUps.filter((f: any) => new Date(f.scheduled_at) < now).length;
 
+    // This month
     const thisMonth = leads.filter((l: any) => {
       const d = new Date(l.created_at);
       return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
@@ -113,6 +114,21 @@ export const AdminCRMHome = ({ language, onNavigateTab }: Props) => {
     const convertedThisMonth = thisMonth.filter((l: any) => l.converted_to_user).length;
     const contactRate = thisMonth.length > 0 ? Math.round((contactedThisMonth / thisMonth.length) * 100) : 0;
     const conversionRate = thisMonth.length > 0 ? Math.round((convertedThisMonth / thisMonth.length) * 100) : 0;
+
+    // Last month for MoM comparison
+    const lastMonthDate = subDays(now, 30);
+    const lastMonth = leads.filter((l: any) => {
+      const d = new Date(l.created_at);
+      return d.getMonth() === lastMonthDate.getMonth() && d.getFullYear() === lastMonthDate.getFullYear();
+    });
+    const lastMonthContactRate = lastMonth.length > 0 ? Math.round((lastMonth.filter((l: any) => l.contacted_at && !l.contact_notes?.startsWith('[AUTO]')).length / lastMonth.length) * 100) : 0;
+    const lastMonthConversionRate = lastMonth.length > 0 ? Math.round((lastMonth.filter((l: any) => l.converted_to_user).length / lastMonth.length) * 100) : 0;
+    const lastWeekLeads = leads.filter((l: any) => {
+      const d = new Date(l.created_at);
+      const weekAgo = subDays(now, 14);
+      const twoWeeksAgo = subDays(now, 7);
+      return d >= weekAgo && d < twoWeeksAgo;
+    }).length;
 
     const hotUncontacted = leads.filter((l: any) => {
       const score = calculateLeadScore(l);
@@ -125,7 +141,12 @@ export const AdminCRMHome = ({ language, onNavigateTab }: Props) => {
     const emailsFailed = automationLogs.filter((l: any) => l.action_type === 'email' && l.status !== 'success').length;
     const automationsRun = automationLogs.length;
 
-    return { leadsToday, leadsThisWeek, overdueFollowUps, contactRate, conversionRate, hotUncontacted, emailsSent, emailsFailed, automationsRun };
+    // MoM deltas
+    const contactRateDelta = contactRate - lastMonthContactRate;
+    const conversionRateDelta = conversionRate - lastMonthConversionRate;
+    const weekDelta = leadsThisWeek - lastWeekLeads;
+
+    return { leadsToday, leadsThisWeek, overdueFollowUps, contactRate, conversionRate, hotUncontacted, emailsSent, emailsFailed, automationsRun, contactRateDelta, conversionRateDelta, weekDelta };
   }, [leads, followUps, automationLogs]);
 
   // Source breakdown for pie chart
@@ -156,18 +177,44 @@ export const AdminCRMHome = ({ language, onNavigateTab }: Props) => {
     return days;
   }, [leads, isEs]);
 
+  // Weekly activity heatmap (last 7 weeks × 7 days)
+  const heatmapData = useMemo(() => {
+    const weeks: { day: number; week: number; count: number; label: string }[] = [];
+    for (let w = 6; w >= 0; w--) {
+      for (let d = 0; d < 7; d++) {
+        const date = subDays(new Date(), w * 7 + (6 - d));
+        const dayStr = format(date, 'yyyy-MM-dd');
+        const count = leads.filter((l: any) => format(new Date(l.created_at), 'yyyy-MM-dd') === dayStr).length;
+        weeks.push({ day: d, week: 6 - w, count, label: format(date, 'dd MMM') });
+      }
+    }
+    return weeks;
+  }, [leads]);
+
+  const maxHeat = Math.max(1, ...heatmapData.map(d => d.count));
+
+  const MomBadge = ({ delta, suffix = '' }: { delta: number; suffix?: string }) => {
+    if (delta === 0) return null;
+    return (
+      <span className={`text-[9px] font-bold ${delta > 0 ? 'text-white/90' : 'text-white/70'}`}>
+        {delta > 0 ? '↑' : '↓'}{Math.abs(delta)}{suffix} vs {isEs ? 'mes ant.' : 'prev mo.'}
+      </span>
+    );
+  };
+
   const cards = [
     { 
       label: isEs ? 'Leads hoy' : 'Leads today', 
       value: kpis.leadsToday, 
       gradient: 'from-blue-500 to-cyan-500',
-      emoji: '📥'
+      emoji: '📥',
     },
     { 
       label: isEs ? 'Esta semana' : 'This week', 
       value: kpis.leadsThisWeek, 
       gradient: 'from-violet-500 to-purple-500',
-      emoji: '📊'
+      emoji: '📊',
+      mom: kpis.weekDelta,
     },
     { 
       label: isEs ? 'Follow-ups vencidos' : 'Overdue follow-ups', 
@@ -187,13 +234,17 @@ export const AdminCRMHome = ({ language, onNavigateTab }: Props) => {
       label: isEs ? 'Tasa contacto' : 'Contact rate', 
       value: `${kpis.contactRate}%`, 
       gradient: 'from-amber-500 to-yellow-500',
-      emoji: '📞'
+      emoji: '📞',
+      mom: kpis.contactRateDelta,
+      momSuffix: 'pp',
     },
     { 
       label: isEs ? 'Conversión mes' : 'Monthly conversion', 
       value: `${kpis.conversionRate}%`, 
       gradient: 'from-emerald-500 to-teal-600',
-      emoji: '💰'
+      emoji: '💰',
+      mom: kpis.conversionRateDelta,
+      momSuffix: 'pp',
     },
   ];
 
@@ -219,6 +270,9 @@ export const AdminCRMHome = ({ language, onNavigateTab }: Props) => {
                     <span className="text-lg">{card.emoji}</span>
                     <p className="text-2xl font-black">{card.value}</p>
                   </div>
+                  {(card as any).mom !== undefined && (card as any).mom !== 0 && (
+                    <MomBadge delta={(card as any).mom} suffix={(card as any).momSuffix || ''} />
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -292,6 +346,49 @@ export const AdminCRMHome = ({ language, onNavigateTab }: Props) => {
           </Card>
         </motion.div>
       </div>
+
+      {/* Activity Heatmap */}
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.38 }}>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Flame className="h-4 w-4 text-orange-500" />
+              {isEs ? '🗓️ Actividad de leads (7 semanas)' : '🗓️ Lead Activity (7 weeks)'}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pb-4">
+            <div className="flex gap-1">
+              {Array.from({ length: 7 }, (_, w) => (
+                <div key={w} className="flex flex-col gap-1 flex-1">
+                  {Array.from({ length: 7 }, (_, d) => {
+                    const cell = heatmapData.find(c => c.week === w && c.day === d);
+                    const intensity = cell ? cell.count / maxHeat : 0;
+                    return (
+                      <div
+                        key={d}
+                        className="aspect-square rounded-sm cursor-default"
+                        style={{
+                          backgroundColor: intensity === 0
+                            ? 'hsl(var(--muted))'
+                            : `rgba(16, 185, 129, ${0.15 + intensity * 0.85})`,
+                        }}
+                        title={cell ? `${cell.label}: ${cell.count} leads` : ''}
+                      />
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+            <div className="flex items-center gap-2 mt-2 justify-end">
+              <span className="text-[9px] text-muted-foreground">{isEs ? 'Menos' : 'Less'}</span>
+              {[0, 0.25, 0.5, 0.75, 1].map((v, i) => (
+                <div key={i} className="w-3 h-3 rounded-sm" style={{ backgroundColor: v === 0 ? 'hsl(var(--muted))' : `rgba(16, 185, 129, ${0.15 + v * 0.85})` }} />
+              ))}
+              <span className="text-[9px] text-muted-foreground">{isEs ? 'Más' : 'More'}</span>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
 
       {/* Leads Sparkline */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
