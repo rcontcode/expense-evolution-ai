@@ -367,6 +367,32 @@ export default function Reports() {
         });
         break;
       }
+      case 'reimbursement': {
+        const reimbursable = (expenses || []).filter(e => e.client_id && (e.reimbursement_type === 'client_reimbursable' || e.status === 'pending'));
+        if (reimbursable.length === 0) { toast.info(l ? 'No hay gastos reembolsables' : 'No reimbursable expenses'); return; }
+        const totalReimb = reimbursable.reduce((s, e) => s + Number(e.amount), 0);
+        // Group by client
+        const clientMap: Record<string, { name: string; total: number; count: number }> = {};
+        reimbursable.forEach(e => {
+          const cid = e.client_id || 'no-client';
+          const cname = (e as any).client?.name || (e as any).clients?.name || cid;
+          if (!clientMap[cid]) clientMap[cid] = { name: cname, total: 0, count: 0 };
+          clientMap[cid].total += Number(e.amount);
+          clientMap[cid].count += 1;
+        });
+        setPreviewData({
+          type: 'reimbursement', title, color,
+          kpis: [
+            { label: l ? 'Total Reembolsable' : 'Total Reimbursable', value: fc(totalReimb), accent: true },
+            { label: l ? 'Gastos' : 'Expenses', value: String(reimbursable.length) },
+            { label: l ? 'Clientes' : 'Clients', value: String(Object.keys(clientMap).length) },
+          ],
+          headers: [l ? 'Cliente' : 'Client', l ? 'Gastos' : 'Expenses', l ? 'Total' : 'Total'],
+          rows: Object.values(clientMap).sort((a, b) => b.total - a.total).map(c => [c.name, String(c.count), fc(c.total)]),
+          footer: [l ? 'Total' : 'Total', String(reimbursable.length), fc(totalReimb)],
+        });
+        break;
+      }
     }
   };
 
