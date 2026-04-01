@@ -124,8 +124,19 @@ Deno.serve(async (req) => {
           }
         }
 
+        // Log A/B result if applicable
+        if (abTestId && abVariant && leadId) {
+          try {
+            await supabaseAdmin.from('email_ab_results').insert({
+              test_id: abTestId, variant: abVariant, lead_id: leadId,
+            });
+          } catch (abLogErr) {
+            console.error('Failed to log A/B result:', abLogErr);
+          }
+        }
+
         return new Response(
-          JSON.stringify({ success: true, status: 'sent', data: sendData, template: templateName }),
+          JSON.stringify({ success: true, status: 'sent', data: sendData, template: templateName, abVariant }),
           { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
