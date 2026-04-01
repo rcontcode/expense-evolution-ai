@@ -907,8 +907,14 @@ export function useGenerateSampleData() {
         { achievement_key: 'investment_beginner', progress: 40 }, // In progress
       ];
 
-      const { error: achError } = await supabase.from('user_achievements').insert(achievements.map(a => ({ ...a, user_id: userId })));
-      if (achError) console.warn('[SAMPLE DATA] Achievements error:', achError);
+      for (const a of achievements) {
+        await supabase.rpc('unlock_achievement', {
+          p_achievement_key: a.achievement_key,
+          p_achievement_name: a.achievement_key,
+          p_achievement_description: '',
+          p_points: 0,
+        }).then(null, (err: any) => console.warn('[SAMPLE DATA] Achievement error:', err));
+      }
 
       // ============================================
       // 22. CREATE CATEGORY BUDGETS (for budget section)

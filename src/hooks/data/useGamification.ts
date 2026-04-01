@@ -154,32 +154,22 @@ export function useUnlockAchievement() {
 
   return useMutation({
     mutationFn: async (achievementKey: string) => {
-      // Check if already unlocked
-      const { data: existing } = await supabase
-        .from('user_achievements')
-        .select('id')
-        .eq('achievement_key', achievementKey)
-        .maybeSingle();
-      
-      if (existing) return null; // Already unlocked
-      
-      const { data, error } = await supabase
-        .from('user_achievements')
-        .insert({ 
-          user_id: user!.id, 
-          achievement_key: achievementKey,
-          progress: 100 
-        })
-        .select()
-        .single();
+      const achievement = ACHIEVEMENTS[achievementKey as keyof typeof ACHIEVEMENTS];
+      const points = achievement?.points || 10;
+
+      const { data, error } = await supabase.rpc('unlock_achievement', {
+        p_achievement_key: achievementKey,
+        p_achievement_name: achievementKey,
+        p_achievement_description: '',
+        p_points: points,
+      });
       
       if (error) throw error;
       
       // Add XP
-      const points = ACHIEVEMENTS[achievementKey as keyof typeof ACHIEVEMENTS]?.points || 10;
       await addExperience(user!.id, points);
       
-      return data;
+      return data; // returns uuid of achievement (existing or new)
     },
     onSuccess: (data, achievementKey) => {
       if (data) {

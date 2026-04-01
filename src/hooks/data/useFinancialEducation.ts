@@ -602,24 +602,18 @@ export function useCheckEducationAchievements() {
 
       // Check and unlock achievements
       for (const key of achievementsToCheck) {
-        const { data: existing } = await supabase
-          .from('user_achievements')
-          .select('id')
-          .eq('user_id', user.id)
-          .eq('achievement_key', key)
-          .maybeSingle();
+        const achievement = ACHIEVEMENTS[key as keyof typeof ACHIEVEMENTS];
+        if (!achievement) continue;
 
-        if (!existing && ACHIEVEMENTS[key as keyof typeof ACHIEVEMENTS]) {
-          await supabase
-            .from('user_achievements')
-            .insert({
-              user_id: user.id,
-              achievement_key: key,
-              progress: 100,
-            });
+        await supabase.rpc('unlock_achievement', {
+          p_achievement_key: key,
+          p_achievement_name: key,
+          p_achievement_description: '',
+          p_points: achievement.points || 0,
+        });
 
           const { addExperience } = await import('./useGamification');
-          const points = ACHIEVEMENTS[key as keyof typeof ACHIEVEMENTS].points;
+          const points = achievement.points;
           await addExperience(user.id, points);
 
           // Create notification
@@ -632,7 +626,6 @@ export function useCheckEducationAchievements() {
               message: `Has ganado el logro "${key}" y +${points} XP`,
               action_url: '/mentorship',
             });
-        }
       }
     },
   });

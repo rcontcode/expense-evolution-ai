@@ -4716,6 +4716,15 @@ export type Database = {
         Args: { p_reason?: string; p_user_id: string }
         Returns: undefined
       }
+      unlock_achievement: {
+        Args: {
+          p_achievement_description?: string
+          p_achievement_key: string
+          p_achievement_name?: string
+          p_points?: number
+        }
+        Returns: string
+      }
       update_beta_streak: {
         Args: { p_user_id: string }
         Returns: {
