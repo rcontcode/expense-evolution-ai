@@ -48,6 +48,10 @@ import {
   Landmark,
   PiggyBank,
   Mic,
+  BarChart3,
+  FileBarChart,
+  CalendarDays,
+  Calculator,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { LanguageSelector } from '@/components/LanguageSelector';
