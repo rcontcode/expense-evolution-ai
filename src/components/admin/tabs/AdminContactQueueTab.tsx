@@ -549,7 +549,16 @@ export const AdminContactQueueTab = ({ language }: Props) => {
                         className="text-xs gap-1"
                         onClick={() => handleEmail(selectedLead, aiMessage)}
                       >
-                        <Mail className="h-3 w-3" /> Email
+                        <Mail className="h-3 w-3" /> Email (mailto)
+                      </Button>
+                      <Button
+                        size="sm"
+                        className="text-xs gap-1 bg-blue-600 hover:bg-blue-700 text-white"
+                        onClick={() => sendCrmEmail(selectedLead, aiMessage)}
+                        disabled={sendingCrmEmail}
+                      >
+                        {sendingCrmEmail ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
+                        {isEs ? 'Enviar CRM' : 'Send CRM'}
                       </Button>
                       <Button
                         size="sm"
