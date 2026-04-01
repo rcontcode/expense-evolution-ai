@@ -305,6 +305,7 @@ export function RecurringBillConfirmDialog({ open, onClose, candidate, onCreated
             </CollapsibleContent>
           </Collapsible>
 
+          <label className="flex items-start gap-3 p-3 rounded-lg border cursor-pointer hover:bg-accent/30 transition-colors">
             <Checkbox 
               checked={linkToBudget} 
               onCheckedChange={(v) => setLinkToBudget(v === true)} 
