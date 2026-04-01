@@ -43,6 +43,9 @@ import { AdminEmailDashboard } from '@/components/admin/tabs/AdminEmailDashboard
 import { AdminWebhookSnippet } from '@/components/admin/tabs/AdminWebhookSnippet';
 import { AdminABTestingTab } from '@/components/admin/tabs/AdminABTestingTab';
 import { AdminOutgoingWebhooks } from '@/components/admin/tabs/AdminOutgoingWebhooks';
+import { AdminBusinessPnL } from '@/components/admin/tabs/AdminBusinessPnL';
+import { AdminCustomerHealth } from '@/components/admin/tabs/AdminCustomerHealth';
+import { AdminCostSimulator } from '@/components/admin/tabs/AdminCostSimulator';
 import { LeadMergeDialog } from '@/components/admin/LeadMergeDialog';
 import { useHotLeadRealtime } from '@/hooks/admin/useHotLeadRealtime';
 import { useUncontactedHotCount } from '@/hooks/admin/useUncontactedHotCount';
@@ -792,6 +795,19 @@ const AdminCRM = () => {
                   <span className="hidden md:inline">{isEs ? 'WH Out' : 'WH Out'}</span>
                   <span className="md:hidden">📤</span>
                 </TabsTrigger>
+                <TabsTrigger value="pnl" className="flex items-center gap-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-600 data-[state=active]:to-green-700 data-[state=active]:text-white rounded-lg font-semibold text-[10px] md:text-xs">
+                  <DollarSign className="h-3.5 w-3.5" />
+                  <span className="hidden md:inline">P&L</span>
+                  <span className="md:hidden">📊</span>
+                </TabsTrigger>
+                <TabsTrigger value="health" className="flex items-center gap-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-pink-500 data-[state=active]:to-rose-600 data-[state=active]:text-white rounded-lg font-semibold text-[10px] md:text-xs">
+                  <span className="hidden md:inline">{isEs ? 'Salud' : 'Health'}</span>
+                  <span className="md:hidden">❤️</span>
+                </TabsTrigger>
+                <TabsTrigger value="simulator" className="flex items-center gap-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-blue-600 data-[state=active]:text-white rounded-lg font-semibold text-[10px] md:text-xs">
+                  <span className="hidden md:inline">{isEs ? 'Simulador' : 'Simulator'}</span>
+                  <span className="md:hidden">🧮</span>
+                </TabsTrigger>
               </TabsList>
               <TabsContent value="home"><AdminCRMHome language={language} onNavigateTab={setActiveTab} /></TabsContent>
               <TabsContent value="agenda"><AdminFollowUpsAgenda language={language} /></TabsContent>
@@ -812,6 +828,9 @@ const AdminCRM = () => {
               <TabsContent value="webhook"><AdminWebhookSnippet language={language} /></TabsContent>
               <TabsContent value="abtests"><AdminABTestingTab language={language} /></TabsContent>
               <TabsContent value="webhooksout"><AdminOutgoingWebhooks language={language} /></TabsContent>
+              <TabsContent value="pnl"><AdminBusinessPnL language={language} /></TabsContent>
+              <TabsContent value="health"><AdminCustomerHealth language={language} /></TabsContent>
+              <TabsContent value="simulator"><AdminCostSimulator language={language} /></TabsContent>
             </Tabs>
             <div className="sticky top-6"><AdminActivityFeed language={language} /></div>
           </motion.div>
