@@ -435,6 +435,10 @@ export const AdminAutomationTab = ({ language }: Props) => {
     let config = { ...formData.action_config };
     if (formData.action_type === 'whatsapp') config = { ...config, message_type: 'whatsapp', template_type: config.template_type || 'first_contact', language: config.language || 'es' };
     if (formData.action_type === 'email') config = { ...config, message_type: 'email', template_type: config.template_type || 'first_contact', language: config.language || 'es' };
+    // Include schedule in action_config
+    config.schedule_active_hours_start = formData.schedule_active_hours_start;
+    config.schedule_active_hours_end = formData.schedule_active_hours_end;
+    config.schedule_active_days = formData.schedule_active_days;
     saveMutation.mutate({ ...formData, action_config: config, id: editingRule?.id });
   };
 
