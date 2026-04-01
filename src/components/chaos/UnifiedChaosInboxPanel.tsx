@@ -158,6 +158,13 @@ function ProcessedResultMessage({ doc, language }: { doc: ClassifiedDocument; la
     invoice_income: { es: `💰 Ingreso de $${result.amount?.toLocaleString() || '?'} ${result.currency || ''} — pendiente de revisión`, en: `💰 Income of $${result.amount?.toLocaleString() || '?'} ${result.currency || ''} — pending review`, route: '/expenses', routeLabel: { es: 'Revisar', en: 'Review' } },
     invoice_expense: { es: 'Factura (gasto) enviada al Centro de Revisión', en: 'Invoice (expense) sent to Review Center', route: '/expenses', routeLabel: { es: 'Revisar', en: 'Review' } },
     tax_document: { es: 'Documento fiscal guardado', en: 'Tax document saved', route: '/files', routeLabel: { es: 'Archivos', en: 'Files' } },
+    medical_receipt: { es: '🏥 Gasto médico — deducible CRA/SII', en: '🏥 Medical expense — CRA/SII deductible', route: '/expenses', routeLabel: { es: 'Revisar', en: 'Review' } },
+    donation_receipt: { es: '💝 Donación deducible detectada', en: '💝 Deductible donation detected', route: '/expenses', routeLabel: { es: 'Revisar', en: 'Review' } },
+    insurance_policy: { es: '🛡️ Póliza guardada — deducible como negocio', en: '🛡️ Policy saved — business deductible', route: '/expenses', routeLabel: { es: 'Revisar', en: 'Review' } },
+    rental_receipt: { es: '🏢 Arriendo procesado — pago recurrente sugerido', en: '🏢 Rent processed — recurring payment suggested', route: '/bills', routeLabel: { es: 'Crear Pago Fijo', en: 'Create Fixed Payment' } },
+    investment_statement: { es: '📈 Estado de inversión guardado', en: '📈 Investment statement saved', route: '/investments', routeLabel: { es: 'Inversiones', en: 'Investments' } },
+    tax_slip: { es: '📑 Formulario fiscal guardado para declaración', en: '📑 Tax slip saved for filing', route: '/tax-calendar', routeLabel: { es: 'Impuestos', en: 'Taxes' } },
+    government_form: { es: '🏛️ Formulario gubernamental guardado', en: '🏛️ Government form saved', route: '/files', routeLabel: { es: 'Archivos', en: 'Files' } },
     unknown: { es: 'Documento guardado para revisión', en: 'Document saved for review', route: '/files', routeLabel: { es: 'Archivos', en: 'Files' } },
     manual_review: { es: 'Guardado para revisión manual', en: 'Saved for manual review', route: '/expenses', routeLabel: { es: 'Revisar', en: 'Review' } },
   };

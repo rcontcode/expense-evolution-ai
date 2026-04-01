@@ -387,6 +387,7 @@ export function ReceiptReviewDialog({
   const data = isEditing ? editedData : (document.extracted_data || {});
   const hasChanges = JSON.stringify(editedData) !== JSON.stringify(document.extracted_data);
   const isPending = document.review_status === 'pending_review';
+  const isIncomeDoc = (document.extracted_data as any)?.invoice_direction === 'income';
 
   const getStatusBadge = () => {
     switch (document.review_status) {
@@ -428,6 +429,16 @@ export function ReceiptReviewDialog({
               </p>
             </div>
             <div className="flex items-center gap-2">
+              {isPending && (
+                <Badge variant="outline" className={cn(
+                  "text-xs",
+                  isIncomeDoc 
+                    ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30" 
+                    : "bg-orange-500/15 text-orange-700 dark:text-orange-400 border-orange-500/30"
+                )}>
+                  {isIncomeDoc ? '💰' : '🧾'} {isIncomeDoc ? (language === 'es' ? 'Ingreso' : 'Income') : (language === 'es' ? 'Gasto' : 'Expense')}
+                </Badge>
+              )}
               {getConfidenceBadge()}
               {getStatusBadge()}
             </div>
@@ -1209,7 +1220,9 @@ export function ReceiptReviewDialog({
                     className="flex-1 bg-success hover:bg-success/90"
                   >
                     {isLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Check className="h-4 w-4 mr-2" />}
-                    {language === 'es' ? 'Aprobar' : 'Approve'}
+                    {isIncomeDoc 
+                      ? (language === 'es' ? 'Aprobar Ingreso' : 'Approve Income')
+                      : (language === 'es' ? 'Aprobar Gasto' : 'Approve Expense')}
                   </Button>
                 </>
               )}

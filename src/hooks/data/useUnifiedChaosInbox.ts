@@ -391,7 +391,9 @@ export function useUnifiedChaosInbox() {
                 all_expenses: result.expenses,
                 is_utility: true,
                 suggested_recurring: true,
-              })) : {},
+                category: result.expenses[0]?.category || 'utilities',
+                invoice_direction: 'expense',
+              })) : { category: 'utilities', invoice_direction: 'expense' },
             })
             .select()
             .single();
@@ -559,10 +561,39 @@ export function useUnifiedChaosInbox() {
             ...preview,
           };
 
-          // For rental receipts, mark as recurring
+          // Smart category and direction pre-assignment
+          const categoryMap: Record<string, string> = {
+            medical_receipt: 'medical',
+            donation_receipt: 'donations',
+            insurance_policy: 'insurance_business',
+            rental_receipt: 'rent',
+            tax_slip: 'other',
+            investment_statement: 'other',
+            government_form: 'other',
+            tax_document: 'other',
+          };
+          if (categoryMap[type]) {
+            extractedMetadata.category = categoryMap[type];
+          }
+
+          // Mark rental receipts as recurring and pre-categorize
           if (type === 'rental_receipt') {
             extractedMetadata.is_recurring = true;
             extractedMetadata.suggested_recurring = true;
+            extractedMetadata.invoice_direction = 'expense';
+          }
+
+          // Medical and donation receipts are CRA-deductible
+          if (type === 'medical_receipt' || type === 'donation_receipt') {
+            extractedMetadata.cra_deductible = true;
+            extractedMetadata.cra_deduction_rate = type === 'medical_receipt' ? 100 : 100;
+            extractedMetadata.invoice_direction = 'expense';
+          }
+
+          // Insurance policies are business deductible
+          if (type === 'insurance_policy') {
+            extractedMetadata.cra_deductible = true;
+            extractedMetadata.invoice_direction = 'expense';
           }
 
           await supabase
