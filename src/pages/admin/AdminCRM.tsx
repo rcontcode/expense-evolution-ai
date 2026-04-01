@@ -21,7 +21,7 @@ import {
   LayoutDashboard, Users, CreditCard, Target, Plus, ExternalLink,
   Globe, Smartphone, TrendingUp, Activity, ArrowLeft, Copy, Check, 
   Pencil, MoreVertical, Zap, Clock, Send, Code, FileJson, Trash2,
-  CheckCircle2, AlertCircle, Loader2, Phone, DollarSign, Merge,
+  CheckCircle2, AlertCircle, Loader2, Phone, DollarSign, Merge, Mail,
 } from 'lucide-react';
 import { AdminUserOverview } from '@/components/admin/AdminUserOverview';
 import { AdminSubscriptionsTab } from '@/components/admin/tabs/AdminSubscriptionsTab';
@@ -39,6 +39,8 @@ import { AdminROIDashboard } from '@/components/admin/tabs/AdminROIDashboard';
 import { AdminNurturingTab } from '@/components/admin/tabs/AdminNurturingTab';
 import { AdminCRMHome } from '@/components/admin/tabs/AdminCRMHome';
 import { AdminFollowUpsAgenda } from '@/components/admin/tabs/AdminFollowUpsAgenda';
+import { AdminEmailDashboard } from '@/components/admin/tabs/AdminEmailDashboard';
+import { AdminWebhookSnippet } from '@/components/admin/tabs/AdminWebhookSnippet';
 import { LeadMergeDialog } from '@/components/admin/LeadMergeDialog';
 import { useHotLeadRealtime } from '@/hooks/admin/useHotLeadRealtime';
 import { useUncontactedHotCount } from '@/hooks/admin/useUncontactedHotCount';
@@ -770,6 +772,16 @@ const AdminCRM = () => {
                   <span className="hidden md:inline">Nurturing</span>
                   <span className="md:hidden">🔄</span>
                 </TabsTrigger>
+                <TabsTrigger value="emails" className="flex items-center gap-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-indigo-600 data-[state=active]:text-white rounded-lg font-semibold text-[10px] md:text-xs">
+                  <Mail className="h-3.5 w-3.5" />
+                  <span className="hidden md:inline">Emails</span>
+                  <span className="md:hidden">📧</span>
+                </TabsTrigger>
+                <TabsTrigger value="webhook" className="flex items-center gap-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-gray-500 data-[state=active]:to-slate-600 data-[state=active]:text-white rounded-lg font-semibold text-[10px] md:text-xs">
+                  <Code className="h-3.5 w-3.5" />
+                  <span className="hidden md:inline">Webhook</span>
+                  <span className="md:hidden">🔗</span>
+                </TabsTrigger>
               </TabsList>
               <TabsContent value="home"><AdminCRMHome language={language} onNavigateTab={setActiveTab} /></TabsContent>
               <TabsContent value="agenda"><AdminFollowUpsAgenda language={language} /></TabsContent>
@@ -786,6 +798,8 @@ const AdminCRM = () => {
               <TabsContent value="revenue"><AdminRevenueDashboard language={language} /></TabsContent>
               <TabsContent value="roi"><AdminROIDashboard language={language} /></TabsContent>
               <TabsContent value="nurturing"><AdminNurturingTab language={language} /></TabsContent>
+              <TabsContent value="emails"><AdminEmailDashboard language={language} /></TabsContent>
+              <TabsContent value="webhook"><AdminWebhookSnippet language={language} /></TabsContent>
             </Tabs>
             <div className="sticky top-6"><AdminActivityFeed language={language} /></div>
           </motion.div>
