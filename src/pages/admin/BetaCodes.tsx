@@ -6,7 +6,7 @@ import { es } from 'date-fns/locale';
 import { 
   Plus, Ticket, Users, CheckCircle2, XCircle,
   Copy, Trash2, ToggleLeft, ToggleRight, Calendar, Hash,
-  TrendingUp, Shield, Clock
+  TrendingUp, Shield, Clock, MessageSquare
 } from 'lucide-react';
 import { PageHeader } from '@/components/PageHeader';
 import { Layout } from '@/components/Layout';
