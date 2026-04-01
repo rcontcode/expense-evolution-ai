@@ -88,7 +88,7 @@ export function RecurringBillConfirmDialog({ open, onClose, candidate, onCreated
     if (!user || !name.trim()) return;
     setCreating(true);
     try {
-      await createBill.mutateAsync({
+      const billData = await createBill.mutateAsync({
         name: name.trim(),
         amount,
         category,
@@ -98,7 +98,33 @@ export function RecurringBillConfirmDialog({ open, onClose, candidate, onCreated
         auto_pay: autoPay,
         is_active: true,
         currency: currentEntity?.default_currency || 'CAD',
+        start_date: startDate || null,
+        end_date: endDate || null,
       } as any);
+
+      // Backfill historical payments if requested
+      if (backfillPayments && startDate && new Date(startDate) < new Date()) {
+        try {
+          const historicalPayments = await generateHistoricalPayments(startDate, frequency, frequency === 'custom' ? frequencyMonths : null, amount);
+          if (historicalPayments.length > 0) {
+            const { error } = await supabase.from('bill_payments').insert(
+              historicalPayments.map(p => ({
+                user_id: user!.id,
+                bill_id: billData.id,
+                amount_paid: p.amount_paid,
+                paid_date: p.paid_date,
+                notes: l ? 'Pago histórico (retroactivo)' : 'Historical payment (backfill)',
+              }))
+            );
+            if (!error) {
+              toast.success(l
+                ? `📅 ${historicalPayments.length} pagos históricos registrados`
+                : `📅 ${historicalPayments.length} historical payments recorded`
+              );
+            }
+          }
+        } catch { /* non-critical */ }
+      }
       
       if (linkToBudget) {
         try {
