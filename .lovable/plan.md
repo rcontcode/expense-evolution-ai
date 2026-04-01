@@ -1,44 +1,68 @@
 
 
-# Plan: Deshacer y Rehacer global (Undo/Redo) + Ctrl+Z / Ctrl+Shift+Z
+# Plan: Plantillas de invitación + guía en la página de Códigos Beta
 
 ## Qué se construirá
 
-Un sistema global de Undo/Redo con:
-- Botones ↩️ ↪️ visibles en el header de toda la app
-- Atajos `Ctrl+Z` (deshacer) y `Ctrl+Shift+Z` (rehacer)
-- Stack dual: acciones deshechas van al stack de "redo", y viceversa
-- Integrado con el sistema de soft-delete existente
+Agregar una tercera pestaña "Invitar" al panel `/admin/beta-codes` con:
+1. **Guía paso a paso** de cómo funciona el flujo (crear código → copiar mensaje → enviar → el invitado usa el link)
+2. **Generador de mensajes** con plantillas pre-armadas (WhatsApp ES, WhatsApp EN, Email ES, Email EN) que insertan automáticamente el código seleccionado y los links correctos (`https://evofinz.com/auth?beta=CODIGO`)
+3. **Selector de código** — dropdown con los códigos activos disponibles
+4. **Textarea editable** — el mensaje generado es editable antes de copiar
+5. **Botón "Copiar mensaje"** — copia el mensaje completo al clipboard listo para pegar
 
 ## Implementación
 
-### 1. Nuevo: `src/contexts/UndoRedoContext.tsx`
-Contexto global con:
-- `undoStack`: array de acciones (máx 20), cada una con `{ id, descriptionEs, descriptionEn, doFn, undoFn, timestamp }`
-- `redoStack`: cuando se deshace, la acción pasa aquí
-- Métodos: `pushAction()`, `undo()`, `redo()`, `canUndo`, `canRedo`, `lastUndoDescription`, `lastRedoDescription`
-- Auto-expiración de entradas después de 120 segundos
-- Listener global de `Ctrl+Z` → `undo()` y `Ctrl+Shift+Z` → `redo()` (ignora inputs/textareas)
+### Archivo: `src/pages/admin/BetaCodes.tsx`
 
-### 2. Modificar: `src/hooks/utils/useUndoableAction.ts`
-- Importar `useUndoRedo()` del nuevo contexto
-- En `showUndoToast`: además del toast, hacer `pushAction(...)` con la función de undo (restore) y la función de "redo" (re-delete)
-- Así cada eliminación queda disponible tanto para el botón del header como para Ctrl+Z
+**Cambios:**
 
-### 3. Modificar: `src/components/PageHeader.tsx` → `GlobalControls`
-- Agregar dos botones antes del LanguageSelector:
-  - `Undo2` icon → ejecuta `undo()`, disabled si `!canUndo`
-  - `Redo2` icon → ejecuta `redo()`, disabled si `!canRedo`
-- Tooltip bilingüe: "Deshacer (Ctrl+Z)" / "Rehacer (Ctrl+Shift+Z)"
-- Badge/pulso sutil cuando hay acción disponible
+1. Agregar una tercera tab `"invite"` con icono `MessageSquare` al `TabsList` existente (línea ~263-273)
 
-### 4. Modificar: `src/App.tsx`
-- Envolver la app con `<UndoRedoProvider>` (dentro de `AuthProvider` para acceso a user)
+2. Agregar `TabsContent value="invite"` con:
+
+   **Sección "Cómo funciona"** — 3 pasos visuales:
+   - Paso 1: Crea códigos en la pestaña "Códigos"
+   - Paso 2: Selecciona un código y una plantilla aquí
+   - Paso 3: Copia el mensaje y envíalo por WhatsApp/Email
+
+   **Selector de código activo** — `<Select>` filtrado a códigos con usos disponibles
+
+   **Selector de plantilla** — 4 opciones: WhatsApp ES, WhatsApp EN, Email ES, Email EN
+
+   **Textarea** — mensaje pre-generado con el código y link `https://evofinz.com/auth?beta=CODIGO`, editable
+
+   **Botones** — "Copiar mensaje" y "Copiar solo link"
+
+3. Las plantillas son constantes dentro del archivo, cada una es una función `(code: string) => string` que retorna el mensaje completo con:
+   - Saludo personalizable
+   - Beneficios clave (3-4 bullets)
+   - Link directo con el código incluido en query param
+   - Instrucciones de uso ("Haz click en el link → regístrate → ¡listo!")
+
+### Plantillas incluidas
+
+**WhatsApp ES:**
+```
+🔥 ¡Te invito a probar EvoFinz!
+... beneficios ...
+👉 https://evofinz.com/auth?beta=CODIGO
+Tu código: CODIGO
+Pasos: click en el link → crea tu cuenta → ¡listo!
+```
+
+**WhatsApp EN:**
+```
+🔥 You're invited to try EvoFinz!
+... benefits ...
+👉 https://evofinz.com/auth?beta=CODE
+Your code: CODE
+Steps: click the link → create your account → done!
+```
+
+**Email ES/EN:** Versiones más formales con subject line sugerido
 
 ## Archivos a modificar
 
-1. **Nuevo: `src/contexts/UndoRedoContext.tsx`** — Contexto con stacks + keyboard listener
-2. **`src/hooks/utils/useUndoableAction.ts`** — Conectar al contexto global
-3. **`src/components/PageHeader.tsx`** — Botones ↩️↪️ en GlobalControls
-4. **`src/App.tsx`** — Agregar `<UndoRedoProvider>`
+1. **`src/pages/admin/BetaCodes.tsx`** — Agregar tab "Invitar" con generador de mensajes, selector de código, plantillas y guía
 
