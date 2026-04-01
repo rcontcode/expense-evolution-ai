@@ -477,8 +477,9 @@ export const AdminAutomationTab = ({ language }: Props) => {
             <Select value={formData.action_config.target_app || 'evofinz'} onValueChange={(v) => setFormData(p => ({ ...p, action_config: { ...p.action_config, target_app: v } }))}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="evofinz">EvoFinz</SelectItem>
-                <SelectItem value="fokuspark">FokusPark</SelectItem>
+                <SelectItem value="evofinz">EvoFinz 🔥</SelectItem>
+                <SelectItem value="fokuspark">Fokuspark 🧠</SelectItem>
+                <SelectItem value="universmind">UniversMind 🌌</SelectItem>
                 <SelectItem value="bundle">Bundle (EvoFinz + FokusPark)</SelectItem>
               </SelectContent>
             </Select>
