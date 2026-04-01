@@ -404,7 +404,7 @@ export const AdminAutomationTab = ({ language }: Props) => {
   // ===== DIALOG HANDLERS =====
   const openCreateDialog = () => {
     setEditingRule(null);
-    setFormData({ name: '', trigger_type: 'new_lead', action_type: 'whatsapp', delay_minutes: 0, description: '', action_config: {}, trigger_condition: [] });
+    setFormData({ ...defaultFormData });
     setDialogOpen(true);
   };
 
