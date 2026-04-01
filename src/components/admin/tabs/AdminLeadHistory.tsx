@@ -49,6 +49,7 @@ export const AdminLeadHistory = ({ language }: Props) => {
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
   const [newInteractionType, setNewInteractionType] = useState('note');
   const [newInteractionContent, setNewInteractionContent] = useState('');
+  const [appFilter, setAppFilter] = useState('all');
 
   // Fetch leads
   const { data: leads = [], isLoading } = useQuery({
