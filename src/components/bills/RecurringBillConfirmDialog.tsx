@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -6,13 +7,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { RefreshCw, Loader2, Sparkles } from 'lucide-react';
+import { RefreshCw, Loader2, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEntity } from '@/contexts/EntityContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useUpsertCategoryBudget } from '@/hooks/data/useCategoryBudgets';
-import { useCreateBill } from '@/hooks/data/useRecurringBills';
+import { useCreateBill, generateHistoricalPayments } from '@/hooks/data/useRecurringBills';
 import { toast } from 'sonner';
 import { HistoricalInsightPanel } from './HistoricalInsightPanel';
 import { 
@@ -54,6 +55,10 @@ export function RecurringBillConfirmDialog({ open, onClose, candidate, onCreated
   const [nextDueDate, setNextDueDate] = useState('');
   const [creating, setCreating] = useState(false);
   const [linkToBudget, setLinkToBudget] = useState(true);
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [showVigencia, setShowVigencia] = useState(false);
+  const [backfillPayments, setBackfillPayments] = useState(false);
   const upsertBudget = useUpsertCategoryBudget();
   const createBill = useCreateBill();
 
@@ -84,7 +89,7 @@ export function RecurringBillConfirmDialog({ open, onClose, candidate, onCreated
     if (!user || !name.trim()) return;
     setCreating(true);
     try {
-      await createBill.mutateAsync({
+      const billData = await createBill.mutateAsync({
         name: name.trim(),
         amount,
         category,
@@ -94,7 +99,33 @@ export function RecurringBillConfirmDialog({ open, onClose, candidate, onCreated
         auto_pay: autoPay,
         is_active: true,
         currency: currentEntity?.default_currency || 'CAD',
+        start_date: startDate || null,
+        end_date: endDate || null,
       } as any);
+
+      // Backfill historical payments if requested
+      if (backfillPayments && startDate && new Date(startDate) < new Date()) {
+        try {
+          const historicalPayments = await generateHistoricalPayments(startDate, frequency, frequency === 'custom' ? frequencyMonths : null, amount);
+          if (historicalPayments.length > 0) {
+            const { error } = await supabase.from('bill_payments').insert(
+              historicalPayments.map(p => ({
+                user_id: user!.id,
+                bill_id: billData.id,
+                amount_paid: p.amount_paid,
+                paid_date: p.paid_date,
+                notes: l ? 'Pago histórico (retroactivo)' : 'Historical payment (backfill)',
+              }))
+            );
+            if (!error) {
+              toast.success(l
+                ? `📅 ${historicalPayments.length} pagos históricos registrados`
+                : `📅 ${historicalPayments.length} historical payments recorded`
+              );
+            }
+          }
+        } catch { /* non-critical */ }
+      }
       
       if (linkToBudget) {
         try {
@@ -235,6 +266,45 @@ export function RecurringBillConfirmDialog({ open, onClose, candidate, onCreated
             </div>
             <Switch checked={autoPay} onCheckedChange={setAutoPay} />
           </div>
+
+          {/* Vigencia / Date range */}
+          <Collapsible open={showVigencia} onOpenChange={setShowVigencia}>
+            <CollapsibleTrigger asChild>
+              <button className="flex items-center gap-2 w-full text-sm text-muted-foreground hover:text-foreground transition-colors py-1">
+                {showVigencia ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+                {l ? '📅 Vigencia (opcional)' : '📅 Date range (optional)'}
+              </button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="space-y-3 pt-2">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-xs">{l ? 'Desde' : 'From'}</Label>
+                  <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">{l ? 'Hasta (opcional)' : 'Until (optional)'}</Label>
+                  <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+                </div>
+              </div>
+              {startDate && new Date(startDate) < new Date() && (
+                <label className="flex items-start gap-3 p-3 rounded-lg border border-primary/30 bg-primary/5 cursor-pointer hover:bg-primary/10 transition-colors">
+                  <Checkbox
+                    checked={backfillPayments}
+                    onCheckedChange={(v) => setBackfillPayments(v === true)}
+                    className="mt-0.5"
+                  />
+                  <div>
+                    <p className="text-sm font-medium">{l ? 'Registrar pagos pasados' : 'Record past payments'}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {l
+                        ? 'Genera automáticamente los registros de pago desde la fecha de inicio hasta hoy'
+                        : 'Automatically generates payment records from start date to today'}
+                    </p>
+                  </div>
+                </label>
+              )}
+            </CollapsibleContent>
+          </Collapsible>
 
           <label className="flex items-start gap-3 p-3 rounded-lg border cursor-pointer hover:bg-accent/30 transition-colors">
             <Checkbox 

@@ -17,6 +17,7 @@ import {
   Edit3, ChevronDown, ChevronUp, Eye, MessageSquare, MoreHorizontal,
   Sparkles, Receipt
 } from 'lucide-react';
+import { RecurringBillConfirmDialog, type RecurringBillCandidate } from '@/components/bills/RecurringBillConfirmDialog';
 import { toast } from 'sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -181,6 +182,8 @@ export default function ChaosInbox() {
   const [showApproved, setShowApproved] = useState(false);
   const [showRejected, setShowRejected] = useState(false);
   const [activeTab, setActiveTab] = useState('unified');
+  const [recurringCandidate, setRecurringCandidate] = useState<RecurringBillCandidate | null>(null);
+  const [recurringDialogOpen, setRecurringDialogOpen] = useState(false);
   
   const { data: documents = [], isLoading, refetch } = useDocumentsForReview();
   const { approveDocument, rejectDocument, addComment, deleteDocument } = useDocumentReviewActions();
@@ -306,19 +309,16 @@ export default function ChaosInbox() {
   const handleApprove = async (id: string, data: ExtractedData) => {
     const result = await approveDocument.mutateAsync({ id, data });
     if (result.suggestedRecurring && result.recurringData) {
-      const l = language === 'es';
-      toast(
-        l ? `💡 ¿Crear pago recurrente "${result.recurringData.name}"?` : `💡 Create recurring bill "${result.recurringData.name}"?`,
-        {
-          action: {
-            label: l ? 'Crear' : 'Create',
-            onClick: () => {
-              window.location.href = `/bills?prefill=${encodeURIComponent(JSON.stringify(result.recurringData))}`;
-            },
-          },
-          duration: 8000,
-        }
-      );
+      setRecurringCandidate({
+        name: result.recurringData.name || '',
+        amount: result.recurringData.amount || 0,
+        currency: result.recurringData.currency || 'CAD',
+        category: result.recurringData.category || 'utilities',
+        frequency: 'monthly',
+        auto_pay: false,
+        next_due_date: null,
+      });
+      setRecurringDialogOpen(true);
     }
   };
 
@@ -810,6 +810,13 @@ export default function ChaosInbox() {
         open={cameraDialogOpen}
         onOpenChange={setCameraDialogOpen}
         onSubmitPhotos={handleCameraPhotos}
+      />
+
+      <RecurringBillConfirmDialog
+        open={recurringDialogOpen}
+        onClose={() => setRecurringDialogOpen(false)}
+        candidate={recurringCandidate}
+        onCreated={() => setRecurringCandidate(null)}
       />
     </Layout>
   );

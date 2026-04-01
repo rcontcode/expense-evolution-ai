@@ -193,6 +193,22 @@ export function BillFormDialog({ open, onOpenChange, editingBill, onSave }: Bill
                 <Label>{l ? 'Próximo Vencimiento' : 'Next Due Date'}</Label>
                 <Input type="date" value={form.next_due_date} onChange={e => setForm(f => ({ ...f, next_due_date: e.target.value }))} />
               </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>{l ? 'Desde (inicio)' : 'From (start)'}</Label>
+                  <Input type="date" value={form.start_date || ''} onChange={e => setForm(f => ({ ...f, start_date: e.target.value || null }))} />
+                  <p className="text-[10px] text-muted-foreground mt-0.5">
+                    {l ? '¿Desde cuándo pagas esto?' : 'When did you start paying this?'}
+                  </p>
+                </div>
+                <div>
+                  <Label>{l ? 'Hasta (fin, opcional)' : 'Until (end, optional)'}</Label>
+                  <Input type="date" value={form.end_date || ''} onChange={e => setForm(f => ({ ...f, end_date: e.target.value || null }))} />
+                  <p className="text-[10px] text-muted-foreground mt-0.5">
+                    {l ? 'Ej: fin de contrato' : 'E.g. contract end'}
+                  </p>
+                </div>
+              </div>
               <div>
                 <Label>{l ? 'Beneficiario (quién usa/recibe)' : 'Beneficiary (who uses/receives)'}</Label>
                 <Input
@@ -390,5 +406,7 @@ function billToForm(bill: RecurringBill): BillInsert {
     payee_name: bill.payee_name,
     payee_account: bill.payee_account,
     beneficiary: bill.beneficiary,
+    start_date: bill.start_date,
+    end_date: bill.end_date,
   };
 }

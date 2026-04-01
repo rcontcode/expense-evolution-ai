@@ -35,8 +35,33 @@ export interface RecurringBill {
   payee_name: string | null;
   payee_account: string | null;
   beneficiary: string | null;
+  start_date: string | null;
+  end_date: string | null;
   created_at: string;
   updated_at: string;
+}
+
+/** Generate historical bill_payments between startDate and today */
+export async function generateHistoricalPayments(
+  startDate: string,
+  frequency: string,
+  frequencyMonths: number | null,
+  amount: number,
+): Promise<{ paid_date: string; amount_paid: number }[]> {
+  const payments: { paid_date: string; amount_paid: number }[] = [];
+  const { getNextDueDate } = await import('@/lib/constants/bill-categories');
+  let current = new Date(startDate);
+  const today = new Date();
+  today.setHours(23, 59, 59, 999);
+
+  while (current < today) {
+    payments.push({
+      paid_date: current.toISOString().split('T')[0],
+      amount_paid: amount,
+    });
+    current = getNextDueDate(current, frequency, frequencyMonths || undefined);
+  }
+  return payments;
 }
 
 export interface BillPayment {
@@ -52,7 +77,7 @@ export interface BillPayment {
   created_at: string;
 }
 
-export type BillInsert = Omit<RecurringBill, 'id' | 'user_id' | 'created_at' | 'updated_at'>;
+export type BillInsert = Omit<RecurringBill, 'id' | 'user_id' | 'created_at' | 'updated_at' | 'start_date' | 'end_date'> & { start_date?: string | null; end_date?: string | null };
 export type BillUpdate = Partial<BillInsert>;
 
 export function useRecurringBills() {
