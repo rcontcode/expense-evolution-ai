@@ -811,6 +811,13 @@ export default function ChaosInbox() {
         onOpenChange={setCameraDialogOpen}
         onSubmitPhotos={handleCameraPhotos}
       />
+
+      <RecurringBillConfirmDialog
+        open={recurringDialogOpen}
+        onClose={() => setRecurringDialogOpen(false)}
+        candidate={recurringCandidate}
+        onCreated={() => setRecurringCandidate(null)}
+      />
     </Layout>
   );
 }
