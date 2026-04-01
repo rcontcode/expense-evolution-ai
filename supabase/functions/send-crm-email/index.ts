@@ -58,8 +58,31 @@ Deno.serve(async (req) => {
     const supabaseAdmin = createClient(supabaseUrl, serviceKey);
 
     // Pick template based on lead source
-    const templateName = getTemplateForSource(leadSource, isFollowUp);
+    let templateName = getTemplateForSource(leadSource, isFollowUp);
     const appName = getAppName(leadSource);
+    let abVariant: string | null = null;
+    let abTestId: string | null = null;
+
+    // A/B Test routing: check if there's an active test for this template
+    try {
+      const { data: abTests } = await supabaseAdmin
+        .from('email_ab_tests')
+        .select('*')
+        .eq('status', 'active')
+        .or(`template_a.eq.${templateName},template_b.eq.${templateName}`)
+        .limit(1);
+
+      if (abTests && abTests.length > 0) {
+        const test = abTests[0];
+        abTestId = test.id;
+        const ratio = test.split_ratio || 0.5;
+        abVariant = Math.random() < ratio ? 'A' : 'B';
+        templateName = abVariant === 'A' ? test.template_a : test.template_b;
+        console.log(`A/B Test "${test.name}": routing to variant ${abVariant} → ${templateName}`);
+      }
+    } catch (abErr) {
+      console.error('A/B test lookup error (non-fatal):', abErr);
+    }
 
     try {
       const sendRes = await fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
