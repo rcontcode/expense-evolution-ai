@@ -109,7 +109,7 @@ export function BulkHistoricalImport({ open, onClose, type, onComplete }: BulkHi
             amount: r.amount,
             description: r.description || null,
             source: r.vendor || 'Other',
-            income_type: 'other',
+            income_type: 'other' as const,
             currency,
             entity_id: currentEntity?.id || null,
           }))
