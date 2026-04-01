@@ -95,15 +95,14 @@ export function useFIRECalculator() {
   }, [incomeData, expensesData, totalAssets, totalLiabilities]);
 
   const results = useMemo((): FIREResults => {
-    const {
-      currentAge,
-      targetRetirementAge,
-      monthlyExpenses,
-      currentSavings,
-      expectedAnnualReturn,
-      inflationRate,
-      withdrawalRate,
-    } = inputs;
+    // Clamp all inputs to safe ranges
+    const currentAge = clamp(inputs.currentAge, MIN_AGE, MAX_AGE);
+    const targetRetirementAge = clamp(inputs.targetRetirementAge, currentAge + 1, MAX_AGE);
+    const monthlyExpenses = Math.max(0, inputs.monthlyExpenses);
+    const currentSavings = Math.max(0, inputs.currentSavings);
+    const expectedAnnualReturn = clamp(inputs.expectedAnnualReturn, MIN_RETURN_RATE, MAX_RETURN_RATE);
+    const inflationRate = clamp(inputs.inflationRate, -5, 20);
+    const withdrawalRate = clamp(inputs.withdrawalRate, MIN_WITHDRAWAL_RATE, MAX_WITHDRAWAL_RATE);
 
     // Real return after inflation
     const realReturn = (1 + expectedAnnualReturn / 100) / (1 + inflationRate / 100) - 1;
@@ -111,7 +110,7 @@ export function useFIRECalculator() {
     
     // FIRE Number (how much you need to retire)
     const annualExpenses = monthlyExpenses * 12;
-    const fireNumber = annualExpenses / (withdrawalRate / 100);
+    const fireNumber = withdrawalRate > 0 ? annualExpenses / (withdrawalRate / 100) : annualExpenses * 25;
     
     // Lean FIRE (50% of expenses) and Fat FIRE (150% of expenses)
     const leanFIRENumber = (annualExpenses * 0.5) / (withdrawalRate / 100);
