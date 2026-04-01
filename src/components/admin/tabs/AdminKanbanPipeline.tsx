@@ -672,18 +672,42 @@ export const AdminKanbanPipeline = ({ language }: Props) => {
         </span>
       </div>
 
-      {/* Pipeline Stats */}
+      {/* Pipeline Stats with Velocity */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         {STAGES.map((stage) => {
           const count = stageLeads[stage.key].length;
+          const velocity = pipelineVelocity.stageMetrics[stage.key];
           return (
-            <div key={stage.key} className={`text-center p-3 rounded-xl bg-gradient-to-br ${stage.gradient} text-white`}>
-              <span className="text-2xl font-black">{count}</span>
+            <div key={stage.key} className={`p-3 rounded-xl bg-gradient-to-br ${stage.gradient} text-white`}>
+              <div className="flex items-center justify-between">
+                <span className="text-2xl font-black">{count}</span>
+                {velocity.conversionRate > 0 && stage.key !== 'converted' && (
+                  <span className="text-[10px] font-bold bg-white/20 rounded-full px-1.5 py-0.5">
+                    {velocity.conversionRate.toFixed(0)}% →
+                  </span>
+                )}
+              </div>
               <p className="text-[11px] font-bold opacity-90">{stage.emoji} {isEs ? stage.labelEs : stage.labelEn}</p>
+              {stage.key === 'new' && velocity.avgDays > 0 && (
+                <p className="text-[9px] opacity-75 mt-0.5">⏱ {velocity.avgDays.toFixed(1)}d avg</p>
+              )}
             </div>
           );
         })}
       </div>
+
+      {/* Pipeline Velocity Summary */}
+      {pipelineVelocity.overallVelocity > 0 && (
+        <div className="flex items-center gap-3 px-3 py-2 rounded-lg bg-muted/50 border border-dashed">
+          <Zap className="h-4 w-4 text-amber-500" />
+          <span className="text-xs font-medium">
+            {isEs ? 'Velocidad del pipeline' : 'Pipeline velocity'}: <span className="font-black text-primary">{pipelineVelocity.overallVelocity.toFixed(1)} {isEs ? 'días' : 'days'}</span> {isEs ? 'promedio hasta conversión' : 'avg to conversion'}
+          </span>
+          <span className="text-[10px] text-muted-foreground ml-auto">
+            {pipelineVelocity.totalLeads} leads
+          </span>
+        </div>
+      )}
 
       {/* Kanban Board - horizontal scroll on smaller screens */}
       <DndContext
