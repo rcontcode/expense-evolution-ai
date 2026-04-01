@@ -253,7 +253,7 @@ export function AdminROIDashboard({ language }: Props) {
   return (
     <div className="space-y-6">
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
           <Card className="border-0 shadow-lg overflow-hidden">
             <CardContent className="p-0">
@@ -299,6 +299,20 @@ export function AdminROIDashboard({ language }: Props) {
                   ${analytics.totalLeads > 0 ? (analytics.totalMRR / analytics.totalLeads).toFixed(2) : '0'}
                 </p>
                 <p className="text-[10px] text-white/70 mt-0.5">MRR / lead</p>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+          <Card className="border-0 shadow-lg overflow-hidden">
+            <CardContent className="p-0">
+              <div className="p-4 bg-gradient-to-br from-cyan-500 to-blue-600 text-white">
+                <p className="text-xs text-white/80">{isEs ? 'Tiempo a Conversión' : 'Time to Convert'}</p>
+                <p className="text-2xl font-black mt-1">
+                  {analytics.avgTimeToConvert !== null ? `${analytics.avgTimeToConvert}d` : '—'}
+                </p>
+                <p className="text-[10px] text-white/70 mt-0.5">{isEs ? 'Promedio días' : 'Avg days'}</p>
               </div>
             </CardContent>
           </Card>
