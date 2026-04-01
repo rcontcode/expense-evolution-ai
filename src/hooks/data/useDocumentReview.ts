@@ -128,7 +128,17 @@ export function useDocumentReviewActions() {
 
       if (error) throw error;
       
-      return { id: linkedId, isIncome };
+      return { 
+        id: linkedId, 
+        isIncome, 
+        suggestedRecurring: !!(data as any).suggested_recurring,
+        recurringData: (data as any).suggested_recurring ? {
+          name: data.vendor || 'Unknown',
+          amount: data.amount || 0,
+          category: data.category || 'utilities',
+          currency: data.currency || 'CAD',
+        } : null,
+      };
     },
     onSuccess: (result) => {
       if (result.isIncome) {

@@ -304,7 +304,22 @@ export default function ChaosInbox() {
   };
 
   const handleApprove = async (id: string, data: ExtractedData) => {
-    await approveDocument.mutateAsync({ id, data });
+    const result = await approveDocument.mutateAsync({ id, data });
+    if (result.suggestedRecurring && result.recurringData) {
+      const l = language === 'es';
+      toast(
+        l ? `💡 ¿Crear pago recurrente "${result.recurringData.name}"?` : `💡 Create recurring bill "${result.recurringData.name}"?`,
+        {
+          action: {
+            label: l ? 'Crear' : 'Create',
+            onClick: () => {
+              window.location.href = `/bills?prefill=${encodeURIComponent(JSON.stringify(result.recurringData))}`;
+            },
+          },
+          duration: 8000,
+        }
+      );
+    }
   };
 
   const handleReject = async (id: string, reason: string) => {
