@@ -36,10 +36,12 @@ export function useDocumentsForReview() {
 export function useDocumentReviewActions() {
   const { language } = useLanguage();
   const { user } = useAuth();
-  const { afterExpense, afterDocument } = useInvalidateRelated();
+  const { afterExpense, afterIncome, afterDocument } = useInvalidateRelated();
 
   const approveDocument = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: ExtractedData }) => {
+      const isIncome = (data as any).invoice_direction === 'income';
+
       // Get user's primary fiscal entity
       const { data: primaryEntity } = await supabase
         .from('fiscal_entities')
@@ -48,46 +50,80 @@ export function useDocumentReviewActions() {
         .eq('is_primary', true)
         .single();
 
-      // First create the expense
-      const { data: expense, error: expenseError } = await supabase
-        .from('expenses')
-        .insert({
-          user_id: user!.id,
-          vendor: data.vendor || 'Unknown',
-          amount: data.amount || 0,
-          date: data.date || new Date().toISOString().split('T')[0],
-          category: data.category || 'other',
-          description: data.description,
-          status: 'pending',
-          currency: data.currency || 'CAD',
-          client_id: data.client_id || null,
-          entity_id: primaryEntity?.id || null,
-        })
-        .select()
-        .single();
+      let linkedId: string;
 
-      if (expenseError) throw expenseError;
+      if (isIncome) {
+        // Create income record
+        const { data: income, error: incomeError } = await supabase
+          .from('income')
+          .insert({
+            user_id: user!.id,
+            amount: data.amount || 0,
+            date: data.date || new Date().toISOString().split('T')[0],
+            source: data.vendor || 'Unknown',
+            description: data.description || null,
+            currency: data.currency || 'CAD',
+            income_type: 'client_payment' as const,
+            client_id: data.client_id || null,
+            entity_id: primaryEntity?.id || null,
+            is_taxable: true,
+            recurrence: 'one_time' as const,
+          })
+          .select()
+          .single();
 
-      // Then update the document
+        if (incomeError) throw incomeError;
+        linkedId = income.id;
+      } else {
+        // Create expense record (existing logic)
+        const { data: expense, error: expenseError } = await supabase
+          .from('expenses')
+          .insert({
+            user_id: user!.id,
+            vendor: data.vendor || 'Unknown',
+            amount: data.amount || 0,
+            date: data.date || new Date().toISOString().split('T')[0],
+            category: data.category || 'other',
+            description: data.description,
+            status: 'pending',
+            currency: data.currency || 'CAD',
+            client_id: data.client_id || null,
+            entity_id: primaryEntity?.id || null,
+          })
+          .select()
+          .single();
+
+        if (expenseError) throw expenseError;
+        linkedId = expense.id;
+      }
+
+      // Update the document
       const { error } = await supabase
         .from('documents')
         .update({
           review_status: 'approved',
           reviewed_at: new Date().toISOString(),
           extracted_data: JSON.parse(JSON.stringify(data)),
-          expense_id: expense.id,
+          expense_id: isIncome ? null : linkedId,
           status: 'classified',
         } as any)
         .eq('id', id);
 
       if (error) throw error;
       
-      return expense;
+      return { id: linkedId, isIncome };
     },
-    onSuccess: () => {
-      afterExpense();
+    onSuccess: (result) => {
+      if (result.isIncome) {
+        afterIncome();
+      } else {
+        afterExpense();
+      }
       afterDocument();
-      toast.success(language === 'es' ? '¡Gasto aprobado y guardado!' : 'Expense approved and saved!');
+      const msg = (result as any).isIncome
+        ? (language === 'es' ? '¡Ingreso aprobado y guardado!' : 'Income approved and saved!')
+        : (language === 'es' ? '¡Gasto aprobado y guardado!' : 'Expense approved and saved!');
+      toast.success(msg);
     },
     onError: (error) => {
       toast.error(language === 'es' ? 'Error al aprobar' : 'Error approving');

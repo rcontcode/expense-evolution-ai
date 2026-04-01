@@ -150,7 +150,7 @@ function ProcessedResultMessage({ doc, language }: { doc: ClassifiedDocument; la
 
   const messages: Record<string, { es: string; en: string; route?: string; routeLabel?: { es: string; en: string } }> = {
     receipt: { es: 'Enviado al Centro de Revisión', en: 'Sent to Review Center', route: '/expenses', routeLabel: { es: 'Revisar', en: 'Review' } },
-    utility_bill: { es: 'Boleta procesada — se sugiere pago recurrente', en: 'Bill processed — recurring payment suggested', route: '/recurring', routeLabel: { es: 'Pagos Fijos', en: 'Fixed Payments' } },
+    utility_bill: { es: 'Boleta procesada — se sugiere pago recurrente', en: 'Bill processed — recurring payment suggested', route: '/bills', routeLabel: { es: 'Crear Pago Fijo', en: 'Create Fixed Payment' } },
     bank_statement: { es: `${result.transactions?.length || 0} transacciones extraídas`, en: `${result.transactions?.length || 0} transactions extracted`, route: '/banking', routeLabel: { es: 'Banca', en: 'Banking' } },
     income_proof: { es: 'Ingreso detectado — revísalo', en: 'Income detected — review it', route: '/income', routeLabel: { es: 'Ingresos', en: 'Income' } },
     contract: { es: result.analysisError ? 'Contrato guardado (análisis pendiente)' : 'Contrato guardado y analizado', en: result.analysisError ? 'Contract saved (analysis pending)' : 'Contract saved and analyzed', route: '/contracts', routeLabel: { es: 'Contratos', en: 'Contracts' } },

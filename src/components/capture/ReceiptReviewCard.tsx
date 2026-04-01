@@ -73,6 +73,7 @@ export function ReceiptReviewCard({
 
   const data = document.extracted_data || {};
   const isPending = document.review_status === 'pending_review';
+  const isIncome = (data as any).invoice_direction === 'income';
 
   const getStatusBadge = () => {
     switch (document.review_status) {
@@ -130,6 +131,13 @@ export function ReceiptReviewCard({
             )}
           </div>
 
+          {/* Income/Expense Direction Badge */}
+          {isPending && (
+            <Badge className={cn("text-[10px] w-fit", isIncome ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30" : "bg-orange-500/15 text-orange-700 dark:text-orange-400 border-orange-500/30")} variant="outline">
+              {isIncome ? (language === 'es' ? '💰 Ingreso' : '💰 Income') : (language === 'es' ? '🧾 Gasto' : '🧾 Expense')}
+            </Badge>
+          )}
+
           {/* Quick Data Preview */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
@@ -166,7 +174,7 @@ export function ReceiptReviewCard({
                 className="flex-1 bg-success hover:bg-success/90"
               >
                 {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4 mr-1" />}
-                {language === 'es' ? 'Aprobar' : 'Approve'}
+                {isIncome ? (language === 'es' ? 'Aprobar Ingreso' : 'Approve Income') : (language === 'es' ? 'Aprobar Gasto' : 'Approve Expense')}
               </Button>
             </div>
           )}
