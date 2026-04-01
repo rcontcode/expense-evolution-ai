@@ -309,19 +309,16 @@ export default function ChaosInbox() {
   const handleApprove = async (id: string, data: ExtractedData) => {
     const result = await approveDocument.mutateAsync({ id, data });
     if (result.suggestedRecurring && result.recurringData) {
-      const l = language === 'es';
-      toast(
-        l ? `💡 ¿Crear pago recurrente "${result.recurringData.name}"?` : `💡 Create recurring bill "${result.recurringData.name}"?`,
-        {
-          action: {
-            label: l ? 'Crear' : 'Create',
-            onClick: () => {
-              window.location.href = `/bills?prefill=${encodeURIComponent(JSON.stringify(result.recurringData))}`;
-            },
-          },
-          duration: 8000,
-        }
-      );
+      setRecurringCandidate({
+        name: result.recurringData.name || '',
+        amount: result.recurringData.amount || 0,
+        currency: result.recurringData.currency || 'CAD',
+        category: result.recurringData.category || 'utilities',
+        frequency: 'monthly',
+        auto_pay: false,
+        next_due_date: null,
+      });
+      setRecurringDialogOpen(true);
     }
   };
 
