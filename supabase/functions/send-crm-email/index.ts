@@ -86,6 +86,21 @@ Deno.serve(async (req) => {
       if (sendRes.ok) {
         const sendData = await sendRes.json();
         console.log(`CRM email queued (${templateName}) for ${recipientEmail}:`, sendData);
+
+        // Auto-log to lead_interactions if leadId provided
+        if (leadId) {
+          try {
+            await supabaseAdmin.from('lead_interactions').insert({
+              lead_id: leadId,
+              interaction_type: 'email',
+              content: `[CRM ${isFollowUp ? 'Follow-up' : 'Outreach'}] ${subject || 'Sin asunto'} (${appName})`,
+              metadata: { template: templateName, appName, stepNumber, isFollowUp },
+            });
+          } catch (logErr) {
+            console.error('Failed to log interaction:', logErr);
+          }
+        }
+
         return new Response(
           JSON.stringify({ success: true, status: 'sent', data: sendData, template: templateName }),
           { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
