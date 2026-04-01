@@ -75,7 +75,8 @@ export const AdminContactQueueTab = ({ language }: Props) => {
 
   // Compute queue with urgency scoring
   const queue = useMemo(() => {
-    return rawLeads
+    const filteredByApp = filterLeadsByApp(rawLeads, appFilter);
+    return filteredByApp
       .map((lead: any) => {
         const score = calculateLeadScore(lead);
         const priority = getLeadPriority(score);
