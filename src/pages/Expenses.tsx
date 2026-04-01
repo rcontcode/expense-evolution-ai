@@ -43,6 +43,16 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 export default function Expenses() {
   const { t, language } = useLanguage();
@@ -138,9 +148,18 @@ export default function Expenses() {
     setSelectedIds(new Set(ids));
   }, []);
 
+  const [duplicateToDelete, setDuplicateToDelete] = useState<string | null>(null);
+
   const handleDeleteDuplicate = useCallback((id: string) => {
-    deleteMutation.mutate(id);
-  }, [deleteMutation]);
+    setDuplicateToDelete(id);
+  }, []);
+
+  const confirmDeleteDuplicate = useCallback(() => {
+    if (duplicateToDelete) {
+      deleteMutation.mutate(duplicateToDelete);
+      setDuplicateToDelete(null);
+    }
+  }, [duplicateToDelete, deleteMutation]);
 
   return (
     <Layout>
@@ -362,6 +381,28 @@ export default function Expenses() {
             expenses={allExpenses || []}
           />
         </div>
+
+        {/* Confirm delete duplicate dialog */}
+        <AlertDialog open={!!duplicateToDelete} onOpenChange={(open) => !open && setDuplicateToDelete(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>
+                {language === 'es' ? '¿Eliminar gasto duplicado?' : 'Delete duplicate expense?'}
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                {language === 'es'
+                  ? 'Este gasto será movido a la papelera. Podrás restaurarlo desde allí.'
+                  : 'This expense will be moved to trash. You can restore it from there.'}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>{language === 'es' ? 'Cancelar' : 'Cancel'}</AlertDialogCancel>
+              <AlertDialogAction onClick={confirmDeleteDuplicate} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                {language === 'es' ? 'Eliminar' : 'Delete'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </TooltipProvider>
     </Layout>
   );

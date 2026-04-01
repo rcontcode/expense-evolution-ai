@@ -323,6 +323,7 @@ export default function ChaosInbox() {
   };
 
   const handleReject = async (id: string, reason: string) => {
+    if (!window.confirm(language === 'es' ? '¿Rechazar este documento?' : 'Reject this document?')) return;
     await rejectDocument.mutateAsync({ id, reason });
   };
 
@@ -331,6 +332,7 @@ export default function ChaosInbox() {
   };
 
   const handleDelete = async (id: string) => {
+    if (!window.confirm(language === 'es' ? '¿Eliminar este documento permanentemente?' : 'Delete this document permanently?')) return;
     await deleteDocument.mutateAsync(id);
   };
 

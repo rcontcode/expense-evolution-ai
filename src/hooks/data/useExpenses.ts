@@ -8,6 +8,7 @@ import { useInvalidateRelated } from './useInvalidateRelated';
 import { insertAuditLog } from './useAuditLog';
 import { useExpenseBillMatcher } from './useExpenseBillMatcher';
 import { useLocalizedToast } from '@/hooks/utils/useLocalizedToast';
+import { useUndoableDelete } from '@/hooks/utils/useUndoableAction';
 
 const QUERY_LIMIT = 500;
 
@@ -228,6 +229,7 @@ export function useDeleteExpense() {
   const { user } = useAuth();
   const { afterExpense } = useInvalidateRelated();
   const t = useLocalizedToast();
+  const { showUndoToast } = useUndoableDelete();
 
   return useMutation({
     mutationFn: async (id: string) => {
@@ -246,10 +248,11 @@ export function useDeleteExpense() {
         entity_name: existing?.vendor || null,
         old_values: existing ? { vendor: existing.vendor, amount: existing.amount } : null,
       });
+      return id;
     },
-    onSuccess: () => {
+    onSuccess: (deletedId) => {
       afterExpense();
-      t.success('Gasto movido a la papelera', 'Expense moved to trash');
+      showUndoToast('expenses', deletedId, 'Gasto movido a la papelera', 'Expense moved to trash');
     },
     onError: () => {
       t.error('Error al eliminar gasto', 'Error deleting expense');

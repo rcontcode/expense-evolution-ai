@@ -67,6 +67,7 @@ export function BillsManager({ selectedMonth }: BillsManagerProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingBill, setEditingBill] = useState<RecurringBill | null>(null);
   const [deleteBillId, setDeleteBillId] = useState<string | null>(null);
+  const [markPaidBill, setMarkPaidBill] = useState<RecurringBill | null>(null);
   const [filter, setFilter] = useState<string>('all');
 
   const openNew = () => { setEditingBill(null); setDialogOpen(true); };
@@ -208,7 +209,7 @@ export function BillsManager({ selectedMonth }: BillsManagerProps) {
                             variant="ghost"
                             size="icon"
                             className="h-8 w-8 text-green-600 hover:bg-green-500/10"
-                            onClick={() => markPaid.mutate({ billId: bill.id, amount: bill.amount })}
+                            onClick={() => setMarkPaidBill(bill)}
                           >
                             <CheckCircle2 className="h-4 w-4" />
                           </Button>
@@ -260,6 +261,30 @@ export function BillsManager({ selectedMonth }: BillsManagerProps) {
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {l ? 'Eliminar' : 'Delete'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Confirm mark as paid */}
+      <AlertDialog open={!!markPaidBill} onOpenChange={() => setMarkPaidBill(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {l ? '¿Marcar como pagado?' : 'Mark as paid?'}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {l 
+                ? `Se registrará un pago de ${markPaidBill ? formatCurrency(markPaidBill.amount) : ''} para "${markPaidBill?.name}".`
+                : `A payment of ${markPaidBill ? formatCurrency(markPaidBill.amount) : ''} will be recorded for "${markPaidBill?.name}".`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{l ? 'Cancelar' : 'Cancel'}</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={() => { if (markPaidBill) { markPaid.mutate({ billId: markPaidBill.id, amount: markPaidBill.amount }); setMarkPaidBill(null); } }}
+            >
+              {l ? 'Confirmar pago' : 'Confirm payment'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
