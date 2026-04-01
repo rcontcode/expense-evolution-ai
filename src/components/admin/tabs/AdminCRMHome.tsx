@@ -326,6 +326,42 @@ export const AdminCRMHome = ({ language, onNavigateTab }: Props) => {
           ))}
         </div>
       </motion.div>
+
+      {/* CRM Guide — All Tabs Explained */}
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
+        <Collapsible>
+          <Card className="border-2 border-dashed border-primary/30">
+            <CollapsibleTrigger className="w-full">
+              <CardHeader className="cursor-pointer hover:bg-muted/30 transition-colors rounded-t-lg">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <HelpCircle className="h-4 w-4 text-primary" />
+                  {isEs ? '📖 Guía Completa del CRM — ¿Qué hace cada pestaña?' : '📖 Complete CRM Guide — What does each tab do?'}
+                  <ChevronDown className="h-4 w-4 ml-auto text-muted-foreground" />
+                </CardTitle>
+              </CardHeader>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <CardContent className="pt-0">
+                <div className="grid gap-3 md:grid-cols-2">
+                  {TAB_GUIDE.map((item) => (
+                    <div
+                      key={item.tab}
+                      className="flex gap-3 p-3 rounded-lg border bg-card hover:bg-muted/30 cursor-pointer transition-colors"
+                      onClick={() => onNavigateTab(item.tab)}
+                    >
+                      <span className="text-xl flex-shrink-0">{item.emoji}</span>
+                      <div className="min-w-0">
+                        <p className="font-bold text-sm">{isEs ? item.nameEs : item.nameEn}</p>
+                        <p className="text-xs text-muted-foreground leading-relaxed">{isEs ? item.descEs : item.descEn}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </CollapsibleContent>
+          </Card>
+        </Collapsible>
+      </motion.div>
     </div>
   );
 };
