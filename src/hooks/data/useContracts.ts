@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { ContractFormData, ContractWithClient, ContractStatus } from '@/types/contract.types';
 import { useInvalidateRelated } from './useInvalidateRelated';
 import { useLocalizedToast } from '@/hooks/utils/useLocalizedToast';
+import { useUndoableDelete } from '@/hooks/utils/useUndoableAction';
 
 export const useContracts = () => {
   const { user } = useAuth();

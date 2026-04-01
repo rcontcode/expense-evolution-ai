@@ -5,6 +5,7 @@ import { Project, ProjectWithRelations, ProjectFormData } from '@/types/income.t
 import { useInvalidateRelated } from './useInvalidateRelated';
 import { insertAuditLog } from './useAuditLog';
 import { useLocalizedToast } from '@/hooks/utils/useLocalizedToast';
+import { useUndoableDelete } from '@/hooks/utils/useUndoableAction';
 
 export function useProjects(status?: string) {
   const { user } = useAuth();

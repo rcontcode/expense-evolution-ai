@@ -6,6 +6,7 @@ import { useGamificationTriggers, getTableCount } from '@/hooks/utils/useGamific
 import { useInvalidateRelated } from './useInvalidateRelated';
 import { insertAuditLog } from './useAuditLog';
 import { useLocalizedToast } from '@/hooks/utils/useLocalizedToast';
+import { useUndoableDelete } from '@/hooks/utils/useUndoableAction';
 
 type ClientInsert = {
   name: string;

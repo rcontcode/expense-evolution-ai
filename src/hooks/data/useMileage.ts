@@ -6,6 +6,7 @@ import { useMissionTracker } from './useMissions';
 import { useInvalidateRelated } from './useInvalidateRelated';
 import { insertAuditLog } from './useAuditLog';
 import { useLocalizedToast } from '@/hooks/utils/useLocalizedToast';
+import { useUndoableDelete } from '@/hooks/utils/useUndoableAction';
 import type { CountryCode } from '@/lib/constants/country-tax-config';
 
 export type Mileage = Database['public']['Tables']['mileage']['Row'];
