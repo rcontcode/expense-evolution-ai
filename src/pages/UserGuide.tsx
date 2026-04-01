@@ -14,7 +14,7 @@ import { heroContent, guideSections, globalFAQ, dataEntryPoints, dataEntryFAQ } 
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { PageHeader } from '@/components/PageHeader';
-import { LanguageSelector } from '@/components/LanguageSelector';
+
 
 const fadeIn = {
   hidden: { opacity: 0, y: 20 },
@@ -71,7 +71,6 @@ export default function UserGuide() {
             title={`📖 ${t(heroContent.title)}`}
             description={lang === 'es' ? 'Tu guía completa para dominar EvoFinz' : 'Your complete guide to mastering EvoFinz'}
           >
-            <LanguageSelector />
           </PageHeader>
       </div>
 

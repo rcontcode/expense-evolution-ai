@@ -1,7 +1,9 @@
-import { ChevronLeft, ChevronRight, Home } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Home, Sun, Moon } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useTheme } from '@/contexts/ThemeContext';
+import { LanguageSelector } from '@/components/LanguageSelector';
 import { useSafeNavigation } from '@/hooks/useSafeNavigation';
 import { useIsMobile } from '@/hooks/use-mobile';
 import {
@@ -62,7 +64,22 @@ export function PageHeader({ title, description, showBack = true, children }: Pa
   const navigate = useSafeNavigation();
   const location = useLocation();
   const { language } = useLanguage();
+  const { resolvedMode, setMode } = useTheme();
   const isMobile = useIsMobile();
+  
+  const GlobalControls = () => (
+    <div className="flex items-center gap-1">
+      <LanguageSelector />
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => setMode(resolvedMode === 'dark' ? 'light' : 'dark')}
+        className="h-8 w-8"
+      >
+        {resolvedMode === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+      </Button>
+    </div>
+  );
   
   const currentPath = location.pathname;
   const currentRoute = ROUTE_CONFIG[currentPath];
@@ -188,11 +205,10 @@ export function PageHeader({ title, description, showBack = true, children }: Pa
               )}
               <h1 className="text-xl font-bold tracking-tight truncate">{title}</h1>
             </div>
-            {children && (
-              <div className="flex items-center gap-1.5 shrink-0">
-                {children}
-              </div>
-            )}
+            <div className="flex items-center gap-1.5 shrink-0">
+              {children}
+              <GlobalControls />
+            </div>
           </div>
         );
       })()}
@@ -206,11 +222,10 @@ export function PageHeader({ title, description, showBack = true, children }: Pa
               <p className="text-sm text-muted-foreground mt-0.5 line-clamp-1">{description}</p>
             )}
           </div>
-          {children && (
-            <div className="flex items-center gap-2 shrink-0 flex-wrap justify-start sm:justify-end">
-              {children}
-            </div>
-          )}
+          <div className="flex items-center gap-2 shrink-0 flex-wrap justify-start sm:justify-end">
+            {children}
+            <GlobalControls />
+          </div>
         </div>
       )}
     </div>
