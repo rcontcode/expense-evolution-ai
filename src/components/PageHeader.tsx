@@ -205,11 +205,10 @@ export function PageHeader({ title, description, showBack = true, children }: Pa
               )}
               <h1 className="text-xl font-bold tracking-tight truncate">{title}</h1>
             </div>
-            {children && (
-              <div className="flex items-center gap-1.5 shrink-0">
-                {children}
-              </div>
-            )}
+            <div className="flex items-center gap-1.5 shrink-0">
+              {children}
+              <GlobalControls />
+            </div>
           </div>
         );
       })()}
