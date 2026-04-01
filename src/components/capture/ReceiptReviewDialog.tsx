@@ -429,6 +429,16 @@ export function ReceiptReviewDialog({
               </p>
             </div>
             <div className="flex items-center gap-2">
+              {isPending && (
+                <Badge variant="outline" className={cn(
+                  "text-xs",
+                  isIncomeDoc 
+                    ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30" 
+                    : "bg-orange-500/15 text-orange-700 dark:text-orange-400 border-orange-500/30"
+                )}>
+                  {isIncomeDoc ? '💰' : '🧾'} {isIncomeDoc ? (language === 'es' ? 'Ingreso' : 'Income') : (language === 'es' ? 'Gasto' : 'Expense')}
+                </Badge>
+              )}
               {getConfidenceBadge()}
               {getStatusBadge()}
             </div>
