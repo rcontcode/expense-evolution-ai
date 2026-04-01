@@ -6,13 +6,15 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Trash2, Upload, Loader2, FileSpreadsheet } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import { Plus, Trash2, Upload, Loader2, FileSpreadsheet, AlertTriangle } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEntity } from '@/contexts/EntityContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { EXPENSE_CATEGORIES } from '@/lib/constants/expense-categories';
+import { MAX_BULK_IMPORT_ROWS, BATCH_INSERT_SIZE } from '@/lib/constants/resource-limits';
 
 interface HistoricalRow {
   id: string;
