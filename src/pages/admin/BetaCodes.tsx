@@ -462,6 +462,10 @@ export default function BetaCodesAdmin() {
               </CardContent>
             </Card>
           </TabsContent>
+
+          <TabsContent value="invite">
+            <BetaInviteTab codes={codes} />
+          </TabsContent>
         </Tabs>
       </div>
     </Layout>
