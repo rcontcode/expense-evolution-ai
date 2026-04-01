@@ -174,7 +174,7 @@ export function ReceiptReviewCard({
                 className="flex-1 bg-success hover:bg-success/90"
               >
                 {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4 mr-1" />}
-                {language === 'es' ? 'Aprobar' : 'Approve'}
+                {isIncome ? (language === 'es' ? 'Aprobar Ingreso' : 'Approve Income') : (language === 'es' ? 'Aprobar Gasto' : 'Approve Expense')}
               </Button>
             </div>
           )}

@@ -36,7 +36,7 @@ export function useDocumentsForReview() {
 export function useDocumentReviewActions() {
   const { language } = useLanguage();
   const { user } = useAuth();
-  const { afterExpense, afterDocument } = useInvalidateRelated();
+  const { afterExpense, afterIncome, afterDocument } = useInvalidateRelated();
 
   const approveDocument = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: ExtractedData }) => {

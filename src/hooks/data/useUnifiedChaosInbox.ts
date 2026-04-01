@@ -427,7 +427,22 @@ export function useUnifiedChaosInbox() {
               },
             });
 
-          processedResult = { type: 'bank_statement', transactions: result?.transactions || [] };
+          // Persist extracted transactions to bank_transactions table
+          const transactions = result?.transactions || [];
+          if (transactions.length > 0) {
+            const bankRows = transactions.map((tx: any) => ({
+              user_id: user.id,
+              transaction_date: tx.date || new Date().toISOString().split('T')[0],
+              amount: typeof tx.amount === 'number' ? tx.amount : parseFloat(tx.amount) || 0,
+              description: tx.description || tx.vendor || 'Unknown',
+              status: 'pending',
+            }));
+            await supabase.from('bank_transactions').insert(bankRows);
+            queryClient.invalidateQueries({ queryKey: ['bank-transactions'] });
+            queryClient.invalidateQueries({ queryKey: ['bank-insights'] });
+          }
+
+          processedResult = { type: 'bank_statement', transactions };
           queryClient.invalidateQueries({ queryKey: ['documents-review'] });
           break;
         }
