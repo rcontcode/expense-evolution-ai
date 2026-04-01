@@ -967,6 +967,66 @@ export const AdminAutomationTab = ({ language }: Props) => {
               </div>
 
               {renderActionConfig()}
+
+              {/* Schedule Configuration */}
+              <div className="border rounded-lg p-3 space-y-3">
+                <Label className="text-xs font-bold flex items-center gap-1.5">
+                  <Clock className="h-3.5 w-3.5" />
+                  {isEs ? '🕐 Horario de ejecución' : '🕐 Execution Schedule'}
+                </Label>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label className="text-[10px]">{isEs ? 'Hora inicio' : 'Start hour'}</Label>
+                    <Select value={String(formData.schedule_active_hours_start)} onValueChange={(v) => setFormData(p => ({ ...p, schedule_active_hours_start: parseInt(v) }))}>
+                      <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {Array.from({ length: 24 }, (_, i) => (
+                          <SelectItem key={i} value={String(i)}>{String(i).padStart(2, '0')}:00</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label className="text-[10px]">{isEs ? 'Hora fin' : 'End hour'}</Label>
+                    <Select value={String(formData.schedule_active_hours_end)} onValueChange={(v) => setFormData(p => ({ ...p, schedule_active_hours_end: parseInt(v) }))}>
+                      <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {Array.from({ length: 24 }, (_, i) => (
+                          <SelectItem key={i} value={String(i)}>{String(i).padStart(2, '0')}:00</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-[10px] mb-1.5 block">{isEs ? 'Días activos' : 'Active days'}</Label>
+                  <div className="flex gap-1.5">
+                    {(isEs ? ['L', 'M', 'X', 'J', 'V', 'S', 'D'] : ['M', 'T', 'W', 'T', 'F', 'S', 'S']).map((day, idx) => {
+                      const dayNum = idx + 1;
+                      const isActive = formData.schedule_active_days.includes(dayNum);
+                      return (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => setFormData(p => ({
+                            ...p,
+                            schedule_active_days: isActive
+                              ? p.schedule_active_days.filter(d => d !== dayNum)
+                              : [...p.schedule_active_days, dayNum].sort()
+                          }))}
+                          className={`w-8 h-8 rounded-full text-[10px] font-bold transition-all ${isActive ? 'bg-primary text-primary-foreground shadow-sm' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
+                        >
+                          {day}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+                <p className="text-[9px] text-muted-foreground">
+                  {isEs ? 'Las reglas solo se ejecutarán dentro de este horario. Fuera de horario, los leads quedan en cola.' : 'Rules only fire within this schedule. Off-hours leads are queued.'}
+                </p>
+              </div>
+
               <div>
                 <Label>{isEs ? 'Descripción' : 'Description'}</Label>
                 <Textarea value={formData.description} onChange={(e) => setFormData(p => ({ ...p, description: e.target.value }))} rows={2} />
