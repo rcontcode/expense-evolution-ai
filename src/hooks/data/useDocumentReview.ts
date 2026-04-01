@@ -81,7 +81,15 @@ export function useDocumentReviewActions() {
         if (incomeError) throw incomeError;
         linkedId = income.id;
       } else {
-        // Create expense record (existing logic)
+        // Smart reimbursement_type from AI extraction
+        let reimbursementType = 'pending_classification';
+        if ((data as any).typically_reimbursable && data.client_id) {
+          reimbursementType = 'client_reimbursable';
+        } else if ((data as any).cra_deductible) {
+          reimbursementType = 'cra_deductible';
+        }
+
+        // Create expense record with full data from AI
         const { data: expense, error: expenseError } = await supabase
           .from('expenses')
           .insert({
@@ -94,7 +102,10 @@ export function useDocumentReviewActions() {
             status: 'pending',
             currency: data.currency || 'CAD',
             client_id: data.client_id || null,
+            project_id: data.project_id || null,
             entity_id: primaryEntity?.id || null,
+            document_id: id, // Bidirectional link: expense ↔ document
+            reimbursement_type: reimbursementType,
           })
           .select()
           .single();
