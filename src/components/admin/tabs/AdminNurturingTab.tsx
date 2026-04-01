@@ -91,6 +91,7 @@ export function AdminNurturingTab({ language }: Props) {
   // Form state
   const [formName, setFormName] = useState('');
   const [formPriority, setFormPriority] = useState('hot');
+  const [formSourceFilter, setFormSourceFilter] = useState('all');
   const [formSteps, setFormSteps] = useState<NurturingStep[]>(DEFAULT_STEPS);
 
   // Fetch sequences
