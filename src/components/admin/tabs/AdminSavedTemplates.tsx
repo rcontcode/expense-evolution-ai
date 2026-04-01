@@ -226,10 +226,29 @@ export const AdminSavedTemplates = ({ language }: Props) => {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input placeholder={isEs ? 'Buscar plantillas...' : 'Search templates...'} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
         </div>
-        <Select value={filterType} onValueChange={setFilterType}>
-          <SelectTrigger className="w-[130px]"><SelectValue /></SelectTrigger>
+        <Select value={filterApp} onValueChange={setFilterApp}>
+          <SelectTrigger className="w-[140px]"><SelectValue /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">{isEs ? 'Todos' : 'All'}</SelectItem>
+            <SelectItem value="all">{isEs ? '🌐 Todas apps' : '🌐 All apps'}</SelectItem>
+            <SelectItem value="evofinz">💰 EvoFinz</SelectItem>
+            <SelectItem value="fokuspark">🧘 FokusPark</SelectItem>
+            <SelectItem value="universmind">🧠 UniversMind</SelectItem>
+            <SelectItem value="bundle">🔥 Bundle</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={filterStage} onValueChange={setFilterStage}>
+          <SelectTrigger className="w-[140px]"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{isEs ? '📋 Todas etapas' : '📋 All stages'}</SelectItem>
+            {Object.entries(TEMPLATE_TYPE_LABELS).map(([key, label]) => (
+              <SelectItem key={key} value={key} className="text-xs">{isEs ? label.es : label.en}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select value={filterType} onValueChange={setFilterType}>
+          <SelectTrigger className="w-[120px]"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{isEs ? '📨 Tipo' : '📨 Type'}</SelectItem>
             <SelectItem value="whatsapp">WhatsApp</SelectItem>
             <SelectItem value="email">Email</SelectItem>
             <SelectItem value="offer">{isEs ? 'Oferta' : 'Offer'}</SelectItem>
