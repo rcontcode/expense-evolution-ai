@@ -54,6 +54,25 @@ const BILLING_MULTIPLIER: Record<string, number> = {
 
 const PIE_COLORS = ['hsl(142, 76%, 36%)', 'hsl(217, 91%, 60%)', 'hsl(45, 93%, 47%)', 'hsl(0, 84%, 60%)', 'hsl(280, 67%, 51%)'];
 
+const SOURCE_COLORS: Record<string, string> = {
+  evofinz: '#10b981',
+  fokuspark: '#8b5cf6',
+  universmind: '#7c3aed',
+};
+
+const SOURCE_LABELS: Record<string, string> = {
+  evofinz: '💰 EvoFinz',
+  fokuspark: '🧠 Fokuspark',
+  universmind: '🌌 UniversMind',
+};
+
+const getSourceKey = (source: string) => {
+  const s = (source || 'evofinz').toLowerCase();
+  if (s.includes('fokus')) return 'fokuspark';
+  if (s.includes('univers')) return 'universmind';
+  return 'evofinz';
+};
+
 export function AdminROIDashboard({ language }: Props) {
   const isEs = language === 'es';
 
@@ -116,7 +135,6 @@ export function AdminROIDashboard({ language }: Props) {
     leads.forEach(lead => {
       if (!lead.email) return;
       const emailKey = lead.email.toLowerCase();
-      // Keep the most recent lead per email
       if (!emailLeadMap.has(emailKey)) {
         emailLeadMap.set(emailKey, lead);
       }
@@ -141,17 +159,24 @@ export function AdminROIDashboard({ language }: Props) {
       }
     });
 
-    // By source (deduplicated)
-    const sourceMap = new Map<string, { leads: number; converted: number; paying: number; mrr: number }>();
+    // By source (deduplicated) — normalized to app keys
+    const sourceMap = new Map<string, { leads: number; converted: number; paying: number; mrr: number; convertDays: number[] }>();
     uniqueLeads.forEach(lead => {
-      const src = lead.source || 'evofinz';
-      if (!sourceMap.has(src)) sourceMap.set(src, { leads: 0, converted: 0, paying: 0, mrr: 0 });
+      const src = getSourceKey(lead.source || 'evofinz');
+      if (!sourceMap.has(src)) sourceMap.set(src, { leads: 0, converted: 0, paying: 0, mrr: 0, convertDays: [] });
       const entry = sourceMap.get(src)!;
       entry.leads++;
-      if (lead.converted_to_user) entry.converted++;
+      if (lead.converted_to_user) {
+        entry.converted++;
+        // Calculate time-to-convert
+        if (lead.converted_at) {
+          const days = Math.max(0, Math.round((new Date(lead.converted_at).getTime() - new Date(lead.created_at).getTime()) / (1000 * 60 * 60 * 24)));
+          entry.convertDays.push(days);
+        }
+      }
     });
     payingLeads.forEach(pl => {
-      const src = pl.source || 'evofinz';
+      const src = getSourceKey(pl.source || 'evofinz');
       const entry = sourceMap.get(src);
       if (entry) {
         entry.paying++;
@@ -162,9 +187,17 @@ export function AdminROIDashboard({ language }: Props) {
     const bySource = Array.from(sourceMap.entries())
       .map(([source, data]) => ({
         source,
+        label: SOURCE_LABELS[source] || source,
+        color: SOURCE_COLORS[source] || '#6b7280',
         ...data,
         conversionRate: data.leads > 0 ? (data.converted / data.leads * 100) : 0,
         payingRate: data.leads > 0 ? (data.paying / data.leads * 100) : 0,
+        avgConvertDays: data.convertDays.length > 0
+          ? Math.round(data.convertDays.reduce((a, b) => a + b, 0) / data.convertDays.length)
+          : null,
+        cpa: data.paying > 0 && data.mrr > 0
+          ? (data.mrr / data.paying).toFixed(2)
+          : null,
       }))
       .sort((a, b) => b.mrr - a.mrr);
 
@@ -172,6 +205,12 @@ export function AdminROIDashboard({ language }: Props) {
     const conversionQuizToReg = totalLeads > 0 ? (registeredCount / totalLeads * 100) : 0;
     const conversionRegToPay = registeredCount > 0 ? (payingLeads.length / registeredCount * 100) : 0;
     const conversionOverall = totalLeads > 0 ? (payingLeads.length / totalLeads * 100) : 0;
+
+    // Global avg time-to-convert
+    const allConvertDays = bySource.flatMap(s => s.convertDays);
+    const avgTimeToConvert = allConvertDays.length > 0
+      ? Math.round(allConvertDays.reduce((a, b) => a + b, 0) / allConvertDays.length)
+      : null;
 
     return {
       totalLeads,
@@ -182,6 +221,7 @@ export function AdminROIDashboard({ language }: Props) {
       conversionQuizToReg,
       conversionRegToPay,
       conversionOverall,
+      avgTimeToConvert,
       bySource,
       payingLeads: payingLeads.slice(0, 20),
     };
@@ -213,7 +253,7 @@ export function AdminROIDashboard({ language }: Props) {
   return (
     <div className="space-y-6">
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
           <Card className="border-0 shadow-lg overflow-hidden">
             <CardContent className="p-0">
@@ -259,6 +299,20 @@ export function AdminROIDashboard({ language }: Props) {
                   ${analytics.totalLeads > 0 ? (analytics.totalMRR / analytics.totalLeads).toFixed(2) : '0'}
                 </p>
                 <p className="text-[10px] text-white/70 mt-0.5">MRR / lead</p>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+          <Card className="border-0 shadow-lg overflow-hidden">
+            <CardContent className="p-0">
+              <div className="p-4 bg-gradient-to-br from-cyan-500 to-blue-600 text-white">
+                <p className="text-xs text-white/80">{isEs ? 'Tiempo a Conversión' : 'Time to Convert'}</p>
+                <p className="text-2xl font-black mt-1">
+                  {analytics.avgTimeToConvert !== null ? `${analytics.avgTimeToConvert}d` : '—'}
+                </p>
+                <p className="text-[10px] text-white/70 mt-0.5">{isEs ? 'Promedio días' : 'Avg days'}</p>
               </div>
             </CardContent>
           </Card>
@@ -351,11 +405,14 @@ export function AdminROIDashboard({ language }: Props) {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {analytics.bySource.map((src, i) => (
-                <div key={src.source} className="space-y-1">
+            <div className="space-y-4">
+              {analytics.bySource.map((src) => (
+                <div key={src.source} className="space-y-1.5">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="font-medium capitalize">{src.source}</span>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: src.color }} />
+                      <span className="font-bold">{src.label}</span>
+                    </div>
                     <div className="flex items-center gap-3 text-xs text-muted-foreground">
                       <span>{src.leads} leads</span>
                       <span>{src.converted} reg</span>
@@ -367,7 +424,7 @@ export function AdminROIDashboard({ language }: Props) {
                       className="h-full rounded-full transition-all"
                       style={{
                         width: `${Math.min(100, src.payingRate)}%`,
-                        backgroundColor: PIE_COLORS[i % PIE_COLORS.length],
+                        backgroundColor: src.color,
                       }}
                     />
                   </div>
@@ -375,6 +432,9 @@ export function AdminROIDashboard({ language }: Props) {
                     <span>Quiz→Reg: {src.conversionRate.toFixed(1)}%</span>
                     <span>Quiz→💳: {src.payingRate.toFixed(1)}%</span>
                     <span>MRR: ${src.mrr.toFixed(2)}</span>
+                    {src.avgConvertDays !== null && (
+                      <span>⏱ {src.avgConvertDays}d avg</span>
+                    )}
                   </div>
                 </div>
               ))}
@@ -418,8 +478,8 @@ export function AdminROIDashboard({ language }: Props) {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline" className="text-xs capitalize">
-                          {lead.source || 'evofinz'}
+                        <Badge variant="outline" className="text-xs" style={{ borderColor: SOURCE_COLORS[getSourceKey(lead.source || 'evofinz')], color: SOURCE_COLORS[getSourceKey(lead.source || 'evofinz')] }}>
+                          {SOURCE_LABELS[getSourceKey(lead.source || 'evofinz')] || lead.source}
                         </Badge>
                       </TableCell>
                       <TableCell>

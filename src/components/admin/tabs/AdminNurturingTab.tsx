@@ -91,6 +91,7 @@ export function AdminNurturingTab({ language }: Props) {
   // Form state
   const [formName, setFormName] = useState('');
   const [formPriority, setFormPriority] = useState('hot');
+  const [formSourceFilter, setFormSourceFilter] = useState('all');
   const [formSteps, setFormSteps] = useState<NurturingStep[]>(DEFAULT_STEPS);
 
   // Fetch sequences
@@ -446,6 +447,21 @@ export function AdminNurturingTab({ language }: Props) {
                         </SelectItem>
                       );
                     })}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>{isEs ? 'App origen (filtro)' : 'Source app (filter)'}</Label>
+                <Select value={formSourceFilter} onValueChange={setFormSourceFilter}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{isEs ? '🌐 Todas las apps' : '🌐 All apps'}</SelectItem>
+                    <SelectItem value="evofinz">💰 EvoFinz</SelectItem>
+                    <SelectItem value="fokuspark">🧠 Fokuspark</SelectItem>
+                    <SelectItem value="universmind">🌌 UniversMind</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

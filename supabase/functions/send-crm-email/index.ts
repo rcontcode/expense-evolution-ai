@@ -53,6 +53,10 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
+    // Import supabase client for logging interactions
+    const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
+    const supabaseAdmin = createClient(supabaseUrl, serviceKey);
+
     // Pick template based on lead source
     const templateName = getTemplateForSource(leadSource, isFollowUp);
     const appName = getAppName(leadSource);
@@ -82,6 +86,21 @@ Deno.serve(async (req) => {
       if (sendRes.ok) {
         const sendData = await sendRes.json();
         console.log(`CRM email queued (${templateName}) for ${recipientEmail}:`, sendData);
+
+        // Auto-log to lead_interactions if leadId provided
+        if (leadId) {
+          try {
+            await supabaseAdmin.from('lead_interactions').insert({
+              lead_id: leadId,
+              interaction_type: 'email',
+              content: `[CRM ${isFollowUp ? 'Follow-up' : 'Outreach'}] ${subject || 'Sin asunto'} (${appName})`,
+              metadata: { template: templateName, appName, stepNumber, isFollowUp },
+            });
+          } catch (logErr) {
+            console.error('Failed to log interaction:', logErr);
+          }
+        }
+
         return new Response(
           JSON.stringify({ success: true, status: 'sent', data: sendData, template: templateName }),
           { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
