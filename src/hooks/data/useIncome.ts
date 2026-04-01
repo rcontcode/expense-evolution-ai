@@ -1,5 +1,6 @@
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { paginatedFetch } from '@/lib/utils/paginatedQuery';
 import { useAuth } from '@/contexts/AuthContext';
 import { Income, IncomeWithRelations, IncomeFormData } from '@/types/income.types';
 import { useMissionTracker } from './useMissions';
