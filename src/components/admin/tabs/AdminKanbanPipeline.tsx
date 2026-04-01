@@ -226,8 +226,9 @@ function LeadDetailDialog({ lead, isEs, open, onClose, onMove, isPending, intera
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-2">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="details">{isEs ? '📋 Info' : '📋 Info'}</TabsTrigger>
+            <TabsTrigger value="timeline">{isEs ? '📅 Timeline' : '📅 Timeline'}</TabsTrigger>
             <TabsTrigger value="actions">{isEs ? '⚡ Acciones' : '⚡ Actions'}</TabsTrigger>
             <TabsTrigger value="move">{isEs ? '🚀 Mover' : '🚀 Move'}</TabsTrigger>
           </TabsList>
