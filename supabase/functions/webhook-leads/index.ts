@@ -185,6 +185,14 @@ Deno.serve(async (req) => {
   try {
     const payload: ExternalLeadPayload = await req.json();
 
+    // 🕸️ Honeypot check
+    if (payload._hp && String(payload._hp).trim().length > 0) {
+      console.log('[WEBHOOK-LEADS] Honeypot triggered, rejecting');
+      return new Response(JSON.stringify({ success: true, message: 'Lead received' }), {
+        status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     // 🔍 Log raw payload for diagnostics
     console.log(`[WEBHOOK-LEADS] RAW payload from ${payload.source || "unknown"}:`, JSON.stringify(payload).substring(0, 2000));
 
