@@ -359,6 +359,9 @@ Deno.serve(async (req) => {
           case 'auto_followup':
             result = await executeAutoFollowup(supabaseUrl, headers, lead, rule, actionConfig);
             break;
+          case 'email_sequence':
+            result = await executeEmailSequence(supabaseUrl, headers, lead, rule, actionConfig);
+            break;
           default:
             result = { status: 'skipped', data: { reason: `Unknown action_type: ${actionType}` } };
         }
