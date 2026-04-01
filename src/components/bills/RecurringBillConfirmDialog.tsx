@@ -266,7 +266,45 @@ export function RecurringBillConfirmDialog({ open, onClose, candidate, onCreated
             <Switch checked={autoPay} onCheckedChange={setAutoPay} />
           </div>
 
-          <label className="flex items-start gap-3 p-3 rounded-lg border cursor-pointer hover:bg-accent/30 transition-colors">
+          {/* Vigencia / Date range */}
+          <Collapsible open={showVigencia} onOpenChange={setShowVigencia}>
+            <CollapsibleTrigger asChild>
+              <button className="flex items-center gap-2 w-full text-sm text-muted-foreground hover:text-foreground transition-colors py-1">
+                {showVigencia ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+                {l ? '📅 Vigencia (opcional)' : '📅 Date range (optional)'}
+              </button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="space-y-3 pt-2">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-xs">{l ? 'Desde' : 'From'}</Label>
+                  <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">{l ? 'Hasta (opcional)' : 'Until (optional)'}</Label>
+                  <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+                </div>
+              </div>
+              {startDate && new Date(startDate) < new Date() && (
+                <label className="flex items-start gap-3 p-3 rounded-lg border border-primary/30 bg-primary/5 cursor-pointer hover:bg-primary/10 transition-colors">
+                  <Checkbox
+                    checked={backfillPayments}
+                    onCheckedChange={(v) => setBackfillPayments(v === true)}
+                    className="mt-0.5"
+                  />
+                  <div>
+                    <p className="text-sm font-medium">{l ? 'Registrar pagos pasados' : 'Record past payments'}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {l
+                        ? 'Genera automáticamente los registros de pago desde la fecha de inicio hasta hoy'
+                        : 'Automatically generates payment records from start date to today'}
+                    </p>
+                  </div>
+                </label>
+              )}
+            </CollapsibleContent>
+          </Collapsible>
+
             <Checkbox 
               checked={linkToBudget} 
               onCheckedChange={(v) => setLinkToBudget(v === true)} 
