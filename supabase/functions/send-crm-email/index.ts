@@ -3,24 +3,45 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
-/**
- * Send a CRM email to a lead using the AI-generated content.
- * 
- * This function:
- * 1. Receives the lead info + generated email content
- * 2. Parses subject from [SUBJECT: ...] format
- * 3. Sends the email via the transactional email queue (when infra is ready)
- * 4. Returns success/failure so the automation can decide whether to mark as contacted
- * 
- * When email infrastructure isn't set up yet, it returns a clear "not_configured" status.
- */
+// Map lead source to the correct branded template
+const SOURCE_TEMPLATE_MAP: Record<string, string> = {
+  fokuspark: 'crm-fokuspark-outreach',
+  universmind: 'crm-universmind-outreach',
+  evofinz: 'crm-lead-outreach',
+};
+
+function getTemplateForSource(source?: string, isFollowUp?: boolean): string {
+  if (isFollowUp) return 'crm-follow-up';
+  if (!source) return 'crm-lead-outreach';
+  const key = source.toLowerCase().replace(/[_\- ]/g, '');
+  for (const [prefix, template] of Object.entries(SOURCE_TEMPLATE_MAP)) {
+    if (key.includes(prefix)) return template;
+  }
+  return 'crm-lead-outreach';
+}
+
+const APP_NAME_MAP: Record<string, string> = {
+  fokuspark: 'Fokuspark',
+  universmind: 'UniversMind',
+  evofinz: 'EvoFinz',
+};
+
+function getAppName(source?: string): string {
+  if (!source) return 'EvoFinz';
+  const key = source.toLowerCase().replace(/[_\- ]/g, '');
+  for (const [prefix, name] of Object.entries(APP_NAME_MAP)) {
+    if (key.includes(prefix)) return name;
+  }
+  return 'EvoFinz';
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { recipientEmail, recipientName, subject, htmlBody, textBody, leadId, ruleName } = await req.json();
+    const { recipientEmail, recipientName, subject, htmlBody, textBody, leadId, ruleName, leadSource, isFollowUp, stepNumber } = await req.json();
 
     if (!recipientEmail) {
       return new Response(
@@ -32,8 +53,10 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
-    // Try to send via the transactional email system
-    // Check if send-transactional-email function exists by trying to invoke it
+    // Pick template based on lead source
+    const templateName = getTemplateForSource(leadSource, isFollowUp);
+    const appName = getAppName(leadSource);
+
     try {
       const sendRes = await fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
         method: 'POST',
@@ -42,32 +65,32 @@ Deno.serve(async (req) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          templateName: 'crm-lead-outreach',
+          templateName,
           recipientEmail,
-          idempotencyKey: `crm-outreach-${leadId}-${Date.now()}`,
+          idempotencyKey: `crm-${isFollowUp ? 'followup' : 'outreach'}-${leadId}-${Date.now()}`,
           templateData: {
             recipientName: recipientName || '',
-            subject: subject || 'We have something for you',
+            subject: subject || (isFollowUp ? '¿Pudiste revisar nuestro mensaje?' : 'Tenemos algo para ti'),
             body: textBody || htmlBody || '',
             ruleName: ruleName || '',
+            appName,
+            stepNumber: stepNumber || 1,
           },
         }),
       });
 
       if (sendRes.ok) {
         const sendData = await sendRes.json();
-        console.log(`CRM email queued for ${recipientEmail}:`, sendData);
+        console.log(`CRM email queued (${templateName}) for ${recipientEmail}:`, sendData);
         return new Response(
-          JSON.stringify({ success: true, status: 'sent', data: sendData }),
+          JSON.stringify({ success: true, status: 'sent', data: sendData, template: templateName }),
           { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
-      // If the transactional email function returned an error
       const errText = await sendRes.text();
       console.error(`Transactional email error (${sendRes.status}):`, errText);
 
-      // If function not found (404) or infra not ready, return not_configured
       if (sendRes.status === 404) {
         return new Response(
           JSON.stringify({
