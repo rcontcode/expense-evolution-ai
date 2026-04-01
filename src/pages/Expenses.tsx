@@ -138,9 +138,18 @@ export default function Expenses() {
     setSelectedIds(new Set(ids));
   }, []);
 
+  const [duplicateToDelete, setDuplicateToDelete] = useState<string | null>(null);
+
   const handleDeleteDuplicate = useCallback((id: string) => {
-    deleteMutation.mutate(id);
-  }, [deleteMutation]);
+    setDuplicateToDelete(id);
+  }, []);
+
+  const confirmDeleteDuplicate = useCallback(() => {
+    if (duplicateToDelete) {
+      deleteMutation.mutate(duplicateToDelete);
+      setDuplicateToDelete(null);
+    }
+  }, [duplicateToDelete, deleteMutation]);
 
   return (
     <Layout>
