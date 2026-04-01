@@ -351,7 +351,9 @@ export const Layout = ({ children }: LayoutProps) => {
   const { currentCountry } = useEntity();
   const { mode, setMode, setStyle } = useTheme();
   const { highlightColor } = useHighlight();
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(() => {
+    try { return localStorage.getItem('sidebar-collapsed') === 'true'; } catch { return false; }
+  });
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [quickCaptureOpen, setQuickCaptureOpen] = useState(false);
   const [globalSearchOpen, setGlobalSearchOpen] = useState(false);
