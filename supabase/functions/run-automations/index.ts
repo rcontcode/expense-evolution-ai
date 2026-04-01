@@ -228,6 +228,67 @@ async function executeAutoFollowup(supabaseUrl: string, headers: Record<string, 
   return { status: 'success', data: { scheduled_at: scheduledAt, type: followupType } };
 }
 
+// ===== EMAIL SEQUENCE HANDLER =====
+async function executeEmailSequence(
+  supabaseUrl: string, headers: Record<string, string>, lead: any, rule: any, actionConfig: any
+): Promise<ActionResult> {
+  const sequenceId = actionConfig.sequence_id;
+  if (!sequenceId) return { status: 'skipped', data: { reason: 'No sequence_id in action_config' } };
+
+  // Fetch the sequence
+  const seqRes = await fetch(
+    `${supabaseUrl}/rest/v1/lead_nurturing_sequences?id=eq.${sequenceId}&is_enabled=eq.true&select=*&limit=1`,
+    { headers }
+  );
+  if (!seqRes.ok) return { status: 'failed', data: { reason: 'Failed to fetch sequence' } };
+  const seqs = await seqRes.json();
+  if (seqs.length === 0) return { status: 'skipped', data: { reason: 'Sequence not found or disabled' } };
+
+  const sequence = seqs[0];
+  const steps = sequence.steps || [];
+  if (steps.length === 0) return { status: 'skipped', data: { reason: 'Sequence has no steps' } };
+
+  // Check if already enrolled
+  const existingRes = await fetch(
+    `${supabaseUrl}/rest/v1/lead_nurturing_log?sequence_id=eq.${sequenceId}&lead_id=eq.${lead.id}&select=id&limit=1`,
+    { headers }
+  );
+  if (existingRes.ok) {
+    const existing = await existingRes.json();
+    if (existing.length > 0) return { status: 'skipped', data: { reason: 'Lead already enrolled in this sequence' } };
+  }
+
+  // Create nurturing log entries for each step
+  let cumulativeDelayMinutes = 0;
+  for (let i = 0; i < steps.length; i++) {
+    const step = steps[i];
+    const stepDelayMinutes = step.delay_hours ? step.delay_hours * 60 : (step.delay_minutes || (i === 0 ? 0 : 1440));
+    cumulativeDelayMinutes += stepDelayMinutes;
+
+    const scheduledFor = new Date(Date.now() + cumulativeDelayMinutes * 60 * 1000).toISOString();
+
+    await fetch(`${supabaseUrl}/rest/v1/lead_nurturing_log`, {
+      method: 'POST',
+      headers: { ...headers, 'Prefer': 'return=minimal' },
+      body: JSON.stringify({
+        sequence_id: sequenceId,
+        lead_id: lead.id,
+        step_index: i,
+        scheduled_for: scheduledFor,
+        status: 'pending',
+      }),
+    });
+  }
+
+  return {
+    status: 'success',
+    data: {
+      sequence_name: sequence.name,
+      steps_created: steps.length,
+    },
+  };
+}
+
 // ===== AUTO-SAVE TEMPLATE =====
 async function autoSaveTemplate(
   supabaseUrl: string, headers: Record<string, string>, result: ActionResult, actionType: string, actionConfig: any
