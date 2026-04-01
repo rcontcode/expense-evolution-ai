@@ -275,6 +275,20 @@ export function BulkHistoricalImport({ open, onClose, type, onComplete }: BulkHi
           <Plus className="h-3 w-3 mr-1" /> {l ? 'Agregar fila' : 'Add row'}
         </Button>
 
+        {saving && progress > 0 && (
+          <div className="space-y-1">
+            <Progress value={progress} className="h-2" />
+            <p className="text-xs text-muted-foreground text-center">{progress}%</p>
+          </div>
+        )}
+
+        {truncatedWarning && (
+          <div className="flex items-center gap-2 text-xs text-amber-600 bg-amber-50 dark:bg-amber-950/30 p-2 rounded">
+            <AlertTriangle className="h-3 w-3 shrink-0" />
+            {l ? `Datos truncados al máximo de ${MAX_BULK_IMPORT_ROWS} filas` : `Data truncated to max ${MAX_BULK_IMPORT_ROWS} rows`}
+          </div>
+        )}
+
         <DialogFooter className="gap-2 sm:gap-0">
           <Button variant="outline" onClick={onClose}>{l ? 'Cancelar' : 'Cancel'}</Button>
           <Button onClick={handleSave} disabled={saving || validRows.length === 0}>
