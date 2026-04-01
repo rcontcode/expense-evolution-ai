@@ -808,6 +808,7 @@ export const AdminKanbanPipeline = ({ language }: Props) => {
           }
         }}
         isPending={moveToStage.isPending}
+        interactions={allInteractions}
       />
 
       {/* Stage Change Note Dialog (on drag) */}

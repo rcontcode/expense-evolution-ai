@@ -40,6 +40,9 @@ interface RuleFormData {
   description: string;
   action_config: Record<string, any>;
   trigger_condition: TriggerCondition[];
+  schedule_active_hours_start: number;
+  schedule_active_hours_end: number;
+  schedule_active_days: number[];
 }
 
 interface TriggerCondition {
