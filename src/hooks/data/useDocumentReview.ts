@@ -53,19 +53,25 @@ export function useDocumentReviewActions() {
       let linkedId: string;
 
       if (isIncome) {
-        // Create income record
+        // Determine income_type from AI extraction
+        const incomeType = (data as any).income_type || 'client_payment';
+        const validIncomeTypes = ['salary','client_payment','bonus','gift','refund','investment_stocks','investment_crypto','investment_funds','passive_rental','passive_royalties','online_business','freelance','other'];
+        
+        // Create income record with document linkage
         const { data: income, error: incomeError } = await supabase
           .from('income')
           .insert({
             user_id: user!.id,
             amount: data.amount || 0,
             date: data.date || new Date().toISOString().split('T')[0],
-            source: data.vendor || 'Unknown',
+            source: data.vendor || (data as any).source || 'Unknown',
             description: data.description || null,
             currency: data.currency || 'CAD',
-            income_type: 'client_payment' as const,
+            income_type: validIncomeTypes.includes(incomeType) ? incomeType : 'client_payment',
             client_id: data.client_id || null,
+            project_id: data.project_id || null,
             entity_id: primaryEntity?.id || null,
+            document_id: id, // Link back to document for audit trail
             is_taxable: true,
             recurrence: 'one_time' as const,
           })
