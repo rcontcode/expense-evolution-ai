@@ -104,7 +104,7 @@ export const AdminLeadHistory = ({ language }: Props) => {
     },
   });
 
-  const filtered = leads.filter((l: any) => {
+  const filtered = filterLeadsByApp(leads, appFilter).filter((l: any) => {
     if (!searchTerm) return true;
     const s = searchTerm.toLowerCase();
     return l.name?.toLowerCase().includes(s) || l.email?.toLowerCase().includes(s);
