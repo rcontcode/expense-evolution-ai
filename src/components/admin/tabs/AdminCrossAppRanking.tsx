@@ -242,7 +242,7 @@ export const AdminCrossAppRanking = ({ language }: Props) => {
                     {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i + 1}`}
                   </div>
                   <div>
-                    <p className="font-bold text-sm capitalize">{app.source}</p>
+                    <p className="font-bold text-sm">{APP_LABELS[app.source.toLowerCase()] || app.source}</p>
                     <p className="text-xs text-muted-foreground">
                       {app.total} leads • {app.recentLeads} {isEs ? 'esta semana' : 'this week'}
                     </p>
