@@ -21,7 +21,7 @@ import {
   LayoutDashboard, Users, CreditCard, Target, Plus, ExternalLink,
   Globe, Smartphone, TrendingUp, Activity, ArrowLeft, Copy, Check, 
   Pencil, MoreVertical, Zap, Clock, Send, Code, FileJson, Trash2,
-  CheckCircle2, AlertCircle, Loader2, Phone, DollarSign, Merge,
+  CheckCircle2, AlertCircle, Loader2, Phone, DollarSign, Merge, Mail,
 } from 'lucide-react';
 import { AdminUserOverview } from '@/components/admin/AdminUserOverview';
 import { AdminSubscriptionsTab } from '@/components/admin/tabs/AdminSubscriptionsTab';
