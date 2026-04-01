@@ -281,7 +281,7 @@ export function GlobalSearch({ open, onOpenChange, onQuickCapture }: GlobalSearc
   return (
     <CommandDialog open={open} onOpenChange={onOpenChange}>
       <CommandInput 
-        placeholder={language === 'es' ? 'Buscar gastos, clientes, proyectos...' : 'Search expenses, clients, projects...'} 
+        placeholder={language === 'es' ? 'Buscar en todo: gastos, ingresos, clientes, contratos...' : 'Search everything: expenses, income, clients, contracts...'} 
         value={search}
         onValueChange={setSearch}
       />
