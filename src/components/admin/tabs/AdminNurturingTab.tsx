@@ -451,6 +451,21 @@ export function AdminNurturingTab({ language }: Props) {
                 </Select>
               </div>
 
+              <div className="space-y-2">
+                <Label>{isEs ? 'App origen (filtro)' : 'Source app (filter)'}</Label>
+                <Select value={formSourceFilter} onValueChange={setFormSourceFilter}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{isEs ? '🌐 Todas las apps' : '🌐 All apps'}</SelectItem>
+                    <SelectItem value="evofinz">💰 EvoFinz</SelectItem>
+                    <SelectItem value="fokuspark">🧠 Fokuspark</SelectItem>
+                    <SelectItem value="universmind">🌌 UniversMind</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
               <Separator />
 
               <div className="space-y-2">
