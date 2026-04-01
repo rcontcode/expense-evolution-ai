@@ -405,11 +405,14 @@ export function AdminROIDashboard({ language }: Props) {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {analytics.bySource.map((src, i) => (
-                <div key={src.source} className="space-y-1">
+            <div className="space-y-4">
+              {analytics.bySource.map((src) => (
+                <div key={src.source} className="space-y-1.5">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="font-medium capitalize">{src.source}</span>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: src.color }} />
+                      <span className="font-bold">{src.label}</span>
+                    </div>
                     <div className="flex items-center gap-3 text-xs text-muted-foreground">
                       <span>{src.leads} leads</span>
                       <span>{src.converted} reg</span>
@@ -421,7 +424,7 @@ export function AdminROIDashboard({ language }: Props) {
                       className="h-full rounded-full transition-all"
                       style={{
                         width: `${Math.min(100, src.payingRate)}%`,
-                        backgroundColor: PIE_COLORS[i % PIE_COLORS.length],
+                        backgroundColor: src.color,
                       }}
                     />
                   </div>
@@ -429,6 +432,13 @@ export function AdminROIDashboard({ language }: Props) {
                     <span>Quiz→Reg: {src.conversionRate.toFixed(1)}%</span>
                     <span>Quiz→💳: {src.payingRate.toFixed(1)}%</span>
                     <span>MRR: ${src.mrr.toFixed(2)}</span>
+                    {src.avgConvertDays !== null && (
+                      <span>⏱ {src.avgConvertDays}d avg</span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
                   </div>
                 </div>
               ))}
