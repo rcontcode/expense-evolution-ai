@@ -131,6 +131,13 @@ export function ReceiptReviewCard({
             )}
           </div>
 
+          {/* Income/Expense Direction Badge */}
+          {isPending && (
+            <Badge className={cn("text-[10px] w-fit", isIncome ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30" : "bg-orange-500/15 text-orange-700 dark:text-orange-400 border-orange-500/30")} variant="outline">
+              {isIncome ? (language === 'es' ? '💰 Ingreso' : '💰 Income') : (language === 'es' ? '🧾 Gasto' : '🧾 Expense')}
+            </Badge>
+          )}
+
           {/* Quick Data Preview */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
