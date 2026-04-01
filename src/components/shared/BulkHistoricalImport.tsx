@@ -58,10 +58,28 @@ export function BulkHistoricalImport({ open, onClose, type, onComplete }: BulkHi
     setRows(r => r.map(row => row.id === id ? { ...row, [field]: value } : row));
   };
 
+  const [pasteMode, setPasteMode] = useState(false);
+  const [pasteText, setPasteText] = useState('');
+  const [truncatedWarning, setTruncatedWarning] = useState(false);
+
+  const addRow = () => {
+    if (rows.length >= MAX_BULK_IMPORT_ROWS) {
+      toast.warning(l ? `Máximo ${MAX_BULK_IMPORT_ROWS} filas` : `Maximum ${MAX_BULK_IMPORT_ROWS} rows`);
+      return;
+    }
+    setRows(r => [...r, newRow()]);
+  };
+  const removeRow = (id: string) => setRows(r => r.filter(row => row.id !== id));
+  const updateRow = (id: string, field: keyof HistoricalRow, value: any) => {
+    setRows(r => r.map(row => row.id === id ? { ...row, [field]: value } : row));
+  };
+
   const handlePaste = () => {
     if (!pasteText.trim()) return;
     const lines = pasteText.trim().split('\n');
-    const parsed: HistoricalRow[] = lines.map(line => {
+    const wasTruncated = lines.length > MAX_BULK_IMPORT_ROWS;
+    const limitedLines = lines.slice(0, MAX_BULK_IMPORT_ROWS);
+    const parsed: HistoricalRow[] = limitedLines.map(line => {
       const parts = line.split(/[\t,;]/).map(s => s.trim());
       return {
         id: crypto.randomUUID(),
@@ -77,7 +95,13 @@ export function BulkHistoricalImport({ open, onClose, type, onComplete }: BulkHi
       setRows(parsed);
       setPasteMode(false);
       setPasteText('');
+      setTruncatedWarning(wasTruncated);
       toast.success(l ? `${parsed.length} filas importadas` : `${parsed.length} rows imported`);
+      if (wasTruncated) {
+        toast.warning(l
+          ? `Se truncaron a ${MAX_BULK_IMPORT_ROWS} filas (máximo permitido)`
+          : `Truncated to ${MAX_BULK_IMPORT_ROWS} rows (maximum allowed)`);
+      }
     }
   };
 
