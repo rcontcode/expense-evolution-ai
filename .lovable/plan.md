@@ -1,101 +1,110 @@
 
 
-# Plan: Protección de recursos — Límites inteligentes contra uso extremo
+# Plan: Sistema de Deshacer (Undo) + Confirmaciones inteligentes
 
-## Problemas identificados
+## Estado actual
 
-### 1. FIRE Calculator: loop sin límite real de datos
-- `while` loop itera hasta 600 meses (50 años) — OK, pero si `targetRetirementAge - currentAge` es muy grande (ej. edad 5, retiro a 200), el `for` de `yearlyProjections` genera `yearsToTarget + 10` entradas (ej. 205 objetos con 12 iteraciones internas cada uno = 2,460 cálculos). No crashea pero satura el chart.
-- Si `monthlyReturn` es negativo o zero y savings nunca alcanzan FIRE, el while loop siempre llega a 600 — OK pero genera array enorme.
+### Confirmación (AlertDialog "¿Estás seguro?")
+**YA tienen confirmación:**
+- Eliminar gasto (ExpensesTable, ExpenseCard via table)
+- Eliminar cliente (Clients.tsx)
+- Eliminar kilometraje (Mileage.tsx)
+- Eliminar archivo (FileDeleteDialog)
+- Eliminar archivos bulk (Files.tsx)
+- Vaciar papelera (Trash.tsx)
+- Eliminar permanente en papelera (Trash.tsx)
+- Eliminar contrato (Contracts.tsx)
+- Eliminar duplicados income (IncomeDuplicatePanel)
+- Eliminar gastos bulk (ExpenseBulkActions)
+- Eliminar bill (BillsManager)
 
-### 2. `generateHistoricalPayments`: loop infinito potencial
-- Si `startDate` es "1990-01-01" con frecuencia semanal, genera **1,800+ registros** de pagos históricos. No hay límite. Además cada uno se inserta en Supabase de golpe.
-- Si `getNextDueDate` tiene un bug y no avanza la fecha, el `while (current < today)` se convierte en loop infinito bloqueando el browser.
+**NO tienen confirmación (y deberían):**
+1. **Eliminar duplicado de gasto** — `handleDeleteDuplicate` en Expenses.tsx llama `deleteMutation.mutate(id)` directamente, sin diálogo
+2. **Eliminar activo/pasivo** en Net Worth — LiabilitiesList tiene AlertDialog inline pero AssetsList podría no tenerlo
+3. **Rechazar documento** en Chaos Inbox — `handleReject` no pide confirmación
+4. **Eliminar documento** en Chaos Inbox — `handleDelete` no pide confirmación
+5. **Eliminar tag** — Tags.tsx tiene confirmación pero es básica
+6. **Marcar bill como pagado** — acción irreversible sin confirmación
+7. **Bulk classify/assign** en gastos — cambia datos masivamente sin confirmación
 
-### 3. BulkHistoricalImport: sin límite de filas
-- El paste de CSV no tiene tope. Un usuario puede pegar 10,000 filas y el sistema intentará `INSERT` masivo en una sola transacción → timeout de Supabase (máx ~5MB payload, ~8s timeout).
-
-### 4. Charts con rangos extremos
-- Si se habilitan selectores de rango [6, 12, 24, 36, "all"], un usuario con 5 años de datos generaría 60 barras/líneas en un chart. Recharts renderiza todos los puntos en el DOM → lag significativo con 100+ puntos.
-
-### 5. Queries sin paginación
-- `useExpenses` tiene `.limit(500)`, pero `useAllExpensesForReport` usa `.limit(2000)`. Si un usuario tiene 10,000 gastos en 5 años, los reportes no los ven todos.
-- `useIncome` tiene `.limit(500)` — mismo problema.
-
-### 6. Inputs numéricos sin validación
-- FIRE: `currentAge` puede ser 0 o 999, `expectedAnnualReturn` puede ser 99999%, `withdrawalRate` puede ser 0 (divide por cero en `fireNumber = annualExpenses / (withdrawalRate / 100)`).
+### Undo (Deshacer)
+**Estado actual:** Existe `ActionUndoToast` (componente) y `useVoiceConfirmation` pero el undo toast **NO se usa en ninguna parte de la app**. El componente está ahí pero nadie lo invoca. Las eliminaciones son soft-delete (van a papelera), lo cual es una forma de undo, pero el usuario no ve un "Deshacer" inmediato tras la acción.
 
 ## Plan de implementación
 
-### Fase 1: Constantes centralizadas de límites
-**Nuevo: `src/lib/constants/resource-limits.ts`**
+### 1. Hook centralizado `useUndoableAction`
+**Nuevo: `src/hooks/utils/useUndoableAction.ts`**
+
+Hook que envuelve cualquier acción destructiva con:
+- Ejecuta la acción
+- Muestra toast con botón "Deshacer" durante 5 segundos
+- Si el usuario presiona Undo → ejecuta la función reversa
+- Para soft-deletes → el undo es `restore` (ya existe en useTrash)
+- Para ediciones → el undo guarda el estado anterior y lo restaura
+
 ```text
-MAX_PROJECTION_YEARS = 80        // Nadie necesita proyectar más de 80 años
-MAX_HISTORICAL_PAYMENTS = 500    // Backfill máx 500 pagos por bill
-MAX_BULK_IMPORT_ROWS = 500       // Tope de filas en importación masiva
-MAX_CHART_DATA_POINTS = 120      // 10 años mensuales
-MAX_LOOP_ITERATIONS = 10000      // Safety net para loops
-MAX_QUERY_ROWS_REPORT = 10000    // Para reportes completos
-BATCH_INSERT_SIZE = 100          // Insertar en lotes de 100
-MIN_AGE = 10, MAX_AGE = 120
-MIN_RETURN_RATE = -20, MAX_RETURN_RATE = 50
-MIN_WITHDRAWAL_RATE = 0.5, MAX_WITHDRAWAL_RATE = 15
+useUndoableAction() → {
+  execute(action, undoAction, description) → Promise
+}
 ```
 
-### Fase 2: Proteger loops existentes
+Integra con sonner toast (ya usado en toda la app) en vez del ActionUndoToast custom.
 
-**`useRecurringBills.ts` → `generateHistoricalPayments`**
-- Agregar `MAX_HISTORICAL_PAYMENTS` como tope del while loop
-- Agregar safety check: si `getNextDueDate` no avanza la fecha, romper el loop
-- Si se alcanza el máximo, retornar los generados + flag `truncated: true`
+### 2. Aplicar undo a eliminaciones soft-delete
+Las siguientes acciones ya usan soft-delete (`deleted_at`), así que el undo es simplemente `UPDATE deleted_at = null`:
 
-**`useFIRECalculator.ts`**
-- Clampar inputs: `currentAge` entre 10-120, `targetRetirementAge` entre currentAge+1 y MAX_AGE, `withdrawalRate` mínimo 0.5
-- Limitar `yearlyProjections` a `MAX_PROJECTION_YEARS` entradas
-- Proteger división por zero en `withdrawalRate`
+| Acción | Archivo | Undo |
+|--------|---------|------|
+| Eliminar gasto | useExpenses.ts | Restaurar `deleted_at = null` |
+| Eliminar ingreso | useIncome.ts | Restaurar `deleted_at = null` |
+| Eliminar cliente | useClients.ts | Restaurar `deleted_at = null` |
+| Eliminar proyecto | useProjects.ts | Restaurar `deleted_at = null` |
+| Eliminar contrato | useContracts.ts | Restaurar `deleted_at = null` |
+| Eliminar kilometraje | useMileage.ts | Restaurar `deleted_at = null` |
 
-### Fase 3: Proteger bulk imports
+Tras cada eliminación, el toast mostrará: "Gasto eliminado — [Deshacer]"
 
-**`BulkHistoricalImport.tsx`**
-- Limitar paste a `MAX_BULK_IMPORT_ROWS` filas, mostrar warning si se trunca
-- Insertar en batches de `BATCH_INSERT_SIZE` con `Promise.all` controlado (no todo de golpe)
-- Mostrar barra de progreso durante la inserción
+### 3. Agregar confirmación donde falta
 
-### Fase 4: Proteger charts
+**`src/pages/Expenses.tsx`** — `handleDeleteDuplicate`: Agregar AlertDialog antes de eliminar
 
-**Patrón para todos los charts con selector de rango:**
-- Si `dataPoints > MAX_CHART_DATA_POINTS`, agregar datos usando sampling (promediar cada N meses en vez de mostrar todos)
-- Para "All time" → agrupar por trimestre si hay más de 36 meses de datos, por año si hay más de 120
-- Esto aplica a: `BudgetHistoryChart`, `CategoryTrendsChart`, `IncomeVsExpensesChart`, `CashFlowProjection`, `NetWorthChart`
+**`src/pages/ChaosInbox.tsx`** — `handleDelete` y `handleReject`: Agregar confirmación para rechazar/eliminar documentos
 
-### Fase 5: Queries escalables para reportes
+**`src/components/bills/BillsManager.tsx`** — `handleMarkPaid`: Agregar confirmación antes de marcar como pagado (acción significativa financieramente)
 
-**`useExpenses.ts` y `useIncome.ts`**
-- Crear variantes `useAllForReport` que usen paginación automática: fetch 1000, si hay más, fetch siguiente página, concatenar hasta `MAX_QUERY_ROWS_REPORT`
-- Esto solo se usa en exportación PDF/Excel, no en UI diario
+**`src/components/expenses/ExpenseBulkActions.tsx`** — Bulk classify/assign: Agregar confirmación con preview del cambio
 
-### Fase 6: Input validation con UX amigable
+### 4. Modificar hooks de eliminación para retornar undo
+En los 6 hooks de delete (expenses, income, clients, projects, contracts, mileage), modificar `onSuccess` para mostrar toast de sonner con acción de undo:
 
-**En formularios FIRE, bills, bulk import:**
-- Validar rangos al onChange, no al submit
-- Si el valor está fuera de rango, mostrar tooltip: "El máximo recomendado es X" y clampear silenciosamente
-- Para fechas: `start_date` no puede ser anterior a 2000, `end_date` no puede ser más de 50 años en el futuro
+```text
+toast('Gasto eliminado', {
+  action: { label: 'Deshacer', onClick: () => restore(id, type) }
+})
+```
+
+Esto reemplaza los toasts simples actuales por toasts con undo.
+
+### 5. Eliminar ActionUndoToast no usado
+El componente `ActionUndoToast` no se usa en ninguna parte. Eliminarlo y usar sonner directamente (ya es el sistema de toasts de toda la app).
 
 ## Archivos a modificar
 
-1. **Nuevo: `src/lib/constants/resource-limits.ts`** — Constantes centralizadas
-2. **`src/hooks/data/useRecurringBills.ts`** — Loop protection + batch insert
-3. **`src/hooks/data/useFIRECalculator.ts`** — Input clamping + projection cap
-4. **`src/components/shared/BulkHistoricalImport.tsx`** — Row limit + batch insert + progress bar
-5. **`src/hooks/data/useExpenses.ts`** — Paginated report query
-6. **`src/hooks/data/useIncome.ts`** — Paginated report query
-7. **Charts (5 archivos)** — Data sampling cuando hay demasiados puntos
+1. **Nuevo: `src/hooks/utils/useUndoableAction.ts`** — Hook centralizado de undo
+2. **`src/hooks/data/useExpenses.ts`** — Toast con undo en delete
+3. **`src/hooks/data/useIncome.ts`** — Toast con undo en delete
+4. **`src/hooks/data/useClients.ts`** — Toast con undo en delete
+5. **`src/hooks/data/useProjects.ts`** — Toast con undo en delete
+6. **`src/hooks/data/useContracts.ts`** — Toast con undo en delete
+7. **`src/hooks/data/useMileage.ts`** — Toast con undo en delete
+8. **`src/pages/Expenses.tsx`** — Confirmación para eliminar duplicado
+9. **`src/pages/ChaosInbox.tsx`** — Confirmación para rechazar/eliminar documentos
+10. **`src/components/bills/BillsManager.tsx`** — Confirmación para marcar pagado
+11. **Eliminar `src/components/chat/ActionUndoToast.tsx`** — No usado
 
 ## Resultado
 
-- Imposible bloquear el browser con loops infinitos o arrays gigantes
-- Bulk imports manejan hasta 500 filas en batches con progreso visual
-- Charts escalan automáticamente: pocos datos = detalle mensual, muchos datos = agrupación trimestral/anual
-- Reportes pueden exportar hasta 10,000 registros sin truncar
-- Inputs validados en tiempo real con mensajes amigables, sin crasheos por divide-by-zero o valores absurdos
+- Toda eliminación muestra toast con "Deshacer" por 5 segundos → un click restaura el registro
+- Acciones riesgosas sin confirmación ahora la tienen (duplicados, documentos, pagos)
+- Sistema unificado: sonner toasts con acción de undo en vez de componente custom sin usar
 
