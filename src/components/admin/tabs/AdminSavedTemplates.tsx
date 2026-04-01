@@ -36,11 +36,13 @@ const TEMPLATE_TYPE_LABELS: Record<string, { es: string; en: string }> = {
   reactivation: { es: 'Reactivación', en: 'Reactivation' },
   invitation: { es: 'Invitación', en: 'Invitation' },
   offer: { es: 'Oferta', en: 'Offer' },
+  welcome: { es: 'Bienvenida', en: 'Welcome' },
 };
 
 const APP_LABELS: Record<string, string> = {
   evofinz: '💰 EvoFinz',
   fokuspark: '🧘 FokusPark',
+  universmind: '🧠 UniversMind',
   bundle: '🔥 Bundle',
 };
 
@@ -313,9 +315,10 @@ export const AdminSavedTemplates = ({ language }: Props) => {
               <Select value={formTargetApp} onValueChange={setFormTargetApp}>
                 <SelectTrigger className="text-xs"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="evofinz">EvoFinz</SelectItem>
-                  <SelectItem value="fokuspark">FokusPark</SelectItem>
-                  <SelectItem value="bundle">Bundle</SelectItem>
+                  <SelectItem value="evofinz">💰 EvoFinz</SelectItem>
+                  <SelectItem value="fokuspark">🧘 FokusPark</SelectItem>
+                  <SelectItem value="universmind">🧠 UniversMind</SelectItem>
+                  <SelectItem value="bundle">🔥 Bundle</SelectItem>
                 </SelectContent>
               </Select>
             </div>

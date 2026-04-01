@@ -1,12 +1,13 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { 
   Flame, Clock, TrendingUp, Users, CalendarCheck, AlertTriangle, 
-  DollarSign, ArrowRight, BarChart3, Mail, Send, Zap
+  DollarSign, ArrowRight, BarChart3, Mail, Send, Zap, HelpCircle, ChevronDown
 } from 'lucide-react';
 import { differenceInDays, subDays, format, startOfDay, isToday, isThisWeek } from 'date-fns';
 import { es as esLocale, enUS } from 'date-fns/locale';
@@ -30,6 +31,31 @@ const SOURCE_LABELS: Record<string, string> = {
   fokuspark: '🧠 Fokuspark',
   universmind: '🌌 UniversMind',
 };
+
+const TAB_GUIDE = [
+  { tab: 'home', emoji: '🏠', nameEs: 'Home', nameEn: 'Home', descEs: 'Panel principal con KPIs, leads del día, follow-ups vencidos, conversión y accesos rápidos.', descEn: 'Main dashboard with KPIs, today\'s leads, overdue follow-ups, conversion rate and quick actions.' },
+  { tab: 'agenda', emoji: '📅', nameEs: 'Agenda', nameEn: 'Agenda', descEs: 'Calendario de follow-ups programados. Ve qué leads necesitan seguimiento hoy, esta semana o están vencidos.', descEn: 'Scheduled follow-up calendar. See which leads need follow-up today, this week, or are overdue.' },
+  { tab: 'users', emoji: '👥', nameEs: 'Usuarios', nameEn: 'Users', descEs: 'Lista de todos los usuarios registrados con su plan, actividad, uso de IA y estado de suscripción.', descEn: 'All registered users with plan, activity, AI usage and subscription status.' },
+  { tab: 'leads', emoji: '🎯', nameEs: 'Leads', nameEn: 'Leads', descEs: 'Tabla completa de leads del quiz. Filtra por app, temperatura, etapa. Edita, contacta o cambia estado.', descEn: 'Full lead table from quizzes. Filter by app, temperature, stage. Edit, contact or change status.' },
+  { tab: 'pipeline', emoji: '📊', nameEs: 'Pipeline', nameEn: 'Pipeline', descEs: 'Vista Kanban del pipeline de ventas. Arrastra leads entre etapas (nuevo → contactado → negociando → convertido).', descEn: 'Kanban sales pipeline. Drag leads between stages (new → contacted → negotiating → converted).' },
+  { tab: 'ranking', emoji: '🏆', nameEs: 'Ranking', nameEn: 'Ranking', descEs: 'Ranking de usuarios por adopción multi-app. Ve quién usa EvoFinz, FokusPark y UniversMind juntos.', descEn: 'User ranking by multi-app adoption. See who uses EvoFinz, FokusPark, and UniversMind together.' },
+  { tab: 'queue', emoji: '📞', nameEs: 'Contactar', nameEn: 'Contact Queue', descEs: 'Cola inteligente de leads para contactar. Genera mensajes con IA, copia para WhatsApp o envía email. Prioriza HOT.', descEn: 'Smart lead contact queue. Generate AI messages, copy for WhatsApp or send email. Prioritizes HOT leads.' },
+  { tab: 'history', emoji: '📜', nameEs: 'Historial', nameEn: 'History', descEs: 'Historial de interacciones: emails, WhatsApp, llamadas, notas y cambios de estado con cada lead.', descEn: 'Interaction history: emails, WhatsApp, calls, notes and status changes for each lead.' },
+  { tab: 'templates', emoji: '📝', nameEs: 'Plantillas', nameEn: 'Templates', descEs: 'Galería de plantillas WhatsApp y Email para las 3 apps. Primer contacto, follow-up, reactivación y ofertas.', descEn: 'WhatsApp & Email template gallery for all 3 apps. First contact, follow-up, reactivation and offers.' },
+  { tab: 'metrics', emoji: '📈', nameEs: 'Métricas', nameEn: 'Metrics', descEs: 'Métricas avanzadas: tendencias de leads, tasas de contacto/conversión, tiempos de respuesta, distribución por fuente.', descEn: 'Advanced metrics: lead trends, contact/conversion rates, response times, source distribution.' },
+  { tab: 'automation', emoji: '⚡', nameEs: 'Automatización', nameEn: 'Automation', descEs: 'Motor de reglas automáticas por temperatura (email auto a HOT, tag inactivos, notificaciones).', descEn: 'Auto rule engine by temperature (auto-email HOT leads, tag inactive, notifications).' },
+  { tab: 'subscriptions', emoji: '💳', nameEs: 'Planes', nameEn: 'Plans', descEs: 'Suscripciones activas por plan (Free/Premium/Pro). Cuántos pagan, ciclos de facturación y estado.', descEn: 'Active subscriptions by plan (Free/Premium/Pro). How many pay, billing cycles and status.' },
+  { tab: 'revenue', emoji: '💵', nameEs: 'Revenue', nameEn: 'Revenue', descEs: 'Dashboard de ingresos Stripe: MRR, ARR, revenue mensual, crecimiento. Datos directos de Stripe.', descEn: 'Stripe revenue dashboard: MRR, ARR, monthly revenue, growth. Direct Stripe data.' },
+  { tab: 'roi', emoji: '💰', nameEs: 'ROI', nameEn: 'ROI', descEs: 'ROI por fuente de lead. ¿Cuánto genera cada app? ¿Cuál convierte mejor? Lead → usuario pago.', descEn: 'ROI by lead source. How much does each app generate? Which converts best?' },
+  { tab: 'nurturing', emoji: '🔄', nameEs: 'Nurturing', nameEn: 'Nurturing', descEs: 'Secuencias automáticas de 2-5 pasos con delays entre emails/WhatsApp para nutrir leads fríos.', descEn: 'Automated 2-5 step sequences with delays between emails/WhatsApp to warm up cold leads.' },
+  { tab: 'emails', emoji: '📧', nameEs: 'Emails', nameEn: 'Emails', descEs: 'Dashboard de emails: estado (enviado/fallido/suprimido), plantilla, destinatario. Monitoreo de entrega.', descEn: 'Email dashboard: status (sent/failed/suppressed), template, recipient. Delivery monitoring.' },
+  { tab: 'webhook', emoji: '🔗', nameEs: 'Webhook', nameEn: 'Webhook', descEs: 'Webhook de entrada. Código para conectar quizzes y formularios externos al CRM automáticamente.', descEn: 'Inbound webhook. Code to connect quizzes and external forms to CRM automatically.' },
+  { tab: 'abtests', emoji: '🧪', nameEs: 'A/B Testing', nameEn: 'A/B Testing', descEs: 'Pruebas A/B de emails. Crea variantes y mide apertura/conversión para optimizar mensajes.', descEn: 'Email A/B testing. Create variants and measure open/conversion rates to optimize messaging.' },
+  { tab: 'webhooksout', emoji: '📤', nameEs: 'WH Out', nameEn: 'WH Out', descEs: 'Webhooks salientes. Envía datos de leads a Zapier, Make u otros CRMs cuando ocurren eventos.', descEn: 'Outgoing webhooks. Send lead data to Zapier, Make or other CRMs when events occur.' },
+  { tab: 'pnl', emoji: '📊', nameEs: 'P&L', nameEn: 'P&L', descEs: 'Pérdidas y Ganancias. Ingresos vs costos (IA, hosting, emails, fees). Margen neto y tendencias.', descEn: 'Profit & Loss. Revenue vs costs (AI, hosting, emails, fees). Net margin and trends.' },
+  { tab: 'health', emoji: '❤️', nameEs: 'Salud', nameEn: 'Health', descEs: 'Salud del cliente: satisfacción, retención, churn, NPS, engagement por plan, usuarios en riesgo.', descEn: 'Customer health: satisfaction, retention, churn, NPS, engagement by plan, at-risk users.' },
+  { tab: 'simulator', emoji: '🧮', nameEs: 'Simulador', nameEn: 'Simulator', descEs: 'Simulador de precios. Ajusta precios, ve margen por usuario con costos reales de IA, proyecta conversión.', descEn: 'Pricing simulator. Adjust prices, see per-user margin with real AI costs, project conversion.' },
+];
 
 export const AdminCRMHome = ({ language, onNavigateTab }: Props) => {
   const isEs = language === 'es';
@@ -324,6 +350,42 @@ export const AdminCRMHome = ({ language, onNavigateTab }: Props) => {
             </Button>
           ))}
         </div>
+      </motion.div>
+
+      {/* CRM Guide — All Tabs Explained */}
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
+        <Collapsible>
+          <Card className="border-2 border-dashed border-primary/30">
+            <CollapsibleTrigger className="w-full">
+              <CardHeader className="cursor-pointer hover:bg-muted/30 transition-colors rounded-t-lg">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <HelpCircle className="h-4 w-4 text-primary" />
+                  {isEs ? '📖 Guía Completa del CRM — ¿Qué hace cada pestaña?' : '📖 Complete CRM Guide — What does each tab do?'}
+                  <ChevronDown className="h-4 w-4 ml-auto text-muted-foreground" />
+                </CardTitle>
+              </CardHeader>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <CardContent className="pt-0">
+                <div className="grid gap-3 md:grid-cols-2">
+                  {TAB_GUIDE.map((item) => (
+                    <div
+                      key={item.tab}
+                      className="flex gap-3 p-3 rounded-lg border bg-card hover:bg-muted/30 cursor-pointer transition-colors"
+                      onClick={() => onNavigateTab(item.tab)}
+                    >
+                      <span className="text-xl flex-shrink-0">{item.emoji}</span>
+                      <div className="min-w-0">
+                        <p className="font-bold text-sm">{isEs ? item.nameEs : item.nameEn}</p>
+                        <p className="text-xs text-muted-foreground leading-relaxed">{isEs ? item.descEs : item.descEn}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </CollapsibleContent>
+          </Card>
+        </Collapsible>
       </motion.div>
     </div>
   );
