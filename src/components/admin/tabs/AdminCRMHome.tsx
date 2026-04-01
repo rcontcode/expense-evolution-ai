@@ -1,12 +1,13 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { 
   Flame, Clock, TrendingUp, Users, CalendarCheck, AlertTriangle, 
-  DollarSign, ArrowRight, BarChart3, Mail, Send, Zap
+  DollarSign, ArrowRight, BarChart3, Mail, Send, Zap, HelpCircle, ChevronDown
 } from 'lucide-react';
 import { differenceInDays, subDays, format, startOfDay, isToday, isThisWeek } from 'date-fns';
 import { es as esLocale, enUS } from 'date-fns/locale';
