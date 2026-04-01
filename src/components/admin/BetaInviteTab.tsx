@@ -57,6 +57,10 @@ EvoFinz es una plataforma de finanzas personales que te ayuda a:
 👉 Regístrate aquí: https://evofinz.com/auth?beta=${code}
 🔑 Tu código de acceso: ${code}
 
+🔍 ¿Quieres ver más antes de registrarte?
+• Mira qué hace la app: https://evofinz.com/landing
+• Haz tu diagnóstico financiero gratis: https://evofinz.com/quiz
+
 📋 Pasos:
 1. Click en el link → crea tu cuenta con el código
 2. Explora la app libremente (14 días de gracia sin obligaciones)
