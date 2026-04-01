@@ -64,7 +64,22 @@ export function PageHeader({ title, description, showBack = true, children }: Pa
   const navigate = useSafeNavigation();
   const location = useLocation();
   const { language } = useLanguage();
+  const { resolvedMode, setMode } = useTheme();
   const isMobile = useIsMobile();
+  
+  const GlobalControls = () => (
+    <div className="flex items-center gap-1">
+      <LanguageSelector />
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => setMode(resolvedMode === 'dark' ? 'light' : 'dark')}
+        className="h-8 w-8"
+      >
+        {resolvedMode === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+      </Button>
+    </div>
+  );
   
   const currentPath = location.pathname;
   const currentRoute = ROUTE_CONFIG[currentPath];
