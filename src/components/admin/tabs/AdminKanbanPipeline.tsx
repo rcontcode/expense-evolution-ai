@@ -315,7 +315,60 @@ function LeadDetailDialog({ lead, isEs, open, onClose, onMove, isPending, intera
             )}
           </TabsContent>
 
-          {/* ── Actions Tab ── */}
+          {/* ── Timeline Tab ── */}
+          <TabsContent value="timeline" className="space-y-3 mt-3">
+            {(() => {
+              const leadInteractions = interactions.filter((i: any) => i.lead_id === lead.id);
+              const INTERACTION_ICONS: Record<string, { icon: string; color: string }> = {
+                stage_change: { icon: '🔄', color: 'border-l-violet-500' },
+                email: { icon: '📧', color: 'border-l-blue-500' },
+                whatsapp: { icon: '💬', color: 'border-l-green-500' },
+                call: { icon: '📞', color: 'border-l-amber-500' },
+                note: { icon: '📝', color: 'border-l-gray-500' },
+                auto_contact: { icon: '🤖', color: 'border-l-cyan-500' },
+              };
+              
+              // Build timeline from interactions + lead events
+              const events: { date: string; type: string; label: string; detail?: string }[] = [];
+              events.push({ date: lead.created_at, type: 'created', label: isEs ? 'Lead creado' : 'Lead created', detail: `${lead.source} • Score: ${lead.score}` });
+              if (lead.contacted_at) {
+                events.push({ date: lead.contacted_at, type: 'contacted', label: isEs ? 'Primer contacto' : 'First contact' });
+              }
+              leadInteractions.forEach((i: any) => {
+                events.push({ date: i.created_at, type: i.interaction_type, label: i.interaction_type, detail: i.notes || undefined });
+              });
+              events.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+              return events.length > 0 ? (
+                <ScrollArea className="h-[300px]">
+                  <div className="space-y-0 relative">
+                    <div className="absolute left-3 top-2 bottom-2 w-px bg-border" />
+                    {events.map((ev, idx) => {
+                      const iconInfo = INTERACTION_ICONS[ev.type] || { icon: '📌', color: 'border-l-gray-400' };
+                      return (
+                        <div key={idx} className={`relative pl-8 py-2 border-l-2 ml-3 ${iconInfo.color}`}>
+                          <div className="absolute left-[-9px] top-3 w-4 h-4 rounded-full bg-background border-2 border-muted-foreground/20 flex items-center justify-center text-[8px]">
+                            {iconInfo.icon}
+                          </div>
+                          <p className="text-xs font-semibold capitalize">{ev.label}</p>
+                          {ev.detail && <p className="text-[10px] text-muted-foreground mt-0.5">{ev.detail}</p>}
+                          <p className="text-[9px] text-muted-foreground">
+                            {format(new Date(ev.date), 'dd MMM yyyy HH:mm', { locale: isEs ? esLocale : enUS })}
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </ScrollArea>
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Clock className="h-8 w-8 mx-auto mb-2 opacity-30" />
+                  <p className="text-xs">{isEs ? 'Sin actividad registrada' : 'No activity recorded'}</p>
+                </div>
+              );
+            })()}
+          </TabsContent>
+
           <TabsContent value="actions" className="space-y-3 mt-3">
             <p className="text-xs text-muted-foreground">{isEs ? 'Acciones rápidas para este lead:' : 'Quick actions for this lead:'}</p>
 
