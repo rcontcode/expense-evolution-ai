@@ -31,6 +31,16 @@ import {
   Trophy,
   Loader2,
   Trash2,
+  Wallet,
+  CalendarDays,
+  FileBarChart,
+  Shield,
+  BarChart3,
+  HeartPulse,
+  Files,
+  BookOpen,
+  MessageSquare,
+  Smartphone,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useGlobalSearch } from '@/hooks/utils/useGlobalSearch';
