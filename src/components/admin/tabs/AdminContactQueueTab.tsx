@@ -97,7 +97,7 @@ export const AdminContactQueueTab = ({ language }: Props) => {
       })
       .filter((l) => !l.converted_to_user) // Exclude already converted
       .sort((a, b) => b.urgencyScore - a.urgencyScore);
-  }, [rawLeads]);
+  }, [rawLeads, appFilter]);
 
   // Split into sections
   const urgent = queue.filter((l) => !l.contacted_at && (l.priority === 'hot' || l.priority === 'warm'));
