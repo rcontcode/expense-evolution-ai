@@ -420,6 +420,7 @@ const App = () => (
                   </GamificationProvider>
                 </HighlightProvider>
               </EntityProvider>
+              </UndoRedoProvider>
             </AuthProvider>
           </LanguageProvider>
         </Router>
