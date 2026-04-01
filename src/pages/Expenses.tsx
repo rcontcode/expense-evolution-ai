@@ -381,6 +381,28 @@ export default function Expenses() {
             expenses={allExpenses || []}
           />
         </div>
+
+        {/* Confirm delete duplicate dialog */}
+        <AlertDialog open={!!duplicateToDelete} onOpenChange={(open) => !open && setDuplicateToDelete(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>
+                {language === 'es' ? '¿Eliminar gasto duplicado?' : 'Delete duplicate expense?'}
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                {language === 'es'
+                  ? 'Este gasto será movido a la papelera. Podrás restaurarlo desde allí.'
+                  : 'This expense will be moved to trash. You can restore it from there.'}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>{language === 'es' ? 'Cancelar' : 'Cancel'}</AlertDialogCancel>
+              <AlertDialogAction onClick={confirmDeleteDuplicate} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                {language === 'es' ? 'Eliminar' : 'Delete'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </TooltipProvider>
     </Layout>
   );
