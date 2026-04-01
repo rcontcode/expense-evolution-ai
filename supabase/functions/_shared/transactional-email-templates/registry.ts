@@ -26,8 +26,10 @@ import { template as crmUniversmindOffer } from './crm-universmind-offer.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'crm-lead-outreach': crmLeadOutreach,
+  'crm-evofinz-outreach': crmLeadOutreach,
   'crm-fokuspark-outreach': crmFokusparkOutreach,
   'crm-universmind-outreach': crmUniversmindOutreach,
+  'crm-weekly-report': crmWeeklyReport,
   'crm-follow-up': crmFollowUp,
   'crm-evofinz-welcome': crmEvofinzWelcome,
   'crm-fokuspark-welcome': crmFokusparkWelcome,
