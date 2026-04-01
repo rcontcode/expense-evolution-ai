@@ -1,53 +1,76 @@
 
 
-# Plan: Corregir menú lateral — enlaces, títulos y consistencia
+# Plan: Completar Pipeline Bulk Chaos Inbox → Reportes Completos
 
-## Problemas encontrados
+## Diagnóstico: ¿Qué funciona y qué NO?
 
-### Errores de navegación (el enlace no lleva donde dice)
-1. **"Deudas"** → va a `/dashboard?area=familia&atab=debts` (deep-link al dashboard, no página propia). Nunca se marca como "activo".
-2. **"Ahorro"** → va a `/budget?tab=savings` — correcto, pero no se verifica que exista esa tab.
-3. **Sub-items de Presupuesto** → van al Dashboard (`/dashboard?area=...`), no a `/budget`. Confuso porque el padre sí va a `/budget`.
-4. **Sub-items de Inversiones**: "Págate Primero" y "Clasificación Deuda" van a tabs de **Mentoría**, no de Inversiones.
-5. **Sub-item de Patrimonio** "Análisis Familiar" va al Dashboard, no tiene relación con Net Worth.
-6. **Sub-item de Gastos** "Gráficos Día a Día" va al Dashboard control view, no a gráficos de gastos.
+### FUNCIONA correctamente
+1. **Clasificación AI**: La Bandeja del Caos clasifica 14 tipos de documentos (recibos, facturas, contratos, extractos bancarios, boletas, comprobantes de ingreso, etc.)
+2. **Contratos**: Se guardan en `contracts` y se analizan con AI correctamente
+3. **Recibos/Boletas**: Se procesan y van al Centro de Revisión → al aprobar se crea un gasto
+4. **Detección de dirección de facturas**: El sistema detecta si una factura es ingreso o gasto cruzando con clientes
+5. **Post-Upload Wizard**: Funciona para organizar documentos después del bulk upload
+6. **Reportes**: Existen 7 reportes (P&L, Gastos, Presupuesto, Pagos Recurrentes, Fiscal/T2125, Ingresos, Kilometraje)
+7. **Pagos recurrentes**: Sistema completo con Kanban, calendario, checklist, proyección
 
-### Duplicados
-7. **Proyectos** y **Contratos** aparecen como items independientes Y como sub-items de Clientes (misma ruta).
+### GAPS CRÍTICOS (impiden el flujo completo)
 
-### Iconos repetidos/incorrectos
-8. **Análisis** usa icono `Scale` (balanza) — igual que Patrimonio. Debería usar un icono de gráficos.
-9. **Impuestos** usa icono `Receipt` — igual que Gastos.
-10. **Reportes** y **Calendario Fiscal** ambos usan `FileText`.
+#### Gap 1: Ingresos aprobados se crean como GASTOS
+**Severidad: CRÍTICA**
+Cuando la Bandeja del Caos clasifica un documento como `income_proof` o una factura con `invoice_direction: 'income'`, lo envía al Centro de Revisión correctamente. PERO `useDocumentReviewActions.approveDocument()` **siempre inserta en la tabla `expenses`**, nunca en `income`. Los ingresos nunca llegan al P&L ni al resumen de ingresos.
 
-### Tooltip incorrecto
-11. **Reportes** tiene `tooltipKey: 'analytics'` — muestra tooltip de Analytics en vez de Reportes.
+**Fix**: Modificar `approveDocument` para detectar `extracted_data.invoice_direction === 'income'` y crear un registro en `income` en vez de `expenses`.
 
-## Cambios propuestos en `src/components/Layout.tsx`
+#### Gap 2: Extractos bancarios no se guardan en `bank_transactions`
+**Severidad: ALTA**
+Cuando se sube un extracto bancario, la AI extrae transacciones pero el resultado se queda solo en `processedResult` (estado local del componente). Las transacciones **nunca se persisten** en la tabla `bank_transactions`. Al navegar a `/banking`, no aparece nada.
 
-### Eliminar sub-items que confunden (no llevan a donde dicen)
-- **Gastos**: quitar sub-item "Gráficos Día a Día" (lleva al dashboard, no a gráficos de gastos)
-- **Presupuesto**: quitar sub-items que apuntan al dashboard; dejar solo accesos a tabs reales de `/budget`
-- **Patrimonio**: quitar sub-item "Análisis Familiar" (no tiene relación)
-- **Inversiones**: quitar "Págate Primero" y "Clasificación Deuda" (son de Mentoría, no de Inversiones)
+**Fix**: En `useUnifiedChaosInbox.processDocument` case `bank_statement`, insertar las transacciones extraídas en `bank_transactions`.
 
-### Eliminar duplicados
-- Quitar **Proyectos** y **Contratos** como sub-items de Clientes (ya existen como items independientes justo debajo)
+#### Gap 3: Boletas de servicio no crean pago recurrente
+**Severidad: MEDIA**
+Las `utility_bill` se marcan con `suggested_recurring: true` pero no hay acción automática ni flujo para convertirlas en `recurring_bills`. Solo se guardan como documentos pending_review.
 
-### Corregir iconos
-- **Análisis**: cambiar `Scale` → `BarChart3` o similar
-- **Impuestos**: cambiar `Receipt` → `Calculator` o `Landmark`
-- **Reportes**: cambiar a `FileBarChart`
-- **Calendario Fiscal**: mantener `FileText` o usar `CalendarDays`
+**Fix**: Tras aprobar una utility_bill, ofrecer botón "Crear como pago fijo" que invoque `useCreateBill`.
 
-### Corregir tooltip
-- **Reportes**: cambiar `tooltipKey` de `'analytics'` a `'reports'` (agregar entrada si no existe en TOOLTIP_CONTENT)
+#### Gap 4: El Centro de Revisión no distingue visualmente ingresos de gastos
+**Severidad: MEDIA**
+Los documentos de ingreso y gasto se ven idénticos en el Centro de Revisión. El usuario no sabe qué está aprobando.
 
-### Mover "Deudas" a sub-item de Patrimonio
-- En vez de ser item independiente apuntando al dashboard, convertirlo en sub-item de Patrimonio con ruta `/net-worth` (la página ya tiene un DebtManager)
+**Fix**: Agregar badge visual "INGRESO" / "GASTO" en `ReceiptReviewCard` basado en `extracted_data.invoice_direction`.
 
 ## Archivos a modificar
 
-1. **`src/components/Layout.tsx`** — Corregir `getNavSections()`: iconos, sub-items, tooltipKey, eliminar duplicados
-2. **`src/components/ui/info-tooltip.ts`** — Agregar entrada `reports` si no existe (verificar)
+### 1. `src/hooks/data/useDocumentReview.ts`
+- En `approveDocument`: detectar `data.invoice_direction === 'income'`
+  - Si es ingreso → insertar en tabla `income` (amount, date, source, currency, income_type, entity_id, document_id)
+  - Si es gasto → mantener lógica actual (insertar en `expenses`)
+- Agregar `afterIncome()` de `useInvalidateRelated` para invalidar cache de ingresos
+
+### 2. `src/hooks/data/useUnifiedChaosInbox.ts`
+- En case `bank_statement` (~línea 404-432): después de llamar a `process-bank-statement`, insertar cada transacción en `bank_transactions` con:
+  ```
+  { user_id, transaction_date, amount, description, status: 'pending' }
+  ```
+- Invalidar `['bank-transactions']`
+
+### 3. `src/components/capture/ReceiptReviewCard.tsx`
+- Leer `document.extracted_data.invoice_direction`
+- Mostrar badge "💰 Ingreso" o "🧾 Gasto" según dirección
+- Ajustar label del botón aprobar: "Aprobar Ingreso" vs "Aprobar Gasto"
+
+### 4. `src/components/chaos/UnifiedChaosInboxPanel.tsx`
+- En `ProcessedResultMessage` para `utility_bill`: agregar botón "Crear pago fijo" que navegue a `/bills` con los datos pre-cargados
+
+## Resultado esperado
+
+Después de estos cambios, un usuario que suba en bulk:
+- **Boletas/recibos** → Gastos en el reporte de gastos y reporte fiscal
+- **Facturas de clientes** → Ingresos en el P&L y rendición para cliente
+- **Extractos bancarios** → Transacciones en módulo de banca, conciliación disponible
+- **Contratos** → Ya funciona
+- **Boletas de servicio** → Gastos + sugerencia de pago recurrente
+- **Comprobantes de ingreso** → Ingresos reales en el sistema
+
+Todo esto alimenta directamente: Dashboard, P&L, Reporte Fiscal, Reporte de Gastos, Presupuesto, Proyección de flujo.
 
