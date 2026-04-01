@@ -228,7 +228,7 @@ export function BulkHistoricalImport({ open, onClose, type, onComplete }: BulkHi
                     <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       {EXPENSE_CATEGORIES.map(c => (
-                        <SelectItem key={c} value={c} className="text-xs">{c}</SelectItem>
+                        <SelectItem key={c.value} value={c.value} className="text-xs">{c.label}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
