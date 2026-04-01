@@ -613,7 +613,7 @@ export function useCheckEducationAchievements() {
         });
 
           const { addExperience } = await import('./useGamification');
-          const points = ACHIEVEMENTS[key as keyof typeof ACHIEVEMENTS].points;
+          const points = achievement.points;
           await addExperience(user.id, points);
 
           // Create notification
@@ -626,7 +626,6 @@ export function useCheckEducationAchievements() {
               message: `Has ganado el logro "${key}" y +${points} XP`,
               action_url: '/mentorship',
             });
-        }
       }
     },
   });
