@@ -607,8 +607,8 @@ export function useCheckEducationAchievements() {
 
         await supabase.rpc('unlock_achievement', {
           p_achievement_key: key,
-          p_achievement_name: achievement.name || key,
-          p_achievement_description: achievement.description || '',
+          p_achievement_name: key,
+          p_achievement_description: '',
           p_points: achievement.points || 0,
         });
 

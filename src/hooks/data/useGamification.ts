@@ -156,13 +156,11 @@ export function useUnlockAchievement() {
     mutationFn: async (achievementKey: string) => {
       const achievement = ACHIEVEMENTS[achievementKey as keyof typeof ACHIEVEMENTS];
       const points = achievement?.points || 10;
-      const name = achievement?.name || achievementKey;
-      const description = achievement?.description || '';
 
       const { data, error } = await supabase.rpc('unlock_achievement', {
         p_achievement_key: achievementKey,
-        p_achievement_name: name,
-        p_achievement_description: description,
+        p_achievement_name: achievementKey,
+        p_achievement_description: '',
         p_points: points,
       });
       
