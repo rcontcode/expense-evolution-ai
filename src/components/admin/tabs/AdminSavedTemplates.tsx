@@ -264,52 +264,59 @@ export const AdminSavedTemplates = ({ language }: Props) => {
         </Button>
       </div>
 
-      {/* Templates Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <AnimatePresence>
-          {filtered.map((template: any, i: number) => (
-            <motion.div key={template.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ delay: i * 0.03 }}>
-              <Card className="hover:shadow-md transition-shadow">
-                <CardContent className="p-4 space-y-3">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      {TYPE_ICONS[template.message_type]}
-                      <span className="font-bold text-sm">{template.name}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Badge variant="outline" className="text-[9px]">
-                        {TEMPLATE_TYPE_LABELS[template.template_type]?.[isEs ? 'es' : 'en'] || template.template_type}
-                      </Badge>
-                      <Badge variant="secondary" className="text-[9px]">
-                        {APP_LABELS[template.target_app] || template.target_app}
-                      </Badge>
-                    </div>
-                  </div>
+      {/* Templates grouped by app */}
+      <div className="space-y-6">
+        {grouped.map((group) => (
+          <div key={group.appKey}>
+            <div className="flex items-center gap-2 mb-3">
+              <h3 className="font-bold text-sm">{group.appLabel}</h3>
+              <Badge variant="secondary" className="text-[10px]">{group.templates.length}</Badge>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <AnimatePresence>
+                {group.templates.map((template: any, i: number) => (
+                  <motion.div key={template.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ delay: i * 0.03 }}>
+                    <Card className="hover:shadow-md transition-shadow">
+                      <CardContent className="p-4 space-y-3">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            {TYPE_ICONS[template.message_type]}
+                            <span className="font-bold text-sm">{template.name}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Badge variant="outline" className="text-[9px]">
+                              {TEMPLATE_TYPE_LABELS[template.template_type]?.[isEs ? 'es' : 'en'] || template.template_type}
+                            </Badge>
+                          </div>
+                        </div>
 
-                  <p className="text-xs text-muted-foreground line-clamp-3">{template.content}</p>
+                        <p className="text-xs text-muted-foreground line-clamp-3">{template.content}</p>
 
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
-                      <Star className="h-3 w-3" />
-                      <span>{template.use_count || 0} {isEs ? 'usos' : 'uses'}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleCopy(template)}>
-                        <Copy className="h-3.5 w-3.5" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(template)}>
-                        <Edit className="h-3.5 w-3.5" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => deleteTemplate.mutate(template.id)}>
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
-        </AnimatePresence>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                            <Star className="h-3 w-3" />
+                            <span>{template.use_count || 0} {isEs ? 'usos' : 'uses'}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleCopy(template)}>
+                              <Copy className="h-3.5 w-3.5" />
+                            </Button>
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(template)}>
+                              <Edit className="h-3.5 w-3.5" />
+                            </Button>
+                            <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => deleteTemplate.mutate(template.id)}>
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
+          </div>
+        ))}
       </div>
 
       {filtered.length === 0 && (
