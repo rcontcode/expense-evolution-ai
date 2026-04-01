@@ -199,8 +199,24 @@ export const AdminSavedTemplates = ({ language }: Props) => {
   const filtered = templates.filter((t: any) => {
     if (search && !t.name.toLowerCase().includes(search.toLowerCase()) && !t.content.toLowerCase().includes(search.toLowerCase())) return false;
     if (filterType !== 'all' && t.message_type !== filterType) return false;
+    if (filterApp !== 'all' && t.target_app !== filterApp) return false;
+    if (filterStage !== 'all' && t.template_type !== filterStage) return false;
     return true;
   });
+
+  // Group by app, then sort by stage order within each group
+  const STAGE_ORDER = ['first_contact', 'welcome', 'follow_up', 'reactivation', 'offer', 'invitation'];
+  const grouped = Object.entries(APP_LABELS).reduce((acc, [appKey, appLabel]) => {
+    const appTemplates = filtered
+      .filter((t: any) => t.target_app === appKey)
+      .sort((a: any, b: any) => STAGE_ORDER.indexOf(a.template_type) - STAGE_ORDER.indexOf(b.template_type));
+    if (appTemplates.length > 0) acc.push({ appKey, appLabel, templates: appTemplates });
+    return acc;
+  }, [] as { appKey: string; appLabel: string; templates: any[] }[]);
+  // Add uncategorized
+  const categorizedIds = new Set(grouped.flatMap(g => g.templates.map((t: any) => t.id)));
+  const uncategorized = filtered.filter((t: any) => !categorizedIds.has(t.id));
+  if (uncategorized.length > 0) grouped.push({ appKey: 'other', appLabel: '📁 ' + (isEs ? 'Otros' : 'Other'), templates: uncategorized });
 
   return (
     <div className="space-y-4">
