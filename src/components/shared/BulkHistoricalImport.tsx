@@ -110,37 +110,36 @@ export function BulkHistoricalImport({ open, onClose, type, onComplete }: BulkHi
   const handleSave = async () => {
     if (!user || validRows.length === 0) return;
     setSaving(true);
+    setProgress(0);
     try {
       const currency = currentEntity?.default_currency || 'CAD';
+      const totalBatches = Math.ceil(validRows.length / BATCH_INSERT_SIZE);
 
-      if (type === 'expense') {
-        const { error } = await supabase.from('expenses').insert(
-          validRows.map(r => ({
-            user_id: user.id,
-            date: r.date,
-            amount: r.amount,
-            description: r.description || null,
-            category: r.category,
-            vendor: r.vendor || null,
-            currency,
-            entity_id: currentEntity?.id || null,
-          }))
-        );
-        if (error) throw error;
-      } else {
-        const { error } = await supabase.from('income').insert(
-          validRows.map(r => ({
-            user_id: user.id,
-            date: r.date,
-            amount: r.amount,
-            description: r.description || null,
-            source: r.vendor || 'Other',
-            income_type: 'other' as const,
-            currency,
-            entity_id: currentEntity?.id || null,
-          }))
-        );
-        if (error) throw error;
+      for (let batch = 0; batch < totalBatches; batch++) {
+        const start = batch * BATCH_INSERT_SIZE;
+        const batchRows = validRows.slice(start, start + BATCH_INSERT_SIZE);
+
+        if (type === 'expense') {
+          const { error } = await supabase.from('expenses').insert(
+            batchRows.map(r => ({
+              user_id: user.id, date: r.date, amount: r.amount,
+              description: r.description || null, category: r.category,
+              vendor: r.vendor || null, currency, entity_id: currentEntity?.id || null,
+            }))
+          );
+          if (error) throw error;
+        } else {
+          const { error } = await supabase.from('income').insert(
+            batchRows.map(r => ({
+              user_id: user.id, date: r.date, amount: r.amount,
+              description: r.description || null, source: r.vendor || 'Other',
+              income_type: 'other' as const, currency, entity_id: currentEntity?.id || null,
+            }))
+          );
+          if (error) throw error;
+        }
+
+        setProgress(Math.round(((batch + 1) / totalBatches) * 100));
       }
 
       toast.success(l
@@ -155,6 +154,7 @@ export function BulkHistoricalImport({ open, onClose, type, onComplete }: BulkHi
       toast.error(l ? 'Error al importar' : 'Error importing');
     } finally {
       setSaving(false);
+      setProgress(0);
     }
   };
 
