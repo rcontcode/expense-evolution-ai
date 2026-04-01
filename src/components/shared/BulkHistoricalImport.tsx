@@ -12,7 +12,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useEntity } from '@/contexts/EntityContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { EXPENSE_CATEGORIES } from '@/lib/constants';
+import { EXPENSE_CATEGORIES } from '@/lib/constants/expense-categories';
 
 interface HistoricalRow {
   id: string;
