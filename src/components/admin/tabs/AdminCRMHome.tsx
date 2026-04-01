@@ -105,6 +105,7 @@ export const AdminCRMHome = ({ language, onNavigateTab }: Props) => {
 
     const overdueFollowUps = followUps.filter((f: any) => new Date(f.scheduled_at) < now).length;
 
+    // This month
     const thisMonth = leads.filter((l: any) => {
       const d = new Date(l.created_at);
       return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
@@ -113,6 +114,21 @@ export const AdminCRMHome = ({ language, onNavigateTab }: Props) => {
     const convertedThisMonth = thisMonth.filter((l: any) => l.converted_to_user).length;
     const contactRate = thisMonth.length > 0 ? Math.round((contactedThisMonth / thisMonth.length) * 100) : 0;
     const conversionRate = thisMonth.length > 0 ? Math.round((convertedThisMonth / thisMonth.length) * 100) : 0;
+
+    // Last month for MoM comparison
+    const lastMonthDate = subDays(now, 30);
+    const lastMonth = leads.filter((l: any) => {
+      const d = new Date(l.created_at);
+      return d.getMonth() === lastMonthDate.getMonth() && d.getFullYear() === lastMonthDate.getFullYear();
+    });
+    const lastMonthContactRate = lastMonth.length > 0 ? Math.round((lastMonth.filter((l: any) => l.contacted_at && !l.contact_notes?.startsWith('[AUTO]')).length / lastMonth.length) * 100) : 0;
+    const lastMonthConversionRate = lastMonth.length > 0 ? Math.round((lastMonth.filter((l: any) => l.converted_to_user).length / lastMonth.length) * 100) : 0;
+    const lastWeekLeads = leads.filter((l: any) => {
+      const d = new Date(l.created_at);
+      const weekAgo = subDays(now, 14);
+      const twoWeeksAgo = subDays(now, 7);
+      return d >= weekAgo && d < twoWeeksAgo;
+    }).length;
 
     const hotUncontacted = leads.filter((l: any) => {
       const score = calculateLeadScore(l);
@@ -125,7 +141,12 @@ export const AdminCRMHome = ({ language, onNavigateTab }: Props) => {
     const emailsFailed = automationLogs.filter((l: any) => l.action_type === 'email' && l.status !== 'success').length;
     const automationsRun = automationLogs.length;
 
-    return { leadsToday, leadsThisWeek, overdueFollowUps, contactRate, conversionRate, hotUncontacted, emailsSent, emailsFailed, automationsRun };
+    // MoM deltas
+    const contactRateDelta = contactRate - lastMonthContactRate;
+    const conversionRateDelta = conversionRate - lastMonthConversionRate;
+    const weekDelta = leadsThisWeek - lastWeekLeads;
+
+    return { leadsToday, leadsThisWeek, overdueFollowUps, contactRate, conversionRate, hotUncontacted, emailsSent, emailsFailed, automationsRun, contactRateDelta, conversionRateDelta, weekDelta };
   }, [leads, followUps, automationLogs]);
 
   // Source breakdown for pie chart
