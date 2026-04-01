@@ -212,3 +212,27 @@ export function useIncomeSummary(year?: number, entityId?: string | null) {
     enabled: !!user,
   });
 }
+
+/** Paginated fetch for full-year income reports (up to 10k rows) */
+export function useAllIncomeForReport(year: number, entityId?: string | null) {
+  const { user } = useAuth();
+
+  return useQuery({
+    queryKey: ['income-report', user?.id, year, entityId],
+    queryFn: async () => {
+      const startDate = `${year}-01-01`;
+      const endDate = `${year}-12-31`;
+
+      return paginatedFetch<IncomeWithRelations>('income', user!.id, {
+        select: '*, client:clients(id, name), project:projects(id, name, color), document:documents(id, file_path, file_name)',
+        filters: (q: any) => {
+          let query = q.gte('date', startDate).lte('date', endDate);
+          if (entityId) query = query.eq('entity_id', entityId);
+          return query;
+        },
+        orderBy: 'date',
+      });
+    },
+    enabled: !!user && !!year,
+  });
+}
