@@ -41,6 +41,8 @@ import { AdminCRMHome } from '@/components/admin/tabs/AdminCRMHome';
 import { AdminFollowUpsAgenda } from '@/components/admin/tabs/AdminFollowUpsAgenda';
 import { AdminEmailDashboard } from '@/components/admin/tabs/AdminEmailDashboard';
 import { AdminWebhookSnippet } from '@/components/admin/tabs/AdminWebhookSnippet';
+import { AdminABTestingTab } from '@/components/admin/tabs/AdminABTestingTab';
+import { AdminOutgoingWebhooks } from '@/components/admin/tabs/AdminOutgoingWebhooks';
 import { LeadMergeDialog } from '@/components/admin/LeadMergeDialog';
 import { useHotLeadRealtime } from '@/hooks/admin/useHotLeadRealtime';
 import { useUncontactedHotCount } from '@/hooks/admin/useUncontactedHotCount';

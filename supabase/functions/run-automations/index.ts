@@ -435,6 +435,23 @@ Deno.serve(async (req) => {
           notes: `[AUTO] Rule "${rule.name}" → ${actionType} (${result.status})`,
         });
 
+        // Dispatch outgoing webhooks for relevant events
+        if (result.status === 'success') {
+          let webhookEvent: string | null = null;
+          if (actionType === 'auto_contact') webhookEvent = 'lead_contacted';
+          else if (actionType === 'auto_stage' && result.data?.stage === 'converted') webhookEvent = 'lead_converted';
+          else if (actionType === 'auto_stage') webhookEvent = 'pipeline_changed';
+          else if (actionType === 'auto_tag') webhookEvent = 'lead_tagged';
+
+          if (webhookEvent) {
+            fetch(`${supabaseUrl}/functions/v1/dispatch-outgoing-webhook`, {
+              method: 'POST',
+              headers: { 'Authorization': `Bearer ${serviceKey}`, 'Content-Type': 'application/json' },
+              body: JSON.stringify({ event: webhookEvent, payload: { lead_id: lead.id, lead_name: lead.name, lead_email: lead.email, action: actionType, data: result.data } }),
+            }).catch(e => console.error('Outgoing webhook dispatch error:', e));
+          }
+        }
+
       } catch (actionErr) {
         console.error(`Action error for rule ${rule.name}:`, actionErr);
         result = { status: 'failed', data: { error: String(actionErr) } };
