@@ -1112,4 +1112,16 @@ export const TOOLTIP_CONTENT = {
       howToUse: "Complete goals to earn points and unlock rewards.",
     },
   },
+  reports: {
+    es: {
+      title: "Centro de Reportes",
+      description: "Genera reportes financieros, fiscales y de reembolsos para tu contador o clientes.",
+      howToUse: "Selecciona el tipo de reporte y período para generar documentos listos para enviar.",
+    },
+    en: {
+      title: "Reports Center",
+      description: "Generate financial, tax and reimbursement reports for your accountant or clients.",
+      howToUse: "Select the report type and period to generate ready-to-send documents.",
+    },
+  },
 } as const;
