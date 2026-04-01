@@ -73,6 +73,7 @@ export function ReceiptReviewCard({
 
   const data = document.extracted_data || {};
   const isPending = document.review_status === 'pending_review';
+  const isIncome = (data as any).invoice_direction === 'income';
 
   const getStatusBadge = () => {
     switch (document.review_status) {
