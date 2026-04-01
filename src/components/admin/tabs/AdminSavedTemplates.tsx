@@ -36,11 +36,13 @@ const TEMPLATE_TYPE_LABELS: Record<string, { es: string; en: string }> = {
   reactivation: { es: 'Reactivación', en: 'Reactivation' },
   invitation: { es: 'Invitación', en: 'Invitation' },
   offer: { es: 'Oferta', en: 'Offer' },
+  welcome: { es: 'Bienvenida', en: 'Welcome' },
 };
 
 const APP_LABELS: Record<string, string> = {
   evofinz: '💰 EvoFinz',
   fokuspark: '🧘 FokusPark',
+  universmind: '🧠 UniversMind',
   bundle: '🔥 Bundle',
 };
 
