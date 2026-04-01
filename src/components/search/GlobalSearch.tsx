@@ -256,6 +256,24 @@ export function GlobalSearch({ open, onOpenChange, onQuickCapture }: GlobalSearc
       action: () => navigate('/clients'),
       keywords: ['add', 'agregar', 'nuevo', 'new', 'cliente', 'client']
     },
+    {
+      icon: Plus,
+      label: { es: 'Agregar Factura', en: 'Add Bill' },
+      action: () => navigate('/bills'),
+      keywords: ['add', 'agregar', 'nuevo', 'new', 'factura', 'bill']
+    },
+    {
+      icon: Plus,
+      label: { es: 'Agregar Contrato', en: 'Add Contract' },
+      action: () => navigate('/contracts'),
+      keywords: ['add', 'agregar', 'nuevo', 'new', 'contrato', 'contract']
+    },
+    {
+      icon: Plus,
+      label: { es: 'Agregar Kilometraje', en: 'Add Mileage' },
+      action: () => navigate('/mileage'),
+      keywords: ['add', 'agregar', 'nuevo', 'new', 'kilometraje', 'mileage', 'viaje', 'trip']
+    },
   ];
   
   const showDataResults = search.length >= 2;
