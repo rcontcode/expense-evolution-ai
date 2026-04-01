@@ -194,9 +194,12 @@ export default function Reports() {
           ? `${activeBills.length} ${l ? 'activos' : 'active'} · ${fc(activeBills.reduce((s, b) => s + b.amount, 0))}/${l ? 'mes' : 'mo'}`
           : null;
       case 'tax': {
-        const deductible = (expenses || []).filter(e => e.status === 'deductible');
+        const deductible = (expenses || []).filter(e => e.status === 'deductible' || (e as any).cra_deductible);
         const totalDed = deductible.reduce((s, e) => s + Number(e.amount), 0);
-        return deductible.length > 0 ? `${deductible.length} ${l ? 'deducibles' : 'deductible'} · ${fc(totalDed)}` : null;
+        const taxableIncome = yearIncomes.filter(i => i.is_taxable !== false).reduce((s, i) => s + i.amount, 0);
+        const netTaxable = taxableIncome - totalDed;
+        const taxLabel = currentCountry === 'CL' ? 'SII' : 'T2125';
+        return `${taxLabel} · ${l ? 'Ingreso' : 'Income'}: ${fc(taxableIncome)} · ${l ? 'Deducciones' : 'Deductions'}: ${fc(totalDed)} · ${l ? 'Neto' : 'Net'}: ${fc(netTaxable)}`;
       }
       case 'income_summary':
         return yearIncomes.length > 0
@@ -206,6 +209,11 @@ export default function Reports() {
         return mileageSummary
           ? `${mileageSummary.totalTrips} ${l ? 'viajes' : 'trips'} · ${mileageSummary.totalKilometers.toFixed(0)} km${mileageSummary.totalDeductibleAmount > 0 ? ` · ${fc(mileageSummary.totalDeductibleAmount)}` : ''}`
           : null;
+      case 'reimbursement': {
+        const reimbursable = (expenses || []).filter(e => e.client_id && (e.reimbursement_type === 'client_reimbursable' || e.status === 'pending'));
+        const totalReimb = reimbursable.reduce((s, e) => s + Number(e.amount), 0);
+        return reimbursable.length > 0 ? `${reimbursable.length} ${l ? 'gastos' : 'expenses'} · ${fc(totalReimb)}` : null;
+      }
       default:
         return null;
     }
