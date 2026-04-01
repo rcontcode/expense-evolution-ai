@@ -131,9 +131,11 @@ export const AdminAutomationTab = ({ language }: Props) => {
   const [bulkFilter, setBulkFilter] = useState('hot_uncontacted');
   const [bulkProgress, setBulkProgress] = useState<{ total: number; done: number; running: boolean } | null>(null);
   const [expandedRuleId, setExpandedRuleId] = useState<string | null>(null);
-  const [formData, setFormData] = useState<RuleFormData>({
+  const defaultFormData: RuleFormData = {
     name: '', trigger_type: 'new_lead', action_type: 'whatsapp', delay_minutes: 0, description: '', action_config: {}, trigger_condition: [],
-  });
+    schedule_active_hours_start: 8, schedule_active_hours_end: 20, schedule_active_days: [1, 2, 3, 4, 5],
+  };
+  const [formData, setFormData] = useState<RuleFormData>(defaultFormData);
 
   // ===== QUERIES =====
   const { data: rules = [], isLoading: rulesLoading } = useQuery({
