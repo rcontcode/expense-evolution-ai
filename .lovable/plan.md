@@ -1,22 +1,58 @@
 
 
-# Plan: Agregar selector de idioma y tema en PageHeader global
+# Plan: Actualizar Búsqueda Global con todas las secciones y datos
 
-## Archivos a modificar
+## Problema
+La búsqueda global (`GlobalSearch.tsx` + `useGlobalSearch.ts`) solo busca en **3 tipos de datos**: gastos, clientes y proyectos. Faltan muchas rutas y tipos de datos que existen en la app.
 
-### 1. `src/components/PageHeader.tsx`
-- Importar `useTheme` de `@/contexts/ThemeContext`, `LanguageSelector` de `@/components/LanguageSelector`, y `Sun`/`Moon` de `lucide-react`
-- Crear un grupo de controles `GlobalControls` que contenga:
-  - `<LanguageSelector />` (componente existente, botón ghost icon)
-  - Botón Sun/Moon toggle: `variant="ghost" size="icon"`, al hacer click alterna entre `light` y `dark` (si `resolvedMode === 'dark'` muestra Sun, si no Moon)
-- **Desktop**: Renderizar `GlobalControls` después de `{children}` en el bloque de título
-- **Mobile**: Renderizar `GlobalControls` después de `{children}` en el contenedor `shrink-0`
+## Rutas/datos faltantes en la búsqueda
 
-### 2. `src/pages/UserGuide.tsx`
-- Quitar import de `LanguageSelector` (línea 17)
-- Quitar `<LanguageSelector />` del children del PageHeader (línea 74)
+**Datos que no se buscan** (el hook `useGlobalSearch` no los incluye):
+- Ingresos (`useIncome`)
+- Facturas recurrentes (`useRecurringBills`)
+- Contratos (`useContracts`)
+- Kilometraje (`useMileage`)
+- Etiquetas (`useTags`)
+- Documentos (`useDocumentsForReview`)
 
-## Detalle técnico
-- El toggle de tema usará `setMode(resolvedMode === 'dark' ? 'light' : 'dark')` para alternar directamente
-- Los controles son compactos (`h-8 w-8`) y se renderizan con `gap-1` entre ellos
+**Navegación faltante en `NAVIGATION_ITEMS`:**
+- `/bills` — Facturas/Bills
+- `/budget` — Presupuesto
+- `/analytics` — Analíticas
+- `/tax-optimizer` — Optimizador Fiscal
+- `/investments` — Inversiones
+- `/subscriptions` — Suscripciones
+- `/data-health` — Salud de Datos
+- `/files` — Archivos
+- `/reports` — Centro de Reportes
+- `/user-guide` — Guía de Usuario
+- `/tax-calendar` — Calendario Fiscal
+- `/tax-report-flow` — Reporte Fiscal
+- `/business-profile` — Perfil de Negocio
+- `/beta-feedback` — Feedback Beta
+- `/capture` — Captura Móvil
+
+**Acciones rápidas faltantes:**
+- Agregar factura/bill
+- Agregar contrato
+- Agregar kilometraje
+
+## Implementación
+
+### 1. `src/hooks/utils/useGlobalSearch.ts`
+- Agregar imports: `useIncome`, `useRecurringBills`, `useContracts`, `useMileage`, `useTags`
+- Expandir `SearchResult.type` para incluir: `'income' | 'bill' | 'contract' | 'mileage' | 'tag'`
+- Agregar bloques de búsqueda para cada tipo de dato nuevo (mismo patrón que expenses/clients/projects)
+- Retornar las 8 categorías en el resultado
+
+### 2. `src/components/search/GlobalSearch.tsx`
+- Agregar las categorías de datos nuevas al renderizado (income, bills, contracts, mileage, tags) con iconos y colores distintos
+- Agregar a `NAVIGATION_ITEMS` todas las rutas faltantes (~15 rutas)
+- Agregar acciones rápidas nuevas (agregar bill, contrato, kilometraje)
+- Actualizar el placeholder del input para reflejar que busca en todo
+- Agregar imports de iconos necesarios (`Wallet`, `Calendar`, `FileBarChart`, etc.)
+
+## Archivos a modificar (2)
+- `src/hooks/utils/useGlobalSearch.ts` — Agregar 5 fuentes de datos nuevas
+- `src/components/search/GlobalSearch.tsx` — Agregar categorías de resultados, rutas y acciones faltantes
 
