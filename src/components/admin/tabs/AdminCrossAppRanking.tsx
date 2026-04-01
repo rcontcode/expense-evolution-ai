@@ -17,7 +17,14 @@ interface Props {
 const APP_COLORS_MAP: Record<string, string> = {
   evofinz: '#10b981',
   fokuspark: '#8b5cf6',
+  universmind: '#7c3aed',
   default: '#6b7280',
+};
+
+const APP_LABELS: Record<string, string> = {
+  evofinz: 'EvoFinz 🔥',
+  fokuspark: 'Fokuspark 🧠',
+  universmind: 'UniversMind 🌌',
 };
 
 const getAppColor = (source: string) => {
