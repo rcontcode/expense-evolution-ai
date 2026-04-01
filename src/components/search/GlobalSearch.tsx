@@ -31,6 +31,16 @@ import {
   Trophy,
   Loader2,
   Trash2,
+  Wallet,
+  CalendarDays,
+  FileBarChart,
+  Shield,
+  BarChart3,
+  HeartPulse,
+  Files,
+  BookOpen,
+  MessageSquare,
+  Smartphone,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useGlobalSearch } from '@/hooks/utils/useGlobalSearch';
@@ -174,6 +184,20 @@ const NAVIGATION_ITEMS: NavigationItem[] = [
     path: '/settings',
     keywords: ['settings', 'configuracion', 'preferencias', 'preferences', 'opciones']
   },
+  { icon: Wallet, label: { es: 'Facturas Recurrentes', en: 'Recurring Bills' }, path: '/bills', keywords: ['bill', 'factura', 'recurrente', 'recurring', 'pago'] },
+  { icon: BarChart3, label: { es: 'Presupuesto', en: 'Budget' }, path: '/budget', keywords: ['budget', 'presupuesto', 'plan'] },
+  { icon: FileBarChart, label: { es: 'Analíticas', en: 'Analytics' }, path: '/analytics', keywords: ['analytics', 'analíticas', 'estadísticas', 'statistics'] },
+  { icon: Shield, label: { es: 'Optimizador Fiscal', en: 'Tax Optimizer' }, path: '/tax-optimizer', keywords: ['tax', 'impuestos', 'fiscal', 'optimizer'] },
+  { icon: TrendingUp, label: { es: 'Inversiones', en: 'Investments' }, path: '/investments', keywords: ['investment', 'inversión', 'portfolio', 'FIRE'] },
+  { icon: RefreshCw, label: { es: 'Suscripciones', en: 'Subscriptions' }, path: '/subscriptions', keywords: ['subscription', 'suscripción', 'recurrente'] },
+  { icon: HeartPulse, label: { es: 'Salud de Datos', en: 'Data Health' }, path: '/data-health', keywords: ['health', 'salud', 'datos', 'calidad'] },
+  { icon: Files, label: { es: 'Archivos', en: 'Files' }, path: '/files', keywords: ['file', 'archivo', 'documento', 'document'] },
+  { icon: FileBarChart, label: { es: 'Centro de Reportes', en: 'Report Center' }, path: '/reports', keywords: ['report', 'reporte', 'informe', 'PDF', 'Excel'] },
+  { icon: BookOpen, label: { es: 'Guía de Usuario', en: 'User Guide' }, path: '/user-guide', keywords: ['guide', 'guía', 'ayuda', 'help', 'tutorial'] },
+  { icon: CalendarDays, label: { es: 'Calendario Fiscal', en: 'Tax Calendar' }, path: '/tax-calendar', keywords: ['calendar', 'calendario', 'fiscal', 'fecha', 'deadline'] },
+  { icon: Building2, label: { es: 'Perfil de Negocio', en: 'Business Profile' }, path: '/business-profile', keywords: ['business', 'negocio', 'perfil', 'empresa'] },
+  { icon: MessageSquare, label: { es: 'Feedback Beta', en: 'Beta Feedback' }, path: '/beta-feedback', keywords: ['feedback', 'beta', 'opinión', 'sugerencia'] },
+  { icon: Smartphone, label: { es: 'Captura Móvil', en: 'Mobile Capture' }, path: '/capture', keywords: ['capture', 'captura', 'móvil', 'mobile', 'cámara'] },
   { 
     icon: Trash2, 
     label: { es: 'Papelera', en: 'Trash' }, 
@@ -232,6 +256,24 @@ export function GlobalSearch({ open, onOpenChange, onQuickCapture }: GlobalSearc
       action: () => navigate('/clients'),
       keywords: ['add', 'agregar', 'nuevo', 'new', 'cliente', 'client']
     },
+    {
+      icon: Plus,
+      label: { es: 'Agregar Factura', en: 'Add Bill' },
+      action: () => navigate('/bills'),
+      keywords: ['add', 'agregar', 'nuevo', 'new', 'factura', 'bill']
+    },
+    {
+      icon: Plus,
+      label: { es: 'Agregar Contrato', en: 'Add Contract' },
+      action: () => navigate('/contracts'),
+      keywords: ['add', 'agregar', 'nuevo', 'new', 'contrato', 'contract']
+    },
+    {
+      icon: Plus,
+      label: { es: 'Agregar Kilometraje', en: 'Add Mileage' },
+      action: () => navigate('/mileage'),
+      keywords: ['add', 'agregar', 'nuevo', 'new', 'kilometraje', 'mileage', 'viaje', 'trip']
+    },
   ];
   
   const showDataResults = search.length >= 2;
@@ -239,7 +281,7 @@ export function GlobalSearch({ open, onOpenChange, onQuickCapture }: GlobalSearc
   return (
     <CommandDialog open={open} onOpenChange={onOpenChange}>
       <CommandInput 
-        placeholder={language === 'es' ? 'Buscar gastos, clientes, proyectos...' : 'Search expenses, clients, projects...'} 
+        placeholder={language === 'es' ? 'Buscar en todo: gastos, ingresos, clientes, contratos...' : 'Search everything: expenses, income, clients, contracts...'} 
         value={search}
         onValueChange={setSearch}
       />
@@ -329,6 +371,100 @@ export function GlobalSearch({ open, onOpenChange, onQuickCapture }: GlobalSearc
                         {result.subtitle && (
                           <p className="text-xs text-muted-foreground truncate">{result.subtitle}</p>
                         )}
+                      </div>
+                    </div>
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            )}
+
+            {/* Income Results */}
+            {searchResults.income.length > 0 && (
+              <CommandGroup heading={language === 'es' ? '💰 Ingresos' : '💰 Income'}>
+                {searchResults.income.map((result) => (
+                  <CommandItem key={result.id} value={`income-${result.id}`} onSelect={() => handleSelect(result.path)} className="cursor-pointer">
+                    <div className="flex items-center gap-3 w-full">
+                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-green-500 flex items-center justify-center shadow-sm">
+                        <TrendingUp className="h-4 w-4 text-white" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium truncate">{result.title}</p>
+                        {result.subtitle && <p className="text-xs text-muted-foreground truncate">{result.subtitle}</p>}
+                      </div>
+                    </div>
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            )}
+
+            {/* Bills Results */}
+            {searchResults.bills.length > 0 && (
+              <CommandGroup heading={language === 'es' ? '🧾 Facturas' : '🧾 Bills'}>
+                {searchResults.bills.map((result) => (
+                  <CommandItem key={result.id} value={`bill-${result.id}`} onSelect={() => handleSelect(result.path)} className="cursor-pointer">
+                    <div className="flex items-center gap-3 w-full">
+                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-sm">
+                        <Wallet className="h-4 w-4 text-white" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium truncate">{result.title}</p>
+                        {result.subtitle && <p className="text-xs text-muted-foreground truncate">{result.subtitle}</p>}
+                      </div>
+                    </div>
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            )}
+
+            {/* Contracts Results */}
+            {searchResults.contracts.length > 0 && (
+              <CommandGroup heading={language === 'es' ? '📄 Contratos' : '📄 Contracts'}>
+                {searchResults.contracts.map((result) => (
+                  <CommandItem key={result.id} value={`contract-${result.id}`} onSelect={() => handleSelect(result.path)} className="cursor-pointer">
+                    <div className="flex items-center gap-3 w-full">
+                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-sky-400 to-blue-600 flex items-center justify-center shadow-sm">
+                        <FileText className="h-4 w-4 text-white" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium truncate">{result.title}</p>
+                        {result.subtitle && <p className="text-xs text-muted-foreground truncate">{result.subtitle}</p>}
+                      </div>
+                    </div>
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            )}
+
+            {/* Mileage Results */}
+            {searchResults.mileage.length > 0 && (
+              <CommandGroup heading={language === 'es' ? '🚗 Kilometraje' : '🚗 Mileage'}>
+                {searchResults.mileage.map((result) => (
+                  <CommandItem key={result.id} value={`mileage-${result.id}`} onSelect={() => handleSelect(result.path)} className="cursor-pointer">
+                    <div className="flex items-center gap-3 w-full">
+                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-400 to-emerald-600 flex items-center justify-center shadow-sm">
+                        <Car className="h-4 w-4 text-white" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium truncate">{result.title}</p>
+                        {result.subtitle && <p className="text-xs text-muted-foreground truncate">{result.subtitle}</p>}
+                      </div>
+                    </div>
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            )}
+
+            {/* Tags Results */}
+            {searchResults.tags.length > 0 && (
+              <CommandGroup heading={language === 'es' ? '🏷️ Etiquetas' : '🏷️ Tags'}>
+                {searchResults.tags.map((result) => (
+                  <CommandItem key={result.id} value={`tag-${result.id}`} onSelect={() => handleSelect(result.path)} className="cursor-pointer">
+                    <div className="flex items-center gap-3 w-full">
+                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-pink-400 to-fuchsia-500 flex items-center justify-center shadow-sm">
+                        <Tag className="h-4 w-4 text-white" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium truncate">{result.title}</p>
                       </div>
                     </div>
                   </CommandItem>
