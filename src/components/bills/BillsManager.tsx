@@ -209,7 +209,7 @@ export function BillsManager({ selectedMonth }: BillsManagerProps) {
                             variant="ghost"
                             size="icon"
                             className="h-8 w-8 text-green-600 hover:bg-green-500/10"
-                            onClick={() => markPaid.mutate({ billId: bill.id, amount: bill.amount })}
+                            onClick={() => setMarkPaidBill(bill)}
                           >
                             <CheckCircle2 className="h-4 w-4" />
                           </Button>
