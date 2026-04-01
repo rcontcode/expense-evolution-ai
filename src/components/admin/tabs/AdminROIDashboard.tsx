@@ -438,6 +438,7 @@ export function AdminROIDashboard({ language }: Props) {
                   </div>
                 </div>
               ))}
+            </div>
           </CardContent>
         </Card>
       </div>
