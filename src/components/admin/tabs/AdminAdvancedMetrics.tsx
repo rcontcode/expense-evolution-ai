@@ -166,31 +166,88 @@ export const AdminAdvancedMetrics = ({ language }: Props) => {
     return <Card className="animate-pulse"><CardContent className="p-6"><div className="h-40 bg-muted rounded" /></CardContent></Card>;
   }
 
+  const MomBadge = ({ delta }: { delta: number }) => {
+    if (Math.abs(delta) < 0.1) return null;
+    return (
+      <Badge variant="outline" className={`text-[9px] ml-1 ${delta > 0 ? 'border-emerald-500 text-emerald-600' : 'border-red-400 text-red-500'}`}>
+        {delta > 0 ? '↑' : '↓'}{Math.abs(delta).toFixed(1)}pp
+      </Badge>
+    );
+  };
+
   return (
     <div className="space-y-4">
-      {/* KPI Cards */}
+      {/* KPI Cards with sparklines */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { label: isEs ? 'Tasa contacto (manual)' : 'Contact Rate (manual)', value: `${metrics.contactRate.toFixed(1)}%`, sub: `${metrics.contactedCount}/${metrics.total} · Auto: ${metrics.autoContactedCount}`, icon: Phone, color: 'text-amber-600' },
-          { label: isEs ? 'Tasa conversión' : 'Conversion Rate', value: `${metrics.overallConversion.toFixed(1)}%`, sub: `${metrics.convertedCount}/${metrics.total}`, icon: Target, color: 'text-emerald-600' },
+          { label: isEs ? 'Tasa contacto (manual)' : 'Contact Rate (manual)', value: `${metrics.contactRate.toFixed(1)}%`, sub: `${metrics.contactedCount}/${metrics.total} · Auto: ${metrics.autoContactedCount}`, icon: Phone, color: 'text-amber-600', delta: metrics.contactRateDelta },
+          { label: isEs ? 'Tasa conversión' : 'Conversion Rate', value: `${metrics.overallConversion.toFixed(1)}%`, sub: `${metrics.convertedCount}/${metrics.total}`, icon: Target, color: 'text-emerald-600', delta: metrics.conversionDelta },
           { label: isEs ? 'Tiempo avg contacto' : 'Avg Contact Time', value: `${metrics.avgContactTime.toFixed(0)}h`, sub: isEs ? 'horas promedio' : 'average hours', icon: Clock, color: 'text-blue-600' },
           { label: isEs ? 'Tiempo avg conversión' : 'Avg Conversion Time', value: `${metrics.avgConversionDays.toFixed(0)}d`, sub: isEs ? 'días promedio' : 'average days', icon: Zap, color: 'text-violet-600' },
         ].map((kpi, i) => (
           <motion.div key={kpi.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
-            <Card>
-              <CardContent className="p-4">
+            <Card className="overflow-hidden">
+              <CardContent className="p-4 pb-1">
                 <div className="flex items-center justify-between mb-2">
                   <kpi.icon className={`h-5 w-5 ${kpi.color}`} />
-                  <ArrowUpRight className="h-3.5 w-3.5 text-muted-foreground" />
+                  <div className="flex items-center">
+                    {kpi.delta !== undefined && <MomBadge delta={kpi.delta} />}
+                    <ArrowUpRight className="h-3.5 w-3.5 text-muted-foreground ml-1" />
+                  </div>
                 </div>
                 <p className="text-2xl font-black">{kpi.value}</p>
                 <p className="text-[10px] text-muted-foreground font-medium mt-0.5">{kpi.label}</p>
                 <p className="text-[9px] text-muted-foreground">{kpi.sub}</p>
               </CardContent>
+              {/* Mini sparkline */}
+              <div className="h-8 px-2">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={metrics.kpiSparkline}>
+                    <defs>
+                      <linearGradient id={`spark-${i}`} x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <Area type="monotone" dataKey="v" stroke="hsl(var(--primary))" fill={`url(#spark-${i})`} strokeWidth={1.5} dot={false} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
             </Card>
           </motion.div>
         ))}
       </div>
+
+      {/* Conversion Funnel */}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <Target className="h-4 w-4 text-emerald-500" />
+            {isEs ? '🔻 Funnel de Conversión' : '🔻 Conversion Funnel'}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {metrics.funnelData.map((stage, i) => (
+              <div key={stage.stage} className="space-y-1">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="font-medium">{stage.stage}</span>
+                  <span className="font-bold">{stage.value} <span className="text-muted-foreground font-normal text-xs">({stage.percent}%)</span></span>
+                </div>
+                <div className="h-6 bg-muted rounded-full overflow-hidden">
+                  <motion.div
+                    className="h-full rounded-full"
+                    style={{ backgroundColor: stage.color }}
+                    initial={{ width: 0 }}
+                    animate={{ width: `${stage.percent}%` }}
+                    transition={{ delay: i * 0.15, duration: 0.6 }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Best time + Top countries */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
