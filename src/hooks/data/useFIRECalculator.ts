@@ -2,6 +2,10 @@ import { useState, useMemo } from 'react';
 import { useIncome } from './useIncome';
 import { useExpenses } from './useExpenses';
 import { useAssets, useLiabilities } from './useNetWorth';
+import {
+  clamp, MAX_PROJECTION_YEARS, MIN_AGE, MAX_AGE,
+  MIN_RETURN_RATE, MAX_RETURN_RATE, MIN_WITHDRAWAL_RATE, MAX_WITHDRAWAL_RATE,
+} from '@/lib/constants/resource-limits';
 
 export interface FIREInputs {
   currentAge: number;
