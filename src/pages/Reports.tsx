@@ -452,7 +452,7 @@ export default function Reports() {
         case 'tax': {
           if (format === 'pdf') {
             const { exportT2125ToPDF } = await import('@/lib/export/pdf-export');
-            exportT2125ToPDF(expenses || [], selectedYear, { language: l ? 'es' : 'en', year: selectedYear, userName: profile?.full_name, businessName: profile?.business_name });
+            exportT2125ToPDF(expenses || [], selectedYear, { language: l ? 'es' : 'en', year: selectedYear, userName: profile?.full_name, businessName: profile?.business_name, incomes: yearIncomes, country: currentCountry });
           } else {
             const { exportT2125Report } = await import('@/lib/export/t2125-export');
             await exportT2125Report(expenses || [], selectedYear);
@@ -460,7 +460,21 @@ export default function Reports() {
           break;
         }
         case 'income_summary': {
-          await exportIncomeSummaryExcel(l, incomes || [], selectedYear);
+          if (format === 'pdf') {
+            await exportIncomeSummaryPDF(l, incomes || [], selectedYear, fc, profile?.full_name, profile?.business_name);
+          } else {
+            await exportIncomeSummaryExcel(l, incomes || [], selectedYear);
+          }
+          break;
+        }
+        case 'reimbursement': {
+          const reimbursable = (expenses || []).filter(e => e.client_id && (e.reimbursement_type === 'client_reimbursable' || e.status === 'pending'));
+          if (reimbursable.length === 0) { toast.info(l ? 'No hay gastos' : 'No expenses'); setExporting(null); return; }
+          if (format === 'pdf') {
+            await exportReimbursementPDF(l, reimbursable, selectedYear, fc, profile?.full_name, profile?.business_name);
+          } else {
+            await exportReimbursementExcel(l, reimbursable, selectedYear);
+          }
           break;
         }
         case 'mileage': {
