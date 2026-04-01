@@ -611,6 +611,14 @@ export const AdminKanbanPipeline = ({ language }: Props) => {
 
   return (
     <div className="space-y-4">
+      {/* App filter */}
+      <div className="flex items-center gap-2">
+        <AppSourceFilter value={appFilter} onChange={setAppFilter} language={language} />
+        <span className="text-xs text-muted-foreground">
+          {Object.values(stageLeads).flat().length} leads
+        </span>
+      </div>
+
       {/* Pipeline Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         {STAGES.map((stage) => {

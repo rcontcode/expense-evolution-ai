@@ -273,6 +273,12 @@ export const AdminContactQueueTab = ({ language }: Props) => {
 
   return (
     <div className="space-y-6">
+      {/* App filter */}
+      <div className="flex items-center gap-2">
+        <AppSourceFilter value={appFilter} onChange={setAppFilter} language={language} />
+        <span className="text-xs text-muted-foreground">{queue.length} leads</span>
+      </div>
+
       {/* Summary */}
       <div className="grid grid-cols-3 gap-3">
         <Card className="border-red-200 bg-red-50/50 dark:bg-red-950/20">
