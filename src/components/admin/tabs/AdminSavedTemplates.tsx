@@ -51,6 +51,8 @@ export const AdminSavedTemplates = ({ language }: Props) => {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [filterType, setFilterType] = useState('all');
+  const [filterApp, setFilterApp] = useState('all');
+  const [filterStage, setFilterStage] = useState('all');
   const [editOpen, setEditOpen] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<any>(null);
   const [formName, setFormName] = useState('');
@@ -197,8 +199,24 @@ export const AdminSavedTemplates = ({ language }: Props) => {
   const filtered = templates.filter((t: any) => {
     if (search && !t.name.toLowerCase().includes(search.toLowerCase()) && !t.content.toLowerCase().includes(search.toLowerCase())) return false;
     if (filterType !== 'all' && t.message_type !== filterType) return false;
+    if (filterApp !== 'all' && t.target_app !== filterApp) return false;
+    if (filterStage !== 'all' && t.template_type !== filterStage) return false;
     return true;
   });
+
+  // Group by app, then sort by stage order within each group
+  const STAGE_ORDER = ['first_contact', 'welcome', 'follow_up', 'reactivation', 'offer', 'invitation'];
+  const grouped = Object.entries(APP_LABELS).reduce((acc, [appKey, appLabel]) => {
+    const appTemplates = filtered
+      .filter((t: any) => t.target_app === appKey)
+      .sort((a: any, b: any) => STAGE_ORDER.indexOf(a.template_type) - STAGE_ORDER.indexOf(b.template_type));
+    if (appTemplates.length > 0) acc.push({ appKey, appLabel, templates: appTemplates });
+    return acc;
+  }, [] as { appKey: string; appLabel: string; templates: any[] }[]);
+  // Add uncategorized
+  const categorizedIds = new Set(grouped.flatMap(g => g.templates.map((t: any) => t.id)));
+  const uncategorized = filtered.filter((t: any) => !categorizedIds.has(t.id));
+  if (uncategorized.length > 0) grouped.push({ appKey: 'other', appLabel: '📁 ' + (isEs ? 'Otros' : 'Other'), templates: uncategorized });
 
   return (
     <div className="space-y-4">
@@ -208,10 +226,29 @@ export const AdminSavedTemplates = ({ language }: Props) => {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input placeholder={isEs ? 'Buscar plantillas...' : 'Search templates...'} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
         </div>
-        <Select value={filterType} onValueChange={setFilterType}>
-          <SelectTrigger className="w-[130px]"><SelectValue /></SelectTrigger>
+        <Select value={filterApp} onValueChange={setFilterApp}>
+          <SelectTrigger className="w-[140px]"><SelectValue /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">{isEs ? 'Todos' : 'All'}</SelectItem>
+            <SelectItem value="all">{isEs ? '🌐 Todas apps' : '🌐 All apps'}</SelectItem>
+            <SelectItem value="evofinz">💰 EvoFinz</SelectItem>
+            <SelectItem value="fokuspark">🧘 FokusPark</SelectItem>
+            <SelectItem value="universmind">🧠 UniversMind</SelectItem>
+            <SelectItem value="bundle">🔥 Bundle</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={filterStage} onValueChange={setFilterStage}>
+          <SelectTrigger className="w-[140px]"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{isEs ? '📋 Todas etapas' : '📋 All stages'}</SelectItem>
+            {Object.entries(TEMPLATE_TYPE_LABELS).map(([key, label]) => (
+              <SelectItem key={key} value={key} className="text-xs">{isEs ? label.es : label.en}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select value={filterType} onValueChange={setFilterType}>
+          <SelectTrigger className="w-[120px]"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{isEs ? '📨 Tipo' : '📨 Type'}</SelectItem>
             <SelectItem value="whatsapp">WhatsApp</SelectItem>
             <SelectItem value="email">Email</SelectItem>
             <SelectItem value="offer">{isEs ? 'Oferta' : 'Offer'}</SelectItem>
@@ -227,52 +264,59 @@ export const AdminSavedTemplates = ({ language }: Props) => {
         </Button>
       </div>
 
-      {/* Templates Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <AnimatePresence>
-          {filtered.map((template: any, i: number) => (
-            <motion.div key={template.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ delay: i * 0.03 }}>
-              <Card className="hover:shadow-md transition-shadow">
-                <CardContent className="p-4 space-y-3">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      {TYPE_ICONS[template.message_type]}
-                      <span className="font-bold text-sm">{template.name}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Badge variant="outline" className="text-[9px]">
-                        {TEMPLATE_TYPE_LABELS[template.template_type]?.[isEs ? 'es' : 'en'] || template.template_type}
-                      </Badge>
-                      <Badge variant="secondary" className="text-[9px]">
-                        {APP_LABELS[template.target_app] || template.target_app}
-                      </Badge>
-                    </div>
-                  </div>
+      {/* Templates grouped by app */}
+      <div className="space-y-6">
+        {grouped.map((group) => (
+          <div key={group.appKey}>
+            <div className="flex items-center gap-2 mb-3">
+              <h3 className="font-bold text-sm">{group.appLabel}</h3>
+              <Badge variant="secondary" className="text-[10px]">{group.templates.length}</Badge>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <AnimatePresence>
+                {group.templates.map((template: any, i: number) => (
+                  <motion.div key={template.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ delay: i * 0.03 }}>
+                    <Card className="hover:shadow-md transition-shadow">
+                      <CardContent className="p-4 space-y-3">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            {TYPE_ICONS[template.message_type]}
+                            <span className="font-bold text-sm">{template.name}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Badge variant="outline" className="text-[9px]">
+                              {TEMPLATE_TYPE_LABELS[template.template_type]?.[isEs ? 'es' : 'en'] || template.template_type}
+                            </Badge>
+                          </div>
+                        </div>
 
-                  <p className="text-xs text-muted-foreground line-clamp-3">{template.content}</p>
+                        <p className="text-xs text-muted-foreground line-clamp-3">{template.content}</p>
 
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
-                      <Star className="h-3 w-3" />
-                      <span>{template.use_count || 0} {isEs ? 'usos' : 'uses'}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleCopy(template)}>
-                        <Copy className="h-3.5 w-3.5" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(template)}>
-                        <Edit className="h-3.5 w-3.5" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => deleteTemplate.mutate(template.id)}>
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
-        </AnimatePresence>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                            <Star className="h-3 w-3" />
+                            <span>{template.use_count || 0} {isEs ? 'usos' : 'uses'}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleCopy(template)}>
+                              <Copy className="h-3.5 w-3.5" />
+                            </Button>
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(template)}>
+                              <Edit className="h-3.5 w-3.5" />
+                            </Button>
+                            <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => deleteTemplate.mutate(template.id)}>
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
+          </div>
+        ))}
       </div>
 
       {filtered.length === 0 && (

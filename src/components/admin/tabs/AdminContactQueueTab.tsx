@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { AppSourceFilter, filterLeadsByApp } from '@/components/admin/AppSourceFilter';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -57,6 +58,7 @@ export const AdminContactQueueTab = ({ language }: Props) => {
   const [targetApp, setTargetApp] = useState<'evofinz' | 'fokuspark' | 'universmind' | 'bundle'>('evofinz');
   const [sendingCrmEmail, setSendingCrmEmail] = useState(false);
   const [templateType, setTemplateType] = useState<'first_contact' | 'follow_up' | 'reactivation' | 'invitation' | 'offer'>('first_contact');
+  const [appFilter, setAppFilter] = useState('all');
 
   const { data: rawLeads = [], isLoading } = useQuery({
     queryKey: ['contact-queue-leads'],
@@ -73,7 +75,8 @@ export const AdminContactQueueTab = ({ language }: Props) => {
 
   // Compute queue with urgency scoring
   const queue = useMemo(() => {
-    return rawLeads
+    const filteredByApp = filterLeadsByApp(rawLeads, appFilter);
+    return filteredByApp
       .map((lead: any) => {
         const score = calculateLeadScore(lead);
         const priority = getLeadPriority(score);
@@ -94,7 +97,7 @@ export const AdminContactQueueTab = ({ language }: Props) => {
       })
       .filter((l) => !l.converted_to_user) // Exclude already converted
       .sort((a, b) => b.urgencyScore - a.urgencyScore);
-  }, [rawLeads]);
+  }, [rawLeads, appFilter]);
 
   // Split into sections
   const urgent = queue.filter((l) => !l.contacted_at && (l.priority === 'hot' || l.priority === 'warm'));
@@ -270,6 +273,12 @@ export const AdminContactQueueTab = ({ language }: Props) => {
 
   return (
     <div className="space-y-6">
+      {/* App filter */}
+      <div className="flex items-center gap-2">
+        <AppSourceFilter value={appFilter} onChange={setAppFilter} language={language} />
+        <span className="text-xs text-muted-foreground">{queue.length} leads</span>
+      </div>
+
       {/* Summary */}
       <div className="grid grid-cols-3 gap-3">
         <Card className="border-red-200 bg-red-50/50 dark:bg-red-950/20">

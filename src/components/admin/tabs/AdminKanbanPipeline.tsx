@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { AppSourceFilter, filterLeadsByApp } from '@/components/admin/AppSourceFilter';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -504,6 +505,7 @@ export const AdminKanbanPipeline = ({ language }: Props) => {
   const [selectedLead, setSelectedLead] = useState<PipelineLead | null>(null);
   const [activeLead, setActiveLead] = useState<PipelineLead | null>(null);
   const [pendingDrag, setPendingDrag] = useState<{ lead: PipelineLead; targetStage: PipelineStage } | null>(null);
+  const [appFilter, setAppFilter] = useState('all');
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
@@ -529,15 +531,16 @@ export const AdminKanbanPipeline = ({ language }: Props) => {
   });
 
   const stageLeads = useMemo(() => {
+    const filteredByApp = filterLeadsByApp(rawLeads, appFilter);
     const grouped: Record<PipelineStage, PipelineLead[]> = { new: [], contacted: [], qualified: [], converted: [] };
-    rawLeads.forEach((lead) => {
+    filteredByApp.forEach((lead) => {
       const stage = (lead.pipeline_stage as PipelineStage) || 'new';
       if (grouped[stage]) grouped[stage].push(lead);
       else grouped.new.push(lead);
     });
     Object.values(grouped).forEach(arr => arr.sort((a, b) => b.score - a.score));
     return grouped;
-  }, [rawLeads]);
+  }, [rawLeads, appFilter]);
 
   const moveToStage = useMutation({
     mutationFn: async ({ leadId, stage, note }: { leadId: string; stage: PipelineStage; note?: string }) => {
@@ -608,6 +611,14 @@ export const AdminKanbanPipeline = ({ language }: Props) => {
 
   return (
     <div className="space-y-4">
+      {/* App filter */}
+      <div className="flex items-center gap-2">
+        <AppSourceFilter value={appFilter} onChange={setAppFilter} language={language} />
+        <span className="text-xs text-muted-foreground">
+          {Object.values(stageLeads).flat().length} leads
+        </span>
+      </div>
+
       {/* Pipeline Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         {STAGES.map((stage) => {

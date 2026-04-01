@@ -32,8 +32,7 @@ export const AdminLeadsTab = ({ language, sourceFilter, onClearFilter }: Props) 
       let query = supabase
         .from('quiz_leads')
         .select('*')
-        .order('created_at', { ascending: false })
-        .limit(50);
+        .order('created_at', { ascending: false });
       
       if (sourceFilter) {
         query = query.ilike('source', `%${sourceFilter}%`);
