@@ -478,8 +478,8 @@ export function AdminROIDashboard({ language }: Props) {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline" className="text-xs capitalize">
-                          {lead.source || 'evofinz'}
+                        <Badge variant="outline" className="text-xs" style={{ borderColor: SOURCE_COLORS[getSourceKey(lead.source || 'evofinz')], color: SOURCE_COLORS[getSourceKey(lead.source || 'evofinz')] }}>
+                          {SOURCE_LABELS[getSourceKey(lead.source || 'evofinz')] || lead.source}
                         </Badge>
                       </TableCell>
                       <TableCell>
