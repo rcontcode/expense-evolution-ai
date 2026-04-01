@@ -81,6 +81,7 @@ const Terms = lazyWithRetry(() => import("./pages/Terms"));
 const Status = lazyWithRetry(() => import("./pages/Status"));
 const About = lazyWithRetry(() => import("./pages/About"));
 const Auth = lazyWithRetry(() => import("./pages/Auth"));
+const ResetPassword = lazyWithRetry(() => import("./pages/ResetPassword"));
 const Onboarding = lazyWithRetry(() => import("./pages/Onboarding"));
 const Dashboard = lazyWithRetry(() => import("./pages/Dashboard"));
 const ChaosInbox = lazyWithRetry(() => import("./pages/ChaosInbox"));
@@ -355,6 +356,7 @@ const App = () => (
                         <Route path="/status" element={<Status />} />
                         <Route path="/about" element={<About />} />
                         <Route path="/auth" element={<Auth />} />
+                        <Route path="/reset-password" element={<ResetPassword />} />
                         <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
                         <Route path="/beta-welcome" element={<ProtectedRoute><BetaWelcome /></ProtectedRoute>} />
                         <Route path="/beta-features" element={<ProtectedRoute><BetaFeatures /></ProtectedRoute>} />
