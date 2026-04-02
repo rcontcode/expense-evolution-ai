@@ -2,7 +2,8 @@ import { useState, useMemo } from 'react';
 import { 
   MessageSquare, Send, Link2, Copy, Mail, 
   CheckCircle2, AlertTriangle, Bug, Star, Gift, 
-  Users, Trophy, Shield, Smartphone, BookOpen
+  Users, Trophy, Shield, Smartphone, BookOpen,
+  Sparkles, Target, HelpCircle
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
