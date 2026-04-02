@@ -322,7 +322,7 @@ export function AdminBusinessPnL({ language }: AdminBusinessPnLProps) {
   return (
     <div className="space-y-6">
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         <Card className="border-0 shadow-lg overflow-hidden">
           <CardContent className="p-0">
             <div className="p-4 bg-gradient-to-br from-emerald-500 to-green-600 text-white">
@@ -361,6 +361,15 @@ export function AdminBusinessPnL({ language }: AdminBusinessPnLProps) {
               <p className="text-xs text-white/80">{isEs ? 'Margen Neto' : 'Net Margin'}</p>
               <p className="text-2xl font-black">${netMargin.toFixed(2)}</p>
               <p className="text-[10px] text-white/70">{marginPercent}%</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="border-0 shadow-lg overflow-hidden">
+          <CardContent className="p-0">
+            <div className={`p-4 bg-gradient-to-br ${globalROI >= 0 ? 'from-violet-500 to-purple-600' : 'from-rose-600 to-red-700'} text-white`}>
+              <p className="text-xs text-white/80">ROI</p>
+              <p className="text-2xl font-black">{globalROI}%</p>
+              <p className="text-[10px] text-white/70">{isEs ? 'Retorno s/ inversión' : 'Return on investment'}</p>
             </div>
           </CardContent>
         </Card>
