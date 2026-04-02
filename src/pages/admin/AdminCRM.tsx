@@ -46,6 +46,7 @@ import { AdminOutgoingWebhooks } from '@/components/admin/tabs/AdminOutgoingWebh
 import { AdminBusinessPnL } from '@/components/admin/tabs/AdminBusinessPnL';
 import { AdminCustomerHealth } from '@/components/admin/tabs/AdminCustomerHealth';
 import { AdminCostSimulator } from '@/components/admin/tabs/AdminCostSimulator';
+import { AdminBusinessIntelligence } from '@/components/admin/tabs/AdminBusinessIntelligence';
 import { LeadMergeDialog } from '@/components/admin/LeadMergeDialog';
 import { useHotLeadRealtime } from '@/hooks/admin/useHotLeadRealtime';
 import { useUncontactedHotCount } from '@/hooks/admin/useUncontactedHotCount';
@@ -808,6 +809,10 @@ const AdminCRM = () => {
                   <span className="hidden md:inline">{isEs ? 'Simulador' : 'Simulator'}</span>
                   <span className="md:hidden">🧮</span>
                 </TabsTrigger>
+                <TabsTrigger value="bi" className="flex items-center gap-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-violet-600 data-[state=active]:to-purple-700 data-[state=active]:text-white rounded-lg font-semibold text-[10px] md:text-xs">
+                  <span className="hidden md:inline">BI</span>
+                  <span className="md:hidden">🧠</span>
+                </TabsTrigger>
               </TabsList>
               <TabsContent value="home"><AdminCRMHome language={language} onNavigateTab={setActiveTab} /></TabsContent>
               <TabsContent value="agenda"><AdminFollowUpsAgenda language={language} /></TabsContent>
@@ -831,6 +836,7 @@ const AdminCRM = () => {
               <TabsContent value="pnl"><AdminBusinessPnL language={language} /></TabsContent>
               <TabsContent value="health"><AdminCustomerHealth language={language} /></TabsContent>
               <TabsContent value="simulator"><AdminCostSimulator language={language} /></TabsContent>
+              <TabsContent value="bi"><AdminBusinessIntelligence language={language} /></TabsContent>
             </Tabs>
             <div className="sticky top-6"><AdminActivityFeed language={language} /></div>
           </motion.div>
