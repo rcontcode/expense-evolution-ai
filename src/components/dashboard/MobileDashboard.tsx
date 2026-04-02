@@ -14,6 +14,7 @@ import { LiveClock } from '@/components/dashboard/LiveClock';
 import { ProfileCompletionNudge } from '@/components/profile/ProfileCompletionNudge';
 import { DashboardGamificationWidget } from '@/components/gamification';
 import { MobileSectionPills } from '@/components/dashboard/MobileSectionPills';
+import { MissionControl } from '@/components/dashboard/MissionControl';
 
 const LazyEcosystemWidgets = lazy(() => import('@/components/ecosystem/EcosystemDashboardWidgets'));
 const OrganizedDashboard = lazy(() => import('@/components/focus').then(m => ({ default: m.OrganizedDashboard })));
@@ -58,6 +59,9 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
         monthlyBalance={monthlyBalance}
         savingsRate={savingsRate}
       />
+
+      {/* Mission Control — compact widget for mobile */}
+      <MissionControl compact />
 
       {/* VIEW TABS — above content as primary navigation */}
       <DashboardViewTabs activeTab={activeView} onTabChange={setActiveView} />
