@@ -46,6 +46,7 @@ import { AdminOutgoingWebhooks } from '@/components/admin/tabs/AdminOutgoingWebh
 import { AdminBusinessPnL } from '@/components/admin/tabs/AdminBusinessPnL';
 import { AdminCustomerHealth } from '@/components/admin/tabs/AdminCustomerHealth';
 import { AdminCostSimulator } from '@/components/admin/tabs/AdminCostSimulator';
+import { AdminBusinessIntelligence } from '@/components/admin/tabs/AdminBusinessIntelligence';
 import { LeadMergeDialog } from '@/components/admin/LeadMergeDialog';
 import { useHotLeadRealtime } from '@/hooks/admin/useHotLeadRealtime';
 import { useUncontactedHotCount } from '@/hooks/admin/useUncontactedHotCount';
