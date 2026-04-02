@@ -27,6 +27,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { MobileDashboard } from '@/components/dashboard/MobileDashboard';
 import { QuickCaptureDialog } from '@/components/dialogs/QuickCaptureDialog';
 import { DashboardGamificationWidget } from '@/components/gamification';
+import { MissionControl } from '@/components/dashboard/MissionControl';
 import { ProfileCompletionNudge } from '@/components/profile/ProfileCompletionNudge';
 import { ProfileExtenderDialog } from '@/components/profile/ProfileExtenderDialog';
 import { LifeProfileSection } from '@/hooks/data/useLifeProfile';
