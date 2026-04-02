@@ -153,7 +153,10 @@ export default function Dashboard() {
             </CardContent>
           </Card>
           
-          {/* 7. VIEW TABS — ABOVE the timeline as primary navigation */}
+          {/* 7. Mission Control */}
+          <MissionControl />
+
+          {/* 8. VIEW TABS — ABOVE the timeline as primary navigation */}
           <DashboardViewTabs 
             activeTab={viewMode === 'organized' ? 'control' : 'resumen'} 
             onTabChange={(tab) => setViewMode(tab === 'control' ? 'organized' : 'classic')} 

@@ -60,6 +60,9 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
         savingsRate={savingsRate}
       />
 
+      {/* Mission Control — compact widget for mobile */}
+      <MissionControl compact />
+
       {/* VIEW TABS — above content as primary navigation */}
       <DashboardViewTabs activeTab={activeView} onTabChange={setActiveView} />
       
