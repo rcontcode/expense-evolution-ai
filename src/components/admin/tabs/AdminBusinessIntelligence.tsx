@@ -134,7 +134,7 @@ export function AdminBusinessIntelligence({ language }: Props) {
   const contacted = leads.filter(l => l.contacted_at).length;
   const registered = leads.filter(l => l.converted_to_user).length;
   const activeSubs = subs.filter(s => s.is_active).length;
-  const paidSubs = subs.filter(s => s.is_active && s.plan_type !== 'free' && s.plan_type !== 'pro_beta').length;
+  const paidSubs = subs.filter(s => s.is_active && s.plan_type !== 'free' && (s.plan_type as string) !== 'pro_beta').length;
 
   const funnelData = [
     { stage: isEs ? 'Leads' : 'Leads', value: totalLeads, color: COLORS[0] },
