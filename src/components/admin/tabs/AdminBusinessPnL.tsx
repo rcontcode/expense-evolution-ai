@@ -512,6 +512,174 @@ export function AdminBusinessPnL({ language }: AdminBusinessPnLProps) {
         </CardContent>
       </Card>
 
+      {/* P&L by Plan */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm flex items-center gap-2">
+            <BarChart3 className="h-4 w-4 text-violet-500" />
+            {isEs ? '📊 Profit/Loss por Plan (mes actual)' : '📊 Profit/Loss by Plan (current month)'}
+          </CardTitle>
+          <CardDescription>{isEs ? 'Ingreso vs costo de IA por cada plan' : 'Revenue vs AI cost per plan'}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b text-left text-muted-foreground">
+                  <th className="pb-2 font-medium">Plan</th>
+                  <th className="pb-2 font-medium">{isEs ? 'Suscriptores' : 'Subscribers'}</th>
+                  <th className="pb-2 font-medium">{isEs ? 'Precio' : 'Price'}</th>
+                  <th className="pb-2 font-medium">{isEs ? 'Ingreso Total' : 'Total Revenue'}</th>
+                  <th className="pb-2 font-medium">{isEs ? 'Costo IA' : 'AI Cost'}</th>
+                  <th className="pb-2 font-medium">Profit/Loss</th>
+                  <th className="pb-2 font-medium">{isEs ? 'Margen' : 'Margin'}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pnlByPlan.map((row) => (
+                  <tr key={row.plan} className="border-b last:border-0">
+                    <td className="py-2"><Badge variant="outline" className="capitalize">{row.plan}</Badge></td>
+                    <td className="py-2">{row.subscribers}</td>
+                    <td className="py-2">${row.price.toFixed(2)}</td>
+                    <td className="py-2">${row.revenue.toFixed(2)}</td>
+                    <td className="py-2 text-destructive">${row.aiCost.toFixed(2)}</td>
+                    <td className="py-2 font-bold">
+                      <span className={row.profit >= 0 ? 'text-emerald-600' : 'text-destructive'}>
+                        {row.profit >= 0 ? '+' : ''}${row.profit.toFixed(2)}
+                      </span>
+                    </td>
+                    <td className="py-2">
+                      <Badge variant={row.margin >= 0 ? 'default' : 'destructive'} className="text-xs">
+                        {row.margin}%
+                      </Badge>
+                    </td>
+                  </tr>
+                ))}
+                {pnlByPlan.length > 0 && (
+                  <tr className="border-t-2 font-bold bg-muted/30">
+                    <td className="py-2">TOTAL</td>
+                    <td className="py-2">{pnlTotals.subscribers}</td>
+                    <td className="py-2">—</td>
+                    <td className="py-2">${pnlTotals.revenue.toFixed(2)}</td>
+                    <td className="py-2 text-destructive">${pnlTotals.aiCost.toFixed(2)}</td>
+                    <td className="py-2">
+                      <span className={pnlTotals.profit >= 0 ? 'text-emerald-600' : 'text-destructive'}>
+                        {pnlTotals.profit >= 0 ? '+' : ''}${pnlTotals.profit.toFixed(2)}
+                      </span>
+                    </td>
+                    <td className="py-2">
+                      <Badge variant={pnlTotals.revenue > 0 ? (pnlTotals.profit >= 0 ? 'default' : 'destructive') : 'secondary'}>
+                        {pnlTotals.revenue > 0 ? Math.round((pnlTotals.profit / pnlTotals.revenue) * 100) : 0}%
+                      </Badge>
+                    </td>
+                  </tr>
+                )}
+                {pnlByPlan.length === 0 && (
+                  <tr><td colSpan={7} className="py-4 text-center text-muted-foreground">{isEs ? 'Sin datos' : 'No data'}</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* AI Cost by Feature/App */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm flex items-center gap-2">
+            <Zap className="h-4 w-4 text-amber-500" />
+            {isEs ? '⚡ Costo IA por Feature/App (mes actual)' : '⚡ AI Cost by Feature/App (current month)'}
+          </CardTitle>
+          <CardDescription>{isEs ? 'Qué funciones consumen más créditos de IA' : 'Which features consume the most AI credits'}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b text-left text-muted-foreground">
+                  <th className="pb-2 font-medium">Feature</th>
+                  <th className="pb-2 font-medium">{isEs ? 'Créditos' : 'Credits'}</th>
+                  <th className="pb-2 font-medium">{isEs ? 'Usuarios' : 'Users'}</th>
+                  <th className="pb-2 font-medium">{isEs ? 'Costo Est.' : 'Est. Cost'}</th>
+                  <th className="pb-2 font-medium">% Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {aiCostsByFeature.map((row) => {
+                  const totalCreditsFeature = aiCostsByFeature.reduce((s, r) => s + r.credits, 0);
+                  const pct = totalCreditsFeature > 0 ? Math.round((row.credits / totalCreditsFeature) * 100) : 0;
+                  return (
+                    <tr key={row.feature} className="border-b last:border-0">
+                      <td className="py-2"><Badge variant="outline" className="capitalize text-xs">{row.feature.replace(/_/g, ' ')}</Badge></td>
+                      <td className="py-2">{row.credits}</td>
+                      <td className="py-2">{row.users}</td>
+                      <td className="py-2 font-semibold">${row.cost.toFixed(2)}</td>
+                      <td className="py-2">
+                        <div className="flex items-center gap-2">
+                          <div className="w-16 h-2 rounded-full bg-muted overflow-hidden">
+                            <div className="h-full bg-amber-500 rounded-full" style={{ width: `${pct}%` }} />
+                          </div>
+                          <span className="text-xs text-muted-foreground">{pct}%</span>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+                {aiCostsByFeature.length === 0 && (
+                  <tr><td colSpan={5} className="py-4 text-center text-muted-foreground">{isEs ? 'Sin datos' : 'No data'}</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Top AI Consumers */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm flex items-center gap-2">
+            <Users className="h-4 w-4 text-blue-500" />
+            {isEs ? '👥 Top 15 Consumidores de IA (mes actual)' : '👥 Top 15 AI Consumers (current month)'}
+          </CardTitle>
+          <CardDescription>{isEs ? 'ROI individual: precio del plan vs costo IA consumido' : 'Individual ROI: plan price vs AI cost consumed'}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b text-left text-muted-foreground">
+                  <th className="pb-2 font-medium">{isEs ? 'Usuario' : 'User'}</th>
+                  <th className="pb-2 font-medium">Plan</th>
+                  <th className="pb-2 font-medium">{isEs ? 'Precio Plan' : 'Plan Price'}</th>
+                  <th className="pb-2 font-medium">{isEs ? 'Créditos IA' : 'AI Credits'}</th>
+                  <th className="pb-2 font-medium">{isEs ? 'Costo IA' : 'AI Cost'}</th>
+                  <th className="pb-2 font-medium">ROI</th>
+                </tr>
+              </thead>
+              <tbody>
+                {topConsumers.map((row) => (
+                  <tr key={row.userId} className="border-b last:border-0">
+                    <td className="py-2 font-medium truncate max-w-[120px]" title={row.displayName}>{row.displayName}</td>
+                    <td className="py-2"><Badge variant="outline" className="capitalize text-xs">{row.plan}</Badge></td>
+                    <td className="py-2">${row.price.toFixed(2)}</td>
+                    <td className="py-2">{row.credits}</td>
+                    <td className="py-2">${row.aiCost.toFixed(2)}</td>
+                    <td className="py-2">
+                      <Badge variant={row.roi >= 0 ? 'default' : 'destructive'} className="text-xs font-bold">
+                        {row.roi >= 0 ? '+' : ''}${row.roi.toFixed(2)}
+                      </Badge>
+                    </td>
+                  </tr>
+                ))}
+                {topConsumers.length === 0 && (
+                  <tr><td colSpan={6} className="py-4 text-center text-muted-foreground">{isEs ? 'Sin datos' : 'No data'}</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Add Cost Dialog */}
       <Dialog open={addCostOpen} onOpenChange={setAddCostOpen}>
         <DialogContent>
