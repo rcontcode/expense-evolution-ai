@@ -1,45 +1,83 @@
 
 
-# Plan: Desglose completo de costos IA y ROI por app, plan y usuario
+# Plan: Dashboard BI Completo — Geografía, Idioma, Conversiones y Sugerencias de Pricing
 
-## Qué falta y dónde agregarlo
+## Resumen
 
-Se ampliará el **AdminBusinessPnL.tsx** (que ya tiene la base de costos IA por plan) con 3 nuevas secciones al final del componente.
+Crear un nuevo componente **AdminBusinessIntelligence.tsx** como pestaña adicional del CRM que consolide las métricas que faltan: análisis geográfico, idioma, funnel de conversión completo (lead → registro → pago), y un motor de sugerencias de pricing basado en datos reales.
 
-## Cambios en `src/components/admin/tabs/AdminBusinessPnL.tsx`
+## Qué falta hoy (vs lo que ya existe)
 
-### 1. Nueva query: AI cost por action_type (= por app/feature)
+| Ya existe | Falta |
+|-----------|-------|
+| P&L por plan, costos IA, churn, ARPU/LTV | Distribución geográfica de leads Y compradores |
+| ROI por fuente (app) | ROI por país/región |
+| Revenue histórico (Stripe) | Funnel completo: Lead → Registro → Trial → Pago (con tasas) |
+| Simulador de precios manual | Sugerencias automáticas basadas en margen real por plan |
+| Métricas de leads por app | Desglose por idioma del lead (ES vs EN) |
 
-Agrupar `ai_usage_logs` por `action_type` del mes actual para mostrar qué features/apps consumen más créditos. Tabla con columnas: Feature, Créditos, Usuarios, Costo Est.
+## Cambios propuestos
 
-### 2. Nueva query: Top consumers (AI cost por usuario)
+### 1. Nuevo componente: `src/components/admin/tabs/AdminBusinessIntelligence.tsx`
 
-Join `ai_usage_logs` con `profiles` y `user_subscriptions` del mes actual. Mostrar tabla top 15 usuarios ordenados por créditos consumidos, con columnas:
-- Usuario (email truncado)
-- Plan (free/premium/pro)
-- Precio plan (lo que paga)
-- Créditos IA usados
-- Costo IA estimado
-- **ROI usuario** (precio plan - costo IA)
-- Badge verde/rojo según ganancia o pérdida
+Secciones:
 
-### 3. Nueva sección: Profit/Loss por plan (consolidado)
+**A. Mapa Geográfico de Conversión** (datos de `quiz_leads.country` + `user_subscriptions`)
+- Tabla: País | Leads | Registrados | Pagos | Tasa Conversión | Revenue estimado
+- BarChart horizontal de top 10 países por leads
+- BarChart de conversión por país (% lead→pago)
 
-Tabla resumen que cruza datos ya existentes:
-- Plan | Suscriptores | Ingreso total (subs × precio) | Costo IA total del plan | **Profit/Loss** | **Margin %**
-- Fila total al final
+**B. Análisis por Idioma**
+- Inferir idioma del lead por país (CA/US = EN, CL/MX/AR/CO/ES = ES) 
+- Pie chart: ES vs EN leads
+- Tabla: Idioma | Leads | Convertidos | Pagos | Revenue | Tasa conversión
+- Insight: "Los leads en español convierten X% más/menos que los de inglés"
 
-### 4. KPI adicional: ROI global
+**C. Funnel de Conversión Completo** (visual tipo embudo)
+- Etapas: Total Leads → Contactados → Registrados → Suscriptores Activos → Pagos
+- Tasas de caída entre cada etapa
+- Comparativa por app (EvoFinz vs Fokuspark vs UniversMind)
+- AreaChart mostrando el funnel por mes (últimos 6 meses)
 
-Agregar un 5to KPI card o modificar el existente de "Net Margin" para incluir: `ROI = (Revenue - Costos Totales) / Costos Totales × 100`
+**D. Motor de Sugerencias de Pricing**
+- Calcula margen real por plan (Revenue - AI Cost) con datos actuales
+- Si un plan tiene margen < 20%: sugiere subir precio o restringir créditos IA
+- Si un plan tiene margen > 80%: sugiere que hay espacio para agregar features
+- Si usuarios free consumen > X créditos IA: sugiere reducir límite free o mover a trial
+- Si churn > 5% en un plan: sugiere agregar retención (descuento anual, features exclusivas)
+- Card con lista de sugerencias tipo "alertas inteligentes" con badges de prioridad
 
-## Datos que ya existen en las queries actuales
+**E. Revenue por Región** (agrupando países en regiones)
+- Latam (CL, MX, AR, CO, PE, etc.)
+- Norte América (CA, US)
+- Europa (ES, etc.)
+- Otros
+- Stacked BarChart: Revenue por región con desglose de plan
 
-- `aiCostsByPlan` ya tiene créditos por plan con usuarios y costo estimado
-- `stripeData` ya tiene MRR
-- Solo necesitamos 2 queries nuevas (por action_type y por usuario individual)
+### 2. Registrar nueva pestaña en el CRM
 
-## Archivo a modificar
+**`src/components/admin/tabs/AdminCRMHome.tsx`** — Agregar entrada en `TAB_GUIDE`:
+```
+{ tab: 'bi', emoji: '🧠', nameEs: 'Business Intel', nameEn: 'Business Intel', descEs: '...' }
+```
 
-1. **`src/components/admin/tabs/AdminBusinessPnL.tsx`** — Agregar 2 queries + 3 secciones UI + 1 KPI
+**Archivo padre del CRM** (donde se renderizan las pestañas) — Agregar el tab `bi` con `<AdminBusinessIntelligence />`.
+
+## Datos que ya están disponibles
+
+- `quiz_leads.country` — país del lead
+- `quiz_leads.source` — app de origen
+- `quiz_leads.converted_to_user` — si se registró
+- `user_subscriptions.plan_type` — plan actual
+- `profiles.email` — para cruzar lead ↔ usuario
+- `ai_usage_logs` — consumo real de IA por usuario
+- `stripe-analytics` edge function — churn, revenue histórico
+
+No se necesitan migraciones SQL ni nuevas edge functions.
+
+## Archivos a modificar/crear
+
+1. **Crear `src/components/admin/tabs/AdminBusinessIntelligence.tsx`** — Componente completo con 5 secciones
+2. **Modificar archivo padre del CRM** — Agregar tab "bi" y renderizar componente
+3. **Modificar `AdminCRMHome.tsx`** — Agregar entrada en TAB_GUIDE
 
