@@ -1,83 +1,128 @@
 
 
-# Plan: Dashboard BI Completo — Geografía, Idioma, Conversiones y Sugerencias de Pricing
+# Plan: Mission Control — Panel Inteligente de Progreso y Estado de Datos
 
-## Resumen
+## El Problema
 
-Crear un nuevo componente **AdminBusinessIntelligence.tsx** como pestaña adicional del CRM que consolide las métricas que faltan: análisis geográfico, idioma, funnel de conversión completo (lead → registro → pago), y un motor de sugerencias de pricing basado en datos reales.
+Hoy la información sobre "qué falta" está **fragmentada** en 6+ componentes dispersos:
+- `DashboardNotificationHub` — alertas genéricas
+- `ProgressiveOnboarding` — solo 3 pasos básicos (gasto, cliente, ingreso)
+- `ExpenseHealthPanel` — solo en la página de gastos
+- `DataCompletenessPrompt` — solo si los gastos del mes lucen incompletos
+- `useNudgeSystem` — nudges simples sin desglose
+- `SetupProgressBanner` — checklist de setup inicial
 
-## Qué falta hoy (vs lo que ya existe)
+Ninguno muestra el **pipeline completo**: subido → procesado → aprobado → en uso. El usuario no puede ver de un vistazo dónde está parado.
 
-| Ya existe | Falta |
-|-----------|-------|
-| P&L por plan, costos IA, churn, ARPU/LTV | Distribución geográfica de leads Y compradores |
-| ROI por fuente (app) | ROI por país/región |
-| Revenue histórico (Stripe) | Funnel completo: Lead → Registro → Trial → Pago (con tasas) |
-| Simulador de precios manual | Sugerencias automáticas basadas en margen real por plan |
-| Métricas de leads por app | Desglose por idioma del lead (ES vs EN) |
+## Solución
 
-## Cambios propuestos
+Crear un **"Mission Control"** — un componente visual tipo panel de control que muestra el estado completo del pipeline de datos del usuario, organizado por categoría, con prioridades claras y acciones directas.
 
-### 1. Nuevo componente: `src/components/admin/tabs/AdminBusinessIntelligence.tsx`
+## Arquitectura
 
-Secciones:
-
-**A. Mapa Geográfico de Conversión** (datos de `quiz_leads.country` + `user_subscriptions`)
-- Tabla: País | Leads | Registrados | Pagos | Tasa Conversión | Revenue estimado
-- BarChart horizontal de top 10 países por leads
-- BarChart de conversión por país (% lead→pago)
-
-**B. Análisis por Idioma**
-- Inferir idioma del lead por país (CA/US = EN, CL/MX/AR/CO/ES = ES) 
-- Pie chart: ES vs EN leads
-- Tabla: Idioma | Leads | Convertidos | Pagos | Revenue | Tasa conversión
-- Insight: "Los leads en español convierten X% más/menos que los de inglés"
-
-**C. Funnel de Conversión Completo** (visual tipo embudo)
-- Etapas: Total Leads → Contactados → Registrados → Suscriptores Activos → Pagos
-- Tasas de caída entre cada etapa
-- Comparativa por app (EvoFinz vs Fokuspark vs UniversMind)
-- AreaChart mostrando el funnel por mes (últimos 6 meses)
-
-**D. Motor de Sugerencias de Pricing**
-- Calcula margen real por plan (Revenue - AI Cost) con datos actuales
-- Si un plan tiene margen < 20%: sugiere subir precio o restringir créditos IA
-- Si un plan tiene margen > 80%: sugiere que hay espacio para agregar features
-- Si usuarios free consumen > X créditos IA: sugiere reducir límite free o mover a trial
-- Si churn > 5% en un plan: sugiere agregar retención (descuento anual, features exclusivas)
-- Card con lista de sugerencias tipo "alertas inteligentes" con badges de prioridad
-
-**E. Revenue por Región** (agrupando países en regiones)
-- Latam (CL, MX, AR, CO, PE, etc.)
-- Norte América (CA, US)
-- Europa (ES, etc.)
-- Otros
-- Stacked BarChart: Revenue por región con desglose de plan
-
-### 2. Registrar nueva pestaña en el CRM
-
-**`src/components/admin/tabs/AdminCRMHome.tsx`** — Agregar entrada en `TAB_GUIDE`:
+```text
+┌─────────────────────────────────────────────────┐
+│  🚀 Mission Control — Tu Progreso              │
+│  ████████████░░░ 73% completo                   │
+├─────────────────────────────────────────────────┤
+│                                                 │
+│  📄 Documentos    ██████░░ 6/8                  │
+│     8 subidos · 6 procesados · 4 aprobados      │
+│     ⚠️ 2 pendientes de aprobar (urgente)        │
+│     [Revisar ahora →]                           │
+│                                                 │
+│  💰 Gastos        █████░░░ 62%                  │
+│     45 registrados · 28 con recibo              │
+│     12 sin categoría · 5 sin clasificar         │
+│     ⚡ 5 sin clasificar bloquean reportes       │
+│     [Completar →]                               │
+│                                                 │
+│  📊 Ingresos      ████████ 100%                 │
+│     8 registrados · todos con cliente           │
+│     ✅ Completo                                  │
+│                                                 │
+│  👥 Clientes      ██████░░ 75%                  │
+│     4 clientes · 3 con datos completos          │
+│     1 sin email ni teléfono                     │
+│     [Completar perfil →]                        │
+│                                                 │
+│  🏦 Banco         ███░░░░░ 40%                  │
+│     23 transacciones · 9 conciliadas            │
+│     14 sin vincular a gastos                    │
+│     [Conciliar →]                               │
+│                                                 │
+│  📋 Contratos     ████████ 100%                 │
+│     2 activos · todos vinculados                │
+│                                                 │
+│  🔄 Pagos Fijos   ██████░░ 80%                  │
+│     5 configurados · 1 vencido                  │
+│     [Pagar →]                                   │
+│                                                 │
+├─────────────────────────────────────────────────┤
+│  🔴 Urgente (3) · 🟡 Pendiente (5) · ✅ OK (4) │
+└─────────────────────────────────────────────────┘
 ```
-{ tab: 'bi', emoji: '🧠', nameEs: 'Business Intel', nameEn: 'Business Intel', descEs: '...' }
-```
 
-**Archivo padre del CRM** (donde se renderizan las pestañas) — Agregar el tab `bi` con `<AdminBusinessIntelligence />`.
+## Qué se construirá
 
-## Datos que ya están disponibles
+### 1. Hook: `src/hooks/utils/useMissionControl.ts`
 
-- `quiz_leads.country` — país del lead
-- `quiz_leads.source` — app de origen
-- `quiz_leads.converted_to_user` — si se registró
-- `user_subscriptions.plan_type` — plan actual
-- `profiles.email` — para cruzar lead ↔ usuario
-- `ai_usage_logs` — consumo real de IA por usuario
-- `stripe-analytics` edge function — churn, revenue histórico
+Centraliza **todas** las métricas de progreso en un solo lugar:
 
-No se necesitan migraciones SQL ni nuevas edge functions.
+- **Documentos**: total subidos, procesados por IA, aprobados por el usuario, rechazados, pendientes de revisión. Detecta si hay docs pendientes > 3 días (urgente).
+- **Gastos**: total, con recibo vinculado, con categoría, con clasificación (reimbursable/deductible/personal), con cliente, con contrato. Calcula % completo ponderado.
+- **Ingresos**: total, con cliente asignado, con proyecto, sin asignar.
+- **Clientes**: total, completeness promedio (usa `calculateClientCompleteness`), clientes sin datos críticos.
+- **Banco**: transacciones importadas, conciliadas (matched), pendientes de conciliar.
+- **Contratos**: activos, vinculados a cliente y proyecto, vencidos.
+- **Pagos Fijos**: configurados, vencidos, próximos a vencer.
 
-## Archivos a modificar/crear
+Cada categoría retorna: `{ total, complete, percentage, urgentCount, pendingCount, status: 'complete' | 'good' | 'needs_attention' | 'urgent', items: DetailItem[] }`.
 
-1. **Crear `src/components/admin/tabs/AdminBusinessIntelligence.tsx`** — Componente completo con 5 secciones
-2. **Modificar archivo padre del CRM** — Agregar tab "bi" y renderizar componente
-3. **Modificar `AdminCRMHome.tsx`** — Agregar entrada en TAB_GUIDE
+Score global = promedio ponderado de todas las categorías.
+
+### 2. Componente: `src/components/dashboard/MissionControl.tsx`
+
+Panel visual con:
+
+- **Barra de progreso global** con porcentaje y nivel (Principiante/Organizado/Experto/Maestro)
+- **Cards por categoría** — cada una muestra:
+  - Barra de progreso mini
+  - Pipeline visual: "X subidos → Y procesados → Z aprobados → W en uso"
+  - Badges de urgencia (rojo si hay items bloqueantes, amarillo si hay pendientes)
+  - Botón de acción directo a la página correspondiente
+  - Detalle expandible con items específicos que necesitan atención
+- **Resumen de urgencia** al final: contadores de urgente/pendiente/ok
+- **"Datos no aprobados en uso"** — sección especial que detecta si hay gastos/ingresos creados desde documentos que aún no fueron aprobados/revisados, mostrando dónde se están usando (presupuesto, reportes, etc.)
+
+Variantes: `full` (para dashboard) y `compact` (widget colapsable).
+
+### 3. Integración en Dashboard
+
+Agregar `MissionControl` al dashboard principal, reemplazando la necesidad de mirar múltiples widgets dispersos. Se mostrará como una sección prominente cuando el progreso sea < 90%.
+
+## Detalle técnico
+
+### Fuentes de datos (hooks existentes que se reutilizarán)
+
+| Categoría | Hook existente | Datos nuevos a calcular |
+|-----------|---------------|------------------------|
+| Documentos | `useDocumentsForReview()` | Pipeline: pending → processed → approved |
+| Gastos | `useExpenses()` + `useNudgeSystem()` | % con recibo, categoría, clasificación |
+| Ingresos | `useIncome()` | % con cliente/proyecto asignado |
+| Clientes | `useClients()` | Completeness promedio via `calculateClientCompleteness` |
+| Banco | `useBankTransactions()` | % conciliado vs pendiente |
+| Contratos | Query directa `contracts` | Activos vs vencidos |
+| Pagos Fijos | `useRecurringBills()` | Pagados vs vencidos |
+
+### Detección de "datos no aprobados en uso"
+
+Cruzar `expenses.document_id` con `documents.review_status !== 'approved'` para detectar gastos vinculados a documentos no revisados que ya se están usando en cálculos de presupuesto/reportes.
+
+## Archivos a crear/modificar
+
+1. **Crear `src/hooks/utils/useMissionControl.ts`** — Hook centralizado con todas las métricas
+2. **Crear `src/components/dashboard/MissionControl.tsx`** — Panel visual completo
+3. **Modificar `src/pages/Dashboard.tsx`** — Integrar MissionControl en el dashboard
+4. **Modificar `src/components/dashboard/MobileDashboard.tsx`** — Versión compact para móvil
 
