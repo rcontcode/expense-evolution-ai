@@ -112,12 +112,12 @@ export function AdminBusinessIntelligence({ language }: Props) {
     const isEn = EN_COUNTRIES.has(c);
     if (isEn) { enLeads++; } else { esLeads++; }
     if (lead.converted_to_user) {
-      if (isEn) enConverted++; else esConverted++;
+      if (isEnLang) enConverted++; else esConverted++;
       const profile = emailToProfile.get(lead.email?.toLowerCase());
       if (profile) {
         const plan = userIdToPlan.get(profile.id);
-        if (plan && plan !== 'free' && plan !== 'pro_beta') {
-          if (isEn) enPaid++; else esPaid++;
+        if (plan && plan !== 'free' && (plan as string) !== 'pro_beta') {
+          if (isEnLang) enPaid++; else esPaid++;
         }
       }
     }
