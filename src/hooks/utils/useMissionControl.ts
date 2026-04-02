@@ -50,6 +50,7 @@ export interface UnapprovedInUse {
 export interface FeatureRequirement {
   key: string;
   name: { es: string; en: string };
+  description: { es: string; en: string };
   emoji: string;
   readiness: FeatureReadiness;
   percentage: number;
