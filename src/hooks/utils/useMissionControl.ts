@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 import { useDocumentsForReview } from '@/hooks/data/useDocumentReview';
 import { useExpenses } from '@/hooks/data/useExpenses';
 import { useIncome } from '@/hooks/data/useIncome';
@@ -9,7 +9,10 @@ import { useRecurringBills } from '@/hooks/data/useRecurringBills';
 import { useCategoryBudgets } from '@/hooks/data/useCategoryBudgets';
 import { useFinancialProfile } from '@/hooks/data/useFinancialProfile';
 import { calculateClientCompleteness } from '@/lib/constants/client-completeness';
-import { differenceInDays, parseISO, isBefore } from 'date-fns';
+import { differenceInDays, parseISO, isBefore, format } from 'date-fns';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { useQuery } from '@tanstack/react-query';
 
 export type CategoryStatus = 'complete' | 'good' | 'needs_attention' | 'urgent';
 export type FeatureReadiness = 'ready' | 'partial' | 'blocked';
@@ -58,6 +61,29 @@ export interface FeatureRequirement {
   actionUrl: string;
 }
 
+export interface NextAction {
+  title: { es: string; en: string };
+  description: { es: string; en: string };
+  actionUrl: string;
+  estimatedMinutes: number;
+  impact: 'high' | 'medium' | 'low';
+  emoji: string;
+  unlocksFeatures: string[];
+}
+
+export interface ProgressSnapshot {
+  weekKey: string;
+  globalScore: number;
+  fuelScore: number;
+  featuresReady: number;
+}
+
+export interface InactivityNudge {
+  daysSinceLastEntry: number;
+  missingOpportunities: { es: string; en: string }[];
+  show: boolean;
+}
+
 export interface MissionControlData {
   globalScore: number;
   globalLevel: { es: string; en: string };
@@ -68,6 +94,9 @@ export interface MissionControlData {
   unapprovedInUse: UnapprovedInUse[];
   featureReadiness: FeatureRequirement[];
   systemFuelScore: number;
+  nextAction: NextAction | null;
+  progressHistory: ProgressSnapshot[];
+  inactivityNudge: InactivityNudge;
   isLoading: boolean;
 }
 
@@ -85,7 +114,16 @@ function getLevel(score: number): { es: string; en: string } {
   return { es: 'Principiante', en: 'Beginner' };
 }
 
+function getCurrentWeekKey(): string {
+  const now = new Date();
+  const year = now.getFullYear();
+  const oneJan = new Date(year, 0, 1);
+  const week = Math.ceil(((now.getTime() - oneJan.getTime()) / 86400000 + oneJan.getDay() + 1) / 7);
+  return `${year}-W${String(week).padStart(2, '0')}`;
+}
+
 export function useMissionControl(): MissionControlData {
+  const { user } = useAuth();
   const { data: documents = [], isLoading: docsLoading } = useDocumentsForReview();
   const { data: expenses = [], isLoading: expLoading } = useExpenses();
   const { data: income = [], isLoading: incLoading } = useIncome();
@@ -96,9 +134,26 @@ export function useMissionControl(): MissionControlData {
   const { data: budgets = [], isLoading: budgetsLoading } = useCategoryBudgets();
   const { data: financialProfile, isLoading: fpLoading } = useFinancialProfile();
 
+  // Fetch progress history
+  const { data: historyRows = [] } = useQuery({
+    queryKey: ['mission-control-history', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const { data } = await supabase
+        .from('mission_control_history')
+        .select('week_key, global_score, system_fuel_score, features_ready, features_total')
+        .eq('user_id', user.id)
+        .order('week_key', { ascending: true })
+        .limit(12);
+      return data || [];
+    },
+    enabled: !!user?.id,
+    staleTime: 5 * 60 * 1000,
+  });
+
   const isLoading = docsLoading || expLoading || incLoading || cliLoading || bankLoading || conLoading || billsLoading || budgetsLoading || fpLoading;
 
-  return useMemo(() => {
+  const result = useMemo(() => {
     const now = new Date();
     const currentMonth = now.getMonth();
     const currentYear = now.getFullYear();
@@ -297,7 +352,7 @@ export function useMissionControl(): MissionControlData {
       }));
 
     // ══════════════════════════════════════════════
-    // ── FEATURE READINESS — What the system needs ──
+    // ── FEATURE READINESS ──
     // ══════════════════════════════════════════════
 
     const hasExpenses = expTotal > 0;
@@ -314,7 +369,7 @@ export function useMissionControl(): MissionControlData {
 
     const featureReadiness: FeatureRequirement[] = [];
 
-    // 1. Proyecciones de fin de mes
+    // 1. Proyecciones
     {
       const missing: FeatureRequirement['missingData'] = [];
       if (!hasThisMonthExpenses) missing.push({ label: { es: 'Gastos del mes actual (mín. 3)', en: 'Current month expenses (min. 3)' }, actionUrl: '/expenses', priority: 'critical' });
@@ -359,7 +414,7 @@ export function useMissionControl(): MissionControlData {
       });
     }
 
-    // 4. Tasa de ahorro y salud financiera
+    // 4. Tasa de ahorro
     {
       const missing: FeatureRequirement['missingData'] = [];
       if (!hasThisMonthIncome) missing.push({ label: { es: 'Ingresos de este mes', en: 'This month\'s income' }, actionUrl: '/income', priority: 'critical' });
@@ -405,7 +460,7 @@ export function useMissionControl(): MissionControlData {
       });
     }
 
-    // 7. Perfil de inversión / FIRE
+    // 7. FIRE
     {
       const missing: FeatureRequirement['missingData'] = [];
       if (!hasFinProfile) missing.push({ label: { es: 'Perfil financiero personal', en: 'Personal financial profile' }, actionUrl: '/dashboard?area=crecimiento', priority: 'critical' });
@@ -434,18 +489,16 @@ export function useMissionControl(): MissionControlData {
       });
     }
 
-    // Sort: blocked first, then partial, then ready
     featureReadiness.sort((a, b) => {
       const order: Record<FeatureReadiness, number> = { blocked: 0, partial: 1, ready: 2 };
       return order[a.readiness] - order[b.readiness];
     });
 
-    // System fuel score = average of feature readiness
     const systemFuelScore = featureReadiness.length > 0
       ? Math.round(featureReadiness.reduce((s, f) => s + f.percentage, 0) / featureReadiness.length)
       : 100;
 
-    // ── Aggregate categories ──
+    // ── Aggregate ──
     const categories = [docsCategory, expCategory, incCategory, cliCategory, bankCategory, conCategory, billCategory]
       .filter(c => c.total > 0);
 
@@ -462,10 +515,187 @@ export function useMissionControl(): MissionControlData {
     const pendingTotal = categories.reduce((s, c) => s + (c.status === 'needs_attention' ? 1 : 0), 0);
     const okTotal = categories.reduce((s, c) => s + (c.status === 'complete' || c.status === 'good' ? 1 : 0), 0);
 
+    // ══════════════════════════════════════════════
+    // ── NEXT ACTION — Single highest-impact task ──
+    // ══════════════════════════════════════════════
+
+    const actionCandidates: (NextAction & { score: number })[] = [];
+
+    // Urgent documents
+    if (docsUrgent > 0) {
+      actionCandidates.push({
+        title: { es: 'Revisa documentos urgentes', en: 'Review urgent documents' },
+        description: { es: `${docsUrgent} documentos llevan más de 3 días esperando tu aprobación`, en: `${docsUrgent} documents have been waiting for your approval for over 3 days` },
+        actionUrl: '/chaos', estimatedMinutes: Math.max(2, docsUrgent * 2), impact: 'high', emoji: '🔴',
+        unlocksFeatures: [], score: 100,
+      });
+    }
+
+    // Overdue bills
+    if (billOverdue > 0) {
+      actionCandidates.push({
+        title: { es: 'Registra pagos vencidos', en: 'Record overdue payments' },
+        description: { es: `${billOverdue} pagos fijos están vencidos`, en: `${billOverdue} fixed payments are overdue` },
+        actionUrl: '/bills', estimatedMinutes: Math.max(2, billOverdue * 3), impact: 'high', emoji: '⏰',
+        unlocksFeatures: [], score: 95,
+      });
+    }
+
+    // No expenses this month → blocks projections + savings
+    if (!hasThisMonthExpenses) {
+      actionCandidates.push({
+        title: { es: 'Registra gastos del mes', en: 'Add this month\'s expenses' },
+        description: { es: 'Necesitas al menos 3 gastos para activar proyecciones y tasa de ahorro', en: 'You need at least 3 expenses to activate projections and savings rate' },
+        actionUrl: '/expenses', estimatedMinutes: 5, impact: 'high', emoji: '💰',
+        unlocksFeatures: ['projections', 'savings_rate'], score: 90,
+      });
+    }
+
+    // No income this month
+    if (!hasThisMonthIncome && hasExpenses) {
+      actionCandidates.push({
+        title: { es: 'Registra ingresos del mes', en: 'Add this month\'s income' },
+        description: { es: 'Sin ingresos no se pueden calcular proyecciones ni tasa de ahorro', en: 'Without income, projections and savings rate can\'t be calculated' },
+        actionUrl: '/income', estimatedMinutes: 3, impact: 'high', emoji: '📊',
+        unlocksFeatures: ['projections', 'savings_rate', 'cashflow'], score: 85,
+      });
+    }
+
+    // Unclassified expenses
+    if (expUnclassified > 5) {
+      actionCandidates.push({
+        title: { es: 'Clasifica gastos pendientes', en: 'Classify pending expenses' },
+        description: { es: `${expUnclassified} gastos sin clasificar bloquean reportes fiscales`, en: `${expUnclassified} unclassified expenses block tax reports` },
+        actionUrl: '/expenses', estimatedMinutes: Math.max(3, Math.round(expUnclassified * 0.5)), impact: 'medium', emoji: '🏷️',
+        unlocksFeatures: ['tax_reports'], score: 75,
+      });
+    }
+
+    // No budgets
+    if (!hasBudgets && hasExpenses) {
+      actionCandidates.push({
+        title: { es: 'Configura tu presupuesto', en: 'Set up your budget' },
+        description: { es: 'Define límites por categoría para recibir alertas automáticas', en: 'Define category limits to receive automatic alerts' },
+        actionUrl: '/budget', estimatedMinutes: 5, impact: 'medium', emoji: '📋',
+        unlocksFeatures: ['budget'], score: 70,
+      });
+    }
+
+    // No clients
+    if (!hasClients && hasIncome) {
+      actionCandidates.push({
+        title: { es: 'Agrega tu primer cliente', en: 'Add your first client' },
+        description: { es: 'Vincula ingresos a clientes para ver rentabilidad por cliente', en: 'Link income to clients to see client profitability' },
+        actionUrl: '/clients', estimatedMinutes: 3, impact: 'medium', emoji: '👥',
+        unlocksFeatures: ['client_profit', 'tax_reports'], score: 65,
+      });
+    }
+
+    // No bills
+    if (!hasBills) {
+      actionCandidates.push({
+        title: { es: 'Registra pagos fijos', en: 'Register fixed payments' },
+        description: { es: 'Renta, servicios, suscripciones — mejora proyecciones y runway', en: 'Rent, utilities, subscriptions — improves projections and runway' },
+        actionUrl: '/bills', estimatedMinutes: 5, impact: 'low', emoji: '🔄',
+        unlocksFeatures: ['projections', 'cashflow'], score: 55,
+      });
+    }
+
+    // Pending document reviews (not urgent)
+    if (docsPending > 0 && docsUrgent === 0) {
+      actionCandidates.push({
+        title: { es: 'Revisa documentos procesados', en: 'Review processed documents' },
+        description: { es: `${docsPending} documentos esperan tu aprobación`, en: `${docsPending} documents await your approval` },
+        actionUrl: '/chaos', estimatedMinutes: Math.max(2, docsPending * 2), impact: 'medium', emoji: '📄',
+        unlocksFeatures: [], score: 60,
+      });
+    }
+
+    actionCandidates.sort((a, b) => b.score - a.score);
+    const nextAction = actionCandidates.length > 0 ? actionCandidates[0] : null;
+
+    // ══════════════════════════════════════════════
+    // ── INACTIVITY NUDGE ──
+    // ══════════════════════════════════════════════
+
+    const allDates: Date[] = [];
+    expenses.forEach(e => allDates.push(parseISO(e.date)));
+    income.forEach((i: any) => allDates.push(parseISO(i.date)));
+    documents.forEach(d => d.created_at && allDates.push(parseISO(d.created_at)));
+
+    const lastEntryDate = allDates.length > 0
+      ? allDates.reduce((latest, d) => d > latest ? d : latest, allDates[0])
+      : null;
+
+    const daysSinceLastEntry = lastEntryDate ? differenceInDays(now, lastEntryDate) : 999;
+
+    const missingOpportunities: InactivityNudge['missingOpportunities'] = [];
+    if (daysSinceLastEntry >= 3) {
+      const missedDays = daysSinceLastEntry;
+      missingOpportunities.push({
+        es: `${missedDays} días sin registrar gastos — las proyecciones pierden precisión`,
+        en: `${missedDays} days without recording expenses — projections lose accuracy`,
+      });
+      if (hasThisMonthIncome && !hasThisMonthExpenses) {
+        missingOpportunities.push({
+          es: 'Tienes ingresos registrados pero no gastos — la tasa de ahorro no se puede calcular',
+          en: 'You have income but no expenses — savings rate can\'t be calculated',
+        });
+      }
+      if (docsPending > 0) {
+        missingOpportunities.push({
+          es: `${docsPending} documentos esperan revisión y se acumulan`,
+          en: `${docsPending} documents await review and are accumulating`,
+        });
+      }
+    }
+
+    const inactivityNudge: InactivityNudge = {
+      daysSinceLastEntry,
+      missingOpportunities,
+      show: daysSinceLastEntry >= 3 && missingOpportunities.length > 0,
+    };
+
+    // ── Progress history ──
+    const progressHistory: ProgressSnapshot[] = (historyRows || []).map((r: any) => ({
+      weekKey: r.week_key,
+      globalScore: r.global_score,
+      fuelScore: r.system_fuel_score,
+      featuresReady: r.features_ready,
+    }));
+
+    const readyCount = featureReadiness.filter(f => f.readiness === 'ready').length;
+
     return {
       globalScore, globalLevel: getLevel(globalScore),
       categories, urgentTotal, pendingTotal, okTotal,
-      unapprovedInUse, featureReadiness, systemFuelScore, isLoading,
+      unapprovedInUse, featureReadiness, systemFuelScore,
+      nextAction, progressHistory, inactivityNudge,
+      isLoading,
+      _saveData: { weekKey: getCurrentWeekKey(), globalScore, systemFuelScore, readyCount, totalFeatures: featureReadiness.length },
     };
-  }, [documents, expenses, income, clients, bankTx, contracts, bills, budgets, financialProfile, isLoading]);
+  }, [documents, expenses, income, clients, bankTx, contracts, bills, budgets, financialProfile, isLoading, historyRows]);
+
+  // Save weekly snapshot
+  useEffect(() => {
+    if (!user?.id || isLoading) return;
+    const saveData = (result as any)._saveData;
+    if (!saveData) return;
+
+    const save = async () => {
+      await supabase
+        .from('mission_control_history')
+        .upsert({
+          user_id: user.id,
+          week_key: saveData.weekKey,
+          global_score: saveData.globalScore,
+          system_fuel_score: saveData.systemFuelScore,
+          features_ready: saveData.readyCount,
+          features_total: saveData.totalFeatures,
+        }, { onConflict: 'user_id,week_key' });
+    };
+    save();
+  }, [user?.id, isLoading, (result as any)?._saveData?.weekKey]);
+
+  return result;
 }

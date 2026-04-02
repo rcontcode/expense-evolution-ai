@@ -7,8 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useMissionControl, CategoryMetrics, CategoryStatus, FeatureRequirement, FeatureReadiness } from '@/hooks/utils/useMissionControl';
-import { ChevronDown, ChevronRight, ArrowRight, AlertTriangle, AlertCircle, CheckCircle2, Rocket, Fuel, Zap, Lock, CircleDot, Info } from 'lucide-react';
+import { useMissionControl, CategoryMetrics, CategoryStatus, FeatureRequirement, FeatureReadiness, NextAction, ProgressSnapshot, InactivityNudge } from '@/hooks/utils/useMissionControl';
+import { ChevronDown, ChevronRight, ArrowRight, AlertTriangle, AlertCircle, CheckCircle2, Rocket, Fuel, Zap, Lock, CircleDot, Info, Clock, TrendingUp, Flame } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface MissionControlProps {
@@ -34,6 +34,116 @@ const PRIORITY_LABELS = {
   nice: { es: 'Opcional', en: 'Optional' },
 };
 
+// ── Next Action Banner ──
+function NextActionBanner({ action, language }: { action: NextAction; language: string }) {
+  const navigate = useNavigate();
+  const l = language === 'es';
+
+  return (
+    <div className="rounded-xl border-2 border-primary/30 bg-primary/5 p-4">
+      <div className="flex items-center gap-1.5 mb-2">
+        <Zap className="h-4 w-4 text-primary" />
+        <span className="text-xs font-semibold text-primary uppercase tracking-wider">
+          {l ? 'Tu siguiente paso' : 'Your next step'}
+        </span>
+      </div>
+      <div className="flex items-start gap-3">
+        <span className="text-2xl mt-0.5">{action.emoji}</span>
+        <div className="flex-1 min-w-0">
+          <h4 className="font-semibold text-sm">
+            {l ? action.title.es : action.title.en}
+          </h4>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            {l ? action.description.es : action.description.en}
+          </p>
+          <div className="flex items-center gap-3 mt-2.5">
+            <Button size="sm" className="h-7 text-xs gap-1.5" onClick={() => navigate(action.actionUrl)}>
+              {l ? 'Hacer ahora' : 'Do it now'} <ArrowRight className="h-3 w-3" />
+            </Button>
+            <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+              <Clock className="h-3 w-3" /> ~{action.estimatedMinutes} min
+            </span>
+            {action.unlocksFeatures.length > 0 && (
+              <span className="flex items-center gap-1 text-[11px] text-primary">
+                <Lock className="h-3 w-3" />
+                {l ? `Desbloquea ${action.unlocksFeatures.length} función${action.unlocksFeatures.length > 1 ? 'es' : ''}` : `Unlocks ${action.unlocksFeatures.length} feature${action.unlocksFeatures.length > 1 ? 's' : ''}`}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Inactivity Nudge ──
+function InactivityNudgeBanner({ nudge, language }: { nudge: InactivityNudge; language: string }) {
+  const l = language === 'es';
+  if (!nudge.show) return null;
+
+  return (
+    <div className="rounded-lg border border-warning/30 bg-warning/5 p-3">
+      <div className="flex items-start gap-2.5">
+        <Flame className="h-4 w-4 text-warning shrink-0 mt-0.5" />
+        <div className="space-y-1.5">
+          <p className="text-xs font-medium text-warning">
+            {l
+              ? `Llevas ${nudge.daysSinceLastEntry} días sin alimentar tu sistema`
+              : `${nudge.daysSinceLastEntry} days without feeding your system`}
+          </p>
+          {nudge.missingOpportunities.map((opp, i) => (
+            <p key={i} className="text-[11px] text-muted-foreground flex items-center gap-1">
+              <span className="text-warning">•</span> {l ? opp.es : opp.en}
+            </p>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Progress History Mini Chart ──
+function ProgressHistoryChart({ history, language }: { history: ProgressSnapshot[]; language: string }) {
+  const l = language === 'es';
+  if (history.length < 2) return null;
+
+  const last = history[history.length - 1];
+  const prev = history[history.length - 2];
+  const delta = last.globalScore - prev.globalScore;
+  const maxScore = Math.max(...history.map(h => h.globalScore), 1);
+
+  return (
+    <div className="rounded-lg bg-muted/30 p-2.5">
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-[10px] text-muted-foreground font-medium flex items-center gap-1">
+          <TrendingUp className="h-3 w-3" /> {l ? 'Progreso semanal' : 'Weekly progress'}
+        </span>
+        <span className={cn('text-[10px] font-bold', delta > 0 ? 'text-success' : delta < 0 ? 'text-destructive' : 'text-muted-foreground')}>
+          {delta > 0 ? '+' : ''}{delta}%
+        </span>
+      </div>
+      <div className="flex items-end gap-0.5 h-8">
+        {history.slice(-8).map((snap, i) => (
+          <div key={snap.weekKey} className="flex-1 flex flex-col items-center gap-0.5">
+            <div
+              className={cn(
+                'w-full rounded-sm transition-all min-h-[2px]',
+                i === history.slice(-8).length - 1 ? 'bg-primary' : 'bg-muted-foreground/30'
+              )}
+              style={{ height: `${(snap.globalScore / maxScore) * 100}%` }}
+            />
+          </div>
+        ))}
+      </div>
+      <div className="flex justify-between mt-1">
+        <span className="text-[9px] text-muted-foreground">{history.slice(-8)[0]?.weekKey?.replace(/^\d+-W/, 'S')}</span>
+        <span className="text-[9px] text-muted-foreground">{l ? 'Hoy' : 'Now'}</span>
+      </div>
+    </div>
+  );
+}
+
+// ── Category Card ──
 function CategoryCard({ category, language }: { category: CategoryMetrics; language: string }) {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
@@ -47,18 +157,14 @@ function CategoryCard({ category, language }: { category: CategoryMetrics; langu
             <span className="text-xl">{category.emoji}</span>
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between mb-1">
-                <span className="font-medium text-sm">
-                  {l ? category.label.es : category.label.en}
-                </span>
+                <span className="font-medium text-sm">{l ? category.label.es : category.label.en}</span>
                 <div className="flex items-center gap-2">
                   {category.urgentCount > 0 && (
                     <Badge variant="destructive" className="text-[10px] px-1.5 py-0">
                       {category.urgentCount} {l ? 'urgente' : 'urgent'}
                     </Badge>
                   )}
-                  <span className="text-xs text-muted-foreground font-mono">
-                    {category.percentage}%
-                  </span>
+                  <span className="text-xs text-muted-foreground font-mono">{category.percentage}%</span>
                   {open ? <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" /> : <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />}
                 </div>
               </div>
@@ -80,11 +186,9 @@ function CategoryCard({ category, language }: { category: CategoryMetrics; langu
           <div className="mt-2 pt-2 border-t border-border/50 space-y-1.5">
             {category.details.map((detail, i) => (
               <div key={i} className="flex items-center gap-2 text-xs">
-                {detail.isUrgent ? (
-                  <AlertTriangle className="h-3.5 w-3.5 text-destructive shrink-0" />
-                ) : (
-                  <AlertCircle className="h-3.5 w-3.5 text-warning shrink-0" />
-                )}
+                {detail.isUrgent
+                  ? <AlertTriangle className="h-3.5 w-3.5 text-destructive shrink-0" />
+                  : <AlertCircle className="h-3.5 w-3.5 text-warning shrink-0" />}
                 <span>{detail.label}</span>
               </div>
             ))}
@@ -94,12 +198,7 @@ function CategoryCard({ category, language }: { category: CategoryMetrics; langu
                 <span>{l ? 'Todo completo' : 'All complete'}</span>
               </div>
             )}
-            <Button
-              size="sm"
-              variant="ghost"
-              className="h-7 text-xs gap-1 mt-1"
-              onClick={() => navigate(category.actionUrl)}
-            >
+            <Button size="sm" variant="ghost" className="h-7 text-xs gap-1 mt-1" onClick={() => navigate(category.actionUrl)}>
               {l ? 'Ir a completar' : 'Go to complete'} <ArrowRight className="h-3 w-3" />
             </Button>
           </div>
@@ -109,12 +208,20 @@ function CategoryCard({ category, language }: { category: CategoryMetrics; langu
   );
 }
 
+// ── Feature Card ──
 function FeatureReadinessCard({ feature, language }: { feature: FeatureRequirement; language: string }) {
   const [open, setOpen] = useState(feature.readiness === 'blocked');
   const navigate = useNavigate();
   const l = language === 'es';
   const config = READINESS_CONFIG[feature.readiness];
   const Icon = config.icon;
+
+  // Estimate time for missing data items
+  const estimatedMinutes = feature.missingData.reduce((sum, item) => {
+    if (item.priority === 'critical') return sum + 3;
+    if (item.priority === 'important') return sum + 2;
+    return sum + 1;
+  }, 0);
 
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
@@ -125,10 +232,13 @@ function FeatureReadinessCard({ feature, language }: { feature: FeatureRequireme
               <div className="text-2xl">{feature.emoji}</div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between mb-0.5">
-                  <span className="font-semibold text-sm">
-                    {l ? feature.name.es : feature.name.en}
-                  </span>
+                  <span className="font-semibold text-sm">{l ? feature.name.es : feature.name.en}</span>
                   <div className="flex items-center gap-1.5">
+                    {estimatedMinutes > 0 && (
+                      <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
+                        <Clock className="h-2.5 w-2.5" /> ~{estimatedMinutes}m
+                      </span>
+                    )}
                     <Badge variant="outline" className={cn('text-[10px] px-1.5 py-0 border-current gap-0.5', config.text)}>
                       <Icon className="h-2.5 w-2.5" />
                       {l ? config.labelEs : config.labelEn}
@@ -161,18 +271,14 @@ function FeatureReadinessCard({ feature, language }: { feature: FeatureRequireme
                     className="w-full flex items-center gap-2.5 text-xs hover:bg-accent/50 rounded-md px-2 py-1.5 transition-colors text-left group"
                     onClick={() => navigate(item.actionUrl)}
                   >
-                    {item.priority === 'critical' ? (
-                      <Zap className="h-3.5 w-3.5 text-destructive shrink-0" />
-                    ) : item.priority === 'important' ? (
-                      <AlertCircle className="h-3.5 w-3.5 text-warning shrink-0" />
-                    ) : (
-                      <CircleDot className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                    )}
+                    {item.priority === 'critical'
+                      ? <Zap className="h-3.5 w-3.5 text-destructive shrink-0" />
+                      : item.priority === 'important'
+                      ? <AlertCircle className="h-3.5 w-3.5 text-warning shrink-0" />
+                      : <CircleDot className="h-3.5 w-3.5 text-muted-foreground shrink-0" />}
                     <div className="flex-1 min-w-0">
                       <span>{l ? item.label.es : item.label.en}</span>
-                      <Badge variant="outline" className="text-[9px] ml-1.5 px-1 py-0 opacity-60">
-                        {priorityLabel}
-                      </Badge>
+                      <Badge variant="outline" className="text-[9px] ml-1.5 px-1 py-0 opacity-60">{priorityLabel}</Badge>
                     </div>
                     <ArrowRight className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
                   </button>
@@ -204,8 +310,7 @@ export function MissionControl({ compact = false }: MissionControlProps) {
     return <Skeleton className="h-48 w-full rounded-xl" />;
   }
 
-  // Don't show if everything is perfect and compact mode
-  if (compact && data.globalScore >= 95 && data.urgentTotal === 0 && data.systemFuelScore >= 95) {
+  if (compact && data.globalScore >= 95 && data.urgentTotal === 0 && data.systemFuelScore >= 95 && !data.inactivityNudge.show) {
     return null;
   }
 
@@ -217,10 +322,7 @@ export function MissionControl({ compact = false }: MissionControlProps) {
 
   if (compact && !expanded) {
     return (
-      <Card
-        className="cursor-pointer hover:border-primary/50 transition-colors"
-        onClick={() => setExpanded(true)}
-      >
+      <Card className="cursor-pointer hover:border-primary/50 transition-colors" onClick={() => setExpanded(true)}>
         <CardContent className="py-3 px-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -230,17 +332,17 @@ export function MissionControl({ compact = false }: MissionControlProps) {
                 <Fuel className="h-2.5 w-2.5 mr-0.5" />
                 {readyFeatures}/{totalFeatures} {l ? 'activas' : 'active'}
               </Badge>
+              {data.inactivityNudge.show && (
+                <Badge variant="warning" className="text-[10px]">
+                  <Flame className="h-2.5 w-2.5 mr-0.5" />
+                  {data.inactivityNudge.daysSinceLastEntry}d
+                </Badge>
+              )}
             </div>
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              {blockedFeatures > 0 && (
-                <span className="text-destructive font-medium">🔒 {blockedFeatures}</span>
-              )}
-              {partialFeatures > 0 && (
-                <span className="text-warning font-medium">🟡 {partialFeatures}</span>
-              )}
-              {readyFeatures > 0 && (
-                <span className="text-success font-medium">✅ {readyFeatures}</span>
-              )}
+              {blockedFeatures > 0 && <span className="text-destructive font-medium">🔒 {blockedFeatures}</span>}
+              {partialFeatures > 0 && <span className="text-warning font-medium">🟡 {partialFeatures}</span>}
+              {readyFeatures > 0 && <span className="text-success font-medium">✅ {readyFeatures}</span>}
               <ChevronRight className="h-3.5 w-3.5" />
             </div>
           </div>
@@ -255,12 +357,8 @@ export function MissionControl({ compact = false }: MissionControlProps) {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Rocket className="h-5 w-5 text-primary" />
-            <CardTitle className="text-base">
-              Mission Control
-            </CardTitle>
-            <Badge variant="outline" className="text-[10px]">
-              {levelLabel}
-            </Badge>
+            <CardTitle className="text-base">Mission Control</CardTitle>
+            <Badge variant="outline" className="text-[10px]">{levelLabel}</Badge>
           </div>
           {compact && (
             <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => setExpanded(false)}>
@@ -269,14 +367,13 @@ export function MissionControl({ compact = false }: MissionControlProps) {
           )}
         </div>
 
-        {/* Main explanation */}
         <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
           {l
             ? 'Esta app aprende de tus datos para generar proyecciones, alertas y reportes inteligentes. Mientras más información ingreses, más poderosas serán las herramientas disponibles.'
             : 'This app learns from your data to generate projections, alerts, and smart reports. The more information you enter, the more powerful the available tools become.'}
         </p>
 
-        {/* Dual progress bars */}
+        {/* Dual progress bars + history */}
         <div className="mt-3 grid grid-cols-2 gap-3">
           <div className="rounded-lg bg-muted/30 p-2.5">
             <div className="flex items-center justify-between mb-1.5">
@@ -287,15 +384,19 @@ export function MissionControl({ compact = false }: MissionControlProps) {
             </div>
             <Progress value={(readyFeatures / Math.max(totalFeatures, 1)) * 100} className="h-2" />
           </div>
-          <div className="rounded-lg bg-muted/30 p-2.5">
-            <div className="flex items-center justify-between mb-1.5">
-              <span className="text-[10px] text-muted-foreground font-medium flex items-center gap-1">
-                📊 {l ? 'Calidad de datos' : 'Data quality'}
-              </span>
-              <span className="text-sm font-bold">{data.globalScore}%</span>
+          {data.progressHistory.length >= 2 ? (
+            <ProgressHistoryChart history={data.progressHistory} language={language} />
+          ) : (
+            <div className="rounded-lg bg-muted/30 p-2.5">
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-[10px] text-muted-foreground font-medium flex items-center gap-1">
+                  📊 {l ? 'Calidad de datos' : 'Data quality'}
+                </span>
+                <span className="text-sm font-bold">{data.globalScore}%</span>
+              </div>
+              <Progress value={data.globalScore} className="h-2" />
             </div>
-            <Progress value={data.globalScore} className="h-2" />
-          </div>
+          )}
         </div>
 
         {/* Tab switcher */}
@@ -309,7 +410,7 @@ export function MissionControl({ compact = false }: MissionControlProps) {
           >
             <Fuel className="h-3 w-3 inline mr-1" />
             {l ? 'Funciones' : 'Features'}
-            {blockedFeatures > 0 && <Badge variant="destructive" className="text-[9px] ml-1 px-1 py-0">{blockedFeatures} {l ? 'inactivas' : 'inactive'}</Badge>}
+            {blockedFeatures > 0 && <Badge variant="destructive" className="text-[9px] ml-1 px-1 py-0">{blockedFeatures}</Badge>}
           </button>
           <button
             className={cn(
@@ -325,9 +426,14 @@ export function MissionControl({ compact = false }: MissionControlProps) {
       </CardHeader>
 
       <CardContent className="space-y-2 pt-0">
+        {/* Inactivity nudge — always visible regardless of tab */}
+        <InactivityNudgeBanner nudge={data.inactivityNudge} language={language} />
+
+        {/* Next action — always visible when there is one */}
+        {data.nextAction && <NextActionBanner action={data.nextAction} language={language} />}
+
         {activeTab === 'features' ? (
           <>
-            {/* Contextual tip based on state */}
             {blockedFeatures > 0 && (
               <div className="rounded-lg bg-destructive/5 border border-destructive/20 p-3 text-xs">
                 <div className="flex items-start gap-2">
@@ -352,9 +458,7 @@ export function MissionControl({ compact = false }: MissionControlProps) {
                 <div className="flex items-start gap-2">
                   <CircleDot className="h-4 w-4 text-warning shrink-0 mt-0.5" />
                   <div>
-                    <p className="font-medium text-warning mb-0.5">
-                      {l ? '¡Casi listo!' : 'Almost there!'}
-                    </p>
+                    <p className="font-medium text-warning mb-0.5">{l ? '¡Casi listo!' : 'Almost there!'}</p>
                     <p className="text-muted-foreground">
                       {l
                         ? `${partialFeatures} ${partialFeatures === 1 ? 'función funciona' : 'funciones funcionan'} parcialmente. Completa los datos faltantes para aprovecharlas al 100%.`
@@ -369,9 +473,7 @@ export function MissionControl({ compact = false }: MissionControlProps) {
                 <div className="flex items-start gap-2">
                   <CheckCircle2 className="h-4 w-4 text-success shrink-0 mt-0.5" />
                   <div>
-                    <p className="font-medium text-success">
-                      {l ? '🎉 ¡Todas las funciones están activas!' : '🎉 All features are active!'}
-                    </p>
+                    <p className="font-medium text-success">{l ? '🎉 ¡Todas las funciones están activas!' : '🎉 All features are active!'}</p>
                     <p className="text-muted-foreground">
                       {l
                         ? 'Tu sistema está completamente alimentado. Sigue ingresando datos para mantener tus análisis actualizados.'
@@ -382,37 +484,24 @@ export function MissionControl({ compact = false }: MissionControlProps) {
               </div>
             )}
 
-            {/* Feature cards */}
             {data.featureReadiness.map(feat => (
               <FeatureReadinessCard key={feat.key} feature={feat} language={language} />
             ))}
 
-            {/* Feature summary legend */}
             <div className="flex items-center justify-center gap-4 pt-2 border-t text-[11px] text-muted-foreground">
-              <span className="flex items-center gap-1">
-                <Zap className="h-3 w-3 text-destructive" />
-                {l ? 'Esencial' : 'Essential'}
-              </span>
-              <span className="flex items-center gap-1">
-                <AlertCircle className="h-3 w-3 text-warning" />
-                {l ? 'Importante' : 'Important'}
-              </span>
-              <span className="flex items-center gap-1">
-                <CircleDot className="h-3 w-3 text-muted-foreground" />
-                {l ? 'Opcional' : 'Optional'}
-              </span>
+              <span className="flex items-center gap-1"><Zap className="h-3 w-3 text-destructive" /> {l ? 'Esencial' : 'Essential'}</span>
+              <span className="flex items-center gap-1"><AlertCircle className="h-3 w-3 text-warning" /> {l ? 'Importante' : 'Important'}</span>
+              <span className="flex items-center gap-1"><CircleDot className="h-3 w-3 text-muted-foreground" /> {l ? 'Opcional' : 'Optional'}</span>
             </div>
           </>
         ) : (
           <>
-            {/* Data tab explanation */}
             <div className="rounded-lg bg-muted/30 p-2.5 text-xs text-muted-foreground">
               {l
                 ? '📊 Estado de los datos que has ingresado: qué se ha procesado, qué falta por revisar y qué necesita tu atención urgente.'
                 : '📊 Status of the data you\'ve entered: what has been processed, what needs review, and what requires urgent attention.'}
             </div>
 
-            {/* Category cards */}
             {data.categories.map(cat => (
               <CategoryCard key={cat.key} category={cat} language={language} />
             ))}
@@ -424,7 +513,6 @@ export function MissionControl({ compact = false }: MissionControlProps) {
               </div>
             )}
 
-            {/* Unapproved data in use */}
             {data.unapprovedInUse.length > 0 && (
               <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 mt-3">
                 <div className="flex items-center gap-2 mb-1">
@@ -446,32 +534,20 @@ export function MissionControl({ compact = false }: MissionControlProps) {
                     </div>
                   ))}
                   {data.unapprovedInUse.length > 5 && (
-                    <span className="text-xs text-muted-foreground">
-                      +{data.unapprovedInUse.length - 5} {l ? 'más' : 'more'}
-                    </span>
+                    <span className="text-xs text-muted-foreground">+{data.unapprovedInUse.length - 5} {l ? 'más' : 'more'}</span>
                   )}
                 </div>
               </div>
             )}
 
-            {/* Summary footer */}
             <div className="flex items-center justify-center gap-4 pt-2 border-t text-xs text-muted-foreground">
               {data.urgentTotal > 0 && (
-                <span className="flex items-center gap-1">
-                  <span className="h-2 w-2 rounded-full bg-destructive" />
-                  {l ? 'Urgente' : 'Urgent'} ({data.urgentTotal})
-                </span>
+                <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-destructive" /> {l ? 'Urgente' : 'Urgent'} ({data.urgentTotal})</span>
               )}
               {data.pendingTotal > 0 && (
-                <span className="flex items-center gap-1">
-                  <span className="h-2 w-2 rounded-full bg-warning" />
-                  {l ? 'Pendiente' : 'Pending'} ({data.pendingTotal})
-                </span>
+                <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-warning" /> {l ? 'Pendiente' : 'Pending'} ({data.pendingTotal})</span>
               )}
-              <span className="flex items-center gap-1">
-                <span className="h-2 w-2 rounded-full bg-success" />
-                OK ({data.okTotal})
-              </span>
+              <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-success" /> OK ({data.okTotal})</span>
             </div>
           </>
         )}
