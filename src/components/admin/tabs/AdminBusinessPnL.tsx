@@ -130,6 +130,89 @@ export function AdminBusinessPnL({ language }: AdminBusinessPnLProps) {
     staleTime: 300000,
   });
 
+  // Fetch AI cost by action_type (feature/app breakdown)
+  const { data: aiCostsByFeature = [] } = useQuery({
+    queryKey: ['admin-ai-costs-by-feature'],
+    queryFn: async () => {
+      const currentMonth = startOfMonth(new Date()).toISOString();
+      const { data, error } = await supabase
+        .from('ai_usage_logs')
+        .select('action_type, credits_used, user_id')
+        .gte('created_at', currentMonth)
+        .eq('success', true);
+      if (error) throw error;
+
+      const result: Record<string, { credits: number; users: Set<string> }> = {};
+      (data || []).forEach((log: any) => {
+        const key = log.action_type || 'unknown';
+        if (!result[key]) result[key] = { credits: 0, users: new Set() };
+        result[key].credits += log.credits_used || 0;
+        result[key].users.add(log.user_id);
+      });
+
+      return Object.entries(result)
+        .map(([feature, d]) => ({
+          feature,
+          credits: d.credits,
+          users: d.users.size,
+          cost: Math.round(d.credits * 0.01 * 100) / 100,
+        }))
+        .sort((a, b) => b.credits - a.credits);
+    },
+    staleTime: 300000,
+  });
+
+  // Fetch top AI consumers (per user)
+  const { data: topConsumers = [] } = useQuery({
+    queryKey: ['admin-top-ai-consumers'],
+    queryFn: async () => {
+      const currentMonth = startOfMonth(new Date()).toISOString();
+      const { data: logs, error: logsErr } = await supabase
+        .from('ai_usage_logs')
+        .select('user_id, credits_used')
+        .gte('created_at', currentMonth)
+        .eq('success', true);
+      if (logsErr) throw logsErr;
+
+      const { data: profiles, error: profErr } = await supabase
+        .from('profiles')
+        .select('id, email, full_name');
+      if (profErr) throw profErr;
+
+      const { data: subs, error: subsErr } = await supabase
+        .from('user_subscriptions')
+        .select('user_id, plan_type');
+      if (subsErr) throw subsErr;
+
+      const profileMap: Record<string, { email: string; name: string }> = {};
+      (profiles || []).forEach((p: any) => {
+        profileMap[p.id] = { email: p.email || '', name: p.full_name || '' };
+      });
+
+      const planMap: Record<string, string> = {};
+      (subs || []).forEach((s: any) => { planMap[s.user_id] = s.plan_type; });
+
+      const userCredits: Record<string, number> = {};
+      (logs || []).forEach((l: any) => {
+        userCredits[l.user_id] = (userCredits[l.user_id] || 0) + (l.credits_used || 0);
+      });
+
+      return Object.entries(userCredits)
+        .map(([userId, credits]) => {
+          const plan = planMap[userId] || 'free';
+          const price = PLAN_PRICES[plan] ?? 0;
+          const aiCost = Math.round(credits * 0.01 * 100) / 100;
+          const roi = Math.round((price - aiCost) * 100) / 100;
+          const profile = profileMap[userId];
+          const displayName = profile?.name || profile?.email?.split('@')[0] || userId.substring(0, 8);
+          return { userId, displayName, plan, price, credits, aiCost, roi };
+        })
+        .sort((a, b) => b.credits - a.credits)
+        .slice(0, 15);
+    },
+    staleTime: 300000,
+  });
+
   // Add cost mutation
   const addCost = useMutation({
     mutationFn: async () => {
