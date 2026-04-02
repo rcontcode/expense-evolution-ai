@@ -8,8 +8,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Plus, Trash2, DollarSign, TrendingUp, TrendingDown, PieChart, Users, Zap, BarChart3 } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart as RePieChart, Pie, Cell, Legend } from 'recharts';
+import { Loader2, Plus, Trash2, DollarSign, TrendingUp, TrendingDown, PieChart, Users, Zap, BarChart3, AlertTriangle, UserMinus, UserPlus, Activity } from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart as RePieChart, Pie, Cell, Legend, BarChart, Bar, AreaChart, Area } from 'recharts';
 import { toast } from 'sonner';
 import { format, subMonths, startOfMonth } from 'date-fns';
 
