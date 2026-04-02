@@ -8,10 +8,18 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Plus, Trash2, DollarSign, TrendingUp, TrendingDown, PieChart } from 'lucide-react';
+import { Loader2, Plus, Trash2, DollarSign, TrendingUp, TrendingDown, PieChart, Users, Zap, BarChart3 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart as RePieChart, Pie, Cell, Legend } from 'recharts';
 import { toast } from 'sonner';
 import { format, subMonths, startOfMonth } from 'date-fns';
+
+const PLAN_PRICES: Record<string, number> = {
+  free: 0,
+  premium: 7.99,
+  pro: 14.99,
+  bundle: 19.99,
+  pro_beta: 0,
+};
 
 interface AdminBusinessPnLProps {
   language: string;
