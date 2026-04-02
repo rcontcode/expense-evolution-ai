@@ -55,6 +55,7 @@ const TAB_GUIDE = [
   { tab: 'pnl', emoji: '📊', nameEs: 'P&L', nameEn: 'P&L', descEs: 'Pérdidas y Ganancias. Ingresos vs costos (IA, hosting, emails, fees). Margen neto y tendencias.', descEn: 'Profit & Loss. Revenue vs costs (AI, hosting, emails, fees). Net margin and trends.' },
   { tab: 'health', emoji: '❤️', nameEs: 'Salud', nameEn: 'Health', descEs: 'Salud del cliente: satisfacción, retención, churn, NPS, engagement por plan, usuarios en riesgo.', descEn: 'Customer health: satisfaction, retention, churn, NPS, engagement by plan, at-risk users.' },
   { tab: 'simulator', emoji: '🧮', nameEs: 'Simulador', nameEn: 'Simulator', descEs: 'Simulador de precios. Ajusta precios, ve margen por usuario con costos reales de IA, proyecta conversión.', descEn: 'Pricing simulator. Adjust prices, see per-user margin with real AI costs, project conversion.' },
+  { tab: 'bi', emoji: '🧠', nameEs: 'Business Intel', nameEn: 'Business Intel', descEs: 'Geografía, idioma, funnel de conversión, sugerencias de pricing y revenue por región.', descEn: 'Geography, language, conversion funnel, pricing suggestions and revenue by region.' },
 ];
 
 export const AdminCRMHome = ({ language, onNavigateTab }: Props) => {

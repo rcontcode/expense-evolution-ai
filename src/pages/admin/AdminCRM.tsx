@@ -836,6 +836,7 @@ const AdminCRM = () => {
               <TabsContent value="pnl"><AdminBusinessPnL language={language} /></TabsContent>
               <TabsContent value="health"><AdminCustomerHealth language={language} /></TabsContent>
               <TabsContent value="simulator"><AdminCostSimulator language={language} /></TabsContent>
+              <TabsContent value="bi"><AdminBusinessIntelligence language={language} /></TabsContent>
             </Tabs>
             <div className="sticky top-6"><AdminActivityFeed language={language} /></div>
           </motion.div>
