@@ -89,7 +89,7 @@ export function AdminBusinessIntelligence({ language }: Props) {
       const profile = emailToProfile.get(lead.email?.toLowerCase());
       if (profile) {
         const plan = userIdToPlan.get(profile.id);
-        if (plan && plan !== 'free' && plan !== 'pro_beta') stat.paid++;
+        if (plan && plan !== 'free' && (plan as string) !== 'pro_beta') stat.paid++;
       }
     }
     countryStats.set(c, stat);
