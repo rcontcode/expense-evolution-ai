@@ -213,6 +213,21 @@ export function AdminBusinessPnL({ language }: AdminBusinessPnLProps) {
     staleTime: 300000,
   });
 
+  // Fetch Stripe analytics (churn, historical revenue)
+  const { data: analyticsData } = useQuery({
+    queryKey: ['admin-stripe-analytics'],
+    queryFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('No session');
+      const res = await supabase.functions.invoke('stripe-analytics', {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      if (res.error) throw res.error;
+      return res.data;
+    },
+    staleTime: 300000,
+  });
+
   // Add cost mutation
   const addCost = useMutation({
     mutationFn: async () => {
