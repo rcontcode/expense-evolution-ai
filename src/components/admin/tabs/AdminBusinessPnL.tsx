@@ -262,6 +262,22 @@ export function AdminBusinessPnL({ language }: AdminBusinessPnLProps) {
   const totalCosts = totalMonthlyOpCosts + totalAICostMonth;
   const netMargin = mrr - totalCosts;
   const marginPercent = mrr > 0 ? Math.round((netMargin / mrr) * 100) : 0;
+  const globalROI = totalCosts > 0 ? Math.round(((mrr - totalCosts) / totalCosts) * 100) : mrr > 0 ? 999 : 0;
+
+  // Build P&L by plan
+  const pnlByPlan = aiCostsByPlan.map(row => {
+    const price = PLAN_PRICES[row.plan] ?? 0;
+    const revenue = price * row.users;
+    const profit = revenue - row.estimatedCost;
+    const margin = revenue > 0 ? Math.round((profit / revenue) * 100) : row.estimatedCost > 0 ? -100 : 0;
+    return { plan: row.plan, subscribers: row.users, price, revenue: Math.round(revenue * 100) / 100, aiCost: row.estimatedCost, profit: Math.round(profit * 100) / 100, margin };
+  });
+  const pnlTotals = pnlByPlan.reduce((acc, r) => ({
+    subscribers: acc.subscribers + r.subscribers,
+    revenue: acc.revenue + r.revenue,
+    aiCost: acc.aiCost + r.aiCost,
+    profit: acc.profit + r.profit,
+  }), { subscribers: 0, revenue: 0, aiCost: 0, profit: 0 });
 
   // Build 6-month trend data
   const trendData = Array.from({ length: 6 }, (_, i) => {
