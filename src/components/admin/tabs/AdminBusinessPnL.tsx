@@ -8,8 +8,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Plus, Trash2, DollarSign, TrendingUp, TrendingDown, PieChart, Users, Zap, BarChart3 } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart as RePieChart, Pie, Cell, Legend } from 'recharts';
+import { Loader2, Plus, Trash2, DollarSign, TrendingUp, TrendingDown, PieChart, Users, Zap, BarChart3, AlertTriangle, UserMinus, UserPlus, Activity } from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart as RePieChart, Pie, Cell, Legend, BarChart, Bar, AreaChart, Area } from 'recharts';
 import { toast } from 'sonner';
 import { format, subMonths, startOfMonth } from 'date-fns';
 
@@ -213,6 +213,21 @@ export function AdminBusinessPnL({ language }: AdminBusinessPnLProps) {
     staleTime: 300000,
   });
 
+  // Fetch Stripe analytics (churn, historical revenue)
+  const { data: analyticsData } = useQuery({
+    queryKey: ['admin-stripe-analytics'],
+    queryFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('No session');
+      const res = await supabase.functions.invoke('stripe-analytics', {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      if (res.error) throw res.error;
+      return res.data;
+    },
+    staleTime: 300000,
+  });
+
   // Add cost mutation
   const addCost = useMutation({
     mutationFn: async () => {
@@ -279,11 +294,22 @@ export function AdminBusinessPnL({ language }: AdminBusinessPnLProps) {
     profit: acc.profit + r.profit,
   }), { subscribers: 0, revenue: 0, aiCost: 0, profit: 0 });
 
-  // Build 6-month trend data
+  // Churn & ARPU metrics
+  const churn = analyticsData?.churn;
+  const totalActive = churn?.totalActive || stripeData?.totalActiveSubscriptions || 0;
+  const arpu = totalActive > 0 ? Math.round((mrr / totalActive) * 100) / 100 : 0;
+  const churnRate = churn?.churnRate30d || 0;
+  const avgLifetimeMonths = churnRate > 0 ? Math.round(100 / churnRate) : 999;
+  const ltv = Math.round(arpu * avgLifetimeMonths * 100) / 100;
+
+  // Build 6-month trend data with real revenue
+  const realMonthlyRevenue = analyticsData?.monthlyRevenue || [];
   const trendData = Array.from({ length: 6 }, (_, i) => {
     const month = subMonths(new Date(), 5 - i);
     const monthKey = format(month, 'yyyy-MM');
     const monthLabel = format(month, 'MMM');
+
+    const realRev = realMonthlyRevenue.find((r: any) => r.month === monthKey);
 
     const aiCreditsMonth = aiCosts
       .filter((l: any) => l.created_at?.startsWith(monthKey))
@@ -297,14 +323,24 @@ export function AdminBusinessPnL({ language }: AdminBusinessPnLProps) {
         .reduce((s: number, c: any) => s + Number(c.amount_usd) / 12, 0);
 
     const costTotal = aiCreditsMonth * 0.01 + opCostMonth;
+    const rev = realRev?.revenue ?? mrr;
 
     return {
       month: monthLabel,
-      revenue: Math.round(mrr * 100) / 100, // simplified: use current MRR
+      revenue: Math.round(rev * 100) / 100,
       costs: Math.round(costTotal * 100) / 100,
-      margin: Math.round((mrr - costTotal) * 100) / 100,
+      margin: Math.round((rev - costTotal) * 100) / 100,
     };
   });
+
+  // Alert thresholds
+  const alerts: Array<{ type: 'warning' | 'danger'; message: string }> = [];
+  if (marginPercent < 20 && mrr > 0) alerts.push({ type: marginPercent < 0 ? 'danger' : 'warning', message: isEs ? `⚠️ Margen neto bajo: ${marginPercent}% (objetivo: >50%)` : `⚠️ Low net margin: ${marginPercent}% (target: >50%)` });
+  if (churnRate > 5) alerts.push({ type: churnRate > 10 ? 'danger' : 'warning', message: isEs ? `📉 Churn rate alto: ${churnRate}% (objetivo: <5%)` : `📉 High churn rate: ${churnRate}% (target: <5%)` });
+  if (totalAICostMonth > mrr * 0.3 && mrr > 0) alerts.push({ type: 'warning', message: isEs ? `🤖 Costo IA supera el 30% del MRR ($${totalAICostMonth.toFixed(2)} / $${mrr.toFixed(2)})` : `🤖 AI cost exceeds 30% of MRR ($${totalAICostMonth.toFixed(2)} / $${mrr.toFixed(2)})` });
+  if (churn?.netGrowth30d !== undefined && churn.netGrowth30d < 0) alerts.push({ type: 'danger', message: isEs ? `🔻 Pérdida neta de ${Math.abs(churn.netGrowth30d)} suscriptores en 30 días` : `🔻 Net loss of ${Math.abs(churn.netGrowth30d)} subscribers in 30 days` });
+  const topLosers = topConsumers.filter(c => c.roi < -5);
+  if (topLosers.length > 3) alerts.push({ type: 'warning', message: isEs ? `💸 ${topLosers.length} usuarios con ROI negativo este mes` : `💸 ${topLosers.length} users with negative ROI this month` });
 
   // Pie chart data
   const pieData = [
@@ -679,6 +715,142 @@ export function AdminBusinessPnL({ language }: AdminBusinessPnLProps) {
           </div>
         </CardContent>
       </Card>
+
+      {/* Alerts & Thresholds */}
+      {alerts.length > 0 && (
+        <Card className="border-2 border-amber-200 dark:border-amber-800">
+          <CardHeader>
+            <CardTitle className="text-sm flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 text-amber-500" />
+              {isEs ? '🚨 Alertas de Negocio' : '🚨 Business Alerts'}
+            </CardTitle>
+            <CardDescription>{isEs ? 'Métricas que necesitan atención' : 'Metrics that need attention'}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {alerts.map((alert, i) => (
+              <div key={i} className={`p-3 rounded-lg text-sm font-medium ${alert.type === 'danger' ? 'bg-destructive/10 text-destructive border border-destructive/20' : 'bg-amber-50 text-amber-800 dark:bg-amber-950/30 dark:text-amber-200 border border-amber-200 dark:border-amber-800'}`}>
+                {alert.message}
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Churn & Retention + ARPU/LTV */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm flex items-center gap-2">
+              <UserMinus className="h-4 w-4 text-red-500" />
+              {isEs ? '📉 Churn & Retención' : '📉 Churn & Retention'}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="p-3 rounded-lg bg-muted/50 text-center">
+                <p className="text-xs text-muted-foreground">{isEs ? 'Churn Rate 30d' : 'Churn Rate 30d'}</p>
+                <p className={`text-2xl font-black ${churnRate > 5 ? 'text-destructive' : 'text-emerald-600'}`}>{churnRate}%</p>
+              </div>
+              <div className="p-3 rounded-lg bg-muted/50 text-center">
+                <p className="text-xs text-muted-foreground">{isEs ? 'Cancelados 30d' : 'Canceled 30d'}</p>
+                <p className="text-2xl font-black text-destructive">{churn?.canceled30d ?? '—'}</p>
+              </div>
+              <div className="p-3 rounded-lg bg-muted/50 text-center">
+                <p className="text-xs text-muted-foreground">{isEs ? 'Nuevos 30d' : 'New 30d'}</p>
+                <p className="text-2xl font-black text-emerald-600">{churn?.newSubscribers30d ?? '—'}</p>
+              </div>
+              <div className="p-3 rounded-lg bg-muted/50 text-center">
+                <p className="text-xs text-muted-foreground">{isEs ? 'Crecimiento Neto' : 'Net Growth'}</p>
+                <p className={`text-2xl font-black ${(churn?.netGrowth30d ?? 0) >= 0 ? 'text-emerald-600' : 'text-destructive'}`}>
+                  {churn?.netGrowth30d !== undefined ? (churn.netGrowth30d >= 0 ? '+' : '') + churn.netGrowth30d : '—'}
+                </p>
+              </div>
+              <div className="p-3 rounded-lg bg-muted/50 text-center">
+                <p className="text-xs text-muted-foreground">{isEs ? 'Total Activos' : 'Total Active'}</p>
+                <p className="text-2xl font-black">{totalActive}</p>
+              </div>
+              <div className="p-3 rounded-lg bg-muted/50 text-center">
+                <p className="text-xs text-muted-foreground">{isEs ? 'Total Clientes' : 'Total Customers'}</p>
+                <p className="text-2xl font-black">{churn?.totalCustomers ?? '—'}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm flex items-center gap-2">
+              <DollarSign className="h-4 w-4 text-emerald-500" />
+              {isEs ? '💰 ARPU & Lifetime Value' : '💰 ARPU & Lifetime Value'}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="p-3 rounded-lg bg-muted/50 text-center">
+                <p className="text-xs text-muted-foreground">ARPU</p>
+                <p className="text-2xl font-black">${arpu.toFixed(2)}</p>
+                <p className="text-[10px] text-muted-foreground">{isEs ? '/mes por suscriptor' : '/mo per subscriber'}</p>
+              </div>
+              <div className="p-3 rounded-lg bg-muted/50 text-center">
+                <p className="text-xs text-muted-foreground">{isEs ? 'Vida Promedio' : 'Avg Lifetime'}</p>
+                <p className="text-2xl font-black">{avgLifetimeMonths > 100 ? '∞' : avgLifetimeMonths}</p>
+                <p className="text-[10px] text-muted-foreground">{isEs ? 'meses' : 'months'}</p>
+              </div>
+              <div className="p-3 rounded-lg bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30 text-center col-span-2">
+                <p className="text-xs text-muted-foreground">{isEs ? 'Lifetime Value (LTV)' : 'Lifetime Value (LTV)'}</p>
+                <p className="text-3xl font-black text-emerald-600">${ltv > 10000 ? '∞' : ltv.toFixed(2)}</p>
+                <p className="text-[10px] text-muted-foreground">LTV:CAC = {isEs ? 'indefinido (CAC no configurado)' : 'undefined (CAC not set)'}</p>
+              </div>
+              <div className="p-3 rounded-lg bg-muted/50 text-center">
+                <p className="text-xs text-muted-foreground">{isEs ? 'Revenue/Cliente' : 'Revenue/Customer'}</p>
+                <p className="text-xl font-bold">${churn?.totalCustomers ? (revenue30d / churn.totalCustomers).toFixed(2) : '—'}</p>
+              </div>
+              <div className="p-3 rounded-lg bg-muted/50 text-center">
+                <p className="text-xs text-muted-foreground">{isEs ? 'Tasa Conversión' : 'Conversion Rate'}</p>
+                <p className="text-xl font-bold">{churn?.totalCustomers && totalActive ? Math.round((totalActive / churn.totalCustomers) * 100) : '—'}%</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Historical Revenue Chart */}
+      {realMonthlyRevenue.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Activity className="h-4 w-4 text-blue-500" />
+              {isEs ? '📊 Revenue Histórico Real (Stripe)' : '📊 Real Historical Revenue (Stripe)'}
+            </CardTitle>
+            <CardDescription>{isEs ? 'Ingresos reales cobrados por mes (últimos 6 meses)' : 'Actual charged revenue per month (last 6 months)'}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={280}>
+              <BarChart data={realMonthlyRevenue.map((r: any) => ({
+                month: r.month.substring(5),
+                revenue: r.revenue,
+                charges: r.charges,
+              }))}>
+                <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                <XAxis dataKey="month" className="text-xs" />
+                <YAxis className="text-xs" />
+                <Tooltip formatter={(v: number, name: string) => [name === 'revenue' ? `$${v.toFixed(2)}` : v, name === 'revenue' ? (isEs ? 'Revenue' : 'Revenue') : (isEs ? 'Cobros' : 'Charges')]} />
+                <Bar dataKey="revenue" fill="#3b82f6" radius={[4, 4, 0, 0]} name={isEs ? 'Revenue' : 'Revenue'} />
+              </BarChart>
+            </ResponsiveContainer>
+            <div className="mt-3 flex gap-4 text-xs text-muted-foreground">
+              <span>{isEs ? 'Total 6 meses' : '6-month total'}: <strong className="text-foreground">${realMonthlyRevenue.reduce((s: number, r: any) => s + r.revenue, 0).toFixed(2)}</strong></span>
+              <span>{isEs ? 'Promedio mensual' : 'Monthly avg'}: <strong className="text-foreground">${(realMonthlyRevenue.reduce((s: number, r: any) => s + r.revenue, 0) / Math.max(realMonthlyRevenue.length, 1)).toFixed(2)}</strong></span>
+              {realMonthlyRevenue.length >= 2 && (() => {
+                const last = realMonthlyRevenue[realMonthlyRevenue.length - 1]?.revenue || 0;
+                const prev = realMonthlyRevenue[realMonthlyRevenue.length - 2]?.revenue || 0;
+                const growth = prev > 0 ? Math.round(((last - prev) / prev) * 100) : 0;
+                return <span>MoM: <strong className={growth >= 0 ? 'text-emerald-600' : 'text-destructive'}>{growth >= 0 ? '+' : ''}{growth}%</strong></span>;
+              })()}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Add Cost Dialog */}
       <Dialog open={addCostOpen} onOpenChange={setAddCostOpen}>
