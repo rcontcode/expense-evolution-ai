@@ -294,11 +294,22 @@ export function AdminBusinessPnL({ language }: AdminBusinessPnLProps) {
     profit: acc.profit + r.profit,
   }), { subscribers: 0, revenue: 0, aiCost: 0, profit: 0 });
 
-  // Build 6-month trend data
+  // Churn & ARPU metrics
+  const churn = analyticsData?.churn;
+  const totalActive = churn?.totalActive || stripeData?.totalActiveSubscriptions || 0;
+  const arpu = totalActive > 0 ? Math.round((mrr / totalActive) * 100) / 100 : 0;
+  const churnRate = churn?.churnRate30d || 0;
+  const avgLifetimeMonths = churnRate > 0 ? Math.round(100 / churnRate) : 999;
+  const ltv = Math.round(arpu * avgLifetimeMonths * 100) / 100;
+
+  // Build 6-month trend data with real revenue
+  const realMonthlyRevenue = analyticsData?.monthlyRevenue || [];
   const trendData = Array.from({ length: 6 }, (_, i) => {
     const month = subMonths(new Date(), 5 - i);
     const monthKey = format(month, 'yyyy-MM');
     const monthLabel = format(month, 'MMM');
+
+    const realRev = realMonthlyRevenue.find((r: any) => r.month === monthKey);
 
     const aiCreditsMonth = aiCosts
       .filter((l: any) => l.created_at?.startsWith(monthKey))
@@ -312,14 +323,24 @@ export function AdminBusinessPnL({ language }: AdminBusinessPnLProps) {
         .reduce((s: number, c: any) => s + Number(c.amount_usd) / 12, 0);
 
     const costTotal = aiCreditsMonth * 0.01 + opCostMonth;
+    const rev = realRev?.revenue ?? mrr;
 
     return {
       month: monthLabel,
-      revenue: Math.round(mrr * 100) / 100, // simplified: use current MRR
+      revenue: Math.round(rev * 100) / 100,
       costs: Math.round(costTotal * 100) / 100,
-      margin: Math.round((mrr - costTotal) * 100) / 100,
+      margin: Math.round((rev - costTotal) * 100) / 100,
     };
   });
+
+  // Alert thresholds
+  const alerts: Array<{ type: 'warning' | 'danger'; message: string }> = [];
+  if (marginPercent < 20 && mrr > 0) alerts.push({ type: marginPercent < 0 ? 'danger' : 'warning', message: isEs ? `⚠️ Margen neto bajo: ${marginPercent}% (objetivo: >50%)` : `⚠️ Low net margin: ${marginPercent}% (target: >50%)` });
+  if (churnRate > 5) alerts.push({ type: churnRate > 10 ? 'danger' : 'warning', message: isEs ? `📉 Churn rate alto: ${churnRate}% (objetivo: <5%)` : `📉 High churn rate: ${churnRate}% (target: <5%)` });
+  if (totalAICostMonth > mrr * 0.3 && mrr > 0) alerts.push({ type: 'warning', message: isEs ? `🤖 Costo IA supera el 30% del MRR ($${totalAICostMonth.toFixed(2)} / $${mrr.toFixed(2)})` : `🤖 AI cost exceeds 30% of MRR ($${totalAICostMonth.toFixed(2)} / $${mrr.toFixed(2)})` });
+  if (churn?.netGrowth30d !== undefined && churn.netGrowth30d < 0) alerts.push({ type: 'danger', message: isEs ? `🔻 Pérdida neta de ${Math.abs(churn.netGrowth30d)} suscriptores en 30 días` : `🔻 Net loss of ${Math.abs(churn.netGrowth30d)} subscribers in 30 days` });
+  const topLosers = topConsumers.filter(c => c.roi < -5);
+  if (topLosers.length > 3) alerts.push({ type: 'warning', message: isEs ? `💸 ${topLosers.length} usuarios con ROI negativo este mes` : `💸 ${topLosers.length} users with negative ROI this month` });
 
   // Pie chart data
   const pieData = [
