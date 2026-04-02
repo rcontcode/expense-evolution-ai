@@ -1,128 +1,134 @@
 
 
-# Plan: Mission Control — Panel Inteligente de Progreso y Estado de Datos
+# Plan de Lanzamiento — EvoFinz, Fokuspark, UniversMind
 
-## El Problema
+## Estado actual: LISTO PARA LANZAR
 
-Hoy la información sobre "qué falta" está **fragmentada** en 6+ componentes dispersos:
-- `DashboardNotificationHub` — alertas genéricas
-- `ProgressiveOnboarding` — solo 3 pasos básicos (gasto, cliente, ingreso)
-- `ExpenseHealthPanel` — solo en la página de gastos
-- `DataCompletenessPrompt` — solo si los gastos del mes lucen incompletos
-- `useNudgeSystem` — nudges simples sin desglose
-- `SetupProgressBanner` — checklist de setup inicial
+No hay errores críticos bloqueantes. Las 3 apps están funcionales.
 
-Ninguno muestra el **pipeline completo**: subido → procesado → aprobado → en uso. El usuario no puede ver de un vistazo dónde está parado.
+---
 
-## Solución
+## PASO 1: Publicar las apps (5 minutos)
 
-Crear un **"Mission Control"** — un componente visual tipo panel de control que muestra el estado completo del pipeline de datos del usuario, organizado por categoría, con prioridades claras y acciones directas.
+### EvoFinz (esta app)
+1. Click **Publish** (botón arriba a la derecha)
+2. Click **Update** para publicar los últimos cambios
+3. Ve a **Settings → Domains** y verifica que `evofinz.com` esté conectado y Active
 
-## Arquitectura
+### Fokuspark
+1. Abre el proyecto Fokuspark en Lovable
+2. Click **Publish → Update**
+3. Verifica dominio `fokuspark.com`
+
+### UniversMind
+1. Abre el proyecto UniversMind en Lovable
+2. Click **Publish → Update**
+3. Verifica dominio `universmind.com`
+
+---
+
+## PASO 2: Google Cloud — Ajuste rápido (2 minutos)
+
+En `console.cloud.google.com` → tu proyecto → **Branding**:
+
+1. **App name**: Cambia a `Evolarys`
+2. **Home page**: `https://evolarys.com` (o `https://evofinz.com`)
+3. **Logo**: Pon uno neutro del ecosistema
+4. **NO toques** los dominios autorizados ni las credenciales existentes
+5. **Save**
+
+Eso es TODO. No crees proyectos nuevos.
+
+---
+
+## PASO 3: Usar el CRM para el lanzamiento
+
+### 3A. Enviar emails de lanzamiento desde el CRM
+
+1. Ve a `/admin/crm` en EvoFinz
+2. Pestaña **Leads** → tienes todos los leads de las 3 apps
+3. Filtra por fuente:
+   - **"EvoFinz"** → leads de EvoFinz
+   - **"Fokuspark"** → leads de Fokuspark
+   - **"UniversMind"** → leads de UniversMind
+
+### 3B. Qué plantilla usar para cada app
+
+| App | Primer contacto | Bienvenida | Reactivación | Oferta |
+|-----|-----------------|------------|--------------|--------|
+| EvoFinz | `crm-evofinz-outreach` | `crm-evofinz-welcome` | `crm-evofinz-reactivation` | `crm-evofinz-offer` |
+| Fokuspark | `crm-fokuspark-outreach` | `crm-fokuspark-welcome` | `crm-fokuspark-reactivation` | `crm-fokuspark-offer` |
+| UniversMind | `crm-universmind-outreach` | `crm-universmind-welcome` | `crm-universmind-reactivation` | `crm-universmind-offer` |
+
+El sistema **selecciona automáticamente** la plantilla correcta según el `leadSource`. No necesitas elegir manualmente.
+
+### 3C. Flujo de lanzamiento recomendado
+
+**Día 1 — HOY:**
+1. Filtra leads **Hot** (prioridad alta) de cada app
+2. Envía email de **Welcome** a los que ya tienen cuenta
+3. Envía email de **Outreach** a los que solo hicieron el quiz
+4. Los follow-ups se activan automáticamente si tienes reglas configuradas
+
+**Día 2-3:**
+1. Revisa en el CRM pestaña **Seguimientos** qué leads no abrieron
+2. Envía **Follow-up** manual o automático (el sistema usa `crm-follow-up` con branding dinámico según la app de origen)
+
+**Día 7:**
+1. El **Reporte Semanal** se envía automáticamente con métricas de las 3 apps
+2. Revisa en pestaña **Analytics/BI** las conversiones por app
+
+### 3D. Para enviar emails masivos
+
+1. En la tabla de leads, selecciona múltiples leads con los checkboxes
+2. Click **Acciones masivas** → **Enviar email**
+3. El sistema detecta la app de origen de cada lead y usa el branding correcto automáticamente
+
+### 3E. Automatización (ya configurada)
+
+Las reglas de automatización en la pestaña **Reglas** ya manejan:
+- Asignación automática de secuencias de nurturing
+- Follow-ups programados con ventanas de horario
+- Branding dinámico por app de origen
+
+---
+
+## PASO 4: Mensajes sugeridos para el lanzamiento
+
+### Para leads de EvoFinz (finanzas):
+> **Asunto**: Tu evolución financiera comienza hoy
+> **Cuerpo**: Hemos lanzado nuevas herramientas para que tomes control de tus finanzas. Proyecciones inteligentes, presupuestos automáticos y más te esperan.
+
+### Para leads de Fokuspark (productividad):
+> **Asunto**: Tu enfoque merece un upgrade
+> **Cuerpo**: Fokuspark está listo con timer de enfoque, respiración guiada y journaling reflexivo. Todo diseñado para que rindas al máximo.
+
+### Para leads de UniversMind (bienestar):
+> **Asunto**: Expande tu mente — UniversMind está aquí
+> **Cuerpo**: Meditaciones guiadas, herramientas de reflexión y un camino de bienestar personalizado te esperan en UniversMind.
+
+---
+
+## PASO 5: Verificación post-lanzamiento
+
+1. **Prueba el login** en cada app (email + Google) con una cuenta de prueba
+2. **Envía un email de prueba** desde el CRM a tu propio correo
+3. **Revisa** que los dominios de email estén Active en cada proyecto (Cloud → Emails)
+4. **Monitorea** el CRM las primeras 24h para ver entregas y aperturas
+
+---
+
+## Resumen: Orden de acciones
 
 ```text
-┌─────────────────────────────────────────────────┐
-│  🚀 Mission Control — Tu Progreso              │
-│  ████████████░░░ 73% completo                   │
-├─────────────────────────────────────────────────┤
-│                                                 │
-│  📄 Documentos    ██████░░ 6/8                  │
-│     8 subidos · 6 procesados · 4 aprobados      │
-│     ⚠️ 2 pendientes de aprobar (urgente)        │
-│     [Revisar ahora →]                           │
-│                                                 │
-│  💰 Gastos        █████░░░ 62%                  │
-│     45 registrados · 28 con recibo              │
-│     12 sin categoría · 5 sin clasificar         │
-│     ⚡ 5 sin clasificar bloquean reportes       │
-│     [Completar →]                               │
-│                                                 │
-│  📊 Ingresos      ████████ 100%                 │
-│     8 registrados · todos con cliente           │
-│     ✅ Completo                                  │
-│                                                 │
-│  👥 Clientes      ██████░░ 75%                  │
-│     4 clientes · 3 con datos completos          │
-│     1 sin email ni teléfono                     │
-│     [Completar perfil →]                        │
-│                                                 │
-│  🏦 Banco         ███░░░░░ 40%                  │
-│     23 transacciones · 9 conciliadas            │
-│     14 sin vincular a gastos                    │
-│     [Conciliar →]                               │
-│                                                 │
-│  📋 Contratos     ████████ 100%                 │
-│     2 activos · todos vinculados                │
-│                                                 │
-│  🔄 Pagos Fijos   ██████░░ 80%                  │
-│     5 configurados · 1 vencido                  │
-│     [Pagar →]                                   │
-│                                                 │
-├─────────────────────────────────────────────────┤
-│  🔴 Urgente (3) · 🟡 Pendiente (5) · ✅ OK (4) │
-└─────────────────────────────────────────────────┘
+1. Publish EvoFinz      → 1 min
+2. Publish Fokuspark     → 1 min  
+3. Publish UniversMind   → 1 min
+4. Google Cloud branding → 2 min
+5. CRM: filtrar hot leads → enviar outreach
+6. Monitorear respuestas día 2-3
+7. Revisar reporte semanal día 7
 ```
 
-## Qué se construirá
-
-### 1. Hook: `src/hooks/utils/useMissionControl.ts`
-
-Centraliza **todas** las métricas de progreso en un solo lugar:
-
-- **Documentos**: total subidos, procesados por IA, aprobados por el usuario, rechazados, pendientes de revisión. Detecta si hay docs pendientes > 3 días (urgente).
-- **Gastos**: total, con recibo vinculado, con categoría, con clasificación (reimbursable/deductible/personal), con cliente, con contrato. Calcula % completo ponderado.
-- **Ingresos**: total, con cliente asignado, con proyecto, sin asignar.
-- **Clientes**: total, completeness promedio (usa `calculateClientCompleteness`), clientes sin datos críticos.
-- **Banco**: transacciones importadas, conciliadas (matched), pendientes de conciliar.
-- **Contratos**: activos, vinculados a cliente y proyecto, vencidos.
-- **Pagos Fijos**: configurados, vencidos, próximos a vencer.
-
-Cada categoría retorna: `{ total, complete, percentage, urgentCount, pendingCount, status: 'complete' | 'good' | 'needs_attention' | 'urgent', items: DetailItem[] }`.
-
-Score global = promedio ponderado de todas las categorías.
-
-### 2. Componente: `src/components/dashboard/MissionControl.tsx`
-
-Panel visual con:
-
-- **Barra de progreso global** con porcentaje y nivel (Principiante/Organizado/Experto/Maestro)
-- **Cards por categoría** — cada una muestra:
-  - Barra de progreso mini
-  - Pipeline visual: "X subidos → Y procesados → Z aprobados → W en uso"
-  - Badges de urgencia (rojo si hay items bloqueantes, amarillo si hay pendientes)
-  - Botón de acción directo a la página correspondiente
-  - Detalle expandible con items específicos que necesitan atención
-- **Resumen de urgencia** al final: contadores de urgente/pendiente/ok
-- **"Datos no aprobados en uso"** — sección especial que detecta si hay gastos/ingresos creados desde documentos que aún no fueron aprobados/revisados, mostrando dónde se están usando (presupuesto, reportes, etc.)
-
-Variantes: `full` (para dashboard) y `compact` (widget colapsable).
-
-### 3. Integración en Dashboard
-
-Agregar `MissionControl` al dashboard principal, reemplazando la necesidad de mirar múltiples widgets dispersos. Se mostrará como una sección prominente cuando el progreso sea < 90%.
-
-## Detalle técnico
-
-### Fuentes de datos (hooks existentes que se reutilizarán)
-
-| Categoría | Hook existente | Datos nuevos a calcular |
-|-----------|---------------|------------------------|
-| Documentos | `useDocumentsForReview()` | Pipeline: pending → processed → approved |
-| Gastos | `useExpenses()` + `useNudgeSystem()` | % con recibo, categoría, clasificación |
-| Ingresos | `useIncome()` | % con cliente/proyecto asignado |
-| Clientes | `useClients()` | Completeness promedio via `calculateClientCompleteness` |
-| Banco | `useBankTransactions()` | % conciliado vs pendiente |
-| Contratos | Query directa `contracts` | Activos vs vencidos |
-| Pagos Fijos | `useRecurringBills()` | Pagados vs vencidos |
-
-### Detección de "datos no aprobados en uso"
-
-Cruzar `expenses.document_id` con `documents.review_status !== 'approved'` para detectar gastos vinculados a documentos no revisados que ya se están usando en cálculos de presupuesto/reportes.
-
-## Archivos a crear/modificar
-
-1. **Crear `src/hooks/utils/useMissionControl.ts`** — Hook centralizado con todas las métricas
-2. **Crear `src/components/dashboard/MissionControl.tsx`** — Panel visual completo
-3. **Modificar `src/pages/Dashboard.tsx`** — Integrar MissionControl en el dashboard
-4. **Modificar `src/components/dashboard/MobileDashboard.tsx`** — Versión compact para móvil
+No se requieren cambios de código. Todo está listo para lanzar.
 
