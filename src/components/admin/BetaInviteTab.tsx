@@ -2,7 +2,8 @@ import { useState, useMemo } from 'react';
 import { 
   MessageSquare, Send, Link2, Copy, Mail, 
   CheckCircle2, AlertTriangle, Bug, Star, Gift, 
-  Users, Trophy, Shield, Smartphone, BookOpen
+  Users, Trophy, Shield, Smartphone, BookOpen,
+  Sparkles, Target, HelpCircle
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -431,7 +432,115 @@ export function BetaInviteTab({ codes }: BetaInviteTabProps) {
         </CardContent>
       </Card>
 
-      {/* Section 5: Levels & Rewards */}
+      {/* Section 5: Points Breakdown */}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <Star className="h-4 w-4 text-yellow-500" />
+            Tabla de puntos por acción
+          </CardTitle>
+          <CardDescription className="text-xs">Referencia rápida de cuánto vale cada contribución</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="border-b text-left">
+                  <th className="py-1.5 pr-2">Acción</th>
+                  <th className="py-1.5 pr-2">Puntos</th>
+                  <th className="py-1.5">Bonus</th>
+                </tr>
+              </thead>
+              <tbody className="text-muted-foreground">
+                {[
+                  { action: '💬 Feedback con evaluación', pts: '25', bonus: '+25 si comentario > 100 chars' },
+                  { action: '🐛 Bug report (bajo)', pts: '25', bonus: '+25 con screenshot' },
+                  { action: '🐛 Bug report (medio)', pts: '50', bonus: '+25 con screenshot' },
+                  { action: '🔥 Bug report (alto)', pts: '75', bonus: '+25 con screenshot' },
+                  { action: '🚨 Bug report (crítico)', pts: '150', bonus: '+25 con screenshot' },
+                  { action: '👥 Referir un amigo', pts: '100', bonus: '+1 slot de referido' },
+                ].map((r, i) => (
+                  <tr key={i} className="border-b border-border/50">
+                    <td className="py-1.5 pr-2 font-medium text-foreground">{r.action}</td>
+                    <td className="py-1.5 pr-2">{r.pts}</td>
+                    <td className="py-1.5">{r.bonus}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Section 6: Pro Features they get */}
+      <Card className="bg-gradient-to-r from-emerald-500/5 to-teal-500/5 border-emerald-500/20">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <Sparkles className="h-4 w-4 text-emerald-500" />
+            Funciones Pro que reciben gratis
+          </CardTitle>
+          <CardDescription className="text-xs">Lo que obtiene el beta tester con su acceso Pro</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+            {[
+              '📊 Dashboard avanzado con gráficos',
+              '📸 Escaneo de recibos con cámara',
+              '📋 Gestión de contratos',
+              '💰 Seguimiento de patrimonio neto',
+              '📅 Calendario fiscal',
+              '🏷️ Categorías y tags personalizados',
+              '📈 Reportes y exportaciones',
+              '🧾 Presupuestos por categoría',
+              '🔔 Alertas de presupuesto',
+              '👥 Gestión de clientes',
+              '🚗 Registro de kilometraje',
+              '📚 Educación financiera',
+            ].map((feature, i) => (
+              <div key={i} className="p-1.5 rounded bg-card border text-muted-foreground">
+                {feature}
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Section 7: Quality Tips */}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <Target className="h-4 w-4 text-primary" />
+            Tips para feedback de calidad
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3 text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="p-3 rounded-lg border border-red-500/20 bg-red-500/5">
+              <p className="font-semibold text-red-600 mb-1">❌ Mal feedback</p>
+              <p className="text-muted-foreground italic">"No me gusta esta sección"</p>
+              <p className="text-muted-foreground italic">"Tiene un error"</p>
+              <p className="text-muted-foreground italic">"No funciona"</p>
+              <p className="text-[10px] text-red-500 mt-1">No aporta info útil para mejorar</p>
+            </div>
+            <div className="p-3 rounded-lg border border-green-500/20 bg-green-500/5">
+              <p className="font-semibold text-green-600 mb-1">✅ Buen feedback</p>
+              <p className="text-muted-foreground italic">"La gráfica de gastos mensuales no actualiza cuando agrego un gasto nuevo. Tuve que refrescar la página manualmente."</p>
+              <p className="text-muted-foreground italic">"Sería útil poder filtrar gastos por cliente además de por categoría."</p>
+              <p className="text-[10px] text-green-500 mt-1">Describe el problema y cómo reproducirlo</p>
+            </div>
+          </div>
+          <div className="p-2 rounded bg-muted/50 text-muted-foreground">
+            <p className="font-medium text-foreground mb-1">📝 Checklist de un buen reporte:</p>
+            <p>1. ¿Qué estabas haciendo? (contexto)</p>
+            <p>2. ¿Qué esperabas que pasara? (expectativa)</p>
+            <p>3. ¿Qué pasó realmente? (resultado)</p>
+            <p>4. ¿Se puede reproducir? ¿Cómo? (pasos)</p>
+            <p>5. ¿Tienes captura de pantalla? (evidencia = +25 pts)</p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Section 8: Levels & Rewards */}
       <Card className="bg-gradient-to-r from-amber-500/5 to-orange-500/5 border-amber-500/20">
         <CardHeader className="pb-2">
           <CardTitle className="text-sm flex items-center gap-2">
@@ -468,9 +577,34 @@ export function BetaInviteTab({ codes }: BetaInviteTabProps) {
             </div>
           </div>
           <p className="text-[10px] text-muted-foreground">
-            Los puntos se ganan por feedback (25-50 pts), bug reports (25-150 pts según severidad) y referidos (100 pts). 
             Las recompensas se solicitan desde el Dashboard Beta y un administrador las aprueba.
           </p>
+        </CardContent>
+      </Card>
+
+      {/* Section 9: FAQ */}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <HelpCircle className="h-4 w-4 text-muted-foreground" />
+            Preguntas frecuentes de los testers
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2 text-xs">
+          {[
+            { q: '¿Qué pasa si no cumplo la cuota de 4 reportes?', a: 'Tu acceso Pro se degrada automáticamente a Free después de 14 días sin cumplir. Puedes recuperarlo volviendo a cumplir la cuota.' },
+            { q: '¿Los 14 días de gracia se reinician si me degradan?', a: 'No. El período de gracia solo aplica la primera vez que te activas como beta tester.' },
+            { q: '¿Puedo reportar sobre cualquier sección?', a: 'Sí. Todas las secciones son evaluables: gastos, ingresos, contratos, presupuestos, dashboard, educación, etc.' },
+            { q: '¿Mis datos financieros son privados?', a: 'Sí. Los administradores solo ven tus reportes y feedback, nunca tus datos financieros personales.' },
+            { q: '¿Cómo genero mi código de referido?', a: 'Una vez activado como beta tester, se genera automáticamente. Lo encuentras en tu perfil o dashboard beta.' },
+            { q: '¿Cuándo puedo canjear mis recompensas?', a: 'En cualquier momento al alcanzar el mínimo de puntos. Ve al Dashboard Beta → Recompensas → Solicitar.' },
+            { q: '¿Qué tipo de bugs son más valiosos?', a: 'Los bugs críticos (crashes, pérdida de datos) dan 150 pts. Siempre incluye capturas para el bonus de +25 pts.' },
+          ].map((item, i) => (
+            <div key={i} className="p-2 rounded-lg border bg-card">
+              <p className="font-semibold text-foreground">{item.q}</p>
+              <p className="text-muted-foreground mt-0.5">{item.a}</p>
+            </div>
+          ))}
         </CardContent>
       </Card>
     </div>
