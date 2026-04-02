@@ -2914,6 +2914,42 @@ export type Database = {
           },
         ]
       }
+      mission_control_history: {
+        Row: {
+          categories_data: Json | null
+          created_at: string
+          features_ready: number
+          features_total: number
+          global_score: number
+          id: string
+          system_fuel_score: number
+          user_id: string
+          week_key: string
+        }
+        Insert: {
+          categories_data?: Json | null
+          created_at?: string
+          features_ready?: number
+          features_total?: number
+          global_score?: number
+          id?: string
+          system_fuel_score?: number
+          user_id: string
+          week_key: string
+        }
+        Update: {
+          categories_data?: Json | null
+          created_at?: string
+          features_ready?: number
+          features_total?: number
+          global_score?: number
+          id?: string
+          system_fuel_score?: number
+          user_id?: string
+          week_key?: string
+        }
+        Relationships: []
+      }
       net_worth_snapshots: {
         Row: {
           created_at: string | null
