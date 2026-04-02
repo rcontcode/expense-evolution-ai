@@ -8,10 +8,18 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Plus, Trash2, DollarSign, TrendingUp, TrendingDown, PieChart } from 'lucide-react';
+import { Loader2, Plus, Trash2, DollarSign, TrendingUp, TrendingDown, PieChart, Users, Zap, BarChart3 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart as RePieChart, Pie, Cell, Legend } from 'recharts';
 import { toast } from 'sonner';
 import { format, subMonths, startOfMonth } from 'date-fns';
+
+const PLAN_PRICES: Record<string, number> = {
+  free: 0,
+  premium: 7.99,
+  pro: 14.99,
+  bundle: 19.99,
+  pro_beta: 0,
+};
 
 interface AdminBusinessPnLProps {
   language: string;
@@ -122,6 +130,89 @@ export function AdminBusinessPnL({ language }: AdminBusinessPnLProps) {
     staleTime: 300000,
   });
 
+  // Fetch AI cost by action_type (feature/app breakdown)
+  const { data: aiCostsByFeature = [] } = useQuery({
+    queryKey: ['admin-ai-costs-by-feature'],
+    queryFn: async () => {
+      const currentMonth = startOfMonth(new Date()).toISOString();
+      const { data, error } = await supabase
+        .from('ai_usage_logs')
+        .select('action_type, credits_used, user_id')
+        .gte('created_at', currentMonth)
+        .eq('success', true);
+      if (error) throw error;
+
+      const result: Record<string, { credits: number; users: Set<string> }> = {};
+      (data || []).forEach((log: any) => {
+        const key = log.action_type || 'unknown';
+        if (!result[key]) result[key] = { credits: 0, users: new Set() };
+        result[key].credits += log.credits_used || 0;
+        result[key].users.add(log.user_id);
+      });
+
+      return Object.entries(result)
+        .map(([feature, d]) => ({
+          feature,
+          credits: d.credits,
+          users: d.users.size,
+          cost: Math.round(d.credits * 0.01 * 100) / 100,
+        }))
+        .sort((a, b) => b.credits - a.credits);
+    },
+    staleTime: 300000,
+  });
+
+  // Fetch top AI consumers (per user)
+  const { data: topConsumers = [] } = useQuery({
+    queryKey: ['admin-top-ai-consumers'],
+    queryFn: async () => {
+      const currentMonth = startOfMonth(new Date()).toISOString();
+      const { data: logs, error: logsErr } = await supabase
+        .from('ai_usage_logs')
+        .select('user_id, credits_used')
+        .gte('created_at', currentMonth)
+        .eq('success', true);
+      if (logsErr) throw logsErr;
+
+      const { data: profiles, error: profErr } = await supabase
+        .from('profiles')
+        .select('id, email, full_name');
+      if (profErr) throw profErr;
+
+      const { data: subs, error: subsErr } = await supabase
+        .from('user_subscriptions')
+        .select('user_id, plan_type');
+      if (subsErr) throw subsErr;
+
+      const profileMap: Record<string, { email: string; name: string }> = {};
+      (profiles || []).forEach((p: any) => {
+        profileMap[p.id] = { email: p.email || '', name: p.full_name || '' };
+      });
+
+      const planMap: Record<string, string> = {};
+      (subs || []).forEach((s: any) => { planMap[s.user_id] = s.plan_type; });
+
+      const userCredits: Record<string, number> = {};
+      (logs || []).forEach((l: any) => {
+        userCredits[l.user_id] = (userCredits[l.user_id] || 0) + (l.credits_used || 0);
+      });
+
+      return Object.entries(userCredits)
+        .map(([userId, credits]) => {
+          const plan = planMap[userId] || 'free';
+          const price = PLAN_PRICES[plan] ?? 0;
+          const aiCost = Math.round(credits * 0.01 * 100) / 100;
+          const roi = Math.round((price - aiCost) * 100) / 100;
+          const profile = profileMap[userId];
+          const displayName = profile?.name || profile?.email?.split('@')[0] || userId.substring(0, 8);
+          return { userId, displayName, plan, price, credits, aiCost, roi };
+        })
+        .sort((a, b) => b.credits - a.credits)
+        .slice(0, 15);
+    },
+    staleTime: 300000,
+  });
+
   // Add cost mutation
   const addCost = useMutation({
     mutationFn: async () => {
@@ -171,6 +262,22 @@ export function AdminBusinessPnL({ language }: AdminBusinessPnLProps) {
   const totalCosts = totalMonthlyOpCosts + totalAICostMonth;
   const netMargin = mrr - totalCosts;
   const marginPercent = mrr > 0 ? Math.round((netMargin / mrr) * 100) : 0;
+  const globalROI = totalCosts > 0 ? Math.round(((mrr - totalCosts) / totalCosts) * 100) : mrr > 0 ? 999 : 0;
+
+  // Build P&L by plan
+  const pnlByPlan = aiCostsByPlan.map(row => {
+    const price = PLAN_PRICES[row.plan] ?? 0;
+    const revenue = price * row.users;
+    const profit = revenue - row.estimatedCost;
+    const margin = revenue > 0 ? Math.round((profit / revenue) * 100) : row.estimatedCost > 0 ? -100 : 0;
+    return { plan: row.plan, subscribers: row.users, price, revenue: Math.round(revenue * 100) / 100, aiCost: row.estimatedCost, profit: Math.round(profit * 100) / 100, margin };
+  });
+  const pnlTotals = pnlByPlan.reduce((acc, r) => ({
+    subscribers: acc.subscribers + r.subscribers,
+    revenue: acc.revenue + r.revenue,
+    aiCost: acc.aiCost + r.aiCost,
+    profit: acc.profit + r.profit,
+  }), { subscribers: 0, revenue: 0, aiCost: 0, profit: 0 });
 
   // Build 6-month trend data
   const trendData = Array.from({ length: 6 }, (_, i) => {
@@ -215,7 +322,7 @@ export function AdminBusinessPnL({ language }: AdminBusinessPnLProps) {
   return (
     <div className="space-y-6">
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         <Card className="border-0 shadow-lg overflow-hidden">
           <CardContent className="p-0">
             <div className="p-4 bg-gradient-to-br from-emerald-500 to-green-600 text-white">
@@ -254,6 +361,15 @@ export function AdminBusinessPnL({ language }: AdminBusinessPnLProps) {
               <p className="text-xs text-white/80">{isEs ? 'Margen Neto' : 'Net Margin'}</p>
               <p className="text-2xl font-black">${netMargin.toFixed(2)}</p>
               <p className="text-[10px] text-white/70">{marginPercent}%</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="border-0 shadow-lg overflow-hidden">
+          <CardContent className="p-0">
+            <div className={`p-4 bg-gradient-to-br ${globalROI >= 0 ? 'from-violet-500 to-purple-600' : 'from-rose-600 to-red-700'} text-white`}>
+              <p className="text-xs text-white/80">ROI</p>
+              <p className="text-2xl font-black">{globalROI}%</p>
+              <p className="text-[10px] text-white/70">{isEs ? 'Retorno s/ inversión' : 'Return on investment'}</p>
             </div>
           </CardContent>
         </Card>
@@ -389,6 +505,174 @@ export function AdminBusinessPnL({ language }: AdminBusinessPnLProps) {
                 ))}
                 {opCosts.length === 0 && (
                   <tr><td colSpan={6} className="py-4 text-center text-muted-foreground">{isEs ? 'Sin costos registrados' : 'No costs registered'}</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* P&L by Plan */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm flex items-center gap-2">
+            <BarChart3 className="h-4 w-4 text-violet-500" />
+            {isEs ? '📊 Profit/Loss por Plan (mes actual)' : '📊 Profit/Loss by Plan (current month)'}
+          </CardTitle>
+          <CardDescription>{isEs ? 'Ingreso vs costo de IA por cada plan' : 'Revenue vs AI cost per plan'}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b text-left text-muted-foreground">
+                  <th className="pb-2 font-medium">Plan</th>
+                  <th className="pb-2 font-medium">{isEs ? 'Suscriptores' : 'Subscribers'}</th>
+                  <th className="pb-2 font-medium">{isEs ? 'Precio' : 'Price'}</th>
+                  <th className="pb-2 font-medium">{isEs ? 'Ingreso Total' : 'Total Revenue'}</th>
+                  <th className="pb-2 font-medium">{isEs ? 'Costo IA' : 'AI Cost'}</th>
+                  <th className="pb-2 font-medium">Profit/Loss</th>
+                  <th className="pb-2 font-medium">{isEs ? 'Margen' : 'Margin'}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pnlByPlan.map((row) => (
+                  <tr key={row.plan} className="border-b last:border-0">
+                    <td className="py-2"><Badge variant="outline" className="capitalize">{row.plan}</Badge></td>
+                    <td className="py-2">{row.subscribers}</td>
+                    <td className="py-2">${row.price.toFixed(2)}</td>
+                    <td className="py-2">${row.revenue.toFixed(2)}</td>
+                    <td className="py-2 text-destructive">${row.aiCost.toFixed(2)}</td>
+                    <td className="py-2 font-bold">
+                      <span className={row.profit >= 0 ? 'text-emerald-600' : 'text-destructive'}>
+                        {row.profit >= 0 ? '+' : ''}${row.profit.toFixed(2)}
+                      </span>
+                    </td>
+                    <td className="py-2">
+                      <Badge variant={row.margin >= 0 ? 'default' : 'destructive'} className="text-xs">
+                        {row.margin}%
+                      </Badge>
+                    </td>
+                  </tr>
+                ))}
+                {pnlByPlan.length > 0 && (
+                  <tr className="border-t-2 font-bold bg-muted/30">
+                    <td className="py-2">TOTAL</td>
+                    <td className="py-2">{pnlTotals.subscribers}</td>
+                    <td className="py-2">—</td>
+                    <td className="py-2">${pnlTotals.revenue.toFixed(2)}</td>
+                    <td className="py-2 text-destructive">${pnlTotals.aiCost.toFixed(2)}</td>
+                    <td className="py-2">
+                      <span className={pnlTotals.profit >= 0 ? 'text-emerald-600' : 'text-destructive'}>
+                        {pnlTotals.profit >= 0 ? '+' : ''}${pnlTotals.profit.toFixed(2)}
+                      </span>
+                    </td>
+                    <td className="py-2">
+                      <Badge variant={pnlTotals.revenue > 0 ? (pnlTotals.profit >= 0 ? 'default' : 'destructive') : 'secondary'}>
+                        {pnlTotals.revenue > 0 ? Math.round((pnlTotals.profit / pnlTotals.revenue) * 100) : 0}%
+                      </Badge>
+                    </td>
+                  </tr>
+                )}
+                {pnlByPlan.length === 0 && (
+                  <tr><td colSpan={7} className="py-4 text-center text-muted-foreground">{isEs ? 'Sin datos' : 'No data'}</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* AI Cost by Feature/App */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm flex items-center gap-2">
+            <Zap className="h-4 w-4 text-amber-500" />
+            {isEs ? '⚡ Costo IA por Feature/App (mes actual)' : '⚡ AI Cost by Feature/App (current month)'}
+          </CardTitle>
+          <CardDescription>{isEs ? 'Qué funciones consumen más créditos de IA' : 'Which features consume the most AI credits'}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b text-left text-muted-foreground">
+                  <th className="pb-2 font-medium">Feature</th>
+                  <th className="pb-2 font-medium">{isEs ? 'Créditos' : 'Credits'}</th>
+                  <th className="pb-2 font-medium">{isEs ? 'Usuarios' : 'Users'}</th>
+                  <th className="pb-2 font-medium">{isEs ? 'Costo Est.' : 'Est. Cost'}</th>
+                  <th className="pb-2 font-medium">% Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {aiCostsByFeature.map((row) => {
+                  const totalCreditsFeature = aiCostsByFeature.reduce((s, r) => s + r.credits, 0);
+                  const pct = totalCreditsFeature > 0 ? Math.round((row.credits / totalCreditsFeature) * 100) : 0;
+                  return (
+                    <tr key={row.feature} className="border-b last:border-0">
+                      <td className="py-2"><Badge variant="outline" className="capitalize text-xs">{row.feature.replace(/_/g, ' ')}</Badge></td>
+                      <td className="py-2">{row.credits}</td>
+                      <td className="py-2">{row.users}</td>
+                      <td className="py-2 font-semibold">${row.cost.toFixed(2)}</td>
+                      <td className="py-2">
+                        <div className="flex items-center gap-2">
+                          <div className="w-16 h-2 rounded-full bg-muted overflow-hidden">
+                            <div className="h-full bg-amber-500 rounded-full" style={{ width: `${pct}%` }} />
+                          </div>
+                          <span className="text-xs text-muted-foreground">{pct}%</span>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+                {aiCostsByFeature.length === 0 && (
+                  <tr><td colSpan={5} className="py-4 text-center text-muted-foreground">{isEs ? 'Sin datos' : 'No data'}</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Top AI Consumers */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm flex items-center gap-2">
+            <Users className="h-4 w-4 text-blue-500" />
+            {isEs ? '👥 Top 15 Consumidores de IA (mes actual)' : '👥 Top 15 AI Consumers (current month)'}
+          </CardTitle>
+          <CardDescription>{isEs ? 'ROI individual: precio del plan vs costo IA consumido' : 'Individual ROI: plan price vs AI cost consumed'}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b text-left text-muted-foreground">
+                  <th className="pb-2 font-medium">{isEs ? 'Usuario' : 'User'}</th>
+                  <th className="pb-2 font-medium">Plan</th>
+                  <th className="pb-2 font-medium">{isEs ? 'Precio Plan' : 'Plan Price'}</th>
+                  <th className="pb-2 font-medium">{isEs ? 'Créditos IA' : 'AI Credits'}</th>
+                  <th className="pb-2 font-medium">{isEs ? 'Costo IA' : 'AI Cost'}</th>
+                  <th className="pb-2 font-medium">ROI</th>
+                </tr>
+              </thead>
+              <tbody>
+                {topConsumers.map((row) => (
+                  <tr key={row.userId} className="border-b last:border-0">
+                    <td className="py-2 font-medium truncate max-w-[120px]" title={row.displayName}>{row.displayName}</td>
+                    <td className="py-2"><Badge variant="outline" className="capitalize text-xs">{row.plan}</Badge></td>
+                    <td className="py-2">${row.price.toFixed(2)}</td>
+                    <td className="py-2">{row.credits}</td>
+                    <td className="py-2">${row.aiCost.toFixed(2)}</td>
+                    <td className="py-2">
+                      <Badge variant={row.roi >= 0 ? 'default' : 'destructive'} className="text-xs font-bold">
+                        {row.roi >= 0 ? '+' : ''}${row.roi.toFixed(2)}
+                      </Badge>
+                    </td>
+                  </tr>
+                ))}
+                {topConsumers.length === 0 && (
+                  <tr><td colSpan={6} className="py-4 text-center text-muted-foreground">{isEs ? 'Sin datos' : 'No data'}</td></tr>
                 )}
               </tbody>
             </table>
