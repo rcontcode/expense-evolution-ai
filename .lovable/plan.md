@@ -1,54 +1,45 @@
 
 
-# Estrategia: Qué compartir con los beta testers
+# Plan: Desglose completo de costos IA y ROI por app, plan y usuario
 
-## Situación actual
+## Qué falta y dónde agregarlo
 
-| Recurso | URL | ¿Público? | ¿Útil para el tester? |
-|---------|-----|-----------|----------------------|
-| Landing | `/landing` | Si | Muestra qué hace la app, demos interactivos |
-| Quiz | `/quiz` | Si | Engancha, personaliza la experiencia |
-| About | `/about` | Si | Contexto sobre el proyecto |
-| Beta Guide | `/beta-guide` | No (login) | Explica el programa beta completo |
-| User Guide | `/user-guide` | No (login) | Manual de uso de la app |
-| Beta Features | `/beta-features` | No (login) | Tour visual de funciones Pro |
+Se ampliará el **AdminBusinessPnL.tsx** (que ya tiene la base de costos IA por plan) con 3 nuevas secciones al final del componente.
 
-## Recomendación: Flujo en 2 momentos
+## Cambios en `src/components/admin/tabs/AdminBusinessPnL.tsx`
 
-### Momento 1: ANTES de registrarse (en el mensaje de invitación)
+### 1. Nueva query: AI cost por action_type (= por app/feature)
 
-Incluir en las plantillas de WhatsApp/Email:
-- **Link principal**: `https://evofinz.com/auth?beta=CODE` (registro directo)
-- **Link al landing**: `https://evofinz.com/landing` — "Si quieres ver qué hace la app antes de registrarte"
-- **Link al quiz**: `https://evofinz.com/quiz` — "Haz el quiz financiero para ver tu perfil"
+Agrupar `ai_usage_logs` por `action_type` del mes actual para mostrar qué features/apps consumen más créditos. Tabla con columnas: Feature, Créditos, Usuarios, Costo Est.
 
-Estos 3 links son públicos y dan contexto suficiente sin requerir cuenta.
+### 2. Nueva query: Top consumers (AI cost por usuario)
 
-### Momento 2: DESPUÉS de registrarse (automático dentro de la app)
+Join `ai_usage_logs` con `profiles` y `user_subscriptions` del mes actual. Mostrar tabla top 15 usuarios ordenados por créditos consumidos, con columnas:
+- Usuario (email truncado)
+- Plan (free/premium/pro)
+- Precio plan (lo que paga)
+- Créditos IA usados
+- Costo IA estimado
+- **ROI usuario** (precio plan - costo IA)
+- Badge verde/rojo según ganancia o pérdida
 
-Ya existe el flujo automático:
-1. Se registran → `BetaWelcome` (confetti + bienvenida)
-2. → `BetaFeatures` (tour de funciones Pro)
-3. → Dashboard con acceso a `Beta Guide` y `User Guide` en el menú
+### 3. Nueva sección: Profit/Loss por plan (consolidado)
 
-No necesitas enviar esos links — la app ya los guía.
+Tabla resumen que cruza datos ya existentes:
+- Plan | Suscriptores | Ingreso total (subs × precio) | Costo IA total del plan | **Profit/Loss** | **Margin %**
+- Fila total al final
 
-## Cambio propuesto
+### 4. KPI adicional: ROI global
 
-**Actualizar las plantillas de invitación** en `BetaInviteTab.tsx` para incluir los 3 links públicos de forma natural:
+Agregar un 5to KPI card o modificar el existente de "Net Margin" para incluir: `ROI = (Revenue - Costos Totales) / Costos Totales × 100`
 
-```
-👉 Regístrate aquí: https://evofinz.com/auth?beta={CODE}
-🔑 Tu código: {CODE}
+## Datos que ya existen en las queries actuales
 
-🔍 ¿Quieres ver más antes de registrarte?
-• Mira qué hace la app: https://evofinz.com/landing
-• Haz tu diagnóstico financiero: https://evofinz.com/quiz
-```
-
-Agregar esto a las 4 plantillas (WhatsApp ES/EN, Email ES/EN).
+- `aiCostsByPlan` ya tiene créditos por plan con usuarios y costo estimado
+- `stripeData` ya tiene MRR
+- Solo necesitamos 2 queries nuevas (por action_type y por usuario individual)
 
 ## Archivo a modificar
 
-1. **`src/components/admin/BetaInviteTab.tsx`** — Agregar links al landing y quiz en las 4 plantillas de mensaje
+1. **`src/components/admin/tabs/AdminBusinessPnL.tsx`** — Agregar 2 queries + 3 secciones UI + 1 KPI
 
