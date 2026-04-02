@@ -323,6 +323,7 @@ export function useMissionControl(): MissionControlData {
       const pct = Math.round(([hasThisMonthExpenses, hasThisMonthIncome, hasBills].filter(Boolean).length / 3) * 100);
       featureReadiness.push({
         key: 'projections', name: { es: 'Proyecciones de Fin de Mes', en: 'End-of-Month Projections' },
+        description: { es: 'Predice cuánto gastarás y ahorrarás al final del mes basándose en tu ritmo actual', en: 'Predicts how much you\'ll spend and save by month-end based on your current pace' },
         emoji: '🔮', readiness: pct >= 100 ? 'ready' : pct >= 50 ? 'partial' : 'blocked',
         percentage: pct, missingData: missing, actionUrl: '/budget',
       });
@@ -337,6 +338,7 @@ export function useMissionControl(): MissionControlData {
       const pct = Math.round(([hasBudgets, hasExpenses, hasIncome].filter(Boolean).length / 3) * 100);
       featureReadiness.push({
         key: 'budget', name: { es: 'Presupuesto Inteligente', en: 'Smart Budget' },
+        description: { es: 'Controla tu gasto por categoría con alertas automáticas cuando te acercas al límite', en: 'Control spending by category with automatic alerts when approaching limits' },
         emoji: '📋', readiness: pct >= 100 ? 'ready' : pct >= 50 ? 'partial' : 'blocked',
         percentage: pct, missingData: missing, actionUrl: '/budget',
       });
@@ -351,6 +353,7 @@ export function useMissionControl(): MissionControlData {
       const pct = Math.round(([hasClassifiedExpenses, hasIncome, hasClients].filter(Boolean).length / 3) * 100);
       featureReadiness.push({
         key: 'tax_reports', name: { es: 'Reportes Fiscales', en: 'Tax Reports' },
+        description: { es: 'Genera reportes listos para tu contador con deducciones CRA/SII calculadas automáticamente', en: 'Generate accountant-ready reports with CRA/SII deductions automatically calculated' },
         emoji: '🧾', readiness: pct >= 100 ? 'ready' : pct >= 50 ? 'partial' : 'blocked',
         percentage: pct, missingData: missing, actionUrl: '/reports',
       });
@@ -364,6 +367,7 @@ export function useMissionControl(): MissionControlData {
       const pct = Math.round(([hasThisMonthIncome, hasThisMonthExpenses].filter(Boolean).length / 2) * 100);
       featureReadiness.push({
         key: 'savings_rate', name: { es: 'Tasa de Ahorro', en: 'Savings Rate' },
+        description: { es: 'Mide qué porcentaje de tu ingreso estás ahorrando realmente cada mes', en: 'Measures what percentage of your income you\'re actually saving each month' },
         emoji: '💪', readiness: pct >= 100 ? 'ready' : pct >= 50 ? 'partial' : 'blocked',
         percentage: pct, missingData: missing, actionUrl: '/dashboard',
       });
@@ -379,6 +383,7 @@ export function useMissionControl(): MissionControlData {
       const pct = Math.round(([hasIncome, hasExpenses, hasBills, hasBankData].filter(Boolean).length / 4) * 100);
       featureReadiness.push({
         key: 'cashflow', name: { es: 'Runway y Flujo de Caja', en: 'Cash Flow Runway' },
+        description: { es: 'Calcula cuántos meses puedes sostener tu ritmo actual de gastos con tu liquidez disponible', en: 'Calculates how many months you can sustain your current spending pace with available liquidity' },
         emoji: '🛫', readiness: pct >= 100 ? 'ready' : pct >= 50 ? 'partial' : 'blocked',
         percentage: pct, missingData: missing, actionUrl: '/dashboard?area=negocio',
       });
@@ -394,6 +399,7 @@ export function useMissionControl(): MissionControlData {
       const pct = Math.round(([hasClients, clientsWithIncome, hasContracts].filter(Boolean).length / 3) * 100);
       featureReadiness.push({
         key: 'client_profit', name: { es: 'Rentabilidad por Cliente', en: 'Client Profitability' },
+        description: { es: 'Descubre cuáles clientes te generan más ganancia y cuáles te cuestan dinero', en: 'Discover which clients generate the most profit and which cost you money' },
         emoji: '📈', readiness: pct >= 100 ? 'ready' : pct >= 50 ? 'partial' : 'blocked',
         percentage: pct, missingData: missing, actionUrl: '/dashboard?area=negocio',
       });
@@ -408,6 +414,7 @@ export function useMissionControl(): MissionControlData {
       const pct = Math.round(([hasFinProfile, hasIncome, hasExpenses].filter(Boolean).length / 3) * 100);
       featureReadiness.push({
         key: 'fire', name: { es: 'Calculadora FIRE e Inversión', en: 'FIRE & Investment Calculator' },
+        description: { es: 'Calcula a qué edad podrías lograr independencia financiera según tu perfil de ahorro e inversión', en: 'Calculate at what age you could achieve financial independence based on your savings and investment profile' },
         emoji: '🔥', readiness: pct >= 100 ? 'ready' : pct >= 50 ? 'partial' : 'blocked',
         percentage: pct, missingData: missing, actionUrl: '/dashboard?area=crecimiento',
       });
@@ -421,6 +428,7 @@ export function useMissionControl(): MissionControlData {
       const pct = Math.round(([hasBankData, hasExpenses].filter(Boolean).length / 2) * 100);
       featureReadiness.push({
         key: 'reconciliation', name: { es: 'Conciliación Bancaria', en: 'Bank Reconciliation' },
+        description: { es: 'Vincula automáticamente tus transacciones bancarias con tus gastos registrados para detectar omisiones', en: 'Automatically match bank transactions with recorded expenses to detect missing entries' },
         emoji: '🏦', readiness: pct >= 100 ? 'ready' : pct >= 50 ? 'partial' : 'blocked',
         percentage: pct, missingData: missing, actionUrl: '/bank',
       });
