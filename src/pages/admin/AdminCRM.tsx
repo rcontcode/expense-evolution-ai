@@ -809,6 +809,10 @@ const AdminCRM = () => {
                   <span className="hidden md:inline">{isEs ? 'Simulador' : 'Simulator'}</span>
                   <span className="md:hidden">🧮</span>
                 </TabsTrigger>
+                <TabsTrigger value="bi" className="flex items-center gap-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-violet-600 data-[state=active]:to-purple-700 data-[state=active]:text-white rounded-lg font-semibold text-[10px] md:text-xs">
+                  <span className="hidden md:inline">BI</span>
+                  <span className="md:hidden">🧠</span>
+                </TabsTrigger>
               </TabsList>
               <TabsContent value="home"><AdminCRMHome language={language} onNavigateTab={setActiveTab} /></TabsContent>
               <TabsContent value="agenda"><AdminFollowUpsAgenda language={language} /></TabsContent>
