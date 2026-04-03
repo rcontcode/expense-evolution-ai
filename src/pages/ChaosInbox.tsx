@@ -227,6 +227,15 @@ export default function ChaosInbox() {
 
     try {
       for (const file of Array.from(files)) {
+        // Layer 1: Pre-upload duplicate check
+        const preCheck = await checkPreUpload(file.name, file.size);
+        if (preCheck.isDuplicate) {
+          const msg = language === 'es'
+            ? `"${file.name}" ya fue subido el ${preCheck.existingDate}. ¿Subir de todos modos?`
+            : `"${file.name}" was already uploaded on ${preCheck.existingDate}. Upload anyway?`;
+          if (!window.confirm(msg)) continue;
+        }
+
         const fileExt = file.name.split('.').pop();
         const fileName = `${user.id}/${Date.now()}.${fileExt}`;
         
