@@ -198,6 +198,14 @@ export default function ChaosInbox() {
   const [duplicateQueueTotal, setDuplicateQueueTotal] = useState(0);
   const [checkingDuplicates, setCheckingDuplicates] = useState(false);
   const [checklistKey, setChecklistKey] = useState(0);
+  const [checklistVisible, setChecklistVisible] = useState(() => {
+    const stored = localStorage.getItem('doc-onboarding-checklist');
+    if (!stored) return true;
+    try {
+      const parsed = JSON.parse(stored);
+      return !parsed.dismissed;
+    } catch { return true; }
+  });
   
   const { checkPreUpload, checkContent } = useContentDuplicateDetector();
   
