@@ -175,9 +175,10 @@ interface DocumentOnboardingChecklistProps {
   documentCount: number;
   onUploadClick?: () => void;
   uploadedTypes?: string[];
+  onDismiss?: () => void;
 }
 
-export function DocumentOnboardingChecklist({ documentCount, onUploadClick, uploadedTypes = [] }: DocumentOnboardingChecklistProps) {
+export function DocumentOnboardingChecklist({ documentCount, onUploadClick, uploadedTypes = [], onDismiss }: DocumentOnboardingChecklistProps) {
   const { language } = useLanguage();
   const isEs = language === 'es';
   const [dismissed, setDismissed] = useState(false);
@@ -232,6 +233,7 @@ export function DocumentOnboardingChecklist({ documentCount, onUploadClick, uplo
   const handleDismiss = () => {
     setDismissed(true);
     save(selectedSubtypes, completedSubtypes, setupDone, true);
+    onDismiss?.();
   };
 
   const toggleSubtype = (id: string) => {
