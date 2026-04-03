@@ -8,10 +8,15 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { 
   ClassifiedDocument, DocumentClassificationType, TYPE_LABELS, HistoryEntry, useUnifiedChaosInbox 
 } from '@/hooks/data/useUnifiedChaosInbox';
+import { useContentDuplicateDetector, DuplicateMatch } from '@/hooks/data/useContentDuplicateDetector';
+import { DuplicateWarningDialog } from './DuplicateWarningDialog';
 import { 
   Upload, Loader2, CheckCircle2, AlertTriangle, X, Zap, 
   FileText, ArrowRight, RotateCcw, Sparkles, Package,
@@ -21,6 +26,7 @@ import {
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PostUploadWizard } from './PostUploadWizard';
+import { toast } from 'sonner';
 
 function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
@@ -580,16 +586,28 @@ function getTimeAgo(date: Date, language: string): string {
 
 export function UnifiedChaosInboxPanel() {
   const { language } = useLanguage();
+  const { user } = useAuth();
   const [historyOpen, setHistoryOpen] = useState(true);
   const [wizardOpen, setWizardOpen] = useState(false);
+  const [duplicateQueue, setDuplicateQueue] = useState<Array<{
+    matches: DuplicateMatch[];
+    newDoc: { vendor?: string; amount?: number; date?: string; description?: string };
+    docId: string;
+  }>>([]);
+  const [duplicateDialogOpen, setDuplicateDialogOpen] = useState(false);
+  const [duplicateQueueTotal, setDuplicateQueueTotal] = useState(0);
+  const [checkingDuplicates, setCheckingDuplicates] = useState(false);
+  
+  const { checkContent } = useContentDuplicateDetector();
+  
   const {
     documents,
     history,
     stats,
     isProcessingBatch,
     uploadAndClassify,
-    processDocument,
-    processAllClassified,
+    processDocument: rawProcessDocument,
+    processAllClassified: rawProcessAllClassified,
     reclassify,
     setInvoiceDirection,
     retryDocument,
@@ -597,6 +615,70 @@ export function UnifiedChaosInboxPanel() {
     clearProcessed,
     clearHistory,
   } = useUnifiedChaosInbox();
+
+  // Wrap processDocument to add duplicate detection after processing
+  const processDocumentWithDupCheck = useCallback(async (docId: string) => {
+    const result = await rawProcessDocument(docId);
+    if (!result?.processedResult) return;
+    
+    const pr = result.processedResult;
+    const ep = result.extractedPreview || {};
+    const dbDocId = pr.docId;
+    
+    // Extract data for duplicate check
+    const vendor = ep.vendor || ep.remit_to?.name || ep.from_entity || '';
+    const amount = parseFloat(String(ep.amount || ep.total || '0').replace(/,/g, '')) || 0;
+    const date = ep.date || '';
+    const description = ep.description || '';
+    
+    if ((vendor || amount > 0) && dbDocId) {
+      setCheckingDuplicates(true);
+      try {
+        const dupResult = await checkContent({ vendor, amount, date, description }, dbDocId);
+        if (dupResult.hasDuplicates) {
+          setDuplicateQueue(prev => [...prev, {
+            matches: dupResult.matches,
+            newDoc: { vendor, amount, date, description },
+            docId: dbDocId,
+          }]);
+        }
+      } finally {
+        setCheckingDuplicates(false);
+      }
+    }
+  }, [rawProcessDocument, checkContent]);
+
+  // Wrap processAllClassified to use our dup-checking version
+  const processAllClassified = useCallback(async () => {
+    const classified = documents.filter(d => d.status === 'classified');
+    if (classified.length === 0) return;
+    
+    for (const doc of classified) {
+      await processDocumentWithDupCheck(doc.id);
+    }
+    
+    // Open duplicate dialog if queue accumulated items
+    setDuplicateQueue(prev => {
+      if (prev.length > 0) {
+        setDuplicateQueueTotal(prev.length);
+        setDuplicateDialogOpen(true);
+      }
+      return prev;
+    });
+    
+    toast.success(`🎉 ${classified.length} ${language === 'es' ? 'documentos procesados' : 'documents processed'}`);
+  }, [documents, processDocumentWithDupCheck, language]);
+
+  const advanceDuplicateQueue = useCallback(() => {
+    setDuplicateQueue(prev => {
+      const next = prev.slice(1);
+      if (next.length === 0) {
+        setDuplicateDialogOpen(false);
+        toast.success(language === 'es' ? 'Revisión de duplicados completada' : 'Duplicate review complete');
+      }
+      return next;
+    });
+  }, [language]);
 
   const hasClassified = stats.classified > 0;
   const hasPendingDirection = stats.pendingDirection > 0;
@@ -610,6 +692,19 @@ export function UnifiedChaosInboxPanel() {
   return (
     <TooltipProvider>
       <div className="space-y-4">
+        {/* Duplicate checking indicator */}
+        {checkingDuplicates && (
+          <Alert className="border-primary/50 bg-primary/5 animate-pulse">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            <AlertTitle>{language === 'es' ? 'Verificando duplicados...' : 'Checking for duplicates...'}</AlertTitle>
+            <AlertDescription>
+              {language === 'es' 
+                ? 'Comparando con documentos y gastos existentes'
+                : 'Comparing with existing documents and expenses'}
+            </AlertDescription>
+          </Alert>
+        )}
+
         {/* Drop zone */}
         <DropZone onFiles={uploadAndClassify} />
 
@@ -707,7 +802,7 @@ export function UnifiedChaosInboxPanel() {
                   <DocumentCard
                     key={doc.id}
                     doc={doc}
-                    onProcess={() => processDocument(doc.id)}
+                    onProcess={() => processDocumentWithDupCheck(doc.id)}
                     onRemove={() => removeDoc(doc.id)}
                     onReclassify={(type) => reclassify(doc.id, type)}
                     onRetry={() => retryDocument(doc.id)}
@@ -827,6 +922,81 @@ export function UnifiedChaosInboxPanel() {
           </motion.div>
         )}
       </div>
+
+      {/* Duplicate Warning Dialog */}
+      {duplicateQueue.length > 0 && (
+        <DuplicateWarningDialog
+          open={duplicateDialogOpen}
+          onOpenChange={(open) => {
+            if (!open) {
+              setDuplicateQueue(prev => {
+                const next = prev.slice(1);
+                if (next.length === 0) setDuplicateDialogOpen(false);
+                return next;
+              });
+            }
+            setDuplicateDialogOpen(open);
+          }}
+          matches={duplicateQueue[0].matches}
+          newDocument={duplicateQueue[0].newDoc}
+          queuePosition={duplicateQueueTotal > 1 ? (duplicateQueueTotal - duplicateQueue.length + 1) : undefined}
+          queueTotal={duplicateQueueTotal > 1 ? duplicateQueueTotal : undefined}
+          onKeepBoth={() => {
+            toast.info(language === 'es' ? 'Ambos conservados' : 'Both kept');
+            advanceDuplicateQueue();
+          }}
+          onDeleteNew={async () => {
+            const currentItem = duplicateQueue[0];
+            if (currentItem?.docId) {
+              const { data: docData } = await supabase
+                .from('documents')
+                .select('file_path')
+                .eq('id', currentItem.docId)
+                .single();
+              
+              await supabase.from('documents').delete().eq('id', currentItem.docId).eq('user_id', user?.id || '');
+              
+              if (docData?.file_path) {
+                await supabase.storage.from('expense-documents').remove([docData.file_path]);
+              }
+              
+              toast.success(language === 'es' ? 'Duplicado eliminado' : 'Duplicate removed');
+            }
+            advanceDuplicateQueue();
+          }}
+          onReplaceOld={async () => {
+            const currentItem = duplicateQueue[0];
+            const match = currentItem?.matches[0];
+            if (!match) {
+              toast.info(language === 'es' ? 'Ambos conservados' : 'Both kept');
+              advanceDuplicateQueue();
+              return;
+            }
+            
+            if (match.type === 'expense') {
+              await supabase.from('expenses').delete().eq('id', match.id).eq('user_id', user?.id || '');
+            }
+            
+            const oldDocId = match.type === 'document' ? match.id : match.document_id;
+            if (oldDocId) {
+              const { data: oldDoc } = await supabase
+                .from('documents')
+                .select('file_path')
+                .eq('id', oldDocId)
+                .single();
+              
+              await supabase.from('documents').delete().eq('id', oldDocId).eq('user_id', user?.id || '');
+              
+              if (oldDoc?.file_path) {
+                await supabase.storage.from('expense-documents').remove([oldDoc.file_path]);
+              }
+            }
+            
+            toast.success(language === 'es' ? 'Anterior reemplazado' : 'Old one replaced');
+            advanceDuplicateQueue();
+          }}
+        />
+      )}
     </TooltipProvider>
   );
 }

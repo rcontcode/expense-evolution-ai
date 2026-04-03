@@ -228,9 +228,9 @@ export function useUnifiedChaosInbox() {
     }
   }, [user, updateDoc]);
 
-  const processDocument = useCallback(async (docId: string) => {
+  const processDocument = useCallback(async (docId: string): Promise<{ processedResult?: any; extractedPreview?: Record<string, any> } | null> => {
     const doc = documents.find(d => d.id === docId);
-    if (!doc?.classification || !user || !doc.storagePath) return;
+    if (!doc?.classification || !user || !doc.storagePath) return null;
 
     updateDoc(docId, { status: 'processing' });
 
@@ -634,10 +634,13 @@ export function useUnifiedChaosInbox() {
           extractedPreview: doc.classification!.extracted_preview,
         }, ...prev]);
       }
+      
+      return { processedResult, extractedPreview: doc.classification?.extracted_preview };
     } catch (error: any) {
       console.error('Error processing:', error);
       updateDoc(docId, { status: 'error', error: error.message });
       toast.error(`Error: ${doc.fileName}`);
+      return null;
     }
   }, [documents, user, updateDoc, queryClient]);
 

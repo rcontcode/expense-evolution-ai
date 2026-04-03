@@ -193,6 +193,7 @@ export default function ChaosInbox() {
     docId: string;
   }>>([]);
   const [duplicateDialogOpen, setDuplicateDialogOpen] = useState(false);
+  const [duplicateQueueTotal, setDuplicateQueueTotal] = useState(0);
   const [checkingDuplicates, setCheckingDuplicates] = useState(false);
   
   const { checkPreUpload, checkContent } = useContentDuplicateDetector();
@@ -305,7 +306,7 @@ export default function ChaosInbox() {
                   date: firstExpense.date,
                   description: firstExpense.description,
                   line_items: firstExpense.line_items,
-                });
+                }, doc.id);
 
                 if (dupResult.hasDuplicates) {
                   setDuplicateQueue(prev => [...prev, {
@@ -348,7 +349,10 @@ export default function ChaosInbox() {
       
       // Open duplicate dialog if queue has items
       setDuplicateQueue(prev => {
-        if (prev.length > 0) setDuplicateDialogOpen(true);
+        if (prev.length > 0) {
+          setDuplicateQueueTotal(prev.length);
+          setDuplicateDialogOpen(true);
+        }
         return prev;
       });
     } catch (error: any) {
@@ -475,7 +479,7 @@ export default function ChaosInbox() {
                   date: firstExpense.date,
                   description: firstExpense.description,
                   line_items: firstExpense.line_items,
-                });
+                }, doc.id);
 
                 if (dupResult.hasDuplicates) {
                   setDuplicateQueue(prev => [...prev, {
@@ -528,7 +532,10 @@ export default function ChaosInbox() {
       
       // Open duplicate dialog if queue has items
       setDuplicateQueue(prev => {
-        if (prev.length > 0) setDuplicateDialogOpen(true);
+        if (prev.length > 0) {
+          setDuplicateQueueTotal(prev.length);
+          setDuplicateDialogOpen(true);
+        }
         return prev;
       });
     } catch (error: any) {
@@ -630,6 +637,17 @@ export default function ChaosInbox() {
             </TabsList>
 
             <TabsContent value="unified" className="mt-4 space-y-4">
+              {checkingDuplicates && (
+                <Alert className="border-primary/50 bg-primary/5 animate-pulse">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <AlertTitle>{language === 'es' ? 'Verificando duplicados...' : 'Checking for duplicates...'}</AlertTitle>
+                  <AlertDescription>
+                    {language === 'es' 
+                      ? 'Comparando con documentos y gastos existentes'
+                      : 'Comparing with existing documents and expenses'}
+                  </AlertDescription>
+                </Alert>
+              )}
               <UnifiedChaosInboxPanel />
             </TabsContent>
 
@@ -937,8 +955,8 @@ export default function ChaosInbox() {
           }}
           matches={duplicateQueue[0].matches}
           newDocument={duplicateQueue[0].newDoc}
-          queuePosition={duplicateQueue.length > 1 ? 1 : undefined}
-          queueTotal={duplicateQueue.length > 1 ? duplicateQueue.length : undefined}
+          queuePosition={duplicateQueueTotal > 1 ? (duplicateQueueTotal - duplicateQueue.length + 1) : undefined}
+          queueTotal={duplicateQueueTotal > 1 ? duplicateQueueTotal : undefined}
           onKeepBoth={() => {
             toast.info(language === 'es' ? 'Ambos conservados' : 'Both kept');
             advanceDuplicateQueue();

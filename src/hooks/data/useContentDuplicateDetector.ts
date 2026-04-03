@@ -79,7 +79,8 @@ export async function checkFilePreUpload(
 // Layer 2: Post-OCR content-based detection
 export async function findContentDuplicates(
   userId: string,
-  extracted: { vendor?: string; amount?: number; date?: string; description?: string; line_items?: Array<{ name: string; total: number }> }
+  extracted: { vendor?: string; amount?: number; date?: string; description?: string; line_items?: Array<{ name: string; total: number }> },
+  excludeDocId?: string
 ): Promise<DuplicateCheckResult> {
   if (!extracted.vendor && !extracted.amount) {
     return { hasDuplicates: false, matches: [] };
@@ -89,11 +90,18 @@ export async function findContentDuplicates(
 
   // 1. Search expenses by amount (exact) — then filter vendor client-side
   if (extracted.amount && extracted.amount > 0) {
-    const { data: expenseMatches } = await supabase
+    let expQuery = supabase
       .from('expenses')
       .select('id, vendor, amount, date, description, document_id')
       .eq('user_id', userId)
       .eq('amount', extracted.amount);
+    
+    // Exclude expenses linked to the just-inserted document
+    if (excludeDocId) {
+      expQuery = expQuery.neq('document_id', excludeDocId);
+    }
+    
+    const { data: expenseMatches } = await expQuery;
 
     if (expenseMatches) {
       for (const exp of expenseMatches) {
@@ -118,11 +126,18 @@ export async function findContentDuplicates(
   }
 
   // 2. Search documents with extracted_data
-  const { data: docMatches } = await supabase
+  let docQuery = supabase
     .from('documents')
     .select('id, file_name, extracted_data, created_at')
     .eq('user_id', userId)
     .eq('status', 'classified');
+  
+  // Exclude the document we just inserted to avoid self-match
+  if (excludeDocId) {
+    docQuery = docQuery.neq('id', excludeDocId);
+  }
+  
+  const { data: docMatches } = await docQuery;
 
   if (docMatches) {
     for (const doc of docMatches) {
@@ -247,9 +262,9 @@ export function useContentDuplicateDetector() {
   );
 
   const checkContent = useCallback(
-    (extracted: Parameters<typeof findContentDuplicates>[1]) => {
+    (extracted: Parameters<typeof findContentDuplicates>[1], excludeDocId?: string) => {
       if (!user?.id) return Promise.resolve({ hasDuplicates: false, matches: [] });
-      return findContentDuplicates(user.id, extracted);
+      return findContentDuplicates(user.id, extracted, excludeDocId);
     },
     [user?.id]
   );
