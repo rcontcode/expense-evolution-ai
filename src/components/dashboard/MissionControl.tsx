@@ -364,24 +364,40 @@ export function MissionControl({ compact = false }: MissionControlProps) {
   return (
     <Card data-section="mission-control">
       <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
+        <div
+          className="flex items-center justify-between cursor-pointer select-none group"
+          onClick={togglePanel}
+        >
           <div className="flex items-center gap-2">
             <Rocket className="h-5 w-5 text-primary" />
             <CardTitle className="text-base">Mission Control</CardTitle>
             <Badge variant="outline" className="text-[10px]">{levelLabel}</Badge>
+            {!panelOpen && (
+              <>
+                <Badge variant={blockedFeatures > 0 ? 'destructive' : data.urgentTotal > 0 ? 'warning' : 'secondary'} className="text-[10px]">
+                  <Fuel className="h-2.5 w-2.5 mr-0.5" />
+                  {readyFeatures}/{totalFeatures}
+                </Badge>
+                <span className="text-xs text-muted-foreground">{data.globalScore}%</span>
+                {data.inactivityNudge.show && (
+                  <Badge variant="warning" className="text-[10px]">
+                    <Flame className="h-2.5 w-2.5 mr-0.5" />
+                    {data.inactivityNudge.daysSinceLastEntry}d
+                  </Badge>
+                )}
+              </>
+            )}
           </div>
-          {compact && (
-            <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => setExpanded(false)}>
-              {l ? 'Minimizar' : 'Minimize'}
-            </Button>
-          )}
+          <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform", !panelOpen && "-rotate-90")} />
         </div>
 
-        <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
-          {l
-            ? 'Esta app aprende de tus datos para generar proyecciones, alertas y reportes inteligentes. Mientras más información ingreses, más poderosas serán las herramientas disponibles.'
-            : 'This app learns from your data to generate projections, alerts, and smart reports. The more information you enter, the more powerful the available tools become.'}
-        </p>
+        {panelOpen && (
+          <>
+            <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
+              {l
+                ? 'Esta app aprende de tus datos para generar proyecciones, alertas y reportes inteligentes. Mientras más información ingreses, más poderosas serán las herramientas disponibles.'
+                : 'This app learns from your data to generate projections, alerts, and smart reports. The more information you enter, the more powerful the available tools become.'}
+            </p>
 
         {/* Dual progress bars + history */}
         <div className="mt-3 grid grid-cols-2 gap-3">
