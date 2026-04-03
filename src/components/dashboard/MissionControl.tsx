@@ -303,8 +303,18 @@ export function MissionControl({ compact = false }: MissionControlProps) {
   const { language } = useLanguage();
   const l = language === 'es';
   const data = useMissionControl();
+  const [panelOpen, setPanelOpen] = useState(() => {
+    const saved = localStorage.getItem('mission-control-open');
+    return saved !== null ? saved === 'true' : !compact;
+  });
   const [expanded, setExpanded] = useState(!compact);
   const [activeTab, setActiveTab] = useState<'data' | 'features'>('features');
+
+  const togglePanel = () => {
+    const next = !panelOpen;
+    setPanelOpen(next);
+    localStorage.setItem('mission-control-open', String(next));
+  };
 
   if (data.isLoading) {
     return <Skeleton className="h-48 w-full rounded-xl" />;
@@ -354,24 +364,40 @@ export function MissionControl({ compact = false }: MissionControlProps) {
   return (
     <Card data-section="mission-control">
       <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
+        <div
+          className="flex items-center justify-between cursor-pointer select-none group"
+          onClick={togglePanel}
+        >
           <div className="flex items-center gap-2">
             <Rocket className="h-5 w-5 text-primary" />
             <CardTitle className="text-base">Mission Control</CardTitle>
             <Badge variant="outline" className="text-[10px]">{levelLabel}</Badge>
+            {!panelOpen && (
+              <>
+                <Badge variant={blockedFeatures > 0 ? 'destructive' : data.urgentTotal > 0 ? 'warning' : 'secondary'} className="text-[10px]">
+                  <Fuel className="h-2.5 w-2.5 mr-0.5" />
+                  {readyFeatures}/{totalFeatures}
+                </Badge>
+                <span className="text-xs text-muted-foreground">{data.globalScore}%</span>
+                {data.inactivityNudge.show && (
+                  <Badge variant="warning" className="text-[10px]">
+                    <Flame className="h-2.5 w-2.5 mr-0.5" />
+                    {data.inactivityNudge.daysSinceLastEntry}d
+                  </Badge>
+                )}
+              </>
+            )}
           </div>
-          {compact && (
-            <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => setExpanded(false)}>
-              {l ? 'Minimizar' : 'Minimize'}
-            </Button>
-          )}
+          <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform", !panelOpen && "-rotate-90")} />
         </div>
 
-        <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
-          {l
-            ? 'Esta app aprende de tus datos para generar proyecciones, alertas y reportes inteligentes. Mientras más información ingreses, más poderosas serán las herramientas disponibles.'
-            : 'This app learns from your data to generate projections, alerts, and smart reports. The more information you enter, the more powerful the available tools become.'}
-        </p>
+        {panelOpen && (
+          <>
+            <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
+              {l
+                ? 'Esta app aprende de tus datos para generar proyecciones, alertas y reportes inteligentes. Mientras más información ingreses, más poderosas serán las herramientas disponibles.'
+                : 'This app learns from your data to generate projections, alerts, and smart reports. The more information you enter, the more powerful the available tools become.'}
+            </p>
 
         {/* Dual progress bars + history */}
         <div className="mt-3 grid grid-cols-2 gap-3">
@@ -423,135 +449,139 @@ export function MissionControl({ compact = false }: MissionControlProps) {
             {data.urgentTotal > 0 && <Badge variant="destructive" className="text-[9px] ml-1 px-1 py-0">{data.urgentTotal}</Badge>}
           </button>
         </div>
-      </CardHeader>
-
-      <CardContent className="space-y-2 pt-0">
-        {/* Inactivity nudge — always visible regardless of tab */}
-        <InactivityNudgeBanner nudge={data.inactivityNudge} language={language} />
-
-        {/* Next action — always visible when there is one */}
-        {data.nextAction && <NextActionBanner action={data.nextAction} language={language} />}
-
-        {activeTab === 'features' ? (
-          <>
-            {blockedFeatures > 0 && (
-              <div className="rounded-lg bg-destructive/5 border border-destructive/20 p-3 text-xs">
-                <div className="flex items-start gap-2">
-                  <Lock className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
-                  <div>
-                    <p className="font-medium text-destructive mb-0.5">
-                      {l
-                        ? `${blockedFeatures} ${blockedFeatures === 1 ? 'función está inactiva' : 'funciones están inactivas'} por falta de datos`
-                        : `${blockedFeatures} ${blockedFeatures === 1 ? 'feature is inactive' : 'features are inactive'} due to missing data`}
-                    </p>
-                    <p className="text-muted-foreground">
-                      {l
-                        ? 'Expande cada función para ver exactamente qué información necesitas ingresar para activarla.'
-                        : 'Expand each feature to see exactly what information you need to enter to activate it.'}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-            {blockedFeatures === 0 && partialFeatures > 0 && (
-              <div className="rounded-lg bg-warning/5 border border-warning/20 p-3 text-xs">
-                <div className="flex items-start gap-2">
-                  <CircleDot className="h-4 w-4 text-warning shrink-0 mt-0.5" />
-                  <div>
-                    <p className="font-medium text-warning mb-0.5">{l ? '¡Casi listo!' : 'Almost there!'}</p>
-                    <p className="text-muted-foreground">
-                      {l
-                        ? `${partialFeatures} ${partialFeatures === 1 ? 'función funciona' : 'funciones funcionan'} parcialmente. Completa los datos faltantes para aprovecharlas al 100%.`
-                        : `${partialFeatures} ${partialFeatures === 1 ? 'feature works' : 'features work'} partially. Complete the missing data to take full advantage.`}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-            {blockedFeatures === 0 && partialFeatures === 0 && (
-              <div className="rounded-lg bg-success/5 border border-success/20 p-3 text-xs">
-                <div className="flex items-start gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-success shrink-0 mt-0.5" />
-                  <div>
-                    <p className="font-medium text-success">{l ? '🎉 ¡Todas las funciones están activas!' : '🎉 All features are active!'}</p>
-                    <p className="text-muted-foreground">
-                      {l
-                        ? 'Tu sistema está completamente alimentado. Sigue ingresando datos para mantener tus análisis actualizados.'
-                        : 'Your system is fully fed. Keep entering data to keep your analyses up to date.'}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {data.featureReadiness.map(feat => (
-              <FeatureReadinessCard key={feat.key} feature={feat} language={language} />
-            ))}
-
-            <div className="flex items-center justify-center gap-4 pt-2 border-t text-[11px] text-muted-foreground">
-              <span className="flex items-center gap-1"><Zap className="h-3 w-3 text-destructive" /> {l ? 'Esencial' : 'Essential'}</span>
-              <span className="flex items-center gap-1"><AlertCircle className="h-3 w-3 text-warning" /> {l ? 'Importante' : 'Important'}</span>
-              <span className="flex items-center gap-1"><CircleDot className="h-3 w-3 text-muted-foreground" /> {l ? 'Opcional' : 'Optional'}</span>
-            </div>
-          </>
-        ) : (
-          <>
-            <div className="rounded-lg bg-muted/30 p-2.5 text-xs text-muted-foreground">
-              {l
-                ? '📊 Estado de los datos que has ingresado: qué se ha procesado, qué falta por revisar y qué necesita tu atención urgente.'
-                : '📊 Status of the data you\'ve entered: what has been processed, what needs review, and what requires urgent attention.'}
-            </div>
-
-            {data.categories.map(cat => (
-              <CategoryCard key={cat.key} category={cat} language={language} />
-            ))}
-
-            {data.categories.length === 0 && (
-              <div className="text-center py-6 text-muted-foreground text-sm">
-                <CheckCircle2 className="h-8 w-8 mx-auto mb-2 text-success" />
-                {l ? 'Empieza agregando datos para ver tu progreso' : 'Start adding data to see your progress'}
-              </div>
-            )}
-
-            {data.unapprovedInUse.length > 0 && (
-              <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 mt-3">
-                <div className="flex items-center gap-2 mb-1">
-                  <AlertTriangle className="h-4 w-4 text-destructive" />
-                  <span className="text-sm font-medium text-destructive">
-                    {l ? 'Datos no aprobados en uso' : 'Unapproved data in use'}
-                  </span>
-                </div>
-                <p className="text-[11px] text-muted-foreground mb-2">
-                  {l
-                    ? 'Estos gastos fueron creados desde documentos que aún no has revisado. Están siendo usados en tus cálculos y reportes.'
-                    : 'These expenses were created from documents you haven\'t reviewed yet. They\'re being used in your calculations and reports.'}
-                </p>
-                <div className="space-y-1">
-                  {data.unapprovedInUse.slice(0, 5).map(item => (
-                    <div key={item.id} className="text-xs text-muted-foreground flex items-center justify-between">
-                      <span>{item.vendor}</span>
-                      <span className="font-mono">${item.amount.toFixed(2)}</span>
-                    </div>
-                  ))}
-                  {data.unapprovedInUse.length > 5 && (
-                    <span className="text-xs text-muted-foreground">+{data.unapprovedInUse.length - 5} {l ? 'más' : 'more'}</span>
-                  )}
-                </div>
-              </div>
-            )}
-
-            <div className="flex items-center justify-center gap-4 pt-2 border-t text-xs text-muted-foreground">
-              {data.urgentTotal > 0 && (
-                <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-destructive" /> {l ? 'Urgente' : 'Urgent'} ({data.urgentTotal})</span>
-              )}
-              {data.pendingTotal > 0 && (
-                <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-warning" /> {l ? 'Pendiente' : 'Pending'} ({data.pendingTotal})</span>
-              )}
-              <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-success" /> OK ({data.okTotal})</span>
-            </div>
           </>
         )}
-      </CardContent>
+      </CardHeader>
+
+      {panelOpen && (
+        <CardContent className="space-y-2 pt-0">
+          {/* Inactivity nudge — always visible regardless of tab */}
+          <InactivityNudgeBanner nudge={data.inactivityNudge} language={language} />
+
+          {/* Next action — always visible when there is one */}
+          {data.nextAction && <NextActionBanner action={data.nextAction} language={language} />}
+
+          {activeTab === 'features' ? (
+            <>
+              {blockedFeatures > 0 && (
+                <div className="rounded-lg bg-destructive/5 border border-destructive/20 p-3 text-xs">
+                  <div className="flex items-start gap-2">
+                    <Lock className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-medium text-destructive mb-0.5">
+                        {l
+                          ? `${blockedFeatures} ${blockedFeatures === 1 ? 'función está inactiva' : 'funciones están inactivas'} por falta de datos`
+                          : `${blockedFeatures} ${blockedFeatures === 1 ? 'feature is inactive' : 'features are inactive'} due to missing data`}
+                      </p>
+                      <p className="text-muted-foreground">
+                        {l
+                          ? 'Expande cada función para ver exactamente qué información necesitas ingresar para activarla.'
+                          : 'Expand each feature to see exactly what information you need to enter to activate it.'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+              {blockedFeatures === 0 && partialFeatures > 0 && (
+                <div className="rounded-lg bg-warning/5 border border-warning/20 p-3 text-xs">
+                  <div className="flex items-start gap-2">
+                    <CircleDot className="h-4 w-4 text-warning shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-medium text-warning mb-0.5">{l ? '¡Casi listo!' : 'Almost there!'}</p>
+                      <p className="text-muted-foreground">
+                        {l
+                          ? `${partialFeatures} ${partialFeatures === 1 ? 'función funciona' : 'funciones funcionan'} parcialmente. Completa los datos faltantes para aprovecharlas al 100%.`
+                          : `${partialFeatures} ${partialFeatures === 1 ? 'feature works' : 'features work'} partially. Complete the missing data to take full advantage.`}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+              {blockedFeatures === 0 && partialFeatures === 0 && (
+                <div className="rounded-lg bg-success/5 border border-success/20 p-3 text-xs">
+                  <div className="flex items-start gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-success shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-medium text-success">{l ? '🎉 ¡Todas las funciones están activas!' : '🎉 All features are active!'}</p>
+                      <p className="text-muted-foreground">
+                        {l
+                          ? 'Tu sistema está completamente alimentado. Sigue ingresando datos para mantener tus análisis actualizados.'
+                          : 'Your system is fully fed. Keep entering data to keep your analyses up to date.'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {data.featureReadiness.map(feat => (
+                <FeatureReadinessCard key={feat.key} feature={feat} language={language} />
+              ))}
+
+              <div className="flex items-center justify-center gap-4 pt-2 border-t text-[11px] text-muted-foreground">
+                <span className="flex items-center gap-1"><Zap className="h-3 w-3 text-destructive" /> {l ? 'Esencial' : 'Essential'}</span>
+                <span className="flex items-center gap-1"><AlertCircle className="h-3 w-3 text-warning" /> {l ? 'Importante' : 'Important'}</span>
+                <span className="flex items-center gap-1"><CircleDot className="h-3 w-3 text-muted-foreground" /> {l ? 'Opcional' : 'Optional'}</span>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="rounded-lg bg-muted/30 p-2.5 text-xs text-muted-foreground">
+                {l
+                  ? '📊 Estado de los datos que has ingresado: qué se ha procesado, qué falta por revisar y qué necesita tu atención urgente.'
+                  : '📊 Status of the data you\'ve entered: what has been processed, what needs review, and what requires urgent attention.'}
+              </div>
+
+              {data.categories.map(cat => (
+                <CategoryCard key={cat.key} category={cat} language={language} />
+              ))}
+
+              {data.categories.length === 0 && (
+                <div className="text-center py-6 text-muted-foreground text-sm">
+                  <CheckCircle2 className="h-8 w-8 mx-auto mb-2 text-success" />
+                  {l ? 'Empieza agregando datos para ver tu progreso' : 'Start adding data to see your progress'}
+                </div>
+              )}
+
+              {data.unapprovedInUse.length > 0 && (
+                <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 mt-3">
+                  <div className="flex items-center gap-2 mb-1">
+                    <AlertTriangle className="h-4 w-4 text-destructive" />
+                    <span className="text-sm font-medium text-destructive">
+                      {l ? 'Datos no aprobados en uso' : 'Unapproved data in use'}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground mb-2">
+                    {l
+                      ? 'Estos gastos fueron creados desde documentos que aún no has revisado. Están siendo usados en tus cálculos y reportes.'
+                      : 'These expenses were created from documents you haven\'t reviewed yet. They\'re being used in your calculations and reports.'}
+                  </p>
+                  <div className="space-y-1">
+                    {data.unapprovedInUse.slice(0, 5).map(item => (
+                      <div key={item.id} className="text-xs text-muted-foreground flex items-center justify-between">
+                        <span>{item.vendor}</span>
+                        <span className="font-mono">${item.amount.toFixed(2)}</span>
+                      </div>
+                    ))}
+                    {data.unapprovedInUse.length > 5 && (
+                      <span className="text-xs text-muted-foreground">+{data.unapprovedInUse.length - 5} {l ? 'más' : 'more'}</span>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              <div className="flex items-center justify-center gap-4 pt-2 border-t text-xs text-muted-foreground">
+                {data.urgentTotal > 0 && (
+                  <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-destructive" /> {l ? 'Urgente' : 'Urgent'} ({data.urgentTotal})</span>
+                )}
+                {data.pendingTotal > 0 && (
+                  <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-warning" /> {l ? 'Pendiente' : 'Pending'} ({data.pendingTotal})</span>
+                )}
+                <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-success" /> OK ({data.okTotal})</span>
+              </div>
+            </>
+          )}
+        </CardContent>
+      )}
     </Card>
   );
 }
