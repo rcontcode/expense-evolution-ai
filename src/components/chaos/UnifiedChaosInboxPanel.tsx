@@ -8,10 +8,15 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { 
   ClassifiedDocument, DocumentClassificationType, TYPE_LABELS, HistoryEntry, useUnifiedChaosInbox 
 } from '@/hooks/data/useUnifiedChaosInbox';
+import { useContentDuplicateDetector, DuplicateMatch } from '@/hooks/data/useContentDuplicateDetector';
+import { DuplicateWarningDialog } from './DuplicateWarningDialog';
 import { 
   Upload, Loader2, CheckCircle2, AlertTriangle, X, Zap, 
   FileText, ArrowRight, RotateCcw, Sparkles, Package,
@@ -21,6 +26,7 @@ import {
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PostUploadWizard } from './PostUploadWizard';
+import { toast } from 'sonner';
 
 function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
