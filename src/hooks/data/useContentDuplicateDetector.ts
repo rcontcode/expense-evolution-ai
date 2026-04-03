@@ -122,7 +122,7 @@ export async function findContentDuplicates(
     .from('documents')
     .select('id, file_name, extracted_data, created_at')
     .eq('user_id', userId)
-    .in('status', ['classified', 'processed']);
+    .eq('status', 'classified');
 
   if (docMatches) {
     for (const doc of docMatches) {

@@ -95,7 +95,7 @@ export function DataInventoryPanel() {
                 <Badge variant="secondary" className="text-xs">{totalItems}</Badge>
               </div>
               <div className="flex items-center gap-2">
-                <div className="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400">
+                <div className="flex items-center gap-1 text-xs text-primary">
                   <ShieldCheck className="h-3.5 w-3.5" />
                   <span className="hidden sm:inline">{isEs ? 'Solo tus datos' : 'Your data only'}</span>
                 </div>

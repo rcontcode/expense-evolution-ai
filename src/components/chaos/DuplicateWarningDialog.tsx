@@ -38,7 +38,7 @@ export function DuplicateWarningDialog({
 
   const confidenceColor = {
     high: 'bg-destructive/15 text-destructive border-destructive/30',
-    medium: 'bg-yellow-500/15 text-yellow-700 dark:text-yellow-400 border-yellow-500/30',
+    medium: 'bg-accent text-accent-foreground border-border',
     low: 'bg-muted text-muted-foreground border-border',
   };
 
