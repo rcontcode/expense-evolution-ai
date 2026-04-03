@@ -72,7 +72,12 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
   const [billCreatedForIndex, setBillCreatedForIndex] = useState<Set<number>>(new Set());
   const [pendingBillCandidate, setPendingBillCandidate] = useState<RecurringBillCandidate | null>(null);
   const [showBillConfirm, setShowBillConfirm] = useState(false);
-  const [showWebcam, setShowWebcam] = useState(!isMobile); // Default to webcam on desktop
+  const [showWebcam, setShowWebcam] = useState(!isMobile);
+  const [duplicateMatches, setDuplicateMatches] = useState<DuplicateMatch[]>([]);
+  const [duplicateNewDoc, setDuplicateNewDoc] = useState<{ vendor?: string; amount?: number; date?: string; description?: string }>({});
+  const [duplicateDocId, setDuplicateDocId] = useState<string | null>(null);
+  const [showDuplicateDialog, setShowDuplicateDialog] = useState(false);
+  const [pendingSaveAfterDup, setPendingSaveAfterDup] = useState(false);
   const { processReceipt, isProcessing } = useReceiptProcessor();
   const createExpense = useCreateExpense();
   const { data: clients = [] } = useClients();
