@@ -1,39 +1,52 @@
 
 
-# Plan: Corregir botón "Subir" del Checklist y unificar con Subida Inteligente
+# Plan: Manejo de Documentos No Reconocidos + Feedback Visual de Status de Subida
 
-## Problema
+## Problemas
 
-El botón "Subir" de cada item del checklist ejecuta `fileInputRef.current?.click()`, que apunta al `<input>` del tab "Centro de Revisión" (receipts). Cuando el usuario está en el tab "Subida Inteligente" (unified), ese input puede no estar renderizado en el DOM, por lo que **no pasa nada**.
+1. **Documentos "unknown"**: Cuando la IA no reconoce un documento, se guarda silenciosamente como "Sin clasificar" sin avisar al usuario. Debería mostrar un mensaje claro: "No reconozco este documento, ¿quieres eliminarlo o indicarme qué es?"
+2. **Sin feedback visual de progreso**: Al subir un archivo desde el tab "Centro de Revisión", no hay indicación visible de que se recibió, se está procesando, o se clasificó. El usuario no sabe qué está pasando.
 
-Además, hay dos flujos de subida completamente separados:
-- **Tab "Subida Inteligente"** (UnifiedChaosInboxPanel): tiene su propio `DropZone` con input y su propio pipeline de clasificación IA
-- **Tab "Centro de Revisión"**: tiene el `fileInputRef` con `handleFileUpload` que sube + procesa con `process-receipt`
+## Cambios
 
-El checklist apunta al segundo, pero el usuario por defecto está en el primero.
+### 1. `src/components/chaos/UnifiedChaosInboxPanel.tsx` — Alerta para documentos "unknown"
 
-## Solución
+En el `DocumentCard`, cuando `classification.document_type === 'unknown'` y el status es `classified`:
+- Mostrar un bloque visual destacado (borde naranja/amarillo) con mensaje: "No reconozco este tipo de documento. ¿Quieres eliminarlo o indicarme qué es para intentar procesarlo?"
+- Dos acciones: 
+  - **"Eliminar"** → llama `onRemove`
+  - **"Cambiar tipo"** → enfoca/abre el dropdown de reclasificación existente
+- Ocultar el botón "Procesar" cuando es `unknown`, ya que no tiene sentido procesarlo sin clasificación
 
-### `src/pages/ChaosInbox.tsx`
+### 2. `src/hooks/data/useUnifiedChaosInbox.ts` — Toast para unknown
 
-1. **Cambiar `onUploadClick`** para que en vez de hacer click en el `fileInputRef` oculto, **cambie al tab "unified"** y haga scroll hacia la zona de upload del `UnifiedChaosInboxPanel`
-2. Alternativamente, y más simple: mover el `<input type="file">` y la lógica de `handleFileUpload` **fuera de los tabs**, para que siempre esté disponible en el DOM sin importar el tab activo
+Después de clasificar, si `document_type === 'unknown'`:
+- Mostrar toast de advertencia: "⚠️ No pudimos identificar [nombre]. Revísalo e indícanos qué tipo es."
+- En vez del toast genérico de éxito
 
-**Enfoque elegido**: Opción 2 — mover el `<input ref={fileInputRef}>` fuera de `TabsContent`, justo antes de `<Tabs>`. Así el click del checklist siempre funciona. Además, al terminar la subida, cambiar automáticamente al tab "receipts" para que el usuario vea sus documentos pendientes de revisión.
+### 3. `src/pages/ChaosInbox.tsx` — Feedback visual de progreso en tab Revisión
 
-### `src/components/chaos/DocumentOnboardingChecklist.tsx`
+Agregar un componente `UploadProgressToast` inline (no solo toasts efímeros) que muestre:
+- **Recibido**: "📥 archivo.pdf recibido" (aparece al iniciar upload)
+- **Subiendo**: "⬆️ Subiendo..." con spinner
+- **Procesando IA**: "🧠 Analizando con IA..." con spinner
+- **Clasificado**: "✅ Clasificado como [tipo]" o "⚠️ No reconocido"
 
-Sin cambios funcionales. El botón ya llama `onUploadClick?.()` correctamente.
+Implementar como un estado `uploadProgress` con fases, que se renderiza encima de la lista de documentos pendientes. Se auto-oculta después de 5 segundos del último paso.
 
-## Resultado
+### 4. `src/pages/ChaosInbox.tsx` — Manejo post-OCR de unknown
 
-- El botón "Subir" del checklist siempre abre el selector de archivos sin importar el tab activo
-- Tras subir, el usuario se redirige al Centro de Revisión donde puede ver el resultado
-- La Subida Inteligente (UnifiedChaosInboxPanel) sigue funcionando independiente con su propia DropZone
+Cuando `process-receipt` devuelve datos pero la clasificación es `unknown` o no tiene `vendor`/`amount` significativos:
+- Mostrar toast persistente de advertencia
+- Marcar el documento con un badge especial en la lista de pendientes
 
 ## Archivos afectados
 
 | Acción | Archivo |
 |--------|---------|
+| Modificar | `src/components/chaos/UnifiedChaosInboxPanel.tsx` |
+| Modificar | `src/hooks/data/useUnifiedChaosInbox.ts` |
 | Modificar | `src/pages/ChaosInbox.tsx` |
+
+Sin migraciones de base de datos.
 
