@@ -944,8 +944,8 @@ export default function ChaosInbox() {
           }}
           matches={duplicateQueue[0].matches}
           newDocument={duplicateQueue[0].newDoc}
-          queuePosition={duplicateQueue.length > 1 ? 1 : undefined}
-          queueTotal={duplicateQueue.length > 1 ? duplicateQueue.length : undefined}
+          queuePosition={duplicateQueueTotal > 1 ? (duplicateQueueTotal - duplicateQueue.length + 1) : undefined}
+          queueTotal={duplicateQueueTotal > 1 ? duplicateQueueTotal : undefined}
           onKeepBoth={() => {
             toast.info(language === 'es' ? 'Ambos conservados' : 'Both kept');
             advanceDuplicateQueue();
