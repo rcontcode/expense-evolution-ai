@@ -12,7 +12,11 @@ import {
 import { cn } from '@/lib/utils';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
-const STORAGE_KEY = 'doc-onboarding-checklist';
+export const DOC_CHECKLIST_STORAGE_KEY = 'doc-onboarding-checklist';
+
+export function resetDocChecklist() {
+  localStorage.removeItem(DOC_CHECKLIST_STORAGE_KEY);
+}
 
 interface ChecklistItem {
   id: string;
