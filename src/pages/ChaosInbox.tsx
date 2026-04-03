@@ -459,26 +459,32 @@ export default function ChaosInbox() {
                 totalAmount += exp.amount || 0;
               });
 
-              // Layer 2: Post-OCR duplicate detection (camera)
+              // Layer 2: Post-OCR duplicate detection (camera, queued)
               const firstExpense = result.expenses[0];
-              const dupResult = await checkContent({
-                vendor: firstExpense.vendor,
-                amount: firstExpense.amount,
-                date: firstExpense.date,
-                description: firstExpense.description,
-                line_items: firstExpense.line_items,
-              });
-
-              if (dupResult.hasDuplicates) {
-                setDuplicateMatches(dupResult.matches);
-                setDuplicateNewDoc({
+              setCheckingDuplicates(true);
+              try {
+                const dupResult = await checkContent({
                   vendor: firstExpense.vendor,
                   amount: firstExpense.amount,
                   date: firstExpense.date,
                   description: firstExpense.description,
+                  line_items: firstExpense.line_items,
                 });
-                setDuplicateDocId(doc.id);
-                setDuplicateDialogOpen(true);
+
+                if (dupResult.hasDuplicates) {
+                  setDuplicateQueue(prev => [...prev, {
+                    matches: dupResult.matches,
+                    newDoc: {
+                      vendor: firstExpense.vendor,
+                      amount: firstExpense.amount,
+                      date: firstExpense.date,
+                      description: firstExpense.description,
+                    },
+                    docId: doc.id,
+                  }]);
+                }
+              } finally {
+                setCheckingDuplicates(false);
               }
               
               if (result.expenses.length > 1) {
