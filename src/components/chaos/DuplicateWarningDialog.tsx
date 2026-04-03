@@ -17,6 +17,8 @@ interface DuplicateWarningDialogProps {
     date?: string;
     description?: string;
   };
+  queuePosition?: number;
+  queueTotal?: number;
   onKeepBoth: () => void;
   onDeleteNew: () => void;
   onReplaceOld: () => void;
