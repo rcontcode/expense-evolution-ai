@@ -25,7 +25,8 @@ import { toast } from 'sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { UnifiedChaosInboxPanel } from '@/components/chaos/UnifiedChaosInboxPanel';
-import { DocumentOnboardingChecklist } from '@/components/chaos/DocumentOnboardingChecklist';
+import { DocumentOnboardingChecklist, resetDocChecklist } from '@/components/chaos/DocumentOnboardingChecklist';
+import { DocumentStatsBar } from '@/components/chaos/DocumentStatsBar';
 import { InfoTooltip, TOOLTIP_CONTENT } from '@/components/ui/info-tooltip';
 import { ReceiptReviewCard, ReceiptDocument, ExtractedData } from '@/components/capture/ReceiptReviewCard';
 import { 
