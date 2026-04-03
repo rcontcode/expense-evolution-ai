@@ -53,7 +53,7 @@ export function DocumentOnboardingChecklist({ documentCount, onUploadClick }: Do
 
   // Load state from localStorage
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
+    const stored = localStorage.getItem(DOC_CHECKLIST_STORAGE_KEY);
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
