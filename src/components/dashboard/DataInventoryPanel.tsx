@@ -4,10 +4,13 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useState } from 'react';
-import { ChevronDown, Database, FileText, Receipt, DollarSign, FileCheck, Users, ShieldCheck } from 'lucide-react';
+import { ChevronDown, Database, FileText, Receipt, DollarSign, FileCheck, Users, ShieldCheck, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useNavigate } from 'react-router-dom';
 
 interface InventoryItem {
   label_es: string;
@@ -16,6 +19,9 @@ interface InventoryItem {
   icon: React.ElementType;
   firstDate?: string | null;
   lastDate?: string | null;
+  suggestion_es?: string;
+  suggestion_en?: string;
+  link?: string;
 }
 
 function useDataInventory() {
@@ -62,6 +68,7 @@ export function DataInventoryPanel() {
   const { language } = useLanguage();
   const { data, isLoading } = useDataInventory();
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
   const isEs = language === 'es';
 
   if (isLoading || !data) return null;
@@ -69,12 +76,15 @@ export function DataInventoryPanel() {
   const totalItems = data.documents.count + data.expenses.count + data.income.count + data.contracts.count + data.clients.count;
 
   const items: InventoryItem[] = [
-    { label_es: 'Documentos', label_en: 'Documents', count: data.documents.count, icon: FileText, firstDate: data.documents.first, lastDate: data.documents.last },
-    { label_es: 'Gastos', label_en: 'Expenses', count: data.expenses.count, icon: Receipt, firstDate: data.expenses.first, lastDate: data.expenses.last },
-    { label_es: 'Ingresos', label_en: 'Income', count: data.income.count, icon: DollarSign, firstDate: data.income.first, lastDate: data.income.last },
-    { label_es: 'Contratos', label_en: 'Contracts', count: data.contracts.count, icon: FileCheck, firstDate: data.contracts.first, lastDate: data.contracts.last },
-    { label_es: 'Clientes', label_en: 'Clients', count: data.clients.count, icon: Users, firstDate: data.clients.first, lastDate: data.clients.last },
+    { label_es: 'Documentos', label_en: 'Documents', count: data.documents.count, icon: FileText, firstDate: data.documents.first, lastDate: data.documents.last, suggestion_es: 'Sube boletas en la Bandeja del Caos', suggestion_en: 'Upload receipts in the Chaos Inbox', link: '/chaos-inbox' },
+    { label_es: 'Gastos', label_en: 'Expenses', count: data.expenses.count, icon: Receipt, firstDate: data.expenses.first, lastDate: data.expenses.last, suggestion_es: 'Registra tus gastos manualmente o sube boletas', suggestion_en: 'Log expenses manually or upload receipts', link: '/chaos-inbox' },
+    { label_es: 'Ingresos', label_en: 'Income', count: data.income.count, icon: DollarSign, firstDate: data.income.first, lastDate: data.income.last, suggestion_es: 'Registra tus ingresos', suggestion_en: 'Log your income', link: '/income' },
+    { label_es: 'Contratos', label_en: 'Contracts', count: data.contracts.count, icon: FileCheck, firstDate: data.contracts.first, lastDate: data.contracts.last, suggestion_es: 'Sube tus contratos', suggestion_en: 'Upload your contracts', link: '/contracts' },
+    { label_es: 'Clientes', label_en: 'Clients', count: data.clients.count, icon: Users, firstDate: data.clients.first, lastDate: data.clients.last, suggestion_es: 'Agrega tus clientes', suggestion_en: 'Add your clients', link: '/clients' },
   ];
+
+  const categoriesWithData = items.filter(i => i.count > 0).length;
+  const completeness = Math.round((categoriesWithData / items.length) * 100);
 
   const formatDate = (d: string | null) => {
     if (!d) return '—';
@@ -95,6 +105,11 @@ export function DataInventoryPanel() {
                 <Badge variant="secondary" className="text-xs">{totalItems}</Badge>
               </div>
               <div className="flex items-center gap-2">
+                {/* Mini progress indicator */}
+                <div className="hidden sm:flex items-center gap-1.5">
+                  <Progress value={completeness} className="w-16 h-1.5" />
+                  <span className="text-[10px] text-muted-foreground">{categoriesWithData}/{items.length}</span>
+                </div>
                 <div className="flex items-center gap-1 text-xs text-primary">
                   <ShieldCheck className="h-3.5 w-3.5" />
                   <span className="hidden sm:inline">{isEs ? 'Solo tus datos' : 'Your data only'}</span>
@@ -113,14 +128,36 @@ export function DataInventoryPanel() {
                   <item.icon className="h-4 w-4 mx-auto text-muted-foreground" />
                   <p className="text-lg font-bold">{item.count}</p>
                   <p className="text-[10px] text-muted-foreground">{isEs ? item.label_es : item.label_en}</p>
-                  {item.count > 0 && (
+                  {item.count > 0 ? (
                     <p className="text-[9px] text-muted-foreground/60">
                       {formatDate(item.firstDate)} → {formatDate(item.lastDate)}
                     </p>
-                  )}
+                  ) : item.link ? (
+                    <Button
+                      variant="link"
+                      size="sm"
+                      className="h-auto p-0 text-[9px] text-primary gap-0.5"
+                      onClick={(e) => { e.stopPropagation(); navigate(item.link!); }}
+                    >
+                      {isEs ? item.suggestion_es : item.suggestion_en}
+                      <ArrowRight className="h-2.5 w-2.5" />
+                    </Button>
+                  ) : null}
                 </div>
               ))}
             </div>
+
+            {/* Completeness bar */}
+            <div className="mt-3 space-y-1">
+              <div className="flex justify-between items-center">
+                <span className="text-[10px] text-muted-foreground">
+                  {isEs ? 'Completitud de datos' : 'Data completeness'}
+                </span>
+                <span className="text-[10px] font-medium">{completeness}%</span>
+              </div>
+              <Progress value={completeness} className="h-1.5" />
+            </div>
+
             <p className="text-[10px] text-muted-foreground/50 mt-2 text-center">
               {isEs
                 ? 'La seguridad garantiza que solo tú puedes ver tus registros financieros'

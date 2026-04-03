@@ -893,23 +893,54 @@ export default function ChaosInbox() {
         }}
         onDeleteNew={async () => {
           if (duplicateDocId) {
+            // Get file path before deleting
+            const { data: docData } = await supabase
+              .from('documents')
+              .select('file_path')
+              .eq('id', duplicateDocId)
+              .single();
+            
             await supabase.from('documents').delete().eq('id', duplicateDocId).eq('user_id', user?.id || '');
+            
+            // Clean up storage
+            if (docData?.file_path) {
+              await supabase.storage.from('expense-documents').remove([docData.file_path]);
+            }
+            
             refetch();
             toast.success(language === 'es' ? 'Duplicado eliminado' : 'Duplicate removed');
           }
         }}
         onReplaceOld={async () => {
-          if (duplicateMatches[0]?.type === 'document' && duplicateMatches[0]?.id) {
-            await supabase.from('documents').delete().eq('id', duplicateMatches[0].id).eq('user_id', user?.id || '');
-            refetch();
-            toast.success(language === 'es' ? 'Anterior reemplazado' : 'Old one replaced');
-          } else if (duplicateMatches[0]?.type === 'expense' && duplicateMatches[0]?.document_id) {
-            await supabase.from('documents').delete().eq('id', duplicateMatches[0].document_id).eq('user_id', user?.id || '');
-            refetch();
-            toast.success(language === 'es' ? 'Anterior reemplazado' : 'Old one replaced');
-          } else {
+          const match = duplicateMatches[0];
+          if (!match) {
             toast.info(language === 'es' ? 'Ambos conservados (no se pudo reemplazar)' : 'Both kept (could not replace)');
+            return;
           }
+          
+          // Delete associated expense if exists
+          if (match.type === 'expense') {
+            await supabase.from('expenses').delete().eq('id', match.id).eq('user_id', user?.id || '');
+          }
+          
+          // Delete old document
+          const oldDocId = match.type === 'document' ? match.id : match.document_id;
+          if (oldDocId) {
+            const { data: oldDoc } = await supabase
+              .from('documents')
+              .select('file_path')
+              .eq('id', oldDocId)
+              .single();
+            
+            await supabase.from('documents').delete().eq('id', oldDocId).eq('user_id', user?.id || '');
+            
+            if (oldDoc?.file_path) {
+              await supabase.storage.from('expense-documents').remove([oldDoc.file_path]);
+            }
+          }
+          
+          refetch();
+          toast.success(language === 'es' ? 'Anterior reemplazado' : 'Old one replaced');
         }}
       />
     </Layout>
