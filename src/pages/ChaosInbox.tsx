@@ -645,6 +645,19 @@ export default function ChaosInbox() {
             }}
           />
 
+          {/* Global file input - always in DOM regardless of active tab */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            accept="image/*,.pdf"
+            onChange={(e) => {
+              handleFileUpload(e);
+              setActiveTab('receipts');
+            }}
+            className="hidden"
+          />
+
           {/* Onboarding Checklist - Above tabs */}
           <DocumentOnboardingChecklist 
             key={checklistKey}
