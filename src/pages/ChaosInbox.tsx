@@ -525,6 +525,12 @@ export default function ChaosInbox() {
           : `${photos.length} photo(s) processed - ${receiptsCount} receipt(s) detected`
       );
       refetch();
+      
+      // Open duplicate dialog if queue has items
+      setDuplicateQueue(prev => {
+        if (prev.length > 0) setDuplicateDialogOpen(true);
+        return prev;
+      });
     } catch (error: any) {
       toast.error(error.message);
     } finally {
