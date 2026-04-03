@@ -175,6 +175,7 @@ interface DocumentOnboardingChecklistProps {
   documentCount: number;
   onUploadClick?: () => void;
   uploadedTypes?: string[];
+  onDismiss?: () => void;
 }
 
 export function DocumentOnboardingChecklist({ documentCount, onUploadClick, uploadedTypes = [] }: DocumentOnboardingChecklistProps) {
