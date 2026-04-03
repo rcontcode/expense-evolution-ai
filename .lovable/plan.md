@@ -1,48 +1,56 @@
 
 
-# Plan: Completar el Sistema de Detección de Duplicados
+# Plan: Checklist de Guía para el Usuario + Duplicados en Todos los Puntos de Entrada
 
-## Problemas restantes
+## Estado actual
 
-1. **UnifiedChaosInboxPanel no tiene detección de duplicados** — Es el tab principal ("unified") y procesa archivos con su propio hook (`useUnifiedChaosInbox`), sin ninguna verificación de duplicados pre-upload ni post-OCR.
+### Lo que SÍ está implementado:
+- **Detección de duplicados**: Funciona en ChaosInbox (upload + cámara) y UnifiedChaosInboxPanel
+- **TaxDocumentChecklist**: Existe pero está solo en la página Tax Optimizer — es un checklist fiscal, NO un checklist de onboarding para guiar al usuario a subir sus documentos
+- **DataInventoryPanel**: Muestra conteo de datos pero sin guía activa de "qué te falta subir"
 
-2. **`checkingDuplicates` nunca se muestra en la UI** — El estado se activa/desactiva pero no hay ningún elemento visual que lo use. El usuario no sabe que se está verificando.
-
-3. **`queuePosition` siempre es 1** — El cálculo `queuePosition={duplicateQueue.length > 1 ? 1 : undefined}` es siempre 1. Debería ser `totalInicial - queue.length + 1` para mostrar "2/3" al avanzar.
-
-4. **El documento recién insertado puede matchear consigo mismo** — Después de insertar en `documents` y clasificar, la query de `findContentDuplicates` busca en `documents` clasificados, lo que incluye el que acaba de insertarse.
-
-5. **Camera no tiene Layer 1** — `handleCameraPhotos` no llama a `checkPreUpload` (menor impacto porque los nombres son generados, pero por consistencia).
+### Lo que NO está implementado:
+1. **No hay checklist interactivo de onboarding** en la Bandeja del Caos que pregunte "¿qué tipos de documentos tienes?" y guíe al usuario paso a paso
+2. **QuickCapture (foto/voz) NO tiene detección de duplicados** — los archivos subidos desde el dialog de captura rápida (FAB, Layout sidebar) van directo sin Layer 1 ni Layer 2
+3. **FileUploadZone** tiene Layer 1 (nombre/tamaño) pero NO tiene Layer 2 (contenido post-OCR)
+4. **CaptureHub** no tiene detección de duplicados
 
 ---
 
 ## Cambios
 
-### 1. `src/hooks/data/useUnifiedChaosInbox.ts` — Agregar hooks de duplicados
+### 1. Crear `src/components/chaos/DocumentOnboardingChecklist.tsx`
 
-- Importar y usar `checkFilePreUpload` en la función de upload para Layer 1
-- Exponer un callback/evento post-clasificación para que el componente padre pueda ejecutar Layer 2
-- O mejor: pasar el `docId` recién creado como parámetro de exclusión
+Checklist interactivo que aparece en la Bandeja del Caos cuando el usuario tiene pocos documentos. Pregunta: "¿Qué documentos tienes disponibles?" con opciones seleccionables:
+- Boletas/Recibos
+- Facturas
+- Contratos
+- Extractos bancarios
+- Certificados (AFP, RRSP, etc.)
+- Pólizas de seguro
 
-### 2. `src/components/chaos/UnifiedChaosInboxPanel.tsx` — Integrar detección
+Al seleccionar, genera un checklist persistente (localStorage) que muestra progreso: "3/6 tipos subidos". Cada item no completado tiene un botón "Subir" que abre el uploader. Se oculta cuando todo está completo o el usuario lo descarta.
 
-- Importar `useContentDuplicateDetector`
-- Agregar estados de cola (`duplicateQueue`, `duplicateDialogOpen`)
-- Después de la clasificación IA exitosa, ejecutar `checkContent()` y acumular en la cola
-- Renderizar `DuplicateWarningDialog` con la misma lógica de cola que ChaosInbox
-- Mostrar badge "Verificando duplicados..." cuando `checkingDuplicates` está activo
+### 2. Integrar checklist en `src/pages/ChaosInbox.tsx`
 
-### 3. `src/pages/ChaosInbox.tsx` — Fixes menores
+- Mostrar `DocumentOnboardingChecklist` en la parte superior cuando el usuario tiene menos de 5 documentos clasificados y no ha descartado el checklist
+- El checklist se actualiza automáticamente al procesar documentos (via query invalidation)
 
-- Agregar indicador visual de `checkingDuplicates` (badge o toast durante la búsqueda)
-- Corregir `queuePosition` para que avance correctamente: usar un `queueTotal` separado que se fije al inicio
-- Pasar `excludeDocId` al `findContentDuplicates` para evitar self-match
+### 3. Agregar Layer 1 a `src/components/capture/QuickCapture.tsx`
 
-### 4. `src/hooks/data/useContentDuplicateDetector.ts` — Excluir self-match
+- Importar `checkFilePreUpload` en la función de upload de fotos
+- Antes de subir al storage, verificar nombre+tamaño duplicado
+- Mostrar toast de advertencia si se detecta duplicado
 
-- Agregar parámetro opcional `excludeDocId?: string` a `findContentDuplicates`
-- En la query de `documents`, agregar `.neq('id', excludeDocId)` cuando se provea
-- En la query de `expenses`, filtrar matches cuyo `document_id === excludeDocId`
+### 4. Agregar Layer 2 post-OCR a `src/components/capture/QuickCapture.tsx`
+
+- Después de procesar el recibo con IA (ya existe `processReceipt`), ejecutar `checkContent()` con los datos extraídos
+- Si hay match, mostrar `DuplicateWarningDialog` antes de crear el expense
+- Esto cubre el flujo: FAB → foto → OCR → duplicado?
+
+### 5. Agregar detección en `src/components/files/FileUploadZone.tsx`
+
+- Ya tiene Layer 1. Agregar un callback opcional `onDocumentProcessed` para que el componente padre pueda ejecutar Layer 2 cuando el documento se clasifique
 
 ---
 
@@ -50,10 +58,10 @@
 
 | Acción | Archivo |
 |--------|---------|
-| Modificar | `src/hooks/data/useUnifiedChaosInbox.ts` |
-| Modificar | `src/components/chaos/UnifiedChaosInboxPanel.tsx` |
+| Crear | `src/components/chaos/DocumentOnboardingChecklist.tsx` |
 | Modificar | `src/pages/ChaosInbox.tsx` |
-| Modificar | `src/hooks/data/useContentDuplicateDetector.ts` |
+| Modificar | `src/components/capture/QuickCapture.tsx` |
+| Modificar | `src/components/files/FileUploadZone.tsx` |
 
-Sin migraciones de base de datos.
+Sin migraciones de base de datos. El checklist usa localStorage para persistencia del estado de selección del usuario.
 
