@@ -41,7 +41,7 @@ export function DocumentStatsBar({ onActivateChecklist, checklistVisible }: Docu
       const contracts = contractsRes.data ?? [];
 
       const totalUploaded = docs.length + contracts.length;
-      const processed = docs.filter(d => d.status === 'classified' || d.status === 'processed').length + contracts.length;
+      const processed = docs.filter(d => d.status === 'classified').length + contracts.length;
       const pending = docs.filter(d => d.status === 'pending').length;
 
       // Categorize documents by extracted type

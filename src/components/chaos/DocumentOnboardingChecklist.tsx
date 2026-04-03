@@ -111,8 +111,10 @@ export function DocumentOnboardingChecklist({ documentCount, onUploadClick }: Do
   };
 
   if (dismissed) return null;
-  // Hide if user has many docs already
-  if (documentCount >= 10 && !setupDone) return null;
+  // Hide if all done
+  if (documentCount >= 10 && !setupDone) {
+    // Don't auto-hide - let the user see the checklist
+  }
 
   const selectedItems = items.filter(i => i.selected);
   const completedCount = selectedItems.filter(i => i.completed).length;
