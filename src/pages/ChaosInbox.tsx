@@ -532,7 +532,10 @@ export default function ChaosInbox() {
       
       // Open duplicate dialog if queue has items
       setDuplicateQueue(prev => {
-        if (prev.length > 0) setDuplicateDialogOpen(true);
+        if (prev.length > 0) {
+          setDuplicateQueueTotal(prev.length);
+          setDuplicateDialogOpen(true);
+        }
         return prev;
       });
     } catch (error: any) {
