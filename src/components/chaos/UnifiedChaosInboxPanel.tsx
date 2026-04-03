@@ -922,6 +922,81 @@ export function UnifiedChaosInboxPanel() {
           </motion.div>
         )}
       </div>
+
+      {/* Duplicate Warning Dialog */}
+      {duplicateQueue.length > 0 && (
+        <DuplicateWarningDialog
+          open={duplicateDialogOpen}
+          onOpenChange={(open) => {
+            if (!open) {
+              setDuplicateQueue(prev => {
+                const next = prev.slice(1);
+                if (next.length === 0) setDuplicateDialogOpen(false);
+                return next;
+              });
+            }
+            setDuplicateDialogOpen(open);
+          }}
+          matches={duplicateQueue[0].matches}
+          newDocument={duplicateQueue[0].newDoc}
+          queuePosition={duplicateQueueTotal > 1 ? (duplicateQueueTotal - duplicateQueue.length + 1) : undefined}
+          queueTotal={duplicateQueueTotal > 1 ? duplicateQueueTotal : undefined}
+          onKeepBoth={() => {
+            toast.info(language === 'es' ? 'Ambos conservados' : 'Both kept');
+            advanceDuplicateQueue();
+          }}
+          onDeleteNew={async () => {
+            const currentItem = duplicateQueue[0];
+            if (currentItem?.docId) {
+              const { data: docData } = await supabase
+                .from('documents')
+                .select('file_path')
+                .eq('id', currentItem.docId)
+                .single();
+              
+              await supabase.from('documents').delete().eq('id', currentItem.docId).eq('user_id', user?.id || '');
+              
+              if (docData?.file_path) {
+                await supabase.storage.from('expense-documents').remove([docData.file_path]);
+              }
+              
+              toast.success(language === 'es' ? 'Duplicado eliminado' : 'Duplicate removed');
+            }
+            advanceDuplicateQueue();
+          }}
+          onReplaceOld={async () => {
+            const currentItem = duplicateQueue[0];
+            const match = currentItem?.matches[0];
+            if (!match) {
+              toast.info(language === 'es' ? 'Ambos conservados' : 'Both kept');
+              advanceDuplicateQueue();
+              return;
+            }
+            
+            if (match.type === 'expense') {
+              await supabase.from('expenses').delete().eq('id', match.id).eq('user_id', user?.id || '');
+            }
+            
+            const oldDocId = match.type === 'document' ? match.id : match.document_id;
+            if (oldDocId) {
+              const { data: oldDoc } = await supabase
+                .from('documents')
+                .select('file_path')
+                .eq('id', oldDocId)
+                .single();
+              
+              await supabase.from('documents').delete().eq('id', oldDocId).eq('user_id', user?.id || '');
+              
+              if (oldDoc?.file_path) {
+                await supabase.storage.from('expense-documents').remove([oldDoc.file_path]);
+              }
+            }
+            
+            toast.success(language === 'es' ? 'Anterior reemplazado' : 'Old one replaced');
+            advanceDuplicateQueue();
+          }}
+        />
+      )}
     </TooltipProvider>
   );
 }
