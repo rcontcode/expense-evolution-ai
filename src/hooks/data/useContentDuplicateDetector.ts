@@ -262,9 +262,9 @@ export function useContentDuplicateDetector() {
   );
 
   const checkContent = useCallback(
-    (extracted: Parameters<typeof findContentDuplicates>[1]) => {
+    (extracted: Parameters<typeof findContentDuplicates>[1], excludeDocId?: string) => {
       if (!user?.id) return Promise.resolve({ hasDuplicates: false, matches: [] });
-      return findContentDuplicates(user.id, extracted);
+      return findContentDuplicates(user.id, extracted, excludeDocId);
     },
     [user?.id]
   );
