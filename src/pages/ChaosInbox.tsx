@@ -637,6 +637,17 @@ export default function ChaosInbox() {
             </TabsList>
 
             <TabsContent value="unified" className="mt-4 space-y-4">
+              {checkingDuplicates && (
+                <Alert className="border-primary/50 bg-primary/5 animate-pulse">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <AlertTitle>{language === 'es' ? 'Verificando duplicados...' : 'Checking for duplicates...'}</AlertTitle>
+                  <AlertDescription>
+                    {language === 'es' 
+                      ? 'Comparando con documentos y gastos existentes'
+                      : 'Comparing with existing documents and expenses'}
+                  </AlertDescription>
+                </Alert>
+              )}
               <UnifiedChaosInboxPanel />
             </TabsContent>
 
