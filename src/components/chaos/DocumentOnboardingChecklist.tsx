@@ -71,7 +71,7 @@ export function DocumentOnboardingChecklist({ documentCount, onUploadClick }: Do
   }, []);
 
   const save = (newItems: ChecklistItem[], newSetupDone: boolean, newDismissed = false) => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+    localStorage.setItem(DOC_CHECKLIST_STORAGE_KEY, JSON.stringify({
       dismissed: newDismissed,
       setupDone: newSetupDone,
       selected: newItems.filter(i => i.selected).map(i => i.id),
