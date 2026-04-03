@@ -29,6 +29,8 @@ export function DuplicateWarningDialog({
   onOpenChange,
   matches,
   newDocument,
+  queuePosition,
+  queueTotal,
   onKeepBoth,
   onDeleteNew,
   onReplaceOld,
