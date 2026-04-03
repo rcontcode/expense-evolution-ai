@@ -25,6 +25,7 @@ import { toast } from 'sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { UnifiedChaosInboxPanel } from '@/components/chaos/UnifiedChaosInboxPanel';
+import { DocumentOnboardingChecklist } from '@/components/chaos/DocumentOnboardingChecklist';
 import { InfoTooltip, TOOLTIP_CONTENT } from '@/components/ui/info-tooltip';
 import { ReceiptReviewCard, ReceiptDocument, ExtractedData } from '@/components/capture/ReceiptReviewCard';
 import { 
@@ -637,6 +638,13 @@ export default function ChaosInbox() {
             </TabsList>
 
             <TabsContent value="unified" className="mt-4 space-y-4">
+              <DocumentOnboardingChecklist 
+                documentCount={documents.length} 
+                onUploadClick={() => {
+                  // Scroll to upload area or trigger file input
+                  fileInputRef.current?.click();
+                }}
+              />
               {checkingDuplicates && (
                 <Alert className="border-primary/50 bg-primary/5 animate-pulse">
                   <Loader2 className="h-4 w-4 animate-spin" />

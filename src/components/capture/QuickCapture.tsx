@@ -30,6 +30,8 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { InfoTooltip, TOOLTIP_CONTENT } from '@/components/ui/info-tooltip';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { checkFilePreUpload, findContentDuplicates, DuplicateMatch } from '@/hooks/data/useContentDuplicateDetector';
+import { DuplicateWarningDialog } from '@/components/chaos/DuplicateWarningDialog';
 
 interface QuickCaptureProps {
   onSuccess?: () => void;
@@ -70,7 +72,12 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
   const [billCreatedForIndex, setBillCreatedForIndex] = useState<Set<number>>(new Set());
   const [pendingBillCandidate, setPendingBillCandidate] = useState<RecurringBillCandidate | null>(null);
   const [showBillConfirm, setShowBillConfirm] = useState(false);
-  const [showWebcam, setShowWebcam] = useState(!isMobile); // Default to webcam on desktop
+  const [showWebcam, setShowWebcam] = useState(!isMobile);
+  const [duplicateMatches, setDuplicateMatches] = useState<DuplicateMatch[]>([]);
+  const [duplicateNewDoc, setDuplicateNewDoc] = useState<{ vendor?: string; amount?: number; date?: string; description?: string }>({});
+  const [duplicateDocId, setDuplicateDocId] = useState<string | null>(null);
+  const [showDuplicateDialog, setShowDuplicateDialog] = useState(false);
+  const [pendingSaveAfterDup, setPendingSaveAfterDup] = useState(false);
   const { processReceipt, isProcessing } = useReceiptProcessor();
   const createExpense = useCreateExpense();
   const { data: clients = [] } = useClients();
@@ -84,12 +91,16 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !user) {
-      console.log('No file or user:', { file: !!file, user: !!user });
-      return;
-    }
+    if (!file || !user) return;
     
-    console.log('File selected:', file.name, file.size, file.type);
+    // Layer 1: Pre-upload duplicate check
+    const preCheck = await checkFilePreUpload(user.id, file.name, file.size);
+    if (preCheck.isDuplicate) {
+      const msg = language === 'es'
+        ? `"${file.name}" ya fue subido el ${preCheck.existingDate}. ¿Subir de todos modos?`
+        : `"${file.name}" was already uploaded on ${preCheck.existingDate}. Upload anyway?`;
+      if (!window.confirm(msg)) return;
+    }
     
     // Set preview
     setImagePreview(URL.createObjectURL(file));
@@ -217,9 +228,36 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
         if (error) {
           console.error('Error saving extracted data:', error);
         } else {
-          console.log('Extracted data saved to document:', savedDocumentId);
           queryClient.invalidateQueries({ queryKey: ['documents-review'] });
           queryClient.invalidateQueries({ queryKey: ['documents'] });
+        }
+      }
+
+      // Layer 2: Post-OCR content duplicate detection
+      if (user?.id) {
+        const firstExp = result.expenses[0];
+        try {
+          const dupResult = await findContentDuplicates(user.id, {
+            vendor: firstExp.vendor,
+            amount: firstExp.amount,
+            date: firstExp.date,
+            description: firstExp.description,
+            line_items: firstExp.line_items,
+          }, savedDocumentId || undefined);
+
+          if (dupResult.hasDuplicates) {
+            setDuplicateMatches(dupResult.matches);
+            setDuplicateNewDoc({
+              vendor: firstExp.vendor,
+              amount: firstExp.amount,
+              date: firstExp.date,
+              description: firstExp.description,
+            });
+            setDuplicateDocId(savedDocumentId);
+            setShowDuplicateDialog(true);
+          }
+        } catch (err) {
+          console.error('Duplicate check failed:', err);
         }
       }
     }
@@ -746,6 +784,44 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
         setPendingBillCandidate(null);
       }}
     />
+
+    {/* Duplicate Warning Dialog */}
+    {showDuplicateDialog && duplicateMatches.length > 0 && (
+      <DuplicateWarningDialog
+        open={showDuplicateDialog}
+        onOpenChange={setShowDuplicateDialog}
+        matches={duplicateMatches}
+        newDocument={duplicateNewDoc}
+        onKeepBoth={() => {
+          toast.info(language === 'es' ? 'Ambos conservados' : 'Both kept');
+          setShowDuplicateDialog(false);
+        }}
+        onDeleteNew={async () => {
+          if (duplicateDocId) {
+            const { data: docData } = await supabase.from('documents').select('file_path').eq('id', duplicateDocId).single();
+            await supabase.from('documents').delete().eq('id', duplicateDocId).eq('user_id', user?.id || '');
+            if (docData?.file_path) await supabase.storage.from('expense-documents').remove([docData.file_path]);
+            toast.success(language === 'es' ? 'Duplicado eliminado' : 'Duplicate removed');
+            clearAll();
+          }
+          setShowDuplicateDialog(false);
+        }}
+        onReplaceOld={async () => {
+          const match = duplicateMatches[0];
+          if (match?.type === 'expense') {
+            await supabase.from('expenses').delete().eq('id', match.id).eq('user_id', user?.id || '');
+          }
+          const oldDocId = match?.type === 'document' ? match.id : match?.document_id;
+          if (oldDocId) {
+            const { data: oldDoc } = await supabase.from('documents').select('file_path').eq('id', oldDocId).single();
+            await supabase.from('documents').delete().eq('id', oldDocId).eq('user_id', user?.id || '');
+            if (oldDoc?.file_path) await supabase.storage.from('expense-documents').remove([oldDoc.file_path]);
+          }
+          toast.success(language === 'es' ? 'Anterior reemplazado' : 'Old one replaced');
+          setShowDuplicateDialog(false);
+        }}
+      />
+    )}
     </TooltipProvider>
   );
 }
