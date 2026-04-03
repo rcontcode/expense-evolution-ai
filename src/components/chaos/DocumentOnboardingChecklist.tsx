@@ -202,6 +202,24 @@ export function DocumentOnboardingChecklist({ documentCount, onUploadClick, uplo
     }
   }, []);
 
+  // Auto-mark subtypes as completed when documents of that type are actually uploaded
+  useEffect(() => {
+    if (!setupDone || uploadedTypes.length === 0) return;
+    const newCompleted = new Set(completedSubtypes);
+    let changed = false;
+    uploadedTypes.forEach(type => {
+      const key = type.toLowerCase();
+      if (selectedSubtypes.has(key) && !newCompleted.has(key)) {
+        newCompleted.add(key);
+        changed = true;
+      }
+    });
+    if (changed) {
+      setCompletedSubtypes(newCompleted);
+      save(selectedSubtypes, newCompleted, true);
+    }
+  }, [uploadedTypes, setupDone, selectedSubtypes]);
+
   const save = (selected: Set<string>, completed: Set<string>, done: boolean, isDismissed = false) => {
     localStorage.setItem(DOC_CHECKLIST_STORAGE_KEY, JSON.stringify({
       dismissed: isDismissed,
