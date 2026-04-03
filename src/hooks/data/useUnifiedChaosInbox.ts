@@ -216,6 +216,14 @@ export function useUnifiedChaosInbox() {
             classification,
             status: 'classified',
           });
+
+          // Warning toast for unknown documents
+          if (classification.document_type === 'unknown') {
+            toast.warning(
+              `⚠️ No pudimos identificar "${doc.fileName}". Revísalo e indícanos qué tipo es.`,
+              { duration: 8000 }
+            );
+          }
         }
 
       } catch (error: any) {

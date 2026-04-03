@@ -240,6 +240,20 @@ export default function ChaosInbox() {
     };
   }, [currentSessionId]);
 
+  // Upload progress state for inline feedback
+  const [uploadProgress, setUploadProgress] = useState<{
+    fileName: string;
+    phase: 'received' | 'uploading' | 'analyzing' | 'classified' | 'unknown' | 'error';
+  } | null>(null);
+
+  // Auto-hide upload progress after 5 seconds
+  useEffect(() => {
+    if (uploadProgress && (uploadProgress.phase === 'classified' || uploadProgress.phase === 'unknown' || uploadProgress.phase === 'error')) {
+      const timer = setTimeout(() => setUploadProgress(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [uploadProgress]);
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0 || !user) return;
@@ -248,6 +262,9 @@ export default function ChaosInbox() {
 
     try {
       for (const file of Array.from(files)) {
+        // Phase: Received
+        setUploadProgress({ fileName: file.name, phase: 'received' });
+
         // Layer 1: Pre-upload duplicate check
         const preCheck = await checkPreUpload(file.name, file.size);
         if (preCheck.isDuplicate) {
@@ -256,6 +273,9 @@ export default function ChaosInbox() {
             : `"${file.name}" was already uploaded on ${preCheck.existingDate}. Upload anyway?`;
           if (!window.confirm(msg)) continue;
         }
+
+        // Phase: Uploading
+        setUploadProgress({ fileName: file.name, phase: 'uploading' });
 
         const fileExt = file.name.split('.').pop();
         const fileName = `${user.id}/${Date.now()}.${fileExt}`;
@@ -290,6 +310,8 @@ export default function ChaosInbox() {
 
         if (doc) {
           setProcessing(doc.id);
+          // Phase: Analyzing
+          setUploadProgress({ fileName: file.name, phase: 'analyzing' });
           try {
             const { data: result, error: aiError } = await supabase.functions.invoke('process-receipt', {
               body: { 
@@ -312,6 +334,10 @@ export default function ChaosInbox() {
                   status: 'classified' 
                 } as any)
                 .eq('id', doc.id);
+
+              // Phase: Classified
+              const category = result.expenses[0]?.category || '';
+              setUploadProgress({ fileName: file.name, phase: 'classified' });
 
               // Layer 2: Post-OCR duplicate detection (queued)
               const firstExpense = result.expenses[0];
@@ -348,9 +374,19 @@ export default function ChaosInbox() {
                     : `${result.expenses.length} expenses detected in this image`
                 );
               }
+            } else {
+              // No expenses found — unknown/unrecognized
+              setUploadProgress({ fileName: file.name, phase: 'unknown' });
+              toast.warning(
+                language === 'es'
+                  ? `⚠️ No pudimos identificar "${file.name}". Revísalo en la Subida Inteligente.`
+                  : `⚠️ Could not identify "${file.name}". Review it in Smart Upload.`,
+                { duration: 8000 }
+              );
             }
           } catch (aiErr) {
             console.error('AI processing failed:', aiErr);
+            setUploadProgress({ fileName: file.name, phase: 'error' });
           } finally {
             setProcessing(null);
           }
@@ -374,6 +410,7 @@ export default function ChaosInbox() {
       });
     } catch (error: any) {
       toast.error(error.message);
+      setUploadProgress(prev => prev ? { ...prev, phase: 'error' } : null);
     } finally {
       setUploading(false);
       if (fileInputRef.current) {
@@ -704,6 +741,38 @@ export default function ChaosInbox() {
 
             <TabsContent value="receipts" className="mt-4 space-y-4">
 
+          {/* Upload Progress Indicator */}
+          {uploadProgress && (
+            <Alert className={cn(
+              "transition-all duration-300 animate-in fade-in slide-in-from-top-2",
+              uploadProgress.phase === 'received' && "border-primary/50 bg-primary/5",
+              uploadProgress.phase === 'uploading' && "border-blue-500/50 bg-blue-500/5",
+              uploadProgress.phase === 'analyzing' && "border-purple-500/50 bg-purple-500/5 animate-pulse",
+              uploadProgress.phase === 'classified' && "border-green-500/50 bg-green-500/5",
+              uploadProgress.phase === 'unknown' && "border-amber-500/50 bg-amber-500/5",
+              uploadProgress.phase === 'error' && "border-destructive/50 bg-destructive/5",
+            )}>
+              {(uploadProgress.phase === 'uploading' || uploadProgress.phase === 'analyzing') ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : uploadProgress.phase === 'classified' ? (
+                <CheckCircle2 className="h-4 w-4 text-green-600" />
+              ) : uploadProgress.phase === 'unknown' ? (
+                <AlertTriangle className="h-4 w-4 text-amber-600" />
+              ) : uploadProgress.phase === 'error' ? (
+                <X className="h-4 w-4 text-destructive" />
+              ) : (
+                <Upload className="h-4 w-4" />
+              )}
+              <AlertTitle className="text-sm">
+                {uploadProgress.phase === 'received' && (language === 'es' ? `📥 ${uploadProgress.fileName} recibido` : `📥 ${uploadProgress.fileName} received`)}
+                {uploadProgress.phase === 'uploading' && (language === 'es' ? `⬆️ Subiendo ${uploadProgress.fileName}...` : `⬆️ Uploading ${uploadProgress.fileName}...`)}
+                {uploadProgress.phase === 'analyzing' && (language === 'es' ? `🧠 Analizando con IA...` : `🧠 Analyzing with AI...`)}
+                {uploadProgress.phase === 'classified' && (language === 'es' ? `✅ ${uploadProgress.fileName} clasificado` : `✅ ${uploadProgress.fileName} classified`)}
+                {uploadProgress.phase === 'unknown' && (language === 'es' ? `⚠️ ${uploadProgress.fileName} no reconocido` : `⚠️ ${uploadProgress.fileName} not recognized`)}
+                {uploadProgress.phase === 'error' && (language === 'es' ? `❌ Error procesando ${uploadProgress.fileName}` : `❌ Error processing ${uploadProgress.fileName}`)}
+              </AlertTitle>
+            </Alert>
+          )}
           {/* Contextual Page Guide - Hidden on mobile */}
           {!isMobile && (
             <PageContextGuide

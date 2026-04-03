@@ -368,6 +368,58 @@ function DocumentCard({
                 </div>
               )}
 
+              {/* Unknown document alert */}
+              {classification && classification.document_type === 'unknown' && doc.status === 'classified' && (
+                <motion.div
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mt-3 p-3 rounded-lg border-2 border-amber-500/40 bg-amber-500/10 space-y-2"
+                >
+                  <div className="flex items-start gap-2">
+                    <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-xs font-semibold text-amber-700 dark:text-amber-400">
+                        {language === 'es' 
+                          ? 'No reconozco este tipo de documento' 
+                          : 'I don\'t recognize this document type'}
+                      </p>
+                      <p className="text-[11px] text-amber-600/80 dark:text-amber-400/70 mt-0.5">
+                        {language === 'es'
+                          ? '¿Quieres eliminarlo o indicarme qué es para intentar procesarlo?'
+                          : 'Want to delete it or tell me what it is so I can try to process it?'}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2 pt-1">
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      className="h-7 text-[11px] gap-1 flex-1"
+                      onClick={(e) => { e.stopPropagation(); onRemove(); }}
+                    >
+                      <Trash2 className="h-3 w-3" />
+                      {language === 'es' ? 'Eliminar' : 'Delete'}
+                    </Button>
+                    <Select 
+                      value=""
+                      onValueChange={(v) => onReclassify(v as DocumentClassificationType)}
+                    >
+                      <SelectTrigger className="h-7 text-[11px] gap-1 flex-1 border-amber-500/40 bg-amber-500/5">
+                        <Wand2 className="h-3 w-3" />
+                        <span>{language === 'es' ? 'Indicar tipo' : 'Set type'}</span>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.entries(TYPE_LABELS).filter(([k]) => k !== 'unknown').map(([key, val]) => (
+                          <SelectItem key={key} value={key} className="text-xs">
+                            {val.icon} {val[language === 'es' ? 'es' : 'en']}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </motion.div>
+              )}
+
               {/* Invoice direction picker */}
               {doc.status === 'pending_direction' && doc.invoiceDirectionSuggestion && onSetDirection && (
                 <motion.div
@@ -449,7 +501,7 @@ function DocumentCard({
 
             {/* Actions */}
             <div className="flex flex-col items-center gap-1 shrink-0">
-              {doc.status === 'classified' && (
+              {doc.status === 'classified' && classification?.document_type !== 'unknown' && (
                 <Button size="sm" variant="default" onClick={onProcess} className="h-8 text-xs gap-1 shadow-sm">
                   <Zap className="h-3.5 w-3.5" />
                   {language === 'es' ? 'Procesar' : 'Process'}
