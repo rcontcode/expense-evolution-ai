@@ -12,7 +12,11 @@ import {
 import { cn } from '@/lib/utils';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
-const STORAGE_KEY = 'doc-onboarding-checklist';
+export const DOC_CHECKLIST_STORAGE_KEY = 'doc-onboarding-checklist';
+
+export function resetDocChecklist() {
+  localStorage.removeItem(DOC_CHECKLIST_STORAGE_KEY);
+}
 
 interface ChecklistItem {
   id: string;
@@ -49,7 +53,7 @@ export function DocumentOnboardingChecklist({ documentCount, onUploadClick }: Do
 
   // Load state from localStorage
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
+    const stored = localStorage.getItem(DOC_CHECKLIST_STORAGE_KEY);
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
@@ -67,7 +71,7 @@ export function DocumentOnboardingChecklist({ documentCount, onUploadClick }: Do
   }, []);
 
   const save = (newItems: ChecklistItem[], newSetupDone: boolean, newDismissed = false) => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+    localStorage.setItem(DOC_CHECKLIST_STORAGE_KEY, JSON.stringify({
       dismissed: newDismissed,
       setupDone: newSetupDone,
       selected: newItems.filter(i => i.selected).map(i => i.id),
@@ -107,8 +111,10 @@ export function DocumentOnboardingChecklist({ documentCount, onUploadClick }: Do
   };
 
   if (dismissed) return null;
-  // Hide if user has many docs already
-  if (documentCount >= 10 && !setupDone) return null;
+  // Hide if all done
+  if (documentCount >= 10 && !setupDone) {
+    // Don't auto-hide - let the user see the checklist
+  }
 
   const selectedItems = items.filter(i => i.selected);
   const completedCount = selectedItems.filter(i => i.completed).length;
