@@ -637,9 +637,10 @@ export default function ChaosInbox() {
 
           {/* Stats Bar - Always visible */}
           <DocumentStatsBar 
-            checklistVisible={true}
+            checklistVisible={checklistVisible}
             onActivateChecklist={() => {
               resetDocChecklist();
+              setChecklistVisible(true);
               setChecklistKey(k => k + 1);
             }}
           />
