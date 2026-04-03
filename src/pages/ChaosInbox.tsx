@@ -621,6 +621,24 @@ export default function ChaosInbox() {
             )}
           </PageHeader>
 
+          {/* Stats Bar - Always visible */}
+          <DocumentStatsBar 
+            checklistVisible={true}
+            onActivateChecklist={() => {
+              resetDocChecklist();
+              setChecklistKey(k => k + 1);
+            }}
+          />
+
+          {/* Onboarding Checklist - Above tabs */}
+          <DocumentOnboardingChecklist 
+            key={checklistKey}
+            documentCount={documents.length} 
+            onUploadClick={() => {
+              fileInputRef.current?.click();
+            }}
+          />
+
           {/* Tabs: Unified vs Receipt Review */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-2">
@@ -640,13 +658,6 @@ export default function ChaosInbox() {
             </TabsList>
 
             <TabsContent value="unified" className="mt-4 space-y-4">
-              <DocumentOnboardingChecklist 
-                documentCount={documents.length} 
-                onUploadClick={() => {
-                  // Scroll to upload area or trigger file input
-                  fileInputRef.current?.click();
-                }}
-              />
               {checkingDuplicates && (
                 <Alert className="border-primary/50 bg-primary/5 animate-pulse">
                   <Loader2 className="h-4 w-4 animate-spin" />
