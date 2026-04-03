@@ -61,7 +61,14 @@ export function DuplicateWarningDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-yellow-500" />
-            {isEs ? 'Posible duplicado detectado' : 'Possible duplicate detected'}
+            <span className="flex-1">
+              {isEs ? 'Posible duplicado detectado' : 'Possible duplicate detected'}
+            </span>
+            {queueTotal && queueTotal > 1 && (
+              <Badge variant="secondary" className="text-xs ml-2">
+                {queuePosition}/{queueTotal}
+              </Badge>
+            )}
           </DialogTitle>
           <DialogDescription>
             {isEs ? bestMatch.reason_es : bestMatch.reason_en}
