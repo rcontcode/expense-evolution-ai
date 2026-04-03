@@ -1,10 +1,11 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { AlertTriangle, ArrowLeftRight, Trash2, Check } from 'lucide-react';
+import { AlertTriangle, ArrowLeftRight, Trash2, Check, Receipt, FileText } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { DuplicateMatch } from '@/hooks/data/useContentDuplicateDetector';
 import { cn } from '@/lib/utils';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface DuplicateWarningDialogProps {
   open: boolean;
@@ -48,6 +49,8 @@ export function DuplicateWarningDialog({
     low: isEs ? 'Baja coincidencia' : 'Low match',
   };
 
+  const MatchIcon = bestMatch.type === 'expense' ? Receipt : FileText;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
@@ -63,9 +66,17 @@ export function DuplicateWarningDialog({
 
         <div className="space-y-3">
           {/* Confidence badge */}
-          <Badge variant="outline" className={cn('text-xs', confidenceColor[bestMatch.confidence])}>
-            {confidenceLabel[bestMatch.confidence]}
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className={cn('text-xs', confidenceColor[bestMatch.confidence])}>
+              {confidenceLabel[bestMatch.confidence]}
+            </Badge>
+            <Badge variant="outline" className="text-xs gap-1">
+              <MatchIcon className="h-3 w-3" />
+              {bestMatch.type === 'expense' 
+                ? (isEs ? 'Gasto registrado' : 'Registered expense')
+                : (isEs ? 'Documento' : 'Document')}
+            </Badge>
+          </div>
 
           {/* Comparison */}
           <div className="grid grid-cols-2 gap-3">
@@ -93,12 +104,25 @@ export function DuplicateWarningDialog({
             </div>
           </div>
 
+          {/* Additional matches */}
           {matches.length > 1 && (
-            <p className="text-xs text-muted-foreground">
-              {isEs
-                ? `+${matches.length - 1} coincidencia(s) más encontrada(s)`
-                : `+${matches.length - 1} more match(es) found`}
-            </p>
+            <ScrollArea className="max-h-32">
+              <div className="space-y-2">
+                <p className="text-xs font-medium text-muted-foreground">
+                  {isEs
+                    ? `+${matches.length - 1} coincidencia(s) más:`
+                    : `+${matches.length - 1} more match(es):`}
+                </p>
+                {matches.slice(1).map((m, i) => (
+                  <div key={i} className="flex items-center gap-2 text-xs text-muted-foreground rounded border p-2">
+                    {m.type === 'expense' ? <Receipt className="h-3 w-3 shrink-0" /> : <FileText className="h-3 w-3 shrink-0" />}
+                    <span className="truncate">{m.vendor || '?'}</span>
+                    <span>${m.amount.toFixed(2)}</span>
+                    <span>{m.date}</span>
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
           )}
         </div>
 
