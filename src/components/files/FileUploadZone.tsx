@@ -8,7 +8,11 @@ import { Upload } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { checkFilePreUpload } from '@/hooks/data/useContentDuplicateDetector';
 
-export function FileUploadZone() {
+interface FileUploadZoneProps {
+  onDocumentProcessed?: (docId: string, fileName: string) => void;
+}
+
+export function FileUploadZone({ onDocumentProcessed }: FileUploadZoneProps = {}) {
   const { user } = useAuth();
   const { language } = useLanguage();
   const queryClient = useQueryClient();
