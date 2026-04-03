@@ -233,6 +233,7 @@ export function DocumentOnboardingChecklist({ documentCount, onUploadClick, uplo
   const handleDismiss = () => {
     setDismissed(true);
     save(selectedSubtypes, completedSubtypes, setupDone, true);
+    onDismiss?.();
   };
 
   const toggleSubtype = (id: string) => {
