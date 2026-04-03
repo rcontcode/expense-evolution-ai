@@ -187,6 +187,12 @@ export default function ChaosInbox() {
   const [activeTab, setActiveTab] = useState('unified');
   const [recurringCandidate, setRecurringCandidate] = useState<RecurringBillCandidate | null>(null);
   const [recurringDialogOpen, setRecurringDialogOpen] = useState(false);
+  const [duplicateMatches, setDuplicateMatches] = useState<DuplicateMatch[]>([]);
+  const [duplicateNewDoc, setDuplicateNewDoc] = useState<{ vendor?: string; amount?: number; date?: string; description?: string }>({});
+  const [duplicateDocId, setDuplicateDocId] = useState<string | null>(null);
+  const [duplicateDialogOpen, setDuplicateDialogOpen] = useState(false);
+  
+  const { checkPreUpload, checkContent } = useContentDuplicateDetector();
   
   const { data: documents = [], isLoading, refetch } = useDocumentsForReview();
   const { approveDocument, rejectDocument, addComment, deleteDocument } = useDocumentReviewActions();
