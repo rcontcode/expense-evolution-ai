@@ -200,7 +200,7 @@ export function useContentDuplicateDetector() {
   const { user } = useAuth();
 
   const checkPreUpload = useCallback(
-    (fileName: string, fileSize: number) => {
+    (fileName: string, fileSize: number): Promise<{ isDuplicate: boolean; existingDate?: string }> => {
       if (!user?.id) return Promise.resolve({ isDuplicate: false });
       return checkFilePreUpload(user.id, fileName, fileSize);
     },
