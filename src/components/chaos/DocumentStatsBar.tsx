@@ -5,11 +5,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { 
-  FileText, Receipt, Building2, Landmark, Award, Shield, 
-  Upload, CheckCircle2, Clock, BookOpen
+  FileText, Receipt, Building2, Landmark, Shield, Upload, CheckCircle2, 
+  Clock, BookOpen, Heart, UtensilsCrossed, Home, Car, Calculator, 
+  DollarSign, Hammer, Zap, Pill, CreditCard
 } from 'lucide-react';
-
-
 
 interface DocumentStatsBarProps {
   onActivateChecklist?: () => void;
@@ -26,25 +25,16 @@ export function DocumentStatsBar({ onActivateChecklist, checklistVisible }: Docu
     enabled: !!user?.id,
     queryFn: async () => {
       const [docsRes, contractsRes] = await Promise.all([
-        supabase
-          .from('documents')
-          .select('id, status, extracted_data')
-          .eq('user_id', user!.id),
-        supabase
-          .from('contracts')
-          .select('id, contract_type, status')
-          .eq('user_id', user!.id)
-          .is('deleted_at', null),
+        supabase.from('documents').select('id, status, extracted_data').eq('user_id', user!.id),
+        supabase.from('contracts').select('id, contract_type, status').eq('user_id', user!.id).is('deleted_at', null),
       ]);
 
       const docs = docsRes.data ?? [];
       const contracts = contractsRes.data ?? [];
-
       const totalUploaded = docs.length + contracts.length;
       const processed = docs.filter(d => d.status === 'classified').length + contracts.length;
       const pending = docs.filter(d => d.status === 'pending').length;
 
-      // Categorize documents by extracted type
       const typeCounts: Record<string, number> = {};
       docs.forEach(d => {
         const ed = d.extracted_data as any;
@@ -68,8 +58,26 @@ export function DocumentStatsBar({ onActivateChecklist, checklistVisible }: Docu
     invoice: { icon: FileText, labelEs: 'Facturas', labelEn: 'Invoices' },
     contract: { icon: Building2, labelEs: 'Contratos', labelEn: 'Contracts' },
     bank_statement: { icon: Landmark, labelEs: 'Bancarios', labelEn: 'Bank' },
-    certificate: { icon: Award, labelEs: 'Certificados', labelEn: 'Certificates' },
+    certificate: { icon: Shield, labelEs: 'Certificados', labelEn: 'Certificates' },
     insurance: { icon: Shield, labelEs: 'Seguros', labelEn: 'Insurance' },
+    medical_receipt: { icon: Heart, labelEs: 'Médicos', labelEn: 'Medical' },
+    dental: { icon: Heart, labelEs: 'Dentales', labelEn: 'Dental' },
+    pharmacy: { icon: Pill, labelEs: 'Farmacia', labelEn: 'Pharmacy' },
+    tools: { icon: Hammer, labelEs: 'Herramientas', labelEn: 'Tools' },
+    construction: { icon: Building2, labelEs: 'Materiales', labelEn: 'Materials' },
+    food: { icon: UtensilsCrossed, labelEs: 'Alimentos', labelEn: 'Food' },
+    grocery: { icon: UtensilsCrossed, labelEs: 'Supermercado', labelEn: 'Grocery' },
+    restaurant: { icon: UtensilsCrossed, labelEs: 'Restaurantes', labelEn: 'Restaurants' },
+    utilities: { icon: Zap, labelEs: 'Servicios', labelEn: 'Utilities' },
+    electricity: { icon: Zap, labelEs: 'Electricidad', labelEn: 'Electricity' },
+    transport: { icon: Car, labelEs: 'Transporte', labelEn: 'Transport' },
+    fuel: { icon: Car, labelEs: 'Combustible', labelEn: 'Fuel' },
+    tax_document: { icon: Calculator, labelEs: 'Impuestos', labelEn: 'Taxes' },
+    tax_return: { icon: Calculator, labelEs: 'Declaraciones', labelEn: 'Tax returns' },
+    income: { icon: DollarSign, labelEs: 'Ingresos', labelEn: 'Income' },
+    payslip: { icon: DollarSign, labelEs: 'Sueldos', labelEn: 'Payslips' },
+    credit_card_stmt: { icon: CreditCard, labelEs: 'Tarjetas', labelEn: 'Cards' },
+    home: { icon: Home, labelEs: 'Hogar', labelEn: 'Home' },
   };
 
   const typeEntries = Object.entries(stats.typeCounts).filter(([, count]) => count > 0);
@@ -122,12 +130,7 @@ export function DocumentStatsBar({ onActivateChecklist, checklistVisible }: Docu
       {!checklistVisible && onActivateChecklist && (
         <>
           <span className="text-muted-foreground hidden sm:inline">│</span>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-7 text-xs gap-1 text-primary"
-            onClick={onActivateChecklist}
-          >
+          <Button variant="ghost" size="sm" className="h-7 text-xs gap-1 text-primary" onClick={onActivateChecklist}>
             <BookOpen className="h-3 w-3" />
             {isEs ? 'Activar guía' : 'Activate guide'}
           </Button>
