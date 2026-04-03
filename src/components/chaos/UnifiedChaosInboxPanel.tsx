@@ -692,6 +692,19 @@ export function UnifiedChaosInboxPanel() {
   return (
     <TooltipProvider>
       <div className="space-y-4">
+        {/* Duplicate checking indicator */}
+        {checkingDuplicates && (
+          <Alert className="border-primary/50 bg-primary/5 animate-pulse">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            <AlertTitle>{language === 'es' ? 'Verificando duplicados...' : 'Checking for duplicates...'}</AlertTitle>
+            <AlertDescription>
+              {language === 'es' 
+                ? 'Comparando con documentos y gastos existentes'
+                : 'Comparing with existing documents and expenses'}
+            </AlertDescription>
+          </Alert>
+        )}
+
         {/* Drop zone */}
         <DropZone onFiles={uploadAndClassify} />
 
