@@ -449,6 +449,28 @@ export default function ChaosInbox() {
               result.expenses.forEach((exp: any) => {
                 totalAmount += exp.amount || 0;
               });
+
+              // Layer 2: Post-OCR duplicate detection (camera)
+              const firstExpense = result.expenses[0];
+              const dupResult = await checkContent({
+                vendor: firstExpense.vendor,
+                amount: firstExpense.amount,
+                date: firstExpense.date,
+                description: firstExpense.description,
+                line_items: firstExpense.line_items,
+              });
+
+              if (dupResult.hasDuplicates) {
+                setDuplicateMatches(dupResult.matches);
+                setDuplicateNewDoc({
+                  vendor: firstExpense.vendor,
+                  amount: firstExpense.amount,
+                  date: firstExpense.date,
+                  description: firstExpense.description,
+                });
+                setDuplicateDocId(doc.id);
+                setDuplicateDialogOpen(true);
+              }
               
               if (result.expenses.length > 1) {
                 toast.info(
