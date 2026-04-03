@@ -1,76 +1,58 @@
 
 
-# Plan: Corregir Flujo de Detección de Duplicados
+# Plan: Completar el Sistema de Detección de Duplicados
 
-## Problemas encontrados
+## Problemas restantes
 
-1. **El dialog NO bloquea el loop de procesamiento**: Cuando se suben 5 archivos, el loop `for` continua procesando el siguiente archivo aunque se abra el dialog de duplicado. El usuario no puede decidir antes de que siga procesando.
+1. **UnifiedChaosInboxPanel no tiene detección de duplicados** — Es el tab principal ("unified") y procesa archivos con su propio hook (`useUnifiedChaosInbox`), sin ninguna verificación de duplicados pre-upload ni post-OCR.
 
-2. **Solo se guarda el ÚLTIMO duplicado**: Si el archivo 2 y el archivo 4 son duplicados, el estado (`duplicateMatches`, `duplicateDocId`) se sobreescribe con el del archivo 4. El del archivo 2 se pierde sin que el usuario lo vea.
+2. **`checkingDuplicates` nunca se muestra en la UI** — El estado se activa/desactiva pero no hay ningún elemento visual que lo use. El usuario no sabe que se está verificando.
 
-3. **No hay feedback visual de "buscando duplicados"**: Después del OCR, la búsqueda en la DB ocurre silenciosamente. El usuario no sabe que se está verificando.
+3. **`queuePosition` siempre es 1** — El cálculo `queuePosition={duplicateQueue.length > 1 ? 1 : undefined}` es siempre 1. Debería ser `totalInicial - queue.length + 1` para mostrar "2/3" al avanzar.
 
-4. **El procesamiento continúa normalmente después del dialog**: Al cerrar el dialog (sin importar la acción), no hay continuación controlada del flujo. Si quedan más archivos, ya se procesaron.
+4. **El documento recién insertado puede matchear consigo mismo** — Después de insertar en `documents` y clasificar, la query de `findContentDuplicates` busca en `documents` clasificados, lo que incluye el que acaba de insertarse.
 
----
-
-## Solución: Sistema de cola de duplicados
-
-### 1. `src/pages/ChaosInbox.tsx` — Cola de duplicados
-
-En lugar de abrir el dialog inmediatamente y perder el control del loop, acumular los duplicados detectados en una **cola** (`duplicateQueue`). Al terminar el procesamiento de todos los archivos, mostrar los duplicados **uno por uno** con el dialog.
-
-**Cambios**:
-- Nuevo state: `duplicateQueue: Array<{ matches, newDoc, docId }>` en vez de states individuales
-- Durante el loop: si se detecta duplicado, push a la cola (no abrir dialog)
-- Al terminar el loop: si la cola tiene items, abrir dialog con el primero
-- Al resolver un duplicado (keep/delete/replace): quitar de la cola y mostrar el siguiente
-- Si la cola queda vacía, cerrar dialog
-
-### 2. `src/pages/ChaosInbox.tsx` — Indicador de detección
-
-- Agregar un estado `checkingDuplicates: boolean`
-- Activarlo justo antes del `checkContent()` y desactivarlo después
-- Mostrar un toast o badge "Verificando duplicados..." durante la búsqueda
-
-### 3. `src/components/chaos/DuplicateWarningDialog.tsx` — Indicador de cola
-
-- Agregar prop `queueCount?: number` para mostrar "1 de 3 posibles duplicados"
-- Agregar prop `isChecking?: boolean` para estado de loading
-- Mostrar el contador en el header: "Posible duplicado 1/3"
-
-### 4. `src/hooks/data/useContentDuplicateDetector.ts` — Detección de contratos
-
-- Agregar búsqueda en tabla `contracts` por `client_name` + `contract_type` + fecha
-- Mejorar razones con items específicos de `line_items`
+5. **Camera no tiene Layer 1** — `handleCameraPhotos` no llama a `checkPreUpload` (menor impacto porque los nombres son generados, pero por consistencia).
 
 ---
 
-## Flujo corregido
+## Cambios
 
-```text
-Usuario sube 5 archivos
-  ↓
-Loop: archivo 1 → OCR → check duplicados → no match → continua
-Loop: archivo 2 → OCR → check → MATCH → agrega a cola → continua
-Loop: archivo 3 → OCR → check → no match → continua
-Loop: archivo 4 → OCR → check → MATCH → agrega a cola → continua
-Loop: archivo 5 → OCR → check → no match → continua
-  ↓
-Loop terminado. Cola tiene 2 items.
-  ↓
-Abre dialog: "Duplicado 1/2" → usuario decide → siguiente
-Abre dialog: "Duplicado 2/2" → usuario decide → listo
-  ↓
-Toast: "Procesamiento completo"
-```
+### 1. `src/hooks/data/useUnifiedChaosInbox.ts` — Agregar hooks de duplicados
+
+- Importar y usar `checkFilePreUpload` en la función de upload para Layer 1
+- Exponer un callback/evento post-clasificación para que el componente padre pueda ejecutar Layer 2
+- O mejor: pasar el `docId` recién creado como parámetro de exclusión
+
+### 2. `src/components/chaos/UnifiedChaosInboxPanel.tsx` — Integrar detección
+
+- Importar `useContentDuplicateDetector`
+- Agregar estados de cola (`duplicateQueue`, `duplicateDialogOpen`)
+- Después de la clasificación IA exitosa, ejecutar `checkContent()` y acumular en la cola
+- Renderizar `DuplicateWarningDialog` con la misma lógica de cola que ChaosInbox
+- Mostrar badge "Verificando duplicados..." cuando `checkingDuplicates` está activo
+
+### 3. `src/pages/ChaosInbox.tsx` — Fixes menores
+
+- Agregar indicador visual de `checkingDuplicates` (badge o toast durante la búsqueda)
+- Corregir `queuePosition` para que avance correctamente: usar un `queueTotal` separado que se fije al inicio
+- Pasar `excludeDocId` al `findContentDuplicates` para evitar self-match
+
+### 4. `src/hooks/data/useContentDuplicateDetector.ts` — Excluir self-match
+
+- Agregar parámetro opcional `excludeDocId?: string` a `findContentDuplicates`
+- En la query de `documents`, agregar `.neq('id', excludeDocId)` cuando se provea
+- En la query de `expenses`, filtrar matches cuyo `document_id === excludeDocId`
+
+---
 
 ## Archivos afectados
 
-| Accion | Archivo |
+| Acción | Archivo |
 |--------|---------|
+| Modificar | `src/hooks/data/useUnifiedChaosInbox.ts` |
+| Modificar | `src/components/chaos/UnifiedChaosInboxPanel.tsx` |
 | Modificar | `src/pages/ChaosInbox.tsx` |
-| Modificar | `src/components/chaos/DuplicateWarningDialog.tsx` |
 | Modificar | `src/hooks/data/useContentDuplicateDetector.ts` |
 
 Sin migraciones de base de datos.
