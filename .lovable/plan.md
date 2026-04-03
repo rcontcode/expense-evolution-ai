@@ -1,99 +1,58 @@
 
 
-# Plan: Detección Inteligente de Duplicados por Contenido (Post-OCR)
+# Plan: Mejoras al Sistema de Detección de Duplicados y Panel de Inventario
 
-## Problema
+## Problemas actuales detectados
 
-La detección por nombre/tamaño de archivo es insuficiente. Un usuario puede subir la misma boleta con diferente nombre de archivo, o el mismo contrato escaneado dos veces. La detección real debe ocurrir **después del procesamiento de IA**, comparando el contenido extraído (vendor, monto, fecha, items) contra documentos ya existentes.
+1. **Capa 1 (pre-upload) no está en ChaosInbox**: `handleFileUpload` no llama a `checkPreUpload` antes de subir — solo FileUploadZone lo tiene
+2. **Cámara sin detección de duplicados**: `handleCameraPhotos` no ejecuta la Capa 2 post-OCR (solo `handleFileUpload` la tiene)
+3. **Replace Old no elimina el expense asociado**: Solo borra el documento, pero el gasto registrado queda huérfano
+4. **Delete New no limpia el storage**: Se borra el registro de DB pero el archivo queda en el bucket
+5. **DataInventoryPanel muy básico**: No indica qué datos faltan ni guía al usuario sobre qué subir
+6. **No hay feedback visual durante la detección**: El usuario no sabe que se está buscando duplicados
 
-## Arquitectura: Detección en 2 capas
+---
 
-```text
-CAPA 1: Pre-upload (rápida)          CAPA 2: Post-OCR (inteligente)
-┌──────────────────────┐              ┌──────────────────────────────┐
-│ file_name + file_size│              │ vendor + amount + date +     │
-│ → match exacto?      │              │ line_items + client          │
-│ → warning inmediato  │              │ → fuzzy matching en DB       │
-│                      │              │ → dialog interactivo:        │
-│                      │              │   "Este martillo $15.990 en  │
-│                      │              │    Sodimac es igual al que   │
-│                      │              │    subiste el 15-Mar..."     │
-│                      │              │   [Duplicado] [Diferente]    │
-│                      │              │   [Reemplazar]               │
-└──────────────────────┘              └──────────────────────────────┘
-```
+## Cambios
 
-## Flujo detallado
+### 1. `src/pages/ChaosInbox.tsx`
 
-1. Usuario sube documento → **Capa 1**: check rápido por nombre/tamaño (warning simple)
-2. IA procesa el documento (OCR/classify) → extrae vendor, amount, date, items, client
-3. **Capa 2**: Con los datos extraídos, buscar en `documents` + `expenses` del mismo usuario:
-   - Coincidencia de vendor (fuzzy) + monto exacto + fecha exacta → **Alta confianza** de duplicado
-   - Coincidencia de vendor + monto pero fecha diferente → **Posible documento diferente** (preguntar)
-   - Coincidencia de items específicos (ej. "martillo") + vendor + monto → **Alta confianza**
-   - Contrato: mismas partes + mismo cliente → comparar fechas para distinguir versiones
-4. Mostrar dialog inteligente con contexto completo antes de que el usuario apruebe
+**En `handleFileUpload`** (línea ~229): Agregar Capa 1 pre-upload check antes de subir cada archivo — si coincide nombre+tamaño, mostrar toast de advertencia con opción de cancelar.
 
-## Archivos a crear/modificar
+**En `handleCameraPhotos`** (línea ~424): Agregar la misma lógica de Capa 2 post-OCR que ya existe en `handleFileUpload` (líneas 286-306). Actualmente las fotos de cámara no pasan por detección de duplicados.
 
-### 1. Crear `src/hooks/data/useContentDuplicateDetector.ts`
-Hook que recibe datos extraídos y busca matches en la DB:
-- Query `documents` donde `extracted_data` tenga vendor/amount/date similares
-- Query `expenses` con vendor + amount + date matching
-- Retorna lista de posibles duplicados con nivel de confianza y razón
-- Funciones de comparación fuzzy para vendors (normalize + includes)
+**En `onDeleteNew`** (línea ~863): Además de borrar el document de DB, también eliminar el archivo del storage bucket (`supabase.storage.from('expense-documents').remove([filePath])`).
 
-### 2. Crear `src/components/chaos/DuplicateWarningDialog.tsx`
-Dialog modal que muestra:
-- El documento recién procesado (vendor, monto, fecha, items)
-- El/los documento(s) existentes que coinciden
-- Nivel de confianza del match (alta/media/baja)
-- Razón contextual: "Mismo vendor, mismo monto, misma fecha" o "Mismo item 'martillo' en misma tienda, pero fecha diferente"
-- Acciones: **Es duplicado (eliminar nuevo)**, **Son diferentes (conservar ambos)**, **Reemplazar el anterior**
+**En `onReplaceOld`** (línea ~870): Al reemplazar, si el match es tipo `expense`, también eliminar el expense (`supabase.from('expenses').delete().eq('id', match.id).eq('user_id', user.id)`) además del documento.
 
-### 3. Modificar `src/pages/ChaosInbox.tsx`
-- Después del procesamiento IA exitoso (línea ~262-275), llamar al detector de duplicados
-- Si detecta posible duplicado → abrir `DuplicateWarningDialog` antes de finalizar
-- Si el usuario confirma duplicado → eliminar el documento recién subido (o el anterior si elige reemplazar)
+### 2. `src/components/chaos/DuplicateWarningDialog.tsx`
 
-### 4. Modificar `src/components/files/FileUploadZone.tsx`
-- Agregar Capa 1: check rápido por nombre+tamaño antes de upload
-- Toast warning con opción de continuar o cancelar
+- Agregar un indicador de "Buscando duplicados..." (loading state) que se pueda pasar como prop
+- Mejorar la visualización cuando hay múltiples matches: mostrar una lista scrollable en vez de solo el primer match
+- Agregar ícono diferenciado para match tipo "expense" vs "document"
 
-### 5. Crear `src/components/dashboard/DataInventoryPanel.tsx`
-- Panel compacto mostrando conteos de datos del usuario (documentos, gastos, ingresos, contratos)
-- Fechas de primer y último registro
-- Integrar en Dashboard
+### 3. `src/hooks/data/useContentDuplicateDetector.ts`
 
-## Detalle técnico de la detección post-OCR
+- Agregar detección para **contratos**: comparar `client_name` + `contract_type` + `date` contra tabla `contracts`
+- Mejorar `buildReason` para incluir items específicos cuando hay `line_items` (ej. "Mismo martillo $15.990 en Sodimac")
+- Agregar campo `existingDate` al `DuplicateMatch` para mostrar cuándo se subió el original
 
-```typescript
-// Pseudo-código del detector
-async function findContentDuplicates(extracted: ExtractedData, userId: string) {
-  // 1. Buscar en expenses por vendor + amount + date
-  const { data: expenseMatches } = await supabase
-    .from('expenses')
-    .select('id, vendor, amount, date, description, document_id')
-    .eq('user_id', userId)
-    .ilike('vendor', `%${normalizeVendor(extracted.vendor)}%`)
-    .eq('amount', extracted.amount);
+### 4. `src/components/dashboard/DataInventoryPanel.tsx`
 
-  // 2. Buscar en documents con extracted_data similar  
-  const { data: docMatches } = await supabase
-    .from('documents')
-    .select('id, file_name, extracted_data, created_at')
-    .eq('user_id', userId)
-    .eq('status', 'classified');
-  // Filtrar client-side por vendor/amount/date en extracted_data
+- Agregar indicadores de "qué falta": si 0 gastos → mostrar sugerencia "Sube tus boletas en la Bandeja del Caos"
+- Agregar botón directo a Bandeja del Caos cuando hay datos faltantes
+- Mostrar un mini progress bar de completitud (ej. 3/5 categorías con datos)
 
-  // 3. Scoring
-  return matches.map(m => ({
-    ...m,
-    confidence: calculateConfidence(extracted, m),
-    reason: buildReason(extracted, m), // "Mismo martillo $15.990 en Sodimac"
-  }));
-}
-```
+---
 
-No requiere migraciones de base de datos. Todo usa queries existentes sobre `documents` y `expenses`.
+## Archivos afectados
+
+| Acción | Archivo |
+|--------|---------|
+| Modificar | `src/pages/ChaosInbox.tsx` |
+| Modificar | `src/components/chaos/DuplicateWarningDialog.tsx` |
+| Modificar | `src/hooks/data/useContentDuplicateDetector.ts` |
+| Modificar | `src/components/dashboard/DataInventoryPanel.tsx` |
+
+Sin migraciones de base de datos.
 
