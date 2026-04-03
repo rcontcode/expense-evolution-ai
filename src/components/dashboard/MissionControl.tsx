@@ -303,8 +303,18 @@ export function MissionControl({ compact = false }: MissionControlProps) {
   const { language } = useLanguage();
   const l = language === 'es';
   const data = useMissionControl();
+  const [panelOpen, setPanelOpen] = useState(() => {
+    const saved = localStorage.getItem('mission-control-open');
+    return saved !== null ? saved === 'true' : !compact;
+  });
   const [expanded, setExpanded] = useState(!compact);
   const [activeTab, setActiveTab] = useState<'data' | 'features'>('features');
+
+  const togglePanel = () => {
+    const next = !panelOpen;
+    setPanelOpen(next);
+    localStorage.setItem('mission-control-open', String(next));
+  };
 
   if (data.isLoading) {
     return <Skeleton className="h-48 w-full rounded-xl" />;
