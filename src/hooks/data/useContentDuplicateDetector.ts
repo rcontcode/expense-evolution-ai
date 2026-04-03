@@ -79,7 +79,8 @@ export async function checkFilePreUpload(
 // Layer 2: Post-OCR content-based detection
 export async function findContentDuplicates(
   userId: string,
-  extracted: { vendor?: string; amount?: number; date?: string; description?: string; line_items?: Array<{ name: string; total: number }> }
+  extracted: { vendor?: string; amount?: number; date?: string; description?: string; line_items?: Array<{ name: string; total: number }> },
+  excludeDocId?: string
 ): Promise<DuplicateCheckResult> {
   if (!extracted.vendor && !extracted.amount) {
     return { hasDuplicates: false, matches: [] };
@@ -89,11 +90,18 @@ export async function findContentDuplicates(
 
   // 1. Search expenses by amount (exact) — then filter vendor client-side
   if (extracted.amount && extracted.amount > 0) {
-    const { data: expenseMatches } = await supabase
+    let expQuery = supabase
       .from('expenses')
       .select('id, vendor, amount, date, description, document_id')
       .eq('user_id', userId)
       .eq('amount', extracted.amount);
+    
+    // Exclude expenses linked to the just-inserted document
+    if (excludeDocId) {
+      expQuery = expQuery.neq('document_id', excludeDocId);
+    }
+    
+    const { data: expenseMatches } = await expQuery;
 
     if (expenseMatches) {
       for (const exp of expenseMatches) {
