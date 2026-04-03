@@ -187,10 +187,13 @@ export default function ChaosInbox() {
   const [activeTab, setActiveTab] = useState('unified');
   const [recurringCandidate, setRecurringCandidate] = useState<RecurringBillCandidate | null>(null);
   const [recurringDialogOpen, setRecurringDialogOpen] = useState(false);
-  const [duplicateMatches, setDuplicateMatches] = useState<DuplicateMatch[]>([]);
-  const [duplicateNewDoc, setDuplicateNewDoc] = useState<{ vendor?: string; amount?: number; date?: string; description?: string }>({});
-  const [duplicateDocId, setDuplicateDocId] = useState<string | null>(null);
+  const [duplicateQueue, setDuplicateQueue] = useState<Array<{
+    matches: DuplicateMatch[];
+    newDoc: { vendor?: string; amount?: number; date?: string; description?: string };
+    docId: string;
+  }>>([]);
   const [duplicateDialogOpen, setDuplicateDialogOpen] = useState(false);
+  const [checkingDuplicates, setCheckingDuplicates] = useState(false);
   
   const { checkPreUpload, checkContent } = useContentDuplicateDetector();
   
