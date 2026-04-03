@@ -17,6 +17,9 @@ import {
   Edit3, ChevronDown, ChevronUp, Eye, MessageSquare, MoreHorizontal,
   Sparkles, Receipt
 } from 'lucide-react';
+import { useContentDuplicateDetector } from '@/hooks/data/useContentDuplicateDetector';
+import { DuplicateWarningDialog } from '@/components/chaos/DuplicateWarningDialog';
+import { DuplicateMatch } from '@/hooks/data/useContentDuplicateDetector';
 import { RecurringBillConfirmDialog, type RecurringBillCandidate } from '@/components/bills/RecurringBillConfirmDialog';
 import { toast } from 'sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';

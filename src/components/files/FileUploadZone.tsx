@@ -4,9 +4,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { Upload, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Upload } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { checkFilePreUpload } from '@/hooks/data/useContentDuplicateDetector';
 
 export function FileUploadZone() {
   const { user } = useAuth();
@@ -22,6 +22,15 @@ export function FileUploadZone() {
     let successCount = 0;
 
     for (const file of Array.from(fileList)) {
+      // Layer 1: Pre-upload duplicate check
+      const preCheck = await checkFilePreUpload(user.id, file.name, file.size);
+      if (preCheck.isDuplicate) {
+        const msg = language === 'es'
+          ? `"${file.name}" ya fue subido el ${preCheck.existingDate}. ¿Subir de todos modos?`
+          : `"${file.name}" was already uploaded on ${preCheck.existingDate}. Upload anyway?`;
+        if (!window.confirm(msg)) continue;
+      }
+
       const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
       const path = `${user.id}/${crypto.randomUUID()}.${ext}`;
 
