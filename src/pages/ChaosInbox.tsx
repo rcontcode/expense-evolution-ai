@@ -741,6 +741,38 @@ export default function ChaosInbox() {
 
             <TabsContent value="receipts" className="mt-4 space-y-4">
 
+          {/* Upload Progress Indicator */}
+          {uploadProgress && (
+            <Alert className={cn(
+              "transition-all duration-300 animate-in fade-in slide-in-from-top-2",
+              uploadProgress.phase === 'received' && "border-primary/50 bg-primary/5",
+              uploadProgress.phase === 'uploading' && "border-blue-500/50 bg-blue-500/5",
+              uploadProgress.phase === 'analyzing' && "border-purple-500/50 bg-purple-500/5 animate-pulse",
+              uploadProgress.phase === 'classified' && "border-green-500/50 bg-green-500/5",
+              uploadProgress.phase === 'unknown' && "border-amber-500/50 bg-amber-500/5",
+              uploadProgress.phase === 'error' && "border-destructive/50 bg-destructive/5",
+            )}>
+              {(uploadProgress.phase === 'uploading' || uploadProgress.phase === 'analyzing') ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : uploadProgress.phase === 'classified' ? (
+                <CheckCircle2 className="h-4 w-4 text-green-600" />
+              ) : uploadProgress.phase === 'unknown' ? (
+                <AlertTriangle className="h-4 w-4 text-amber-600" />
+              ) : uploadProgress.phase === 'error' ? (
+                <X className="h-4 w-4 text-destructive" />
+              ) : (
+                <Upload className="h-4 w-4" />
+              )}
+              <AlertTitle className="text-sm">
+                {uploadProgress.phase === 'received' && (language === 'es' ? `📥 ${uploadProgress.fileName} recibido` : `📥 ${uploadProgress.fileName} received`)}
+                {uploadProgress.phase === 'uploading' && (language === 'es' ? `⬆️ Subiendo ${uploadProgress.fileName}...` : `⬆️ Uploading ${uploadProgress.fileName}...`)}
+                {uploadProgress.phase === 'analyzing' && (language === 'es' ? `🧠 Analizando con IA...` : `🧠 Analyzing with AI...`)}
+                {uploadProgress.phase === 'classified' && (language === 'es' ? `✅ ${uploadProgress.fileName} clasificado` : `✅ ${uploadProgress.fileName} classified`)}
+                {uploadProgress.phase === 'unknown' && (language === 'es' ? `⚠️ ${uploadProgress.fileName} no reconocido` : `⚠️ ${uploadProgress.fileName} not recognized`)}
+                {uploadProgress.phase === 'error' && (language === 'es' ? `❌ Error procesando ${uploadProgress.fileName}` : `❌ Error processing ${uploadProgress.fileName}`)}
+              </AlertTitle>
+            </Alert>
+          )}
           {/* Contextual Page Guide - Hidden on mobile */}
           {!isMobile && (
             <PageContextGuide
