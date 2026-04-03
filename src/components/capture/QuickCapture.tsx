@@ -91,12 +91,16 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !user) {
-      console.log('No file or user:', { file: !!file, user: !!user });
-      return;
-    }
+    if (!file || !user) return;
     
-    console.log('File selected:', file.name, file.size, file.type);
+    // Layer 1: Pre-upload duplicate check
+    const preCheck = await checkFilePreUpload(user.id, file.name, file.size);
+    if (preCheck.isDuplicate) {
+      const msg = language === 'es'
+        ? `"${file.name}" ya fue subido el ${preCheck.existingDate}. ¿Subir de todos modos?`
+        : `"${file.name}" was already uploaded on ${preCheck.existingDate}. Upload anyway?`;
+      if (!window.confirm(msg)) return;
+    }
     
     // Set preview
     setImagePreview(URL.createObjectURL(file));
