@@ -784,6 +784,44 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
         setPendingBillCandidate(null);
       }}
     />
+
+    {/* Duplicate Warning Dialog */}
+    {showDuplicateDialog && duplicateMatches.length > 0 && (
+      <DuplicateWarningDialog
+        open={showDuplicateDialog}
+        onOpenChange={setShowDuplicateDialog}
+        matches={duplicateMatches}
+        newDocument={duplicateNewDoc}
+        onKeepBoth={() => {
+          toast.info(language === 'es' ? 'Ambos conservados' : 'Both kept');
+          setShowDuplicateDialog(false);
+        }}
+        onDeleteNew={async () => {
+          if (duplicateDocId) {
+            const { data: docData } = await supabase.from('documents').select('file_path').eq('id', duplicateDocId).single();
+            await supabase.from('documents').delete().eq('id', duplicateDocId).eq('user_id', user?.id || '');
+            if (docData?.file_path) await supabase.storage.from('expense-documents').remove([docData.file_path]);
+            toast.success(language === 'es' ? 'Duplicado eliminado' : 'Duplicate removed');
+            clearAll();
+          }
+          setShowDuplicateDialog(false);
+        }}
+        onReplaceOld={async () => {
+          const match = duplicateMatches[0];
+          if (match?.type === 'expense') {
+            await supabase.from('expenses').delete().eq('id', match.id).eq('user_id', user?.id || '');
+          }
+          const oldDocId = match?.type === 'document' ? match.id : match?.document_id;
+          if (oldDocId) {
+            const { data: oldDoc } = await supabase.from('documents').select('file_path').eq('id', oldDocId).single();
+            await supabase.from('documents').delete().eq('id', oldDocId).eq('user_id', user?.id || '');
+            if (oldDoc?.file_path) await supabase.storage.from('expense-documents').remove([oldDoc.file_path]);
+          }
+          toast.success(language === 'es' ? 'Anterior reemplazado' : 'Old one replaced');
+          setShowDuplicateDialog(false);
+        }}
+      />
+    )}
     </TooltipProvider>
   );
 }
