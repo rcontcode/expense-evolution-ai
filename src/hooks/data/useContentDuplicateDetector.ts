@@ -159,12 +159,11 @@ export async function findContentDuplicates(
     }
   }
 
-  // 3. Line items cross-check (if items exist, check by specific item name + amount)
+  // 3. Line items cross-check
   if (extracted.line_items?.length && matches.length === 0 && extracted.amount) {
     const mainItem = extracted.line_items[0];
     const itemName = mainItem.name.toLowerCase();
 
-    // Check expense descriptions for item mentions
     const { data: itemExpenses } = await supabase
       .from('expenses')
       .select('id, vendor, amount, date, description, document_id')
@@ -187,6 +186,46 @@ export async function findContentDuplicates(
             reason_es: `Mismo item "${mainItem.name}" con monto $${Number(exp.amount).toFixed(2)}`,
             reason_en: `Same item "${mainItem.name}" with amount $${Number(exp.amount).toFixed(2)}`,
             document_id: exp.document_id,
+          });
+        }
+      }
+    }
+  }
+
+  // 4. Contract duplicate detection
+  if (matches.length === 0 && extracted.vendor) {
+    const { data: contractMatches } = await supabase
+      .from('contracts')
+      .select('id, title, client_id, contract_type, start_date, file_name, value, created_at')
+      .eq('user_id', userId)
+      .is('deleted_at', null);
+
+    if (contractMatches) {
+      for (const contract of contractMatches) {
+        const contractTitle = (contract.title || '').toLowerCase();
+        const extractedVendor = (extracted.vendor || '').toLowerCase();
+        
+        const titleMatch = contractTitle.includes(extractedVendor) || extractedVendor.includes(contractTitle);
+        const typeMatch = contract.contract_type && extracted.description?.toLowerCase().includes(contract.contract_type.toLowerCase());
+        const valueMatch = contract.value && extracted.amount && Math.abs(contract.value - extracted.amount) < 0.01;
+        
+        if (titleMatch || (typeMatch && valueMatch)) {
+          const sameDate = contract.start_date === extracted.date;
+          matches.push({
+            type: 'document',
+            id: contract.id,
+            vendor: contract.title,
+            amount: contract.value || 0,
+            date: contract.start_date || '',
+            description: contract.contract_type,
+            confidence: sameDate && titleMatch ? 'high' : 'medium',
+            reason_es: sameDate 
+              ? `Contrato "${contract.title}" con misma fecha (${contract.start_date})`
+              : `Contrato similar "${contract.title}" (${contract.start_date || 'sin fecha'})`,
+            reason_en: sameDate
+              ? `Contract "${contract.title}" with same date (${contract.start_date})`
+              : `Similar contract "${contract.title}" (${contract.start_date || 'no date'})`,
+            file_name: contract.file_name,
           });
         }
       }

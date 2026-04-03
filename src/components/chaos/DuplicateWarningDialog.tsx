@@ -17,6 +17,8 @@ interface DuplicateWarningDialogProps {
     date?: string;
     description?: string;
   };
+  queuePosition?: number;
+  queueTotal?: number;
   onKeepBoth: () => void;
   onDeleteNew: () => void;
   onReplaceOld: () => void;
@@ -27,6 +29,8 @@ export function DuplicateWarningDialog({
   onOpenChange,
   matches,
   newDocument,
+  queuePosition,
+  queueTotal,
   onKeepBoth,
   onDeleteNew,
   onReplaceOld,
@@ -57,7 +61,14 @@ export function DuplicateWarningDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-yellow-500" />
-            {isEs ? 'Posible duplicado detectado' : 'Possible duplicate detected'}
+            <span className="flex-1">
+              {isEs ? 'Posible duplicado detectado' : 'Possible duplicate detected'}
+            </span>
+            {queueTotal && queueTotal > 1 && (
+              <Badge variant="secondary" className="text-xs ml-2">
+                {queuePosition}/{queueTotal}
+              </Badge>
+            )}
           </DialogTitle>
           <DialogDescription>
             {isEs ? bestMatch.reason_es : bestMatch.reason_en}
@@ -131,7 +142,7 @@ export function DuplicateWarningDialog({
             variant="destructive"
             size="sm"
             className="w-full gap-2"
-            onClick={() => { onDeleteNew(); onOpenChange(false); }}
+            onClick={() => { onDeleteNew(); }}
           >
             <Trash2 className="h-4 w-4" />
             {isEs ? 'Es duplicado — eliminar nuevo' : 'Is duplicate — delete new'}
@@ -140,7 +151,7 @@ export function DuplicateWarningDialog({
             variant="outline"
             size="sm"
             className="w-full gap-2"
-            onClick={() => { onKeepBoth(); onOpenChange(false); }}
+            onClick={() => { onKeepBoth(); }}
           >
             <Check className="h-4 w-4" />
             {isEs ? 'Son diferentes — conservar ambos' : 'Different — keep both'}
@@ -149,7 +160,7 @@ export function DuplicateWarningDialog({
             variant="secondary"
             size="sm"
             className="w-full gap-2"
-            onClick={() => { onReplaceOld(); onOpenChange(false); }}
+            onClick={() => { onReplaceOld(); }}
           >
             <ArrowLeftRight className="h-4 w-4" />
             {isEs ? 'Reemplazar el anterior' : 'Replace the old one'}

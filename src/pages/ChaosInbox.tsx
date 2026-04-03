@@ -187,10 +187,13 @@ export default function ChaosInbox() {
   const [activeTab, setActiveTab] = useState('unified');
   const [recurringCandidate, setRecurringCandidate] = useState<RecurringBillCandidate | null>(null);
   const [recurringDialogOpen, setRecurringDialogOpen] = useState(false);
-  const [duplicateMatches, setDuplicateMatches] = useState<DuplicateMatch[]>([]);
-  const [duplicateNewDoc, setDuplicateNewDoc] = useState<{ vendor?: string; amount?: number; date?: string; description?: string }>({});
-  const [duplicateDocId, setDuplicateDocId] = useState<string | null>(null);
+  const [duplicateQueue, setDuplicateQueue] = useState<Array<{
+    matches: DuplicateMatch[];
+    newDoc: { vendor?: string; amount?: number; date?: string; description?: string };
+    docId: string;
+  }>>([]);
   const [duplicateDialogOpen, setDuplicateDialogOpen] = useState(false);
+  const [checkingDuplicates, setCheckingDuplicates] = useState(false);
   
   const { checkPreUpload, checkContent } = useContentDuplicateDetector();
   
@@ -292,26 +295,32 @@ export default function ChaosInbox() {
                 } as any)
                 .eq('id', doc.id);
 
-              // Layer 2: Post-OCR duplicate detection
+              // Layer 2: Post-OCR duplicate detection (queued)
               const firstExpense = result.expenses[0];
-              const dupResult = await checkContent({
-                vendor: firstExpense.vendor,
-                amount: firstExpense.amount,
-                date: firstExpense.date,
-                description: firstExpense.description,
-                line_items: firstExpense.line_items,
-              });
-
-              if (dupResult.hasDuplicates) {
-                setDuplicateMatches(dupResult.matches);
-                setDuplicateNewDoc({
+              setCheckingDuplicates(true);
+              try {
+                const dupResult = await checkContent({
                   vendor: firstExpense.vendor,
                   amount: firstExpense.amount,
                   date: firstExpense.date,
                   description: firstExpense.description,
+                  line_items: firstExpense.line_items,
                 });
-                setDuplicateDocId(doc.id);
-                setDuplicateDialogOpen(true);
+
+                if (dupResult.hasDuplicates) {
+                  setDuplicateQueue(prev => [...prev, {
+                    matches: dupResult.matches,
+                    newDoc: {
+                      vendor: firstExpense.vendor,
+                      amount: firstExpense.amount,
+                      date: firstExpense.date,
+                      description: firstExpense.description,
+                    },
+                    docId: doc.id,
+                  }]);
+                }
+              } finally {
+                setCheckingDuplicates(false);
               }
               
               if (result.expenses.length > 1) {
@@ -336,6 +345,12 @@ export default function ChaosInbox() {
           : `${files.length} receipt(s) uploaded - review extracted data`
       );
       refetch();
+      
+      // Open duplicate dialog if queue has items
+      setDuplicateQueue(prev => {
+        if (prev.length > 0) setDuplicateDialogOpen(true);
+        return prev;
+      });
     } catch (error: any) {
       toast.error(error.message);
     } finally {
@@ -450,26 +465,32 @@ export default function ChaosInbox() {
                 totalAmount += exp.amount || 0;
               });
 
-              // Layer 2: Post-OCR duplicate detection (camera)
+              // Layer 2: Post-OCR duplicate detection (camera, queued)
               const firstExpense = result.expenses[0];
-              const dupResult = await checkContent({
-                vendor: firstExpense.vendor,
-                amount: firstExpense.amount,
-                date: firstExpense.date,
-                description: firstExpense.description,
-                line_items: firstExpense.line_items,
-              });
-
-              if (dupResult.hasDuplicates) {
-                setDuplicateMatches(dupResult.matches);
-                setDuplicateNewDoc({
+              setCheckingDuplicates(true);
+              try {
+                const dupResult = await checkContent({
                   vendor: firstExpense.vendor,
                   amount: firstExpense.amount,
                   date: firstExpense.date,
                   description: firstExpense.description,
+                  line_items: firstExpense.line_items,
                 });
-                setDuplicateDocId(doc.id);
-                setDuplicateDialogOpen(true);
+
+                if (dupResult.hasDuplicates) {
+                  setDuplicateQueue(prev => [...prev, {
+                    matches: dupResult.matches,
+                    newDoc: {
+                      vendor: firstExpense.vendor,
+                      amount: firstExpense.amount,
+                      date: firstExpense.date,
+                      description: firstExpense.description,
+                    },
+                    docId: doc.id,
+                  }]);
+                }
+              } finally {
+                setCheckingDuplicates(false);
               }
               
               if (result.expenses.length > 1) {
@@ -504,6 +525,12 @@ export default function ChaosInbox() {
           : `${photos.length} photo(s) processed - ${receiptsCount} receipt(s) detected`
       );
       refetch();
+      
+      // Open duplicate dialog if queue has items
+      setDuplicateQueue(prev => {
+        if (prev.length > 0) setDuplicateDialogOpen(true);
+        return prev;
+      });
     } catch (error: any) {
       toast.error(error.message);
     } finally {
@@ -512,6 +539,17 @@ export default function ChaosInbox() {
   };
 
   const hasPendingWork = pendingDocs.length > 0 || needsCorrectionDocs.length > 0;
+
+  const advanceDuplicateQueue = () => {
+    setDuplicateQueue(prev => {
+      const next = prev.slice(1);
+      if (next.length === 0) {
+        setDuplicateDialogOpen(false);
+        toast.success(language === 'es' ? 'Revisión de duplicados completada' : 'Duplicate review complete');
+      }
+      return next;
+    });
+  };
 
   return (
     <Layout>
@@ -883,66 +921,82 @@ export default function ChaosInbox() {
         onCreated={() => setRecurringCandidate(null)}
       />
 
-      <DuplicateWarningDialog
-        open={duplicateDialogOpen}
-        onOpenChange={setDuplicateDialogOpen}
-        matches={duplicateMatches}
-        newDocument={duplicateNewDoc}
-        onKeepBoth={() => {
-          toast.info(language === 'es' ? 'Ambos conservados' : 'Both kept');
-        }}
-        onDeleteNew={async () => {
-          if (duplicateDocId) {
-            // Get file path before deleting
-            const { data: docData } = await supabase
-              .from('documents')
-              .select('file_path')
-              .eq('id', duplicateDocId)
-              .single();
+      {duplicateQueue.length > 0 && (
+        <DuplicateWarningDialog
+          open={duplicateDialogOpen}
+          onOpenChange={(open) => {
+            if (!open) {
+              // User closed dialog — skip current item, advance queue
+              setDuplicateQueue(prev => {
+                const next = prev.slice(1);
+                if (next.length === 0) setDuplicateDialogOpen(false);
+                return next;
+              });
+            }
+            setDuplicateDialogOpen(open);
+          }}
+          matches={duplicateQueue[0].matches}
+          newDocument={duplicateQueue[0].newDoc}
+          queuePosition={duplicateQueue.length > 1 ? 1 : undefined}
+          queueTotal={duplicateQueue.length > 1 ? duplicateQueue.length : undefined}
+          onKeepBoth={() => {
+            toast.info(language === 'es' ? 'Ambos conservados' : 'Both kept');
+            advanceDuplicateQueue();
+          }}
+          onDeleteNew={async () => {
+            const currentItem = duplicateQueue[0];
+            if (currentItem?.docId) {
+              const { data: docData } = await supabase
+                .from('documents')
+                .select('file_path')
+                .eq('id', currentItem.docId)
+                .single();
+              
+              await supabase.from('documents').delete().eq('id', currentItem.docId).eq('user_id', user?.id || '');
+              
+              if (docData?.file_path) {
+                await supabase.storage.from('expense-documents').remove([docData.file_path]);
+              }
+              
+              refetch();
+              toast.success(language === 'es' ? 'Duplicado eliminado' : 'Duplicate removed');
+            }
+            advanceDuplicateQueue();
+          }}
+          onReplaceOld={async () => {
+            const currentItem = duplicateQueue[0];
+            const match = currentItem?.matches[0];
+            if (!match) {
+              toast.info(language === 'es' ? 'Ambos conservados' : 'Both kept');
+              advanceDuplicateQueue();
+              return;
+            }
             
-            await supabase.from('documents').delete().eq('id', duplicateDocId).eq('user_id', user?.id || '');
+            if (match.type === 'expense') {
+              await supabase.from('expenses').delete().eq('id', match.id).eq('user_id', user?.id || '');
+            }
             
-            // Clean up storage
-            if (docData?.file_path) {
-              await supabase.storage.from('expense-documents').remove([docData.file_path]);
+            const oldDocId = match.type === 'document' ? match.id : match.document_id;
+            if (oldDocId) {
+              const { data: oldDoc } = await supabase
+                .from('documents')
+                .select('file_path')
+                .eq('id', oldDocId)
+                .single();
+              
+              await supabase.from('documents').delete().eq('id', oldDocId).eq('user_id', user?.id || '');
+              
+              if (oldDoc?.file_path) {
+                await supabase.storage.from('expense-documents').remove([oldDoc.file_path]);
+              }
             }
             
             refetch();
-            toast.success(language === 'es' ? 'Duplicado eliminado' : 'Duplicate removed');
-          }
-        }}
-        onReplaceOld={async () => {
-          const match = duplicateMatches[0];
-          if (!match) {
-            toast.info(language === 'es' ? 'Ambos conservados (no se pudo reemplazar)' : 'Both kept (could not replace)');
-            return;
-          }
-          
-          // Delete associated expense if exists
-          if (match.type === 'expense') {
-            await supabase.from('expenses').delete().eq('id', match.id).eq('user_id', user?.id || '');
-          }
-          
-          // Delete old document
-          const oldDocId = match.type === 'document' ? match.id : match.document_id;
-          if (oldDocId) {
-            const { data: oldDoc } = await supabase
-              .from('documents')
-              .select('file_path')
-              .eq('id', oldDocId)
-              .single();
-            
-            await supabase.from('documents').delete().eq('id', oldDocId).eq('user_id', user?.id || '');
-            
-            if (oldDoc?.file_path) {
-              await supabase.storage.from('expense-documents').remove([oldDoc.file_path]);
-            }
-          }
-          
-          refetch();
-          toast.success(language === 'es' ? 'Anterior reemplazado' : 'Old one replaced');
-        }}
-      />
+            toast.success(language === 'es' ? 'Anterior reemplazado' : 'Old one replaced');
+            advanceDuplicateQueue();
+          }}
+        />
+      )}
     </Layout>
   );
 }
