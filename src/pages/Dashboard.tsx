@@ -34,6 +34,7 @@ import { LifeProfileSection } from '@/hooks/data/useLifeProfile';
 import { EcosystemSection } from '@/components/ecosystem/EcosystemSection';
 import { DashboardNavigator } from '@/components/dashboard/DashboardNavigator';
 import { useDashboardDeepLinks } from '@/hooks/utils/useDashboardDeepLinks';
+import { DataInventoryPanel } from '@/components/dashboard/DataInventoryPanel';
 
 // Lazy load only dashboard-specific components
 const WorkflowSummaryWidget = lazy(() => import('@/components/dashboard/WorkflowSummaryWidget').then(m => ({ default: m.WorkflowSummaryWidget })));

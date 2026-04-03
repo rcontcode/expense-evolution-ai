@@ -851,6 +851,36 @@ export default function ChaosInbox() {
         candidate={recurringCandidate}
         onCreated={() => setRecurringCandidate(null)}
       />
+
+      <DuplicateWarningDialog
+        open={duplicateDialogOpen}
+        onOpenChange={setDuplicateDialogOpen}
+        matches={duplicateMatches}
+        newDocument={duplicateNewDoc}
+        onKeepBoth={() => {
+          toast.info(language === 'es' ? 'Ambos conservados' : 'Both kept');
+        }}
+        onDeleteNew={async () => {
+          if (duplicateDocId) {
+            await supabase.from('documents').delete().eq('id', duplicateDocId).eq('user_id', user?.id || '');
+            refetch();
+            toast.success(language === 'es' ? 'Duplicado eliminado' : 'Duplicate removed');
+          }
+        }}
+        onReplaceOld={async () => {
+          if (duplicateMatches[0]?.type === 'document' && duplicateMatches[0]?.id) {
+            await supabase.from('documents').delete().eq('id', duplicateMatches[0].id).eq('user_id', user?.id || '');
+            refetch();
+            toast.success(language === 'es' ? 'Anterior reemplazado' : 'Old one replaced');
+          } else if (duplicateMatches[0]?.type === 'expense' && duplicateMatches[0]?.document_id) {
+            await supabase.from('documents').delete().eq('id', duplicateMatches[0].document_id).eq('user_id', user?.id || '');
+            refetch();
+            toast.success(language === 'es' ? 'Anterior reemplazado' : 'Old one replaced');
+          } else {
+            toast.info(language === 'es' ? 'Ambos conservados (no se pudo reemplazar)' : 'Both kept (could not replace)');
+          }
+        }}
+      />
     </Layout>
   );
 }
