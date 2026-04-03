@@ -9,7 +9,7 @@ import {
   Upload, CheckCircle2, Clock, BookOpen
 } from 'lucide-react';
 
-const STORAGE_KEY = 'doc-onboarding-checklist';
+import { DOC_CHECKLIST_STORAGE_KEY } from './DocumentOnboardingChecklist';
 
 interface DocumentStatsBarProps {
   onActivateChecklist?: () => void;
