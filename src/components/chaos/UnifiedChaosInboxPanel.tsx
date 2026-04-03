@@ -586,16 +586,28 @@ function getTimeAgo(date: Date, language: string): string {
 
 export function UnifiedChaosInboxPanel() {
   const { language } = useLanguage();
+  const { user } = useAuth();
   const [historyOpen, setHistoryOpen] = useState(true);
   const [wizardOpen, setWizardOpen] = useState(false);
+  const [duplicateQueue, setDuplicateQueue] = useState<Array<{
+    matches: DuplicateMatch[];
+    newDoc: { vendor?: string; amount?: number; date?: string; description?: string };
+    docId: string;
+  }>>([]);
+  const [duplicateDialogOpen, setDuplicateDialogOpen] = useState(false);
+  const [duplicateQueueTotal, setDuplicateQueueTotal] = useState(0);
+  const [checkingDuplicates, setCheckingDuplicates] = useState(false);
+  
+  const { checkContent } = useContentDuplicateDetector();
+  
   const {
     documents,
     history,
     stats,
     isProcessingBatch,
     uploadAndClassify,
-    processDocument,
-    processAllClassified,
+    processDocument: rawProcessDocument,
+    processAllClassified: rawProcessAllClassified,
     reclassify,
     setInvoiceDirection,
     retryDocument,
@@ -603,6 +615,70 @@ export function UnifiedChaosInboxPanel() {
     clearProcessed,
     clearHistory,
   } = useUnifiedChaosInbox();
+
+  // Wrap processDocument to add duplicate detection after processing
+  const processDocumentWithDupCheck = useCallback(async (docId: string) => {
+    const result = await rawProcessDocument(docId);
+    if (!result?.processedResult) return;
+    
+    const pr = result.processedResult;
+    const ep = result.extractedPreview || {};
+    const dbDocId = pr.docId;
+    
+    // Extract data for duplicate check
+    const vendor = ep.vendor || ep.remit_to?.name || ep.from_entity || '';
+    const amount = parseFloat(String(ep.amount || ep.total || '0').replace(/,/g, '')) || 0;
+    const date = ep.date || '';
+    const description = ep.description || '';
+    
+    if ((vendor || amount > 0) && dbDocId) {
+      setCheckingDuplicates(true);
+      try {
+        const dupResult = await checkContent({ vendor, amount, date, description }, dbDocId);
+        if (dupResult.hasDuplicates) {
+          setDuplicateQueue(prev => [...prev, {
+            matches: dupResult.matches,
+            newDoc: { vendor, amount, date, description },
+            docId: dbDocId,
+          }]);
+        }
+      } finally {
+        setCheckingDuplicates(false);
+      }
+    }
+  }, [rawProcessDocument, checkContent]);
+
+  // Wrap processAllClassified to use our dup-checking version
+  const processAllClassified = useCallback(async () => {
+    const classified = documents.filter(d => d.status === 'classified');
+    if (classified.length === 0) return;
+    
+    for (const doc of classified) {
+      await processDocumentWithDupCheck(doc.id);
+    }
+    
+    // Open duplicate dialog if queue accumulated items
+    setDuplicateQueue(prev => {
+      if (prev.length > 0) {
+        setDuplicateQueueTotal(prev.length);
+        setDuplicateDialogOpen(true);
+      }
+      return prev;
+    });
+    
+    toast.success(`🎉 ${classified.length} ${language === 'es' ? 'documentos procesados' : 'documents processed'}`);
+  }, [documents, processDocumentWithDupCheck, language]);
+
+  const advanceDuplicateQueue = useCallback(() => {
+    setDuplicateQueue(prev => {
+      const next = prev.slice(1);
+      if (next.length === 0) {
+        setDuplicateDialogOpen(false);
+        toast.success(language === 'es' ? 'Revisión de duplicados completada' : 'Duplicate review complete');
+      }
+      return next;
+    });
+  }, [language]);
 
   const hasClassified = stats.classified > 0;
   const hasPendingDirection = stats.pendingDirection > 0;
