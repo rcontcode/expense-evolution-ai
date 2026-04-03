@@ -177,7 +177,7 @@ interface DocumentOnboardingChecklistProps {
   uploadedTypes?: string[];
 }
 
-export function DocumentOnboardingChecklist({ documentCount, onUploadClick }: DocumentOnboardingChecklistProps) {
+export function DocumentOnboardingChecklist({ documentCount, onUploadClick, uploadedTypes = [] }: DocumentOnboardingChecklistProps) {
   const { language } = useLanguage();
   const isEs = language === 'es';
   const [dismissed, setDismissed] = useState(false);
