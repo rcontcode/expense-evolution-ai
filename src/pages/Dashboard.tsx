@@ -154,7 +154,10 @@ export default function Dashboard() {
             </CardContent>
           </Card>
           
-          {/* 7. Mission Control */}
+          {/* 7. Data Inventory */}
+          <DataInventoryPanel />
+
+          {/* 8. Mission Control */}
           <MissionControl />
 
           {/* 8. VIEW TABS — ABOVE the timeline as primary navigation */}
