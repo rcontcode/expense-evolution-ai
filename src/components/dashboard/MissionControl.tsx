@@ -305,7 +305,7 @@ export function MissionControl({ compact = false }: MissionControlProps) {
   const data = useMissionControl();
   const [panelOpen, setPanelOpen] = useState(() => {
     const saved = localStorage.getItem('mission-control-open');
-    return saved !== null ? saved === 'true' : !compact;
+    return saved !== null ? saved === 'true' : false;
   });
   const [expanded, setExpanded] = useState(!compact);
   const [activeTab, setActiveTab] = useState<'data' | 'features'>('features');
