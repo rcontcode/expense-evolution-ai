@@ -437,7 +437,7 @@ export function DocumentOnboardingChecklist({ documentCount, onUploadClick, uplo
                             variant="outline"
                             size="sm"
                             className="h-7 gap-1 text-xs"
-                            onClick={() => { onUploadClick?.(); markCompleted(sub.id); }}
+                            onClick={() => { onUploadClick?.(); }}
                           >
                             <Upload className="h-3 w-3" />
                             {isEs ? 'Subir' : 'Upload'}
