@@ -653,6 +653,7 @@ export default function ChaosInbox() {
               fileInputRef.current?.click();
             }}
             uploadedTypes={uploadedTypes}
+            onDismiss={() => setChecklistVisible(false)}
           />
 
           {/* Tabs: Unified vs Receipt Review */}
