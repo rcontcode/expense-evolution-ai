@@ -1,65 +1,43 @@
 
 
-# Plan: Expandir Checklist con Categorías, Subtipos, Colores y Guía Visual
+# Plan: Corregir el botón "Subir" del Checklist
 
-## Resumen
+## Problema
 
-Transformar el checklist de 6 items planos a un sistema de **categorías expandidas con subtipos**, colores por categoría, iconos descriptivos, y una experiencia visual tipo "candy 3D" que guíe al usuario de forma clara sin importar el orden en que suba documentos.
+En la línea 439, al hacer click en "Subir", se ejecutan dos acciones simultáneamente:
+1. `onUploadClick()` — abre el diálogo de subida
+2. `markCompleted(sub.id)` — marca el subtipo como completado
 
-## Cambios
+Esto significa que **al presionar "Subir" se marca como completado sin haber subido nada**. El botón debería solo abrir la zona de subida, y la marca de completado debería ocurrir cuando realmente se suba y clasifique un documento de ese tipo.
 
-### 1. `src/components/chaos/DocumentOnboardingChecklist.tsx` — Reescritura completa
+## Solución
 
-**Estructura de datos expandida** con categorías principales y subtipos:
+### `src/components/chaos/DocumentOnboardingChecklist.tsx`
 
-| Categoría | Color | Subtipos |
-|-----------|-------|----------|
-| Salud | Verde | Boletas médicas, dentales, farmacia, óptica, exámenes de laboratorio |
-| Compras y materiales | Naranja | Herramientas, materiales de construcción, suministros de oficina, electrónica |
-| Alimentos | Amarillo | Supermercado, restaurantes, delivery, cafetería |
-| Hogar y servicios | Azul | Agua, luz, gas, internet, teléfono, arriendo |
-| Transporte | Púrpura | Combustible, peajes, estacionamiento, mantención vehículo, transporte público |
-| Financieros | Indigo | Extractos bancarios, certificados AFP/RRSP, inversiones, estados de tarjeta |
-| Seguros | Rosa | Salud, auto, hogar, vida |
-| Contratos y legales | Gris | Contratos de servicio, arriendo, trabajo, notariales |
-| Impuestos | Rojo | Declaraciones, formularios fiscales, boletas de donación |
-| Ingresos | Esmeralda | Liquidaciones de sueldo, boletas de honorarios, facturas emitidas |
+**Cambio en el botón "Subir"** (línea 439):
+- Eliminar `markCompleted(sub.id)` del onClick
+- El botón solo debe llamar `onUploadClick?.()` para abrir la zona de subida
 
-**Fase 1 — Selección por categoría** (rediseño visual):
-- Grid de cards con color de fondo por categoría (gradient sutil)
-- Al hacer click en una categoría, se expande mostrando los subtipos como chips seleccionables
-- Efecto hover con `scale(1.04)` y sombra 3D candy
-- Cada categoría muestra un emoji + icono Lucide + descripción corta
-- Botón "Seleccionar todos" por categoría
-- Contador flotante de items seleccionados
+**Agregar detección automática de completado**:
+- Recibir un nuevo prop `uploadedTypes: string[]` (lista de tipos de documentos que el usuario ya ha subido, extraídos de `documents.extracted_data.document_type` y `documents.extracted_data.category`)
+- En un `useEffect`, comparar `uploadedTypes` contra `selectedSubtypes` y marcar automáticamente como completados los que coincidan
+- Esto hace que el check aparezca solo cuando realmente se haya subido un documento de ese tipo
 
-**Fase 2 — Progreso con subtipos**:
-- Agrupar items seleccionados por categoría con header de color
-- Cada subtipo tiene su botón "Subir" individual
-- Progress bar coloreada por categoría
-- Mensaje motivacional: "¡Ya subiste 4 de 7! Sigue así"
-- Banner: "Puedes subir en cualquier orden — esto es el Caos organizado"
+### `src/pages/ChaosInbox.tsx`
 
-### 2. `src/components/chaos/DocumentStatsBar.tsx` — Expandir tipos reconocidos
+- Pasar al checklist la lista de tipos ya subidos, derivada de la query de documentos existente (la misma data que usa `DocumentStatsBar`)
+- Extraer los tipos de `documents.extracted_data` y pasarlos como `uploadedTypes`
 
-Agregar al `typeConfig` los nuevos tipos para que el conteo refleje las categorías expandidas:
-- `medical_receipt`, `dental`, `pharmacy`, `tools`, `materials`, `food`, `utilities`, `transport`, `tax_document`, `income_proof`, etc.
-- Mapear cada uno a su icono y color correspondiente
+## Resultado
 
-### 3. Detalles de UI/UX
-
-- Mensaje inicial: "Esto es la Bandeja del Caos — sube lo que tengas, como lo tengas. Fotos, PDFs, capturas... nosotros lo organizamos"
-- Tip contextual: "No importa el orden. Sube primero lo que tengas a mano"
-- Colores con `bg-{color}/10` para fondo, `border-{color}/30` para borde, `text-{color}` para icono
-- Animación `transition-all duration-200` en hover con `hover:shadow-md hover:scale-[1.04]` y `active:translate-y-0.5`
-- Badge con conteo por categoría que se actualiza en tiempo real
+- "Subir" solo abre la zona de upload
+- El check verde aparece automáticamente cuando la IA clasifica un documento como ese tipo
+- Si el usuario ya tiene documentos de ese tipo, aparecen marcados desde el inicio
 
 ## Archivos afectados
 
 | Acción | Archivo |
 |--------|---------|
 | Modificar | `src/components/chaos/DocumentOnboardingChecklist.tsx` |
-| Modificar | `src/components/chaos/DocumentStatsBar.tsx` |
-
-Sin migraciones de base de datos.
+| Modificar | `src/pages/ChaosInbox.tsx` |
 
