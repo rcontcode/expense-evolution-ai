@@ -748,30 +748,16 @@ export default function ChaosInbox() {
                     {language === 'es' ? 'Cámara' : 'Camera'}
                   </Button>
                   
-                  <label htmlFor="file-upload">
-                    <Button disabled={uploading} asChild className="bg-gradient-primary">
-                      <span className="cursor-pointer">
-                        {uploading ? (
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        ) : (
-                          <Upload className="mr-2 h-4 w-4" />
-                        )}
-                        {uploading 
-                          ? (language === 'es' ? 'Subiendo...' : 'Uploading...')
-                          : (language === 'es' ? 'Subir' : 'Upload')}
-                      </span>
-                    </Button>
-                    <input
-                      ref={fileInputRef}
-                      id="file-upload"
-                      type="file"
-                      multiple
-                      accept="image/*"
-                      capture="environment"
-                      onChange={handleFileUpload}
-                      className="hidden"
-                    />
-                  </label>
+                  <Button disabled={uploading} onClick={() => fileInputRef.current?.click()} className="bg-gradient-primary">
+                    {uploading ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <Upload className="mr-2 h-4 w-4" />
+                    )}
+                    {uploading 
+                      ? (language === 'es' ? 'Subiendo...' : 'Uploading...')
+                      : (language === 'es' ? 'Subir' : 'Upload')}
+                  </Button>
                 </div>
               </div>
             </CardContent>
