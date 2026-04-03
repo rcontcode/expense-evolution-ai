@@ -228,9 +228,36 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
         if (error) {
           console.error('Error saving extracted data:', error);
         } else {
-          console.log('Extracted data saved to document:', savedDocumentId);
           queryClient.invalidateQueries({ queryKey: ['documents-review'] });
           queryClient.invalidateQueries({ queryKey: ['documents'] });
+        }
+      }
+
+      // Layer 2: Post-OCR content duplicate detection
+      if (user?.id) {
+        const firstExp = result.expenses[0];
+        try {
+          const dupResult = await findContentDuplicates(user.id, {
+            vendor: firstExp.vendor,
+            amount: firstExp.amount,
+            date: firstExp.date,
+            description: firstExp.description,
+            line_items: firstExp.line_items,
+          }, savedDocumentId || undefined);
+
+          if (dupResult.hasDuplicates) {
+            setDuplicateMatches(dupResult.matches);
+            setDuplicateNewDoc({
+              vendor: firstExp.vendor,
+              amount: firstExp.amount,
+              date: firstExp.date,
+              description: firstExp.description,
+            });
+            setDuplicateDocId(savedDocumentId);
+            setShowDuplicateDialog(true);
+          }
+        } catch (err) {
+          console.error('Duplicate check failed:', err);
         }
       }
     }
