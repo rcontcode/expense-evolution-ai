@@ -174,6 +174,7 @@ const colorMap: Record<string, { bg: string; border: string; text: string; ring:
 interface DocumentOnboardingChecklistProps {
   documentCount: number;
   onUploadClick?: () => void;
+  uploadedTypes?: string[];
 }
 
 export function DocumentOnboardingChecklist({ documentCount, onUploadClick }: DocumentOnboardingChecklistProps) {
