@@ -449,7 +449,7 @@ function DocumentCard({
 
             {/* Actions */}
             <div className="flex flex-col items-center gap-1 shrink-0">
-              {doc.status === 'classified' && (
+              {doc.status === 'classified' && classification?.document_type !== 'unknown' && (
                 <Button size="sm" variant="default" onClick={onProcess} className="h-8 text-xs gap-1 shadow-sm">
                   <Zap className="h-3.5 w-3.5" />
                   {language === 'es' ? 'Procesar' : 'Process'}
