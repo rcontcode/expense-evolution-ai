@@ -305,7 +305,7 @@ export function MissionControl({ compact = false }: MissionControlProps) {
   const data = useMissionControl();
   const [panelOpen, setPanelOpen] = useState(() => {
     const saved = localStorage.getItem('mission-control-open');
-    return saved !== null ? saved === 'true' : !compact;
+    return saved !== null ? saved === 'true' : false;
   });
   const [expanded, setExpanded] = useState(!compact);
   const [activeTab, setActiveTab] = useState<'data' | 'features'>('features');
@@ -361,35 +361,100 @@ export function MissionControl({ compact = false }: MissionControlProps) {
     );
   }
 
+  const hasPending = blockedFeatures > 0 || data.urgentTotal > 0 || data.inactivityNudge.show || partialFeatures > 0;
+  const allGood = !hasPending && readyFeatures === totalFeatures;
+
   return (
-    <Card data-section="mission-control">
+    <Card
+      data-section="mission-control"
+      className={cn(
+        'transition-all duration-500',
+        !panelOpen && hasPending && 'border-warning/50 shadow-[0_0_12px_-3px] shadow-warning/20',
+        !panelOpen && !hasPending && 'border-success/40',
+      )}
+    >
       <CardHeader className="pb-3">
         <div
           className="flex items-center justify-between cursor-pointer select-none group"
           onClick={togglePanel}
         >
           <div className="flex items-center gap-2">
-            <Rocket className="h-5 w-5 text-primary" />
+            {/* Pulsing indicator */}
+            {hasPending ? (
+              <span className="relative flex h-5 w-5 items-center justify-center">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-warning/40" />
+                <AlertTriangle className="relative h-4 w-4 text-warning" />
+              </span>
+            ) : (
+              <span className="relative flex h-5 w-5 items-center justify-center">
+                <CheckCircle2 className="h-5 w-5 text-success" />
+              </span>
+            )}
             <CardTitle className="text-base">Mission Control</CardTitle>
-            <Badge variant="outline" className="text-[10px]">{levelLabel}</Badge>
             {!panelOpen && (
-              <>
-                <Badge variant={blockedFeatures > 0 ? 'destructive' : data.urgentTotal > 0 ? 'warning' : 'secondary'} className="text-[10px]">
-                  <Fuel className="h-2.5 w-2.5 mr-0.5" />
-                  {readyFeatures}/{totalFeatures}
-                </Badge>
-                <span className="text-xs text-muted-foreground">{data.globalScore}%</span>
-                {data.inactivityNudge.show && (
-                  <Badge variant="warning" className="text-[10px]">
-                    <Flame className="h-2.5 w-2.5 mr-0.5" />
-                    {data.inactivityNudge.daysSinceLastEntry}d
-                  </Badge>
-                )}
-              </>
+              <span className={cn(
+                'text-xs font-medium px-2 py-0.5 rounded-full',
+                hasPending ? 'bg-warning/10 text-warning' : 'bg-success/10 text-success'
+              )}>
+                {hasPending
+                  ? (l ? 'Requiere atención' : 'Needs attention')
+                  : (l ? '✓ Todo al día' : '✓ All up to date')}
+              </span>
             )}
           </div>
-          <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform", !panelOpen && "-rotate-90")} />
+          <div className="flex items-center gap-2">
+            {!panelOpen && (
+              <div className="flex items-center gap-1.5 text-xs">
+                {blockedFeatures > 0 && (
+                  <Badge variant="destructive" className="text-[10px] gap-0.5">
+                    <Lock className="h-2.5 w-2.5" /> {blockedFeatures}
+                  </Badge>
+                )}
+                {data.urgentTotal > 0 && (
+                  <Badge variant="warning" className="text-[10px] gap-0.5">
+                    <AlertCircle className="h-2.5 w-2.5" /> {data.urgentTotal}
+                  </Badge>
+                )}
+                {data.inactivityNudge.show && (
+                  <Badge variant="warning" className="text-[10px] gap-0.5">
+                    <Flame className="h-2.5 w-2.5" /> {data.inactivityNudge.daysSinceLastEntry}d
+                  </Badge>
+                )}
+                <span className="text-muted-foreground">
+                  <Fuel className="h-3 w-3 inline mr-0.5" />{readyFeatures}/{totalFeatures}
+                </span>
+                <span className="text-muted-foreground">{data.globalScore}%</span>
+              </div>
+            )}
+            <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform", !panelOpen && "-rotate-90")} />
+          </div>
         </div>
+
+        {/* Collapsed mini-summary */}
+        {!panelOpen && hasPending && (
+          <div className="mt-2 flex flex-wrap gap-1.5 text-[11px]">
+            {blockedFeatures > 0 && (
+              <span className="flex items-center gap-1 text-destructive bg-destructive/5 px-2 py-0.5 rounded-full">
+                🔒 {blockedFeatures} {l ? 'funciones inactivas' : 'inactive features'}
+              </span>
+            )}
+            {data.urgentTotal > 0 && (
+              <span className="flex items-center gap-1 text-warning bg-warning/5 px-2 py-0.5 rounded-full">
+                ⚠️ {data.urgentTotal} {l ? 'urgentes' : 'urgent'}
+              </span>
+            )}
+            {data.inactivityNudge.show && (
+              <span className="flex items-center gap-1 text-warning bg-warning/5 px-2 py-0.5 rounded-full">
+                🔥 {data.inactivityNudge.daysSinceLastEntry} {l ? 'días sin actividad' : 'days inactive'}
+              </span>
+            )}
+            {data.pendingTotal > 0 && (
+              <span className="flex items-center gap-1 text-muted-foreground bg-muted/50 px-2 py-0.5 rounded-full">
+                📋 {data.pendingTotal} {l ? 'pendientes' : 'pending'}
+              </span>
+            )}
+          </div>
+        )}
 
         {panelOpen && (
           <>
