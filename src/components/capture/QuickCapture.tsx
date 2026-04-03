@@ -30,6 +30,8 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { InfoTooltip, TOOLTIP_CONTENT } from '@/components/ui/info-tooltip';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { checkFilePreUpload, findContentDuplicates, DuplicateMatch } from '@/hooks/data/useContentDuplicateDetector';
+import { DuplicateWarningDialog } from '@/components/chaos/DuplicateWarningDialog';
 
 interface QuickCaptureProps {
   onSuccess?: () => void;
