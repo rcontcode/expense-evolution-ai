@@ -1,58 +1,77 @@
 
 
-# Plan: Mejoras al Sistema de Detección de Duplicados y Panel de Inventario
+# Plan: Corregir Flujo de Detección de Duplicados
 
-## Problemas actuales detectados
+## Problemas encontrados
 
-1. **Capa 1 (pre-upload) no está en ChaosInbox**: `handleFileUpload` no llama a `checkPreUpload` antes de subir — solo FileUploadZone lo tiene
-2. **Cámara sin detección de duplicados**: `handleCameraPhotos` no ejecuta la Capa 2 post-OCR (solo `handleFileUpload` la tiene)
-3. **Replace Old no elimina el expense asociado**: Solo borra el documento, pero el gasto registrado queda huérfano
-4. **Delete New no limpia el storage**: Se borra el registro de DB pero el archivo queda en el bucket
-5. **DataInventoryPanel muy básico**: No indica qué datos faltan ni guía al usuario sobre qué subir
-6. **No hay feedback visual durante la detección**: El usuario no sabe que se está buscando duplicados
+1. **El dialog NO bloquea el loop de procesamiento**: Cuando se suben 5 archivos, el loop `for` continua procesando el siguiente archivo aunque se abra el dialog de duplicado. El usuario no puede decidir antes de que siga procesando.
+
+2. **Solo se guarda el ÚLTIMO duplicado**: Si el archivo 2 y el archivo 4 son duplicados, el estado (`duplicateMatches`, `duplicateDocId`) se sobreescribe con el del archivo 4. El del archivo 2 se pierde sin que el usuario lo vea.
+
+3. **No hay feedback visual de "buscando duplicados"**: Después del OCR, la búsqueda en la DB ocurre silenciosamente. El usuario no sabe que se está verificando.
+
+4. **El procesamiento continúa normalmente después del dialog**: Al cerrar el dialog (sin importar la acción), no hay continuación controlada del flujo. Si quedan más archivos, ya se procesaron.
+
+---
+
+## Solución: Sistema de cola de duplicados
+
+### 1. `src/pages/ChaosInbox.tsx` — Cola de duplicados
+
+En lugar de abrir el dialog inmediatamente y perder el control del loop, acumular los duplicados detectados en una **cola** (`duplicateQueue`). Al terminar el procesamiento de todos los archivos, mostrar los duplicados **uno por uno** con el dialog.
+
+**Cambios**:
+- Nuevo state: `duplicateQueue: Array<{ matches, newDoc, docId }>` en vez de states individuales
+- Durante el loop: si se detecta duplicado, push a la cola (no abrir dialog)
+- Al terminar el loop: si la cola tiene items, abrir dialog con el primero
+- Al resolver un duplicado (keep/delete/replace): quitar de la cola y mostrar el siguiente
+- Si la cola queda vacía, cerrar dialog
+
+### 2. `src/pages/ChaosInbox.tsx` — Indicador de detección
+
+- Agregar un estado `checkingDuplicates: boolean`
+- Activarlo justo antes del `checkContent()` y desactivarlo después
+- Mostrar un toast o badge "Verificando duplicados..." durante la búsqueda
+
+### 3. `src/components/chaos/DuplicateWarningDialog.tsx` — Indicador de cola
+
+- Agregar prop `queueCount?: number` para mostrar "1 de 3 posibles duplicados"
+- Agregar prop `isChecking?: boolean` para estado de loading
+- Mostrar el contador en el header: "Posible duplicado 1/3"
+
+### 4. `src/hooks/data/useContentDuplicateDetector.ts` — Detección de contratos
+
+- Agregar búsqueda en tabla `contracts` por `client_name` + `contract_type` + fecha
+- Mejorar razones con items específicos de `line_items`
 
 ---
 
-## Cambios
+## Flujo corregido
 
-### 1. `src/pages/ChaosInbox.tsx`
-
-**En `handleFileUpload`** (línea ~229): Agregar Capa 1 pre-upload check antes de subir cada archivo — si coincide nombre+tamaño, mostrar toast de advertencia con opción de cancelar.
-
-**En `handleCameraPhotos`** (línea ~424): Agregar la misma lógica de Capa 2 post-OCR que ya existe en `handleFileUpload` (líneas 286-306). Actualmente las fotos de cámara no pasan por detección de duplicados.
-
-**En `onDeleteNew`** (línea ~863): Además de borrar el document de DB, también eliminar el archivo del storage bucket (`supabase.storage.from('expense-documents').remove([filePath])`).
-
-**En `onReplaceOld`** (línea ~870): Al reemplazar, si el match es tipo `expense`, también eliminar el expense (`supabase.from('expenses').delete().eq('id', match.id).eq('user_id', user.id)`) además del documento.
-
-### 2. `src/components/chaos/DuplicateWarningDialog.tsx`
-
-- Agregar un indicador de "Buscando duplicados..." (loading state) que se pueda pasar como prop
-- Mejorar la visualización cuando hay múltiples matches: mostrar una lista scrollable en vez de solo el primer match
-- Agregar ícono diferenciado para match tipo "expense" vs "document"
-
-### 3. `src/hooks/data/useContentDuplicateDetector.ts`
-
-- Agregar detección para **contratos**: comparar `client_name` + `contract_type` + `date` contra tabla `contracts`
-- Mejorar `buildReason` para incluir items específicos cuando hay `line_items` (ej. "Mismo martillo $15.990 en Sodimac")
-- Agregar campo `existingDate` al `DuplicateMatch` para mostrar cuándo se subió el original
-
-### 4. `src/components/dashboard/DataInventoryPanel.tsx`
-
-- Agregar indicadores de "qué falta": si 0 gastos → mostrar sugerencia "Sube tus boletas en la Bandeja del Caos"
-- Agregar botón directo a Bandeja del Caos cuando hay datos faltantes
-- Mostrar un mini progress bar de completitud (ej. 3/5 categorías con datos)
-
----
+```text
+Usuario sube 5 archivos
+  ↓
+Loop: archivo 1 → OCR → check duplicados → no match → continua
+Loop: archivo 2 → OCR → check → MATCH → agrega a cola → continua
+Loop: archivo 3 → OCR → check → no match → continua
+Loop: archivo 4 → OCR → check → MATCH → agrega a cola → continua
+Loop: archivo 5 → OCR → check → no match → continua
+  ↓
+Loop terminado. Cola tiene 2 items.
+  ↓
+Abre dialog: "Duplicado 1/2" → usuario decide → siguiente
+Abre dialog: "Duplicado 2/2" → usuario decide → listo
+  ↓
+Toast: "Procesamiento completo"
+```
 
 ## Archivos afectados
 
-| Acción | Archivo |
+| Accion | Archivo |
 |--------|---------|
 | Modificar | `src/pages/ChaosInbox.tsx` |
 | Modificar | `src/components/chaos/DuplicateWarningDialog.tsx` |
 | Modificar | `src/hooks/data/useContentDuplicateDetector.ts` |
-| Modificar | `src/components/dashboard/DataInventoryPanel.tsx` |
 
 Sin migraciones de base de datos.
 
