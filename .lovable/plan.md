@@ -1,43 +1,39 @@
 
 
-# Plan: Corregir el botón "Subir" del Checklist
+# Plan: Corregir botón "Subir" del Checklist y unificar con Subida Inteligente
 
 ## Problema
 
-En la línea 439, al hacer click en "Subir", se ejecutan dos acciones simultáneamente:
-1. `onUploadClick()` — abre el diálogo de subida
-2. `markCompleted(sub.id)` — marca el subtipo como completado
+El botón "Subir" de cada item del checklist ejecuta `fileInputRef.current?.click()`, que apunta al `<input>` del tab "Centro de Revisión" (receipts). Cuando el usuario está en el tab "Subida Inteligente" (unified), ese input puede no estar renderizado en el DOM, por lo que **no pasa nada**.
 
-Esto significa que **al presionar "Subir" se marca como completado sin haber subido nada**. El botón debería solo abrir la zona de subida, y la marca de completado debería ocurrir cuando realmente se suba y clasifique un documento de ese tipo.
+Además, hay dos flujos de subida completamente separados:
+- **Tab "Subida Inteligente"** (UnifiedChaosInboxPanel): tiene su propio `DropZone` con input y su propio pipeline de clasificación IA
+- **Tab "Centro de Revisión"**: tiene el `fileInputRef` con `handleFileUpload` que sube + procesa con `process-receipt`
+
+El checklist apunta al segundo, pero el usuario por defecto está en el primero.
 
 ## Solución
 
-### `src/components/chaos/DocumentOnboardingChecklist.tsx`
-
-**Cambio en el botón "Subir"** (línea 439):
-- Eliminar `markCompleted(sub.id)` del onClick
-- El botón solo debe llamar `onUploadClick?.()` para abrir la zona de subida
-
-**Agregar detección automática de completado**:
-- Recibir un nuevo prop `uploadedTypes: string[]` (lista de tipos de documentos que el usuario ya ha subido, extraídos de `documents.extracted_data.document_type` y `documents.extracted_data.category`)
-- En un `useEffect`, comparar `uploadedTypes` contra `selectedSubtypes` y marcar automáticamente como completados los que coincidan
-- Esto hace que el check aparezca solo cuando realmente se haya subido un documento de ese tipo
-
 ### `src/pages/ChaosInbox.tsx`
 
-- Pasar al checklist la lista de tipos ya subidos, derivada de la query de documentos existente (la misma data que usa `DocumentStatsBar`)
-- Extraer los tipos de `documents.extracted_data` y pasarlos como `uploadedTypes`
+1. **Cambiar `onUploadClick`** para que en vez de hacer click en el `fileInputRef` oculto, **cambie al tab "unified"** y haga scroll hacia la zona de upload del `UnifiedChaosInboxPanel`
+2. Alternativamente, y más simple: mover el `<input type="file">` y la lógica de `handleFileUpload` **fuera de los tabs**, para que siempre esté disponible en el DOM sin importar el tab activo
+
+**Enfoque elegido**: Opción 2 — mover el `<input ref={fileInputRef}>` fuera de `TabsContent`, justo antes de `<Tabs>`. Así el click del checklist siempre funciona. Además, al terminar la subida, cambiar automáticamente al tab "receipts" para que el usuario vea sus documentos pendientes de revisión.
+
+### `src/components/chaos/DocumentOnboardingChecklist.tsx`
+
+Sin cambios funcionales. El botón ya llama `onUploadClick?.()` correctamente.
 
 ## Resultado
 
-- "Subir" solo abre la zona de upload
-- El check verde aparece automáticamente cuando la IA clasifica un documento como ese tipo
-- Si el usuario ya tiene documentos de ese tipo, aparecen marcados desde el inicio
+- El botón "Subir" del checklist siempre abre el selector de archivos sin importar el tab activo
+- Tras subir, el usuario se redirige al Centro de Revisión donde puede ver el resultado
+- La Subida Inteligente (UnifiedChaosInboxPanel) sigue funcionando independiente con su propia DropZone
 
 ## Archivos afectados
 
 | Acción | Archivo |
 |--------|---------|
-| Modificar | `src/components/chaos/DocumentOnboardingChecklist.tsx` |
 | Modificar | `src/pages/ChaosInbox.tsx` |
 
