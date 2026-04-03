@@ -174,9 +174,10 @@ const colorMap: Record<string, { bg: string; border: string; text: string; ring:
 interface DocumentOnboardingChecklistProps {
   documentCount: number;
   onUploadClick?: () => void;
+  uploadedTypes?: string[];
 }
 
-export function DocumentOnboardingChecklist({ documentCount, onUploadClick }: DocumentOnboardingChecklistProps) {
+export function DocumentOnboardingChecklist({ documentCount, onUploadClick, uploadedTypes = [] }: DocumentOnboardingChecklistProps) {
   const { language } = useLanguage();
   const isEs = language === 'es';
   const [dismissed, setDismissed] = useState(false);
@@ -200,6 +201,24 @@ export function DocumentOnboardingChecklist({ documentCount, onUploadClick }: Do
       } catch { /* ignore */ }
     }
   }, []);
+
+  // Auto-mark subtypes as completed when documents of that type are actually uploaded
+  useEffect(() => {
+    if (!setupDone || uploadedTypes.length === 0) return;
+    const newCompleted = new Set(completedSubtypes);
+    let changed = false;
+    uploadedTypes.forEach(type => {
+      const key = type.toLowerCase();
+      if (selectedSubtypes.has(key) && !newCompleted.has(key)) {
+        newCompleted.add(key);
+        changed = true;
+      }
+    });
+    if (changed) {
+      setCompletedSubtypes(newCompleted);
+      save(selectedSubtypes, newCompleted, true);
+    }
+  }, [uploadedTypes, setupDone, selectedSubtypes]);
 
   const save = (selected: Set<string>, completed: Set<string>, done: boolean, isDismissed = false) => {
     localStorage.setItem(DOC_CHECKLIST_STORAGE_KEY, JSON.stringify({
@@ -436,7 +455,7 @@ export function DocumentOnboardingChecklist({ documentCount, onUploadClick }: Do
                             variant="outline"
                             size="sm"
                             className="h-7 gap-1 text-xs"
-                            onClick={() => { onUploadClick?.(); markCompleted(sub.id); }}
+                            onClick={() => { onUploadClick?.(); }}
                           >
                             <Upload className="h-3 w-3" />
                             {isEs ? 'Subir' : 'Upload'}

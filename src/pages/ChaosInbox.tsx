@@ -212,6 +212,12 @@ export default function ChaosInbox() {
   const approvedDocs = documents.filter(d => d.review_status === 'approved');
   const needsCorrectionDocs = documents.filter(d => d.review_status === 'needs_correction');
   const rejectedDocs = documents.filter(d => d.review_status === 'rejected');
+
+  // Extract uploaded document types for checklist auto-completion
+  const uploadedTypes = documents.map(d => {
+    const ed = d.extracted_data as any;
+    return String(ed?.document_type || ed?.category || '').toLowerCase();
+  }).filter(Boolean);
   
   // Determine current workflow step
   const currentStep = pendingDocs.length > 0 ? 2 : 
@@ -637,6 +643,7 @@ export default function ChaosInbox() {
             onUploadClick={() => {
               fileInputRef.current?.click();
             }}
+            uploadedTypes={uploadedTypes}
           />
 
           {/* Tabs: Unified vs Receipt Review */}
