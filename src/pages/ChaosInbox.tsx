@@ -197,6 +197,7 @@ export default function ChaosInbox() {
   const [duplicateDialogOpen, setDuplicateDialogOpen] = useState(false);
   const [duplicateQueueTotal, setDuplicateQueueTotal] = useState(0);
   const [checkingDuplicates, setCheckingDuplicates] = useState(false);
+  const [checklistKey, setChecklistKey] = useState(0);
   
   const { checkPreUpload, checkContent } = useContentDuplicateDetector();
   
