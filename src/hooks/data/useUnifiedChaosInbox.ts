@@ -634,10 +634,13 @@ export function useUnifiedChaosInbox() {
           extractedPreview: doc.classification!.extracted_preview,
         }, ...prev]);
       }
+      
+      return { processedResult, extractedPreview: doc.classification?.extracted_preview };
     } catch (error: any) {
       console.error('Error processing:', error);
       updateDoc(docId, { status: 'error', error: error.message });
       toast.error(`Error: ${doc.fileName}`);
+      return null;
     }
   }, [documents, user, updateDoc, queryClient]);
 
