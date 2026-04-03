@@ -455,7 +455,6 @@ export function MissionControl({ compact = false }: MissionControlProps) {
             )}
           </div>
         )}
-        </div>
 
         {panelOpen && (
           <>
