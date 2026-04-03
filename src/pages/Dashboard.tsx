@@ -34,6 +34,7 @@ import { LifeProfileSection } from '@/hooks/data/useLifeProfile';
 import { EcosystemSection } from '@/components/ecosystem/EcosystemSection';
 import { DashboardNavigator } from '@/components/dashboard/DashboardNavigator';
 import { useDashboardDeepLinks } from '@/hooks/utils/useDashboardDeepLinks';
+import { DataInventoryPanel } from '@/components/dashboard/DataInventoryPanel';
 
 // Lazy load only dashboard-specific components
 const WorkflowSummaryWidget = lazy(() => import('@/components/dashboard/WorkflowSummaryWidget').then(m => ({ default: m.WorkflowSummaryWidget })));
@@ -153,7 +154,10 @@ export default function Dashboard() {
             </CardContent>
           </Card>
           
-          {/* 7. Mission Control */}
+          {/* 7. Data Inventory */}
+          <DataInventoryPanel />
+
+          {/* 8. Mission Control */}
           <MissionControl />
 
           {/* 8. VIEW TABS — ABOVE the timeline as primary navigation */}

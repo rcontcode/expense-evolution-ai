@@ -17,6 +17,9 @@ import {
   Edit3, ChevronDown, ChevronUp, Eye, MessageSquare, MoreHorizontal,
   Sparkles, Receipt
 } from 'lucide-react';
+import { useContentDuplicateDetector } from '@/hooks/data/useContentDuplicateDetector';
+import { DuplicateWarningDialog } from '@/components/chaos/DuplicateWarningDialog';
+import { DuplicateMatch } from '@/hooks/data/useContentDuplicateDetector';
 import { RecurringBillConfirmDialog, type RecurringBillCandidate } from '@/components/bills/RecurringBillConfirmDialog';
 import { toast } from 'sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -184,6 +187,12 @@ export default function ChaosInbox() {
   const [activeTab, setActiveTab] = useState('unified');
   const [recurringCandidate, setRecurringCandidate] = useState<RecurringBillCandidate | null>(null);
   const [recurringDialogOpen, setRecurringDialogOpen] = useState(false);
+  const [duplicateMatches, setDuplicateMatches] = useState<DuplicateMatch[]>([]);
+  const [duplicateNewDoc, setDuplicateNewDoc] = useState<{ vendor?: string; amount?: number; date?: string; description?: string }>({});
+  const [duplicateDocId, setDuplicateDocId] = useState<string | null>(null);
+  const [duplicateDialogOpen, setDuplicateDialogOpen] = useState(false);
+  
+  const { checkPreUpload, checkContent } = useContentDuplicateDetector();
   
   const { data: documents = [], isLoading, refetch } = useDocumentsForReview();
   const { approveDocument, rejectDocument, addComment, deleteDocument } = useDocumentReviewActions();
@@ -273,6 +282,28 @@ export default function ChaosInbox() {
                   status: 'classified' 
                 } as any)
                 .eq('id', doc.id);
+
+              // Layer 2: Post-OCR duplicate detection
+              const firstExpense = result.expenses[0];
+              const dupResult = await checkContent({
+                vendor: firstExpense.vendor,
+                amount: firstExpense.amount,
+                date: firstExpense.date,
+                description: firstExpense.description,
+                line_items: firstExpense.line_items,
+              });
+
+              if (dupResult.hasDuplicates) {
+                setDuplicateMatches(dupResult.matches);
+                setDuplicateNewDoc({
+                  vendor: firstExpense.vendor,
+                  amount: firstExpense.amount,
+                  date: firstExpense.date,
+                  description: firstExpense.description,
+                });
+                setDuplicateDocId(doc.id);
+                setDuplicateDialogOpen(true);
+              }
               
               if (result.expenses.length > 1) {
                 toast.info(
@@ -819,6 +850,36 @@ export default function ChaosInbox() {
         onClose={() => setRecurringDialogOpen(false)}
         candidate={recurringCandidate}
         onCreated={() => setRecurringCandidate(null)}
+      />
+
+      <DuplicateWarningDialog
+        open={duplicateDialogOpen}
+        onOpenChange={setDuplicateDialogOpen}
+        matches={duplicateMatches}
+        newDocument={duplicateNewDoc}
+        onKeepBoth={() => {
+          toast.info(language === 'es' ? 'Ambos conservados' : 'Both kept');
+        }}
+        onDeleteNew={async () => {
+          if (duplicateDocId) {
+            await supabase.from('documents').delete().eq('id', duplicateDocId).eq('user_id', user?.id || '');
+            refetch();
+            toast.success(language === 'es' ? 'Duplicado eliminado' : 'Duplicate removed');
+          }
+        }}
+        onReplaceOld={async () => {
+          if (duplicateMatches[0]?.type === 'document' && duplicateMatches[0]?.id) {
+            await supabase.from('documents').delete().eq('id', duplicateMatches[0].id).eq('user_id', user?.id || '');
+            refetch();
+            toast.success(language === 'es' ? 'Anterior reemplazado' : 'Old one replaced');
+          } else if (duplicateMatches[0]?.type === 'expense' && duplicateMatches[0]?.document_id) {
+            await supabase.from('documents').delete().eq('id', duplicateMatches[0].document_id).eq('user_id', user?.id || '');
+            refetch();
+            toast.success(language === 'es' ? 'Anterior reemplazado' : 'Old one replaced');
+          } else {
+            toast.info(language === 'es' ? 'Ambos conservados (no se pudo reemplazar)' : 'Both kept (could not replace)');
+          }
+        }}
       />
     </Layout>
   );
