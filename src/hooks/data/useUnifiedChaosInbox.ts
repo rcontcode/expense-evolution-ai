@@ -230,7 +230,7 @@ export function useUnifiedChaosInbox() {
 
   const processDocument = useCallback(async (docId: string): Promise<{ processedResult?: any; extractedPreview?: Record<string, any> } | null> => {
     const doc = documents.find(d => d.id === docId);
-    if (!doc?.classification || !user || !doc.storagePath) return;
+    if (!doc?.classification || !user || !doc.storagePath) return null;
 
     updateDoc(docId, { status: 'processing' });
 
