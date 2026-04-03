@@ -789,7 +789,7 @@ export function UnifiedChaosInboxPanel() {
                   <DocumentCard
                     key={doc.id}
                     doc={doc}
-                    onProcess={() => processDocument(doc.id)}
+                    onProcess={() => processDocumentWithDupCheck(doc.id)}
                     onRemove={() => removeDoc(doc.id)}
                     onReclassify={(type) => reclassify(doc.id, type)}
                     onRetry={() => retryDocument(doc.id)}
