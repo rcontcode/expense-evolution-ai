@@ -540,6 +540,17 @@ export default function ChaosInbox() {
 
   const hasPendingWork = pendingDocs.length > 0 || needsCorrectionDocs.length > 0;
 
+  const advanceDuplicateQueue = () => {
+    setDuplicateQueue(prev => {
+      const next = prev.slice(1);
+      if (next.length === 0) {
+        setDuplicateDialogOpen(false);
+        toast.success(language === 'es' ? 'Revisión de duplicados completada' : 'Duplicate review complete');
+      }
+      return next;
+    });
+  };
+
   return (
     <Layout>
       <TooltipProvider>

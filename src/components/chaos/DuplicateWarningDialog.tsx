@@ -142,7 +142,7 @@ export function DuplicateWarningDialog({
             variant="destructive"
             size="sm"
             className="w-full gap-2"
-            onClick={() => { onDeleteNew(); onOpenChange(false); }}
+            onClick={() => { onDeleteNew(); }}
           >
             <Trash2 className="h-4 w-4" />
             {isEs ? 'Es duplicado — eliminar nuevo' : 'Is duplicate — delete new'}
@@ -151,7 +151,7 @@ export function DuplicateWarningDialog({
             variant="outline"
             size="sm"
             className="w-full gap-2"
-            onClick={() => { onKeepBoth(); onOpenChange(false); }}
+            onClick={() => { onKeepBoth(); }}
           >
             <Check className="h-4 w-4" />
             {isEs ? 'Son diferentes — conservar ambos' : 'Different — keep both'}
@@ -160,7 +160,7 @@ export function DuplicateWarningDialog({
             variant="secondary"
             size="sm"
             className="w-full gap-2"
-            onClick={() => { onReplaceOld(); onOpenChange(false); }}
+            onClick={() => { onReplaceOld(); }}
           >
             <ArrowLeftRight className="h-4 w-4" />
             {isEs ? 'Reemplazar el anterior' : 'Replace the old one'}
