@@ -1,67 +1,54 @@
 
 
-# Plan: Checklist de Guía para el Usuario + Duplicados en Todos los Puntos de Entrada
+# Plan: Checklist Siempre Visible + Conteo de Documentos + Botón de Reactivar
 
-## Estado actual
+## Problemas actuales
 
-### Lo que SÍ está implementado:
-- **Detección de duplicados**: Funciona en ChaosInbox (upload + cámara) y UnifiedChaosInboxPanel
-- **TaxDocumentChecklist**: Existe pero está solo en la página Tax Optimizer — es un checklist fiscal, NO un checklist de onboarding para guiar al usuario a subir sus documentos
-- **DataInventoryPanel**: Muestra conteo de datos pero sin guía activa de "qué te falta subir"
-
-### Lo que NO está implementado:
-1. **No hay checklist interactivo de onboarding** en la Bandeja del Caos que pregunte "¿qué tipos de documentos tienes?" y guíe al usuario paso a paso
-2. **QuickCapture (foto/voz) NO tiene detección de duplicados** — los archivos subidos desde el dialog de captura rápida (FAB, Layout sidebar) van directo sin Layer 1 ni Layer 2
-3. **FileUploadZone** tiene Layer 1 (nombre/tamaño) pero NO tiene Layer 2 (contenido post-OCR)
-4. **CaptureHub** no tiene detección de duplicados
-
----
+1. **Checklist se oculta** si `documentCount >= 10` y no se ha iniciado el setup — la mayoría de usuarios nunca lo ven
+2. **No hay botón para reactivar** el checklist si fue descartado
+3. **No hay conteo visible** de documentos subidos vs procesados por tipo en la Bandeja del Caos
+4. **El checklist está dentro del tab "unified"** — debería estar arriba, visible siempre
 
 ## Cambios
 
-### 1. Crear `src/components/chaos/DocumentOnboardingChecklist.tsx`
+### 1. `src/components/chaos/DocumentOnboardingChecklist.tsx`
 
-Checklist interactivo que aparece en la Bandeja del Caos cuando el usuario tiene pocos documentos. Pregunta: "¿Qué documentos tienes disponibles?" con opciones seleccionables:
-- Boletas/Recibos
-- Facturas
-- Contratos
-- Extractos bancarios
-- Certificados (AFP, RRSP, etc.)
-- Pólizas de seguro
+- Eliminar la condición `if (documentCount >= 10 && !setupDone) return null`
+- Solo ocultar si `dismissed` o `allDone`
+- Exponer función estática `resetChecklist()` para reactivar desde fuera
 
-Al seleccionar, genera un checklist persistente (localStorage) que muestra progreso: "3/6 tipos subidos". Cada item no completado tiene un botón "Subir" que abre el uploader. Se oculta cuando todo está completo o el usuario lo descarta.
+### 2. `src/pages/ChaosInbox.tsx` — Mover checklist arriba + agregar botón reactivar + stats bar
 
-### 2. Integrar checklist en `src/pages/ChaosInbox.tsx`
+- Mover `<DocumentOnboardingChecklist>` fuera de `TabsContent`, colocarlo justo después de `PageHeader` y antes de `Tabs`
+- Agregar un componente **DocumentStatsBar** inline que muestre siempre:
+  - Total documentos subidos
+  - Documentos procesados/clasificados
+  - Desglose por tipo (receipts, invoices, contracts, etc.) con conteo y badges
+- Si el checklist está descartado, mostrar un botón pequeño "Activar guía" que limpia el localStorage y lo reactiva
 
-- Mostrar `DocumentOnboardingChecklist` en la parte superior cuando el usuario tiene menos de 5 documentos clasificados y no ha descartado el checklist
-- El checklist se actualiza automáticamente al procesar documentos (via query invalidation)
+### 3. Crear `src/components/chaos/DocumentStatsBar.tsx`
 
-### 3. Agregar Layer 1 a `src/components/capture/QuickCapture.tsx`
+Barra compacta que consulta documentos del usuario y muestra:
 
-- Importar `checkFilePreUpload` en la función de upload de fotos
-- Antes de subir al storage, verificar nombre+tamaño duplicado
-- Mostrar toast de advertencia si se detecta duplicado
+```text
+┌──────────────────────────────────────────────────────┐
+│ 📄 12 subidos  ✅ 8 procesados  │ 🧾3  📃2  📑1  📋2 │
+│                                  │ Boletas Facturas... │
+└──────────────────────────────────────────────────────┘
+```
 
-### 4. Agregar Layer 2 post-OCR a `src/components/capture/QuickCapture.tsx`
-
-- Después de procesar el recibo con IA (ya existe `processReceipt`), ejecutar `checkContent()` con los datos extraídos
-- Si hay match, mostrar `DuplicateWarningDialog` antes de crear el expense
-- Esto cubre el flujo: FAB → foto → OCR → duplicado?
-
-### 5. Agregar detección en `src/components/files/FileUploadZone.tsx`
-
-- Ya tiene Layer 1. Agregar un callback opcional `onDocumentProcessed` para que el componente padre pueda ejecutar Layer 2 cuando el documento se clasifique
-
----
+- Query a `documents` agrupando por `status` y por tipo (usando `extracted_data->document_type` o la clasificación existente)
+- Query a `contracts` para conteo separado
+- Mostrar conteo total, procesados, y mini-badges por categoría
+- Siempre visible (no colapsable)
 
 ## Archivos afectados
 
-| Acción | Archivo |
+| Accion | Archivo |
 |--------|---------|
-| Crear | `src/components/chaos/DocumentOnboardingChecklist.tsx` |
+| Crear | `src/components/chaos/DocumentStatsBar.tsx` |
+| Modificar | `src/components/chaos/DocumentOnboardingChecklist.tsx` |
 | Modificar | `src/pages/ChaosInbox.tsx` |
-| Modificar | `src/components/capture/QuickCapture.tsx` |
-| Modificar | `src/components/files/FileUploadZone.tsx` |
 
-Sin migraciones de base de datos. El checklist usa localStorage para persistencia del estado de selección del usuario.
+Sin migraciones de base de datos.
 
