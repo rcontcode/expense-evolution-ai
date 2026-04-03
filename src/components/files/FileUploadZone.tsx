@@ -60,6 +60,11 @@ export function FileUploadZone({ onDocumentProcessed }: FileUploadZoneProps = {}
         toast.error(`DB error: ${file.name}`);
       } else {
         successCount++;
+        // Notify parent for Layer 2 detection
+        if (onDocumentProcessed) {
+          const insertedId = (await supabase.from('documents').select('id').eq('user_id', user.id).eq('file_name', file.name).order('created_at', { ascending: false }).limit(1).single()).data?.id;
+          if (insertedId) onDocumentProcessed(insertedId, file.name);
+        }
       }
     }
 
