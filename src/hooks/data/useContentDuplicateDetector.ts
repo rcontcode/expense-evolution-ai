@@ -126,11 +126,18 @@ export async function findContentDuplicates(
   }
 
   // 2. Search documents with extracted_data
-  const { data: docMatches } = await supabase
+  let docQuery = supabase
     .from('documents')
     .select('id, file_name, extracted_data, created_at')
     .eq('user_id', userId)
     .eq('status', 'classified');
+  
+  // Exclude the document we just inserted to avoid self-match
+  if (excludeDocId) {
+    docQuery = docQuery.neq('id', excludeDocId);
+  }
+  
+  const { data: docMatches } = await docQuery;
 
   if (docMatches) {
     for (const doc of docMatches) {
