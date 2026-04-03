@@ -306,7 +306,7 @@ export default function ChaosInbox() {
                   date: firstExpense.date,
                   description: firstExpense.description,
                   line_items: firstExpense.line_items,
-                });
+                }, doc.id);
 
                 if (dupResult.hasDuplicates) {
                   setDuplicateQueue(prev => [...prev, {
