@@ -910,66 +910,82 @@ export default function ChaosInbox() {
         onCreated={() => setRecurringCandidate(null)}
       />
 
-      <DuplicateWarningDialog
-        open={duplicateDialogOpen}
-        onOpenChange={setDuplicateDialogOpen}
-        matches={duplicateMatches}
-        newDocument={duplicateNewDoc}
-        onKeepBoth={() => {
-          toast.info(language === 'es' ? 'Ambos conservados' : 'Both kept');
-        }}
-        onDeleteNew={async () => {
-          if (duplicateDocId) {
-            // Get file path before deleting
-            const { data: docData } = await supabase
-              .from('documents')
-              .select('file_path')
-              .eq('id', duplicateDocId)
-              .single();
+      {duplicateQueue.length > 0 && (
+        <DuplicateWarningDialog
+          open={duplicateDialogOpen}
+          onOpenChange={(open) => {
+            if (!open) {
+              // User closed dialog — skip current item, advance queue
+              setDuplicateQueue(prev => {
+                const next = prev.slice(1);
+                if (next.length === 0) setDuplicateDialogOpen(false);
+                return next;
+              });
+            }
+            setDuplicateDialogOpen(open);
+          }}
+          matches={duplicateQueue[0].matches}
+          newDocument={duplicateQueue[0].newDoc}
+          queuePosition={duplicateQueue.length > 1 ? 1 : undefined}
+          queueTotal={duplicateQueue.length > 1 ? duplicateQueue.length : undefined}
+          onKeepBoth={() => {
+            toast.info(language === 'es' ? 'Ambos conservados' : 'Both kept');
+            advanceDuplicateQueue();
+          }}
+          onDeleteNew={async () => {
+            const currentItem = duplicateQueue[0];
+            if (currentItem?.docId) {
+              const { data: docData } = await supabase
+                .from('documents')
+                .select('file_path')
+                .eq('id', currentItem.docId)
+                .single();
+              
+              await supabase.from('documents').delete().eq('id', currentItem.docId).eq('user_id', user?.id || '');
+              
+              if (docData?.file_path) {
+                await supabase.storage.from('expense-documents').remove([docData.file_path]);
+              }
+              
+              refetch();
+              toast.success(language === 'es' ? 'Duplicado eliminado' : 'Duplicate removed');
+            }
+            advanceDuplicateQueue();
+          }}
+          onReplaceOld={async () => {
+            const currentItem = duplicateQueue[0];
+            const match = currentItem?.matches[0];
+            if (!match) {
+              toast.info(language === 'es' ? 'Ambos conservados' : 'Both kept');
+              advanceDuplicateQueue();
+              return;
+            }
             
-            await supabase.from('documents').delete().eq('id', duplicateDocId).eq('user_id', user?.id || '');
+            if (match.type === 'expense') {
+              await supabase.from('expenses').delete().eq('id', match.id).eq('user_id', user?.id || '');
+            }
             
-            // Clean up storage
-            if (docData?.file_path) {
-              await supabase.storage.from('expense-documents').remove([docData.file_path]);
+            const oldDocId = match.type === 'document' ? match.id : match.document_id;
+            if (oldDocId) {
+              const { data: oldDoc } = await supabase
+                .from('documents')
+                .select('file_path')
+                .eq('id', oldDocId)
+                .single();
+              
+              await supabase.from('documents').delete().eq('id', oldDocId).eq('user_id', user?.id || '');
+              
+              if (oldDoc?.file_path) {
+                await supabase.storage.from('expense-documents').remove([oldDoc.file_path]);
+              }
             }
             
             refetch();
-            toast.success(language === 'es' ? 'Duplicado eliminado' : 'Duplicate removed');
-          }
-        }}
-        onReplaceOld={async () => {
-          const match = duplicateMatches[0];
-          if (!match) {
-            toast.info(language === 'es' ? 'Ambos conservados (no se pudo reemplazar)' : 'Both kept (could not replace)');
-            return;
-          }
-          
-          // Delete associated expense if exists
-          if (match.type === 'expense') {
-            await supabase.from('expenses').delete().eq('id', match.id).eq('user_id', user?.id || '');
-          }
-          
-          // Delete old document
-          const oldDocId = match.type === 'document' ? match.id : match.document_id;
-          if (oldDocId) {
-            const { data: oldDoc } = await supabase
-              .from('documents')
-              .select('file_path')
-              .eq('id', oldDocId)
-              .single();
-            
-            await supabase.from('documents').delete().eq('id', oldDocId).eq('user_id', user?.id || '');
-            
-            if (oldDoc?.file_path) {
-              await supabase.storage.from('expense-documents').remove([oldDoc.file_path]);
-            }
-          }
-          
-          refetch();
-          toast.success(language === 'es' ? 'Anterior reemplazado' : 'Old one replaced');
-        }}
-      />
+            toast.success(language === 'es' ? 'Anterior reemplazado' : 'Old one replaced');
+            advanceDuplicateQueue();
+          }}
+        />
+      )}
     </Layout>
   );
 }
