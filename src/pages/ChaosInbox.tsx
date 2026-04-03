@@ -643,6 +643,7 @@ export default function ChaosInbox() {
             onUploadClick={() => {
               fileInputRef.current?.click();
             }}
+            uploadedTypes={uploadedTypes}
           />
 
           {/* Tabs: Unified vs Receipt Review */}
