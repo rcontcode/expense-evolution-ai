@@ -1,74 +1,86 @@
 
-Problemas detectados y plan de corrección:
+Objetivo: corregir de raíz la previsualización de PDFs en la Bandeja del Caos y en la comparación de duplicados.
 
-1. PDFs no visibles dentro de la app
-- El visor actual usa `createSignedUrl(...)` y luego embebe esa URL firmada en un `<iframe>`.
-- En tus capturas, Chrome bloquea esa URL con `ERR_BLOCKED_BY_CLIENT`, así que no es un fallo del PDF en sí: el navegador/extensión está bloqueando el dominio/ruta firmada.
-- Además, el botón “Ver documentos para comparar” hace `window.open(signedUrl, '_blank')`, que cae exactamente en el mismo problema.
+Problema real
+- Las imágenes sí se ven, pero los PDFs no.
+- Ya no parece ser un problema de URL firmada solamente: ahora el fallo restante está en cómo se intenta renderizar el PDF dentro de la app.
+- Hoy el código sigue usando el visor nativo del navegador con `<object>` / `<iframe>` para PDFs en varios puntos. En este entorno embebido eso es frágil y está cayendo al fallback.
+- Además, la normalización del Blob está incompleta: si Storage devuelve un `Blob` con `type` incorrecto pero no vacío (por ejemplo `application/octet-stream`), el código lo acepta tal cual y no lo corrige a `application/pdf`.
 
-2. Revisión técnica encontrada
-- `src/hooks/data/useDocumentUrl.ts` entrega una signed URL directa.
-- `src/components/ReceiptPhotoViewer.tsx` renderiza PDFs con `<iframe src={url}>`.
-- `src/components/chaos/DuplicateWarningDialog.tsx` abre documentos con `window.open(signedUrl, '_blank')`.
-- `src/pages/ChaosInbox.tsx` solo permite “Buscar duplicados” en documentos pendientes/corrección; los aprobados no reciben `onCheckDuplicates`, por eso después “ya no hay forma” de relanzar la detección.
+Do I know what the issue is?
+Sí.
+El problema es doble:
+1. `useDocumentReview.ts` y `useDocumentUrl.ts` solo corrigen el MIME cuando `blob.type` viene vacío, no cuando viene incorrecto.
+2. Aunque el Blob sea correcto, la UI sigue dependiendo del renderizador PDF nativo del navegador (`<object>/<iframe>`), que en este preview embebido está fallando. Por eso las fotos se ven y los PDFs no.
 
-Plan de implementación
-
-1. Cambiar la estrategia de preview de PDFs y documentos
-- Dejar de depender de abrir la signed URL directamente en pestaña o iframe.
-- En `useDocumentUrl`, bajar el archivo con Storage API (`download`) y convertirlo a `blob:` URL con `URL.createObjectURL(...)`.
-- Devolver también el tipo MIME o inferirlo por extensión para distinguir PDF vs imagen.
-- Esto evita que el navegador trate la preview como navegación externa al dominio bloqueado.
-
-2. Arreglar el visor principal de documentos
-- Actualizar `src/components/ReceiptPhotoViewer.tsx` para usar el `blob:` URL generado localmente.
-- Mantener `<iframe>` o `<object>` para PDF, pero apuntando al blob local, no a la signed URL remota.
-- Ajustar descarga para usar nombre real del archivo y no siempre `receipt.jpg`.
-- Limpiar `objectURL` al desmontar/cambiar documento para evitar fugas de memoria.
-
-3. Corregir “Ver documentos para comparar”
-- En `src/components/chaos/DuplicateWarningDialog.tsx`, dejar de hacer `window.open(signedUrl, '_blank')`.
-- Reemplazarlo por una de estas dos opciones, siguiendo el patrón más consistente con la app:
-  - abrir un visor interno/modal para cada documento, o
-  - descargar ambos archivos como blob URLs y abrir una vista interna comparativa.
-- Recomendación: usar un diálogo interno de comparación lado a lado, porque evita popups, bloqueadores y da mejor UX para decidir duplicados.
-
-4. Hacer que la comparación sea usable de verdad
-- En el diálogo de duplicados, mostrar ambos documentos dentro de la app:
-  - nuevo documento
-  - documento ya existente
-- Si uno es PDF y otro imagen, cada uno usa su renderer apropiado.
-- Conservar arriba los metadatos comparados: proveedor, monto, fecha, hora, nombre de archivo.
-
-5. Permitir re-ejecutar búsqueda de duplicados aun después de procesados
-- En `src/pages/ChaosInbox.tsx`, pasar `onCheckDuplicates={handleCheckDuplicates}` también a `approvedDocs`.
-- Revisar si conviene incluir también `rejectedDocs` o solo aprobados.
-- Así el usuario podrá volver a lanzar la detección manual sobre documentos ya procesados.
-
-6. Mejorar la detección manual para documentos ya guardados
-- En `handleCheckDuplicates`, incluir también `time` cuando exista en `extracted_data`.
-- Verificar que el documento actual quede excluido correctamente por `id`.
-- Si hay coincidencias, abrir el mismo flujo consultivo de duplicados; si no, mostrar feedback claro de “no encontré coincidencias”.
-
-7. Robustecer fallback y mensajes
-- Si un archivo no puede previsualizarse, mostrar mensaje explícito:
-  - “No pude abrir este archivo dentro de la app”
-  - botón alternativo de descarga
-- Si el bloqueo viene del navegador/extensión, el usuario igual podrá verlo dentro del visor interno basado en blob y no quedará enviado a una página de error.
-
-Archivos a modificar
+Archivos donde está el problema
+- `src/hooks/data/useDocumentReview.ts`
 - `src/hooks/data/useDocumentUrl.ts`
-- `src/components/ReceiptPhotoViewer.tsx`
+- `src/components/capture/ReceiptReviewDialog.tsx`
 - `src/components/chaos/DuplicateWarningDialog.tsx`
-- `src/pages/ChaosInbox.tsx`
+- `src/components/ReceiptPhotoViewer.tsx`
+- `src/components/capture/ReceiptReviewCard.tsx`
 
-Resultado esperado
-- Los PDFs vuelven a verse dentro de la app.
-- “Ver documentos para comparar” ya no manda a una página bloqueada.
-- Se pueden revisar visualmente los dos documentos antes de decidir.
-- También podrás volver a buscar duplicados en documentos ya aprobados/procesados.
+Plan de corrección
+1. Unificar la carga de documentos
+- Consolidar la lógica de preview para que todas las vistas usen una sola fuente de verdad.
+- Hacer que el hook devuelva al menos: `blob`, `objectUrl`, `mimeType`, `fileName`, `isLoading`, `error`.
+- Corregir la normalización MIME así:
+  - si el archivo es `.pdf`, forzar `application/pdf` aunque el Blob venga con tipo genérico;
+  - no depender de `blob.type` si contradice la extensión o el `file_type`.
+
+2. Dejar de usar el visor PDF nativo del navegador
+- Reemplazar `<object>` / `<iframe>` para PDFs por un renderizador JavaScript basado en PDF.js (por ejemplo `react-pdf`).
+- Esto renderiza páginas en canvas dentro de React y evita depender del plugin PDF del navegador, que es justo lo que está fallando aquí.
+- Mantener imágenes con `<img>` normal.
+
+3. Crear un renderer compartido de documentos
+- Crear un componente reutilizable tipo `DocumentPreviewRenderer`.
+- Comportamiento:
+  - imagen: muestra `<img>`
+  - PDF: muestra página 1 renderizada con PDF.js
+  - loading: skeleton/spinner claro
+  - error: mensaje explícito + botón descargar
+- Así se evita tener 3 implementaciones distintas del mismo problema.
+
+4. Aplicar el renderer en todos los puntos rotos
+- `ReceiptReviewDialog`: visor principal del documento.
+- `DuplicateWarningDialog`: comparación visual lado a lado dentro de la app.
+- `ReceiptPhotoViewer`: visor genérico.
+- `ReceiptReviewCard`: miniatura real del PDF en la tarjeta, en vez de solo icono “PDF listo para revisar”.
+
+5. Mejorar UX de PDFs
+- En tarjetas: mostrar miniatura de la primera página.
+- En diálogo de revisión: mostrar el PDF de forma visible y estable.
+- En comparación de duplicados: mostrar ambos documentos dentro del modal.
+- Siempre dejar botón de descarga como fallback, pero ya no como única salida.
+
+6. Verificación específica
+- Probar un PDF en:
+  - tarjeta del inbox
+  - modal “Revisar documento”
+  - modal “Ver documentos para comparar”
+- Confirmar que:
+  - ya no aparece “No pude mostrar este PDF dentro de la app” para PDFs válidos;
+  - el preview funciona sin abrir pestañas externas;
+  - imágenes siguen funcionando igual.
+
+Sin cambios de backend
+- No requiere migraciones ni cambios en base de datos.
+- Es una corrección 100% frontend.
 
 Detalles técnicos
-- Causa raíz principal: uso de signed URLs como destino de navegación/iframe, bloqueadas por Chrome/extensiones (`ERR_BLOCKED_BY_CLIENT`).
-- Solución más segura en frontend: `storage.download(filePath)` → `Blob` → `URL.createObjectURL(blob)`.
-- Causa secundaria del flujo de duplicados: `approvedDocs` no recibe `onCheckDuplicates`, así que el botón/acción no existe para procesados.
+- Bug actual en hooks:
+  - hoy se usa lógica tipo `blob.type ? blob : new Blob(...)`
+  - eso falla cuando el tipo existe pero es incorrecto
+- Solución robusta:
+  - inferir MIME por extensión/nombre
+  - si es PDF, recrear Blob con `type: 'application/pdf'`
+  - renderizar con PDF.js, no con `<object>` / `<iframe>`
+- Motivo:
+  - el visor PDF nativo del navegador no es confiable en este preview embebido; PDF.js sí lo es porque no depende del plugin del navegador.
+
+Resultado esperado
+- Los PDFs se verán dentro de la app igual que las imágenes.
+- La comparación de duplicados mostrará ambos documentos sin errores.
+- Ya no dependeremos de hacks de `iframe`, `object`, signed URLs o comportamiento del navegador para PDF.
