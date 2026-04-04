@@ -211,7 +211,10 @@ export async function findContentDuplicates(
   extracted: { vendor?: string; amount?: number; date?: string; time?: string; description?: string; line_items?: Array<{ name: string; total: number }> },
   excludeDocId?: string
 ): Promise<DuplicateCheckResult> {
+  console.log('[DupCheck] Starting check with:', { vendor: extracted.vendor, amount: extracted.amount, date: extracted.date, excludeDocId });
+  
   if (!extracted.vendor && !extracted.amount) {
+    console.log('[DupCheck] Skipped: no vendor and no amount');
     return { hasDuplicates: false, matches: [] };
   }
 
@@ -232,7 +235,8 @@ export async function findContentDuplicates(
       expQuery = expQuery.neq('document_id', excludeDocId);
     }
     
-    const { data: expenseMatches } = await expQuery;
+    const { data: expenseMatches, error: expErr } = await expQuery;
+    console.log('[DupCheck] Expense query results:', expenseMatches?.length, 'error:', expErr);
 
     if (expenseMatches) {
       for (const exp of expenseMatches) {
@@ -277,7 +281,8 @@ export async function findContentDuplicates(
     docQuery = docQuery.neq('id', excludeDocId);
   }
   
-  const { data: docMatches } = await docQuery;
+  const { data: docMatches, error: docErr } = await docQuery;
+  console.log('[DupCheck] Document query results:', docMatches?.length, 'error:', docErr);
 
   if (docMatches) {
     for (const doc of docMatches) {
@@ -289,6 +294,8 @@ export async function findContentDuplicates(
       const docDate = ed.date || '';
       const docTime = ed.time || undefined;
 
+      console.log('[DupCheck] Comparing doc', doc.id, { docVendor, docAmount, docDate, extractedVendor: extracted.vendor, extractedAmount: extracted.amount });
+
       const comparison = compareDuplicateCandidate(
         extracted,
         {
@@ -299,6 +306,7 @@ export async function findContentDuplicates(
         },
         { isRecurring }
       );
+      console.log('[DupCheck] Comparison result:', comparison.isMatch, comparison);
 
       if (comparison.isMatch) {
         if (matches.some(m => m.document_id === doc.id || m.id === doc.id)) continue;

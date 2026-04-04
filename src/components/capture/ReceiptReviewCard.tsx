@@ -6,7 +6,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { EXPENSE_CATEGORIES } from '@/lib/constants/expense-categories';
 import { 
   Check, X, Loader2, Eye,
-  AlertTriangle, CheckCircle2, Clock, Trash2, FileText
+  AlertTriangle, CheckCircle2, Clock, Trash2, FileText, Search
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -53,6 +53,7 @@ interface ReceiptReviewCardProps {
   onReject: (id: string, reason: string) => Promise<void>;
   onAddComment: (id: string, comment: string) => Promise<void>;
   onDelete?: (id: string) => Promise<void>;
+  onCheckDuplicates?: (id: string, data: ExtractedData) => Promise<void>;
   isLoading?: boolean;
   onDataExtracted?: () => void;
 }
@@ -64,12 +65,14 @@ export function ReceiptReviewCard({
   onReject,
   onAddComment,
   onDelete,
+  onCheckDuplicates,
   isLoading,
   onDataExtracted 
 }: ReceiptReviewCardProps) {
   const { language } = useLanguage();
   const [showReviewDialog, setShowReviewDialog] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [checkingDups, setCheckingDups] = useState(false);
 
   const data = document.extracted_data || {};
   const isPending = document.review_status === 'pending_review';
@@ -196,9 +199,29 @@ export function ReceiptReviewCard({
             </div>
           )}
 
-          {/* Delete Button - Always visible */}
-          {onDelete && (
-            <div className="pt-2" onClick={(e) => e.stopPropagation()}>
+          {/* Duplicate Check + Delete Buttons */}
+          <div className="flex gap-2 pt-2" onClick={(e) => e.stopPropagation()}>
+            {onCheckDuplicates && isPending && (
+              <Button 
+                size="sm" 
+                variant="outline"
+                disabled={checkingDups}
+                onClick={async (e) => {
+                  e.stopPropagation();
+                  setCheckingDups(true);
+                  try {
+                    await onCheckDuplicates(document.id, data);
+                  } finally {
+                    setCheckingDups(false);
+                  }
+                }}
+                className="flex-1"
+              >
+                {checkingDups ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Search className="h-4 w-4 mr-1" />}
+                {language === 'es' ? 'Buscar duplicados' : 'Check duplicates'}
+              </Button>
+            )}
+            {onDelete && (
               <Button 
                 size="sm" 
                 variant="ghost"
@@ -206,13 +229,13 @@ export function ReceiptReviewCard({
                   e.stopPropagation();
                   setShowDeleteConfirm(true);
                 }} 
-                className="w-full text-destructive hover:text-destructive hover:bg-destructive/10"
+                className="flex-1 text-destructive hover:text-destructive hover:bg-destructive/10"
               >
                 <Trash2 className="h-4 w-4 mr-1" />
                 {language === 'es' ? 'Eliminar' : 'Delete'}
               </Button>
-            </div>
-          )}
+            )}
+          </div>
         </CardContent>
       </Card>
 

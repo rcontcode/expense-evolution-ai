@@ -45,12 +45,13 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
-function DocumentImageWrapper({ document, onApprove, onReject, onAddComment, onDelete, isLoading, onDataExtracted }: {
+function DocumentImageWrapper({ document, onApprove, onReject, onAddComment, onDelete, onCheckDuplicates, isLoading, onDataExtracted }: {
   document: ReceiptDocument;
   onApprove: (id: string, data: ExtractedData) => Promise<void>;
   onReject: (id: string, reason: string) => Promise<void>;
   onAddComment: (id: string, comment: string) => Promise<void>;
   onDelete?: (id: string) => Promise<void>;
+  onCheckDuplicates?: (id: string, data: ExtractedData) => Promise<void>;
   isLoading?: boolean;
   onDataExtracted?: () => void;
 }) {
@@ -64,6 +65,7 @@ function DocumentImageWrapper({ document, onApprove, onReject, onAddComment, onD
       onReject={onReject}
       onAddComment={onAddComment}
       onDelete={onDelete}
+      onCheckDuplicates={onCheckDuplicates}
       isLoading={isLoading}
       onDataExtracted={onDataExtracted}
     />
@@ -447,6 +449,42 @@ export default function ChaosInbox() {
   const handleDelete = async (id: string) => {
     if (!window.confirm(language === 'es' ? '¿Eliminar este documento permanentemente?' : 'Delete this document permanently?')) return;
     await deleteDocument.mutateAsync(id);
+  };
+
+  const handleCheckDuplicates = async (id: string, data: ExtractedData) => {
+    if (!user?.id) return;
+    setCheckingDuplicates(true);
+    try {
+      const dupResult = await checkContent({
+        vendor: data.vendor,
+        amount: data.amount,
+        date: data.date,
+        description: data.description,
+      }, id);
+
+      if (dupResult.hasDuplicates) {
+        setDuplicateQueue([{
+          matches: dupResult.matches,
+          newDoc: {
+            vendor: data.vendor,
+            amount: data.amount,
+            date: data.date,
+            description: data.description,
+          },
+          docId: id,
+        }]);
+        setDuplicateQueueTotal(1);
+        setDuplicateDialogOpen(true);
+      } else {
+        toast.info(
+          language === 'es' 
+            ? '✅ No se encontraron duplicados para este documento' 
+            : '✅ No duplicates found for this document'
+        );
+      }
+    } finally {
+      setCheckingDuplicates(false);
+    }
   };
 
   const handleCameraPhotos = async (photos: CapturedPhoto[]) => {
@@ -864,6 +902,7 @@ export default function ChaosInbox() {
                     onReject={handleReject}
                     onAddComment={handleAddComment}
                     onDelete={handleDelete}
+                    onCheckDuplicates={handleCheckDuplicates}
                     isLoading={approveDocument.isPending || processing === doc.id}
                     onDataExtracted={() => refetch()}
                   />
@@ -894,6 +933,7 @@ export default function ChaosInbox() {
                     onReject={handleReject}
                     onAddComment={handleAddComment}
                     onDelete={handleDelete}
+                    onCheckDuplicates={handleCheckDuplicates}
                     isLoading={approveDocument.isPending}
                     onDataExtracted={() => refetch()}
                   />
