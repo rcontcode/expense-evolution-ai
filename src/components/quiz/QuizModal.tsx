@@ -365,13 +365,13 @@ export const QuizModal = ({ isOpen, onClose, onComplete, referralInfo }: QuizMod
     // Show encouragement for "Yes" answers
     if (answer) {
       setShowEncouragement(questionIndex);
-      // Keep showing for 3.5 seconds before advancing
+      // Keep showing for 5.5 seconds so user can read the full message
       setTimeout(() => {
         setShowEncouragement(null);
         if (step < TOTAL_STEPS - 1) {
           setStep(step + 1);
         }
-      }, 3500);
+      }, 5500);
     } else {
       // For "No" answers, advance quickly
       setTimeout(() => {
