@@ -625,23 +625,14 @@ export function ReceiptReviewDialog({
               >
                 {imageUrl ? (
                   isPdfDocument ? (
-                    <object
-                      data={urlWithPdfParams(imageUrl)}
-                      type="application/pdf"
-                      aria-label={document.file_name}
-                      className="w-full h-full rounded-lg bg-background"
-                      style={{ minHeight: '500px' }}
-                    >
-                      <div className="flex h-full min-h-[500px] flex-col items-center justify-center gap-3 p-6 text-center text-muted-foreground">
-                        <FileText className="h-12 w-12" />
-                        <p className="text-sm font-medium">{document.file_name}</p>
-                        <p className="text-xs">{language === 'es' ? 'No pude mostrar este PDF dentro de la app.' : 'Could not preview this PDF inside the app.'}</p>
-                        <Button variant="outline" size="sm" onClick={downloadImage}>
-                          <Download className="h-4 w-4 mr-1" />
-                          {language === 'es' ? 'Descargar PDF' : 'Download PDF'}
-                        </Button>
-                      </div>
-                    </object>
+                    <DocumentPreviewRenderer
+                      url={imageUrl}
+                      fileName={document.file_name}
+                      mimeType="application/pdf"
+                      className="w-full h-full min-h-[500px]"
+                      pdfWidth={550}
+                      onDownload={downloadImage}
+                    />
                   ) : (
                     <img 
                       src={imageUrl} 
