@@ -219,11 +219,27 @@ export function DuplicateWarningDialog({
             )}
           </div>
 
-          {/* Comparison metadata */}
+          {/* Selectable comparison cards */}
+          <p className="text-xs text-muted-foreground">
+            {isEs ? 'Haz clic en el que deseas conservar:' : 'Click the one you want to keep:'}
+          </p>
           <div className="grid grid-cols-2 gap-3">
-            <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 space-y-1">
+            <div 
+              className={cn(
+                "rounded-lg border-2 p-3 space-y-1 cursor-pointer transition-all relative",
+                selected === 'new' 
+                  ? "border-primary bg-primary/10 ring-2 ring-primary/30" 
+                  : "border-border hover:border-primary/50 bg-card"
+              )}
+              onClick={() => setSelected(prev => prev === 'new' ? null : 'new')}
+            >
+              {selected === 'new' && (
+                <div className="absolute top-2 right-2 h-5 w-5 rounded-full bg-primary flex items-center justify-center">
+                  <Check className="h-3 w-3 text-primary-foreground" />
+                </div>
+              )}
               <p className="text-xs font-medium text-primary">
-                {isEs ? 'Nuevo' : 'New'}
+                {isEs ? '📄 Nuevo' : '📄 New'}
               </p>
               <p className="text-sm font-semibold truncate">{newDocument.vendor || '—'}</p>
               <p className="text-sm">${Number(newDocument.amount || 0).toFixed(2)}</p>
@@ -236,9 +252,22 @@ export function DuplicateWarningDialog({
               )}
             </div>
 
-            <div className="rounded-lg border border-muted bg-muted/30 p-3 space-y-1">
+            <div 
+              className={cn(
+                "rounded-lg border-2 p-3 space-y-1 cursor-pointer transition-all relative",
+                selected === 'existing' 
+                  ? "border-primary bg-primary/10 ring-2 ring-primary/30" 
+                  : "border-border hover:border-primary/50 bg-card"
+              )}
+              onClick={() => setSelected(prev => prev === 'existing' ? null : 'existing')}
+            >
+              {selected === 'existing' && (
+                <div className="absolute top-2 right-2 h-5 w-5 rounded-full bg-primary flex items-center justify-center">
+                  <Check className="h-3 w-3 text-primary-foreground" />
+                </div>
+              )}
               <p className="text-xs font-medium text-muted-foreground">
-                {isEs ? 'Existente' : 'Existing'}
+                {isEs ? '📁 Existente' : '📁 Existing'}
               </p>
               <p className="text-sm font-semibold truncate">{bestMatch.vendor || '—'}</p>
               <p className="text-sm">${bestMatch.amount.toFixed(2)}</p>
