@@ -117,14 +117,14 @@ export function ReceiptReviewCard({
             {imageUrl ? (
               document.file_name?.toLowerCase().endsWith('.pdf') ? (
                 <>
-                  <div className="w-full h-full pointer-events-none">
+                  <div className="w-full h-full pointer-events-none overflow-hidden flex items-center justify-center">
                     <DocumentPreviewRenderer
                       url={imageUrl}
                       fileName={document.file_name}
                       mimeType="application/pdf"
-                      className="w-full h-full"
+                      className="w-full h-full [&>div]:overflow-hidden [&>div]:flex [&>div]:items-start [&>div]:justify-center"
                       allPages={false}
-                      pdfWidth={250}
+                      pdfWidth={300}
                     />
                   </div>
                   <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
