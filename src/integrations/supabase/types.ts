@@ -282,32 +282,59 @@ export type Database = {
       bank_transactions: {
         Row: {
           amount: number
+          auto_categorized: boolean | null
+          bank_name: string | null
+          category: string | null
           created_at: string | null
           description: string | null
+          duplicate_hash: string | null
           id: string
+          is_recurring: boolean | null
           matched_expense_id: string | null
+          matched_income_id: string | null
+          original_amount: number | null
+          recurring_type: string | null
           status: string | null
           transaction_date: string
+          transaction_type: string | null
           user_id: string
         }
         Insert: {
           amount: number
+          auto_categorized?: boolean | null
+          bank_name?: string | null
+          category?: string | null
           created_at?: string | null
           description?: string | null
+          duplicate_hash?: string | null
           id?: string
+          is_recurring?: boolean | null
           matched_expense_id?: string | null
+          matched_income_id?: string | null
+          original_amount?: number | null
+          recurring_type?: string | null
           status?: string | null
           transaction_date: string
+          transaction_type?: string | null
           user_id: string
         }
         Update: {
           amount?: number
+          auto_categorized?: boolean | null
+          bank_name?: string | null
+          category?: string | null
           created_at?: string | null
           description?: string | null
+          duplicate_hash?: string | null
           id?: string
+          is_recurring?: boolean | null
           matched_expense_id?: string | null
+          matched_income_id?: string | null
+          original_amount?: number | null
+          recurring_type?: string | null
           status?: string | null
           transaction_date?: string
+          transaction_type?: string | null
           user_id?: string
         }
         Relationships: [
@@ -316,6 +343,13 @@ export type Database = {
             columns: ["matched_expense_id"]
             isOneToOne: false
             referencedRelation: "expenses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bank_transactions_matched_income_id_fkey"
+            columns: ["matched_income_id"]
+            isOneToOne: false
+            referencedRelation: "income"
             referencedColumns: ["id"]
           },
           {
