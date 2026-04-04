@@ -68,9 +68,8 @@ export function useDocumentUrl(documentId: string | null | undefined) {
           return;
         }
 
-        const normalizedBlob = downloadedBlob.type
-          ? downloadedBlob
-          : new Blob([downloadedBlob], { type: mime });
+        // Always force correct MIME based on extension, never trust blob.type
+        const normalizedBlob = new Blob([downloadedBlob], { type: mime });
 
         if (blobUrlRef.current) {
           URL.revokeObjectURL(blobUrlRef.current);
@@ -124,9 +123,8 @@ export async function getDocumentBlobUrl(docId: string): Promise<{ blobUrl: stri
   if (!downloadedBlob) return null;
 
   const mime = inferMimeType(doc.file_name || doc.file_path);
-  const normalizedBlob = downloadedBlob.type
-    ? downloadedBlob
-    : new Blob([downloadedBlob], { type: mime });
+  // Always force correct MIME based on extension
+  const normalizedBlob = new Blob([downloadedBlob], { type: mime });
 
   return {
     blobUrl: URL.createObjectURL(normalizedBlob),
