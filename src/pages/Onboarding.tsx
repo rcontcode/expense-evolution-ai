@@ -159,6 +159,7 @@ export default function Onboarding() {
         }
       }
 
+      await queryClient.invalidateQueries({ queryKey: ['profile'] });
       toast.success(t('common.success'));
       return true;
     } catch (error: any) {
