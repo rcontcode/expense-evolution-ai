@@ -1016,6 +1016,7 @@ export function UnifiedChaosInboxPanel() {
           }}
           matches={duplicateQueue[0].matches}
           newDocument={duplicateQueue[0].newDoc}
+          newDocId={duplicateQueue[0].docId}
           queuePosition={duplicateQueueTotal > 1 ? (duplicateQueueTotal - duplicateQueue.length + 1) : undefined}
           queueTotal={duplicateQueueTotal > 1 ? duplicateQueueTotal : undefined}
           onKeepBoth={() => {
