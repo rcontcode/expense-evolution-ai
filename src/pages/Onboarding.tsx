@@ -45,6 +45,7 @@ export default function Onboarding() {
   const [clients, setClients] = useState<string[]>(['']);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { t, language } = useLanguage();
   const { user } = useAuth();
   const { data: profile } = useProfile();
