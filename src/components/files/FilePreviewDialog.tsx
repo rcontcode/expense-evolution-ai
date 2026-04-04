@@ -1,7 +1,8 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Download, ExternalLink, FileText } from 'lucide-react';
+import { Download, ExternalLink } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { DocumentPreviewRenderer } from '@/components/shared/DocumentPreviewRenderer';
 import type { UnifiedFile } from '@/hooks/data/useAllFiles';
 
 interface FilePreviewDialogProps {
