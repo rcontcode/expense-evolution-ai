@@ -237,11 +237,13 @@ export function ReceiptReviewDialog({
     localStorage.removeItem(`receipt-rotation-${document.id}`);
   };
 
+  const isPdfDocument = document.file_type?.includes('pdf') || document.file_name?.toLowerCase().endsWith('.pdf');
+
   const downloadImage = () => {
     if (imageUrl) {
       const link = window.document.createElement('a');
       link.href = imageUrl;
-      link.download = document.file_name || 'receipt.jpg';
+      link.download = document.file_name || (isPdfDocument ? 'document.pdf' : 'receipt.jpg');
       window.document.body.appendChild(link);
       link.click();
       window.document.body.removeChild(link);
