@@ -630,6 +630,7 @@ export function useConversationalOnboarding() {
         }
       }
       
+      await queryClient.invalidateQueries({ queryKey: ['profile'] });
       setState(prev => ({ ...prev, isComplete: true, isLoading: false }));
       const successMessage = language === 'es' ? '¡Perfil completado! 🎉' : 'Profile completed! 🎉';
       toast.success(successMessage);
