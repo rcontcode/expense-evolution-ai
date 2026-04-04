@@ -111,19 +111,36 @@ export function ReceiptReviewCard({
           {/* Thumbnail Image */}
           <div className="relative aspect-video bg-muted rounded-lg overflow-hidden group">
             {imageUrl ? (
-              <>
-                <img 
-                  src={imageUrl} 
-                  alt={document.file_name}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                  <Eye className="h-6 w-6 text-white" />
-                  <span className="text-white ml-2 text-sm font-medium">
-                    {language === 'es' ? 'Ver y revisar' : 'View & review'}
-                  </span>
-                </div>
-              </>
+              document.file_name?.toLowerCase().endsWith('.pdf') ? (
+                <>
+                  <div className="flex flex-col items-center justify-center h-full gap-2 bg-muted/50">
+                    <FileText className="h-10 w-10 text-muted-foreground" />
+                    <span className="text-xs text-muted-foreground truncate max-w-[80%] text-center">
+                      {document.file_name}
+                    </span>
+                  </div>
+                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <Eye className="h-6 w-6 text-white" />
+                    <span className="text-white ml-2 text-sm font-medium">
+                      {language === 'es' ? 'Ver y revisar' : 'View & review'}
+                    </span>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <img 
+                    src={imageUrl} 
+                    alt={document.file_name}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <Eye className="h-6 w-6 text-white" />
+                    <span className="text-white ml-2 text-sm font-medium">
+                      {language === 'es' ? 'Ver y revisar' : 'View & review'}
+                    </span>
+                  </div>
+                </>
+              )
             ) : (
               <div className="flex items-center justify-center h-full">
                 <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
