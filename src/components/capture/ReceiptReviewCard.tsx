@@ -53,6 +53,7 @@ interface ReceiptReviewCardProps {
   onReject: (id: string, reason: string) => Promise<void>;
   onAddComment: (id: string, comment: string) => Promise<void>;
   onDelete?: (id: string) => Promise<void>;
+  onCheckDuplicates?: (id: string, data: ExtractedData) => Promise<void>;
   isLoading?: boolean;
   onDataExtracted?: () => void;
 }
