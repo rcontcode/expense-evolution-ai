@@ -23,6 +23,13 @@ export interface DuplicateCheckResult {
   matches: DuplicateMatch[];
 }
 
+export interface DuplicateComparable {
+  vendor?: string | null;
+  amount?: number | null;
+  date?: string | null;
+  time?: string | null;
+}
+
 export function normalizeVendor(vendor: string | null | undefined): string {
   if (!vendor) return '';
   return vendor.toLowerCase().replace(/[^a-z0-9áéíóúñü]/g, '').trim();
@@ -102,6 +109,58 @@ function buildSmartReason(
   };
 }
 
+export function compareDuplicateCandidate(
+  extracted: DuplicateComparable,
+  candidate: DuplicateComparable,
+  options: { amountTolerance?: number; isRecurring?: boolean } = {}
+) {
+  const extractedAmount = Number(extracted.amount) || 0;
+  const candidateAmount = Number(candidate.amount) || 0;
+  const amountTolerance = options.amountTolerance ?? 0.01;
+  const isRecurring = options.isRecurring ?? false;
+
+  if (extractedAmount <= 0 || candidateAmount <= 0) {
+    return { isMatch: false as const, sameDate: false, timeDiff: null as number | null };
+  }
+
+  if (Math.abs(candidateAmount - extractedAmount) > amountTolerance) {
+    return { isMatch: false as const, sameDate: false, timeDiff: null as number | null };
+  }
+
+  if (!vendorMatch(extracted.vendor, candidate.vendor)) {
+    return { isMatch: false as const, sameDate: false, timeDiff: null as number | null };
+  }
+
+  const sameDate = Boolean(extracted.date && candidate.date && extracted.date === candidate.date);
+  const timeDiff = timeDifferenceMinutes(extracted.time, candidate.time);
+  const confidence = determineConfidence(sameDate, timeDiff, isRecurring);
+  const reasons = buildSmartReason(
+    {
+      vendor: extracted.vendor || undefined,
+      amount: extractedAmount,
+      date: extracted.date || undefined,
+      time: extracted.time || undefined,
+    },
+    {
+      vendor: candidate.vendor || null,
+      amount: candidateAmount,
+      date: candidate.date || '',
+      time: candidate.time || undefined,
+    },
+    sameDate,
+    timeDiff,
+    isRecurring
+  );
+
+  return {
+    isMatch: true as const,
+    sameDate,
+    timeDiff,
+    confidence,
+    reasons,
+  };
+}
+
 // Layer 1: Pre-upload check by file_name + file_size
 export async function checkFilePreUpload(
   userId: string,
@@ -177,12 +236,18 @@ export async function findContentDuplicates(
 
     if (expenseMatches) {
       for (const exp of expenseMatches) {
-        if (vendorMatch(extracted.vendor, exp.vendor)) {
-          const sameDate = exp.date === extracted.date;
-          const timeDiff = timeDifferenceMinutes(extracted.time, undefined); // expenses don't have time
-          const confidence = determineConfidence(sameDate, timeDiff, isRecurring);
-          const reasons = buildSmartReason(extracted, exp as any, sameDate, timeDiff, isRecurring);
-          
+        const comparison = compareDuplicateCandidate(
+          extracted,
+          {
+            vendor: exp.vendor,
+            amount: Number(exp.amount),
+            date: exp.date,
+            time: undefined,
+          },
+          { isRecurring }
+        );
+
+        if (comparison.isMatch) {
           matches.push({
             type: 'expense',
             id: exp.id,
@@ -190,9 +255,9 @@ export async function findContentDuplicates(
             amount: Number(exp.amount),
             date: exp.date,
             description: exp.description,
-            confidence,
-            reason_es: reasons.es,
-            reason_en: reasons.en,
+            confidence: comparison.confidence,
+            reason_es: comparison.reasons.es,
+            reason_en: comparison.reasons.en,
             document_id: exp.document_id,
             is_recurring_pattern: isRecurring,
           });
@@ -224,17 +289,19 @@ export async function findContentDuplicates(
       const docDate = ed.date || '';
       const docTime = ed.time || undefined;
 
-      if (
-        docAmount > 0 &&
-        Math.abs(docAmount - (extracted.amount || 0)) < 0.01 &&
-        vendorMatch(extracted.vendor, docVendor)
-      ) {
-        if (matches.some(m => m.document_id === doc.id || m.id === doc.id)) continue;
+      const comparison = compareDuplicateCandidate(
+        extracted,
+        {
+          vendor: docVendor,
+          amount: docAmount,
+          date: docDate,
+          time: docTime,
+        },
+        { isRecurring }
+      );
 
-        const sameDate = docDate === extracted.date;
-        const timeDiff = timeDifferenceMinutes(extracted.time, docTime);
-        const confidence = determineConfidence(sameDate, timeDiff, isRecurring);
-        const reasons = buildSmartReason(extracted, { vendor: docVendor, amount: docAmount, date: docDate, time: docTime }, sameDate, timeDiff, isRecurring);
+      if (comparison.isMatch) {
+        if (matches.some(m => m.document_id === doc.id || m.id === doc.id)) continue;
         
         matches.push({
           type: 'document',
@@ -244,9 +311,9 @@ export async function findContentDuplicates(
           date: docDate,
           time: docTime,
           description: null,
-          confidence,
-          reason_es: reasons.es,
-          reason_en: reasons.en,
+          confidence: comparison.confidence,
+          reason_es: comparison.reasons.es,
+          reason_en: comparison.reasons.en,
           file_name: doc.file_name,
           is_recurring_pattern: isRecurring,
         });
