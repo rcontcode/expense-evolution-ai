@@ -18,7 +18,7 @@ import {
   Building2, Landmark, Calendar, DollarSign, Tag, Store,
   AlertTriangle, CheckCircle2, Clock, RotateCcw, Save, Sparkles, Trash2,
   RotateCw, Download, Maximize2, Move, RefreshCw, ChevronDown, ChevronUp,
-  Receipt, CreditCard, List, ExternalLink
+  Receipt, CreditCard, List, ExternalLink, FileText
 } from 'lucide-react';
 import {
   AlertDialog,
