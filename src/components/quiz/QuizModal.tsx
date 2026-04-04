@@ -21,6 +21,7 @@ interface QuizModalProps {
   onClose: () => void;
   onComplete: (result: QuizResult) => void;
   referralInfo?: ReferralInfo | null;
+  initialStep?: number;
 }
 
 const TOTAL_STEPS = 17;
