@@ -212,7 +212,7 @@ export const QuizRecommendations = ({ failedQuestions, language, situation }: Qu
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.4, delay: index * 0.1 }}
-          className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5 hover:bg-slate-800/70 transition-colors"
+          className="rounded-xl border border-white/10 bg-white/5 p-5 text-white transition-colors hover:bg-white/10"
         >
           <div className="flex items-start gap-4">
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center shrink-0">
@@ -227,10 +227,10 @@ export const QuizRecommendations = ({ failedQuestions, language, situation }: Qu
               <h4 className="text-white font-semibold mb-1">
                 {rec.title[language as "es" | "en"] || rec.title.es}
               </h4>
-              <p className="text-slate-400 text-sm mb-2">
+              <p className="mb-2 text-sm text-white/80">
                 {rec.description[language as "es" | "en"] || rec.description.es}
               </p>
-              <div className="flex items-center gap-2 text-emerald-400 text-sm">
+              <div className="flex items-center gap-2 text-sm text-emerald-400">
                 <Lightbulb className="w-4 h-4" />
                 <span>{rec.feature[language as "es" | "en"] || rec.feature.es}</span>
               </div>
