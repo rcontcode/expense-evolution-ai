@@ -466,7 +466,7 @@ export const QuizResults = ({ result, onRetake, referralInfo, onNavigateToAuth }
   const t = content[language as keyof typeof content] || content.es;
 
   return (
-    <div className="min-h-screen flex flex-col items-center px-4 py-8 md:py-12 relative z-10">
+    <div className="min-h-screen flex flex-col items-center px-4 py-8 md:py-12 relative z-10 text-white">
       {/* Personalized Greeting with Crown for high scorers */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
