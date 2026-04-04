@@ -373,12 +373,12 @@ export const QuizModal = ({ isOpen, onClose, onComplete, referralInfo }: QuizMod
         }
       }, 5500);
     } else {
-      // For "No" answers, advance quickly
+      // For "No" answers, brief pause before advancing
       setTimeout(() => {
         if (step < TOTAL_STEPS - 1) {
           setStep(step + 1);
         }
-      }, 400);
+      }, 700);
     }
   };
 
