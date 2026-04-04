@@ -658,7 +658,7 @@ export function UnifiedChaosInboxPanel() {
   const [wizardOpen, setWizardOpen] = useState(false);
   const [duplicateQueue, setDuplicateQueue] = useState<Array<{
     matches: DuplicateMatch[];
-    newDoc: { vendor?: string; amount?: number; date?: string; description?: string };
+    newDoc: { vendor?: string; amount?: number; date?: string; time?: string; description?: string };
     docId: string;
   }>>([]);
   const [duplicateDialogOpen, setDuplicateDialogOpen] = useState(false);
