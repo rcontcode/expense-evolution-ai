@@ -117,14 +117,15 @@ export function ReceiptReviewCard({
             {imageUrl ? (
               document.file_name?.toLowerCase().endsWith('.pdf') ? (
                 <>
-                  <div className="flex flex-col items-center justify-center h-full gap-2 bg-muted/50">
-                    <FileText className="h-10 w-10 text-muted-foreground" />
-                    <span className="text-xs text-muted-foreground truncate max-w-[80%] text-center">
-                      {document.file_name}
-                    </span>
-                    <span className="text-[11px] text-muted-foreground/80">
-                      {language === 'es' ? 'PDF listo para revisar' : 'PDF ready to review'}
-                    </span>
+                  <div className="w-full h-full pointer-events-none">
+                    <DocumentPreviewRenderer
+                      url={imageUrl}
+                      fileName={document.file_name}
+                      mimeType="application/pdf"
+                      className="w-full h-full"
+                      allPages={false}
+                      pdfWidth={250}
+                    />
                   </div>
                   <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                     <Eye className="h-6 w-6 text-white" />
