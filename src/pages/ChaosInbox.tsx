@@ -1020,7 +1020,7 @@ export default function ChaosInbox() {
               </CollapsibleTrigger>
               <CollapsibleContent className="mt-4">
                 <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                  {approvedDocs.map((doc) => (
+                   {approvedDocs.map((doc) => (
                     <DocumentImageWrapper
                       key={doc.id}
                       document={doc}
@@ -1028,6 +1028,7 @@ export default function ChaosInbox() {
                       onReject={handleReject}
                       onAddComment={handleAddComment}
                       onDelete={handleDelete}
+                      onCheckDuplicates={handleCheckDuplicates}
                       onDataExtracted={() => refetch()}
                     />
                   ))}

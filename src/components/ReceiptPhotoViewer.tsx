@@ -303,7 +303,7 @@ export function ReceiptPhotoViewer({ documentId, size = 'sm', showButton = true 
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8"
-                        onClick={downloadImage}
+                        onClick={downloadFile}
                         disabled={!url}
                       >
                         <Download className="h-4 w-4" />
