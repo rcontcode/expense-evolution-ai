@@ -81,6 +81,7 @@ export function DuplicateWarningDialog({
   const [loadingPreviews, setLoadingPreviews] = useState(false);
   const [newDocPreview, setNewDocPreview] = useState<DocPreview | null>(null);
   const [existingDocPreview, setExistingDocPreview] = useState<DocPreview | null>(null);
+  const [selected, setSelected] = useState<Selection>(null);
 
   const bestMatch = matches[0];
 
@@ -92,6 +93,7 @@ export function DuplicateWarningDialog({
       setNewDocPreview(null);
       setExistingDocPreview(null);
       setShowComparison(false);
+      setSelected(null);
     }
   }, [open]);
 
