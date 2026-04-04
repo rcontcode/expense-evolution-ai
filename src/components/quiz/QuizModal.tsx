@@ -153,6 +153,13 @@ export const QuizModal = ({ isOpen, onClose, onComplete, referralInfo, initialSt
   
   const hasVipReferral = referralInfo?.isValid && referralInfo?.referrerName;
 
+  // Reset step when initialStep changes (e.g. retake quiz)
+  useEffect(() => {
+    if (isOpen && initialStep !== undefined && initialStep > 0) {
+      setStep(initialStep);
+    }
+  }, [isOpen, initialStep]);
+
   // Load persisted progress on mount
   useEffect(() => {
     if (isOpen) {
