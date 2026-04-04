@@ -210,6 +210,53 @@ export function DuplicateWarningDialog({
           <Button
             variant="outline"
             size="sm"
+            className="w-full gap-2"
+            disabled={viewingDocs}
+            onClick={async () => {
+              setViewingDocs(true);
+              try {
+                // Open both the new doc and the existing match in new tabs
+                const docIdsToView: string[] = [];
+                if (newDocId) docIdsToView.push(newDocId);
+                
+                const existingDocId = bestMatch.type === 'document' ? bestMatch.id : bestMatch.document_id;
+                if (existingDocId) docIdsToView.push(existingDocId);
+
+                for (const docId of docIdsToView) {
+                  const { data: doc } = await supabase
+                    .from('documents')
+                    .select('file_path')
+                    .eq('id', docId)
+                    .single();
+                  
+                  if (doc?.file_path) {
+                    const { data: urlData } = await supabase.storage
+                      .from('expense-documents')
+                      .createSignedUrl(doc.file_path, 3600);
+                    if (urlData?.signedUrl) {
+                      window.open(urlData.signedUrl, '_blank');
+                    }
+                  }
+                }
+
+                if (docIdsToView.length === 0) {
+                  toast.info(isEs ? 'No hay documentos disponibles para ver' : 'No documents available to view');
+                }
+              } catch {
+                toast.error(isEs ? 'Error al abrir documentos' : 'Error opening documents');
+              } finally {
+                setViewingDocs(false);
+              }
+            }}
+          >
+            <Eye className="h-4 w-4" />
+            {viewingDocs
+              ? (isEs ? 'Abriendo...' : 'Opening...')
+              : (isEs ? 'Ver documentos para comparar' : 'View documents to compare')}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
             className="w-full gap-2 border-emerald-500/30 hover:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
             onClick={() => { onKeepBoth(); }}
           >
