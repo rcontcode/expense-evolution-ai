@@ -93,7 +93,7 @@ export function DocumentPreviewRenderer({
     }
 
     return (
-      <div className={cn("flex flex-col items-center overflow-auto", className)}>
+      <div className={cn("flex flex-col items-center", allPages ? "overflow-auto" : "overflow-hidden", className)}>
         <Document
           file={url}
           onLoadSuccess={({ numPages: n }) => setNumPages(n)}
