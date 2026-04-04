@@ -322,6 +322,12 @@ export function DuplicateWarningDialog({
                 : (isEs ? 'Ver documentos para comparar' : 'View documents to compare')}
             </Button>
           )}
+
+          {/* Contextual label */}
+          <p className="text-xs text-muted-foreground text-center pt-1">
+            {isEs ? '¿Qué quieres hacer?' : 'What do you want to do?'}
+          </p>
+
           <Button
             variant="outline"
             size="sm"
@@ -329,7 +335,7 @@ export function DuplicateWarningDialog({
             onClick={() => { onKeepBoth(); }}
           >
             <Check className="h-4 w-4" />
-            {isEs ? 'Es una compra nueva — conservar' : 'New purchase — keep both'}
+            {isEs ? 'Son diferentes — conservar ambos' : 'They\'re different — keep both'}
           </Button>
           <Button
             variant="destructive"
@@ -338,7 +344,9 @@ export function DuplicateWarningDialog({
             onClick={() => { onDeleteNew(); }}
           >
             <Trash2 className="h-4 w-4" />
-            {isEs ? 'Sí, es duplicado — eliminar' : 'Yes, duplicate — delete'}
+            {isEs 
+              ? `Eliminar el NUEVO (${newDocument.vendor || 'nuevo documento'})` 
+              : `Delete the NEW one (${newDocument.vendor || 'new document'})`}
           </Button>
           <Button
             variant="secondary"
@@ -347,7 +355,9 @@ export function DuplicateWarningDialog({
             onClick={() => { onReplaceOld(); }}
           >
             <ArrowLeftRight className="h-4 w-4" />
-            {isEs ? 'Reemplazar el anterior' : 'Replace the old one'}
+            {isEs 
+              ? `Conservar nuevo y eliminar el EXISTENTE (${bestMatch.vendor || 'anterior'})` 
+              : `Keep new and delete the EXISTING one (${bestMatch.vendor || 'old'})`}
           </Button>
         </DialogFooter>
       </DialogContent>
