@@ -41,7 +41,8 @@ export function ReceiptPhotoViewer({ documentId, size = 'sm', showButton = true 
   const containerRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
   
-  const { url, isLoading, error } = useDocumentUrl(open ? documentId : null);
+  const { url, fileName, isLoading, error } = useDocumentUrl(open ? documentId : null);
+  const isPdf = fileName?.toLowerCase().endsWith('.pdf');
 
   // Reset state when dialog opens
   useEffect(() => {
