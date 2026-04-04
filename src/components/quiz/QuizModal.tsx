@@ -347,12 +347,14 @@ export const QuizModal = ({ isOpen, onClose, onComplete, referralInfo }: QuizMod
   const handleOptionSelect = (field: keyof QuizData, value: string) => {
     setFormData({ ...formData, [field]: value });
     setErrors({});
-    // Auto-advance after selection for multiple choice
+    // For country "Otro/Other", give time to read the info message
+    const isOtherCountry = field === "country" && (value === "🌍 Otro" || value === "🌍 Other");
+    const delay = isOtherCountry ? 4000 : 600;
     setTimeout(() => {
       if (step < TOTAL_STEPS - 1) {
         setStep(step + 1);
       }
-    }, 300);
+    }, delay);
   };
 
   const handleYesNo = (questionIndex: number, answer: boolean) => {
