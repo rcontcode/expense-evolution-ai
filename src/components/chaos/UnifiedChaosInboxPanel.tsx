@@ -698,23 +698,27 @@ export function UnifiedChaosInboxPanel() {
     const vendor = ep.vendor || ep.remit_to?.name || ep.from_entity || '';
     const amount = parseFloat(String(ep.amount || ep.total || '0').replace(/,/g, '')) || 0;
     const date = ep.date || '';
-    const description = ep.description || '';
+     const description = ep.description || '';
+     const time = ep.time || '';
     
      if ((vendor || amount > 0) && dbDocId) {
       setCheckingDuplicates(true);
       try {
-        const dupResult = await checkContent({ vendor, amount, date, description }, dbDocId);
+         const dupResult = await checkContent({ vendor, amount, date, time, description }, dbDocId);
          const mergedMatches = [...localMatches, ...dupResult.matches].filter((match, index, all) => {
            return all.findIndex(item => item.type === match.type && item.id === match.id && item.document_id === match.document_id) === index;
          });
 
          if (mergedMatches.length > 0) {
-          setDuplicateQueue(prev => [...prev, {
-             matches: mergedMatches,
-            newDoc: { vendor, amount, date, description },
-            docId: dbDocId,
-          }]);
-           setDuplicateQueueTotal(prev => Math.max(prev, mergedMatches.length));
+           setDuplicateQueue(prev => {
+             const next = [...prev, {
+               matches: mergedMatches,
+               newDoc: { vendor, amount, date, time, description },
+               docId: dbDocId,
+             }];
+             setDuplicateQueueTotal(next.length);
+             return next;
+           });
            setDuplicateDialogOpen(true);
         }
       } finally {
@@ -728,10 +732,8 @@ export function UnifiedChaosInboxPanel() {
     const classified = documents.filter(d => d.status === 'classified');
     if (classified.length === 0) return;
     
-    let queuedCount = 0;
     for (const doc of classified) {
       await processDocumentWithDupCheck(doc.id);
-      queuedCount += 1;
     }
     setDuplicateQueue(prev => {
       if (prev.length > 0) {
