@@ -211,7 +211,10 @@ export async function findContentDuplicates(
   extracted: { vendor?: string; amount?: number; date?: string; time?: string; description?: string; line_items?: Array<{ name: string; total: number }> },
   excludeDocId?: string
 ): Promise<DuplicateCheckResult> {
+  console.log('[DupCheck] Starting check with:', { vendor: extracted.vendor, amount: extracted.amount, date: extracted.date, excludeDocId });
+  
   if (!extracted.vendor && !extracted.amount) {
+    console.log('[DupCheck] Skipped: no vendor and no amount');
     return { hasDuplicates: false, matches: [] };
   }
 
