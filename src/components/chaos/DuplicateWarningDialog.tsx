@@ -1,7 +1,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { AlertTriangle, ArrowLeftRight, Trash2, Check, Receipt, FileText } from 'lucide-react';
+import { HelpCircle, Trash2, Check, ArrowLeftRight, Receipt, FileText, Clock, RefreshCw } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { DuplicateMatch } from '@/hooks/data/useContentDuplicateDetector';
 import { cn } from '@/lib/utils';
@@ -15,6 +15,7 @@ interface DuplicateWarningDialogProps {
     vendor?: string;
     amount?: number;
     date?: string;
+    time?: string;
     description?: string;
   };
   queuePosition?: number;
@@ -41,16 +42,51 @@ export function DuplicateWarningDialog({
   const bestMatch = matches[0];
   if (!bestMatch) return null;
 
+  const isRecurring = bestMatch.is_recurring_pattern;
+
+  // Conversational title based on confidence
+  const getTitle = () => {
+    if (bestMatch.confidence === 'high') {
+      return isEs ? '🤔 Esto parece ser el mismo documento' : '🤔 This looks like the same document';
+    }
+    if (isRecurring) {
+      return isEs ? '🔄 Compra frecuente detectada' : '🔄 Frequent purchase detected';
+    }
+    return isEs ? '🤔 Encontré algo similar' : '🤔 Found something similar';
+  };
+
+  // Contextual description
+  const getDescription = () => {
+    if (bestMatch.confidence === 'high') {
+      return isEs
+        ? 'Este documento parece ser el mismo que uno ya registrado. ¿Es duplicado?'
+        : 'This document appears to be the same as one already registered. Is it a duplicate?';
+    }
+    if (isRecurring) {
+      return isEs
+        ? 'Este proveedor tiene compras frecuentes por el mismo monto. ¿Es una compra nueva o ya la tenías registrada?'
+        : 'This vendor has frequent purchases for the same amount. Is this a new purchase or was it already registered?';
+    }
+    if (bestMatch.confidence === 'medium') {
+      return isEs
+        ? 'Encontré un registro similar. ¿Podrías confirmar si es el mismo?'
+        : 'Found a similar record. Could you confirm if it\'s the same?';
+    }
+    return isEs
+      ? 'Hay un registro parecido pero con diferencias. Probablemente son compras separadas.'
+      : 'There\'s a similar record but with differences. These are probably separate purchases.';
+  };
+
   const confidenceColor = {
     high: 'bg-destructive/15 text-destructive border-destructive/30',
     medium: 'bg-accent text-accent-foreground border-border',
-    low: 'bg-muted text-muted-foreground border-border',
+    low: 'bg-emerald-500/15 text-emerald-600 border-emerald-500/30',
   };
 
   const confidenceLabel = {
-    high: isEs ? 'Alta coincidencia' : 'High match',
-    medium: isEs ? 'Coincidencia parcial' : 'Partial match',
-    low: isEs ? 'Baja coincidencia' : 'Low match',
+    high: isEs ? 'Muy similar' : 'Very similar',
+    medium: isEs ? 'Parecido' : 'Similar',
+    low: isEs ? 'Probablemente diferente' : 'Probably different',
   };
 
   const MatchIcon = bestMatch.type === 'expense' ? Receipt : FileText;
@@ -59,10 +95,10 @@ export function DuplicateWarningDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-yellow-500" />
+          <DialogTitle className="flex items-center gap-2 text-base">
+            <HelpCircle className="h-5 w-5 text-primary" />
             <span className="flex-1">
-              {isEs ? 'Posible duplicado detectado' : 'Possible duplicate detected'}
+              {getTitle()}
             </span>
             {queueTotal && queueTotal > 1 && (
               <Badge variant="secondary" className="text-xs ml-2">
@@ -70,14 +106,14 @@ export function DuplicateWarningDialog({
               </Badge>
             )}
           </DialogTitle>
-          <DialogDescription>
-            {isEs ? bestMatch.reason_es : bestMatch.reason_en}
+          <DialogDescription className="text-sm">
+            {getDescription()}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-3">
-          {/* Confidence badge */}
-          <div className="flex items-center gap-2">
+          {/* Badges */}
+          <div className="flex items-center gap-2 flex-wrap">
             <Badge variant="outline" className={cn('text-xs', confidenceColor[bestMatch.confidence])}>
               {confidenceLabel[bestMatch.confidence]}
             </Badge>
@@ -87,6 +123,12 @@ export function DuplicateWarningDialog({
                 ? (isEs ? 'Gasto registrado' : 'Registered expense')
                 : (isEs ? 'Documento' : 'Document')}
             </Badge>
+            {isRecurring && (
+              <Badge variant="outline" className="text-xs gap-1 bg-blue-500/10 text-blue-600 border-blue-500/30">
+                <RefreshCw className="h-3 w-3" />
+                {isEs ? 'Recurrente' : 'Recurring'}
+              </Badge>
+            )}
           </div>
 
           {/* Comparison */}
@@ -99,6 +141,12 @@ export function DuplicateWarningDialog({
               <p className="text-sm font-semibold truncate">{newDocument.vendor || '—'}</p>
               <p className="text-sm">${Number(newDocument.amount || 0).toFixed(2)}</p>
               <p className="text-xs text-muted-foreground">{newDocument.date || '—'}</p>
+              {newDocument.time && (
+                <p className="text-xs text-muted-foreground flex items-center gap-1">
+                  <Clock className="h-3 w-3" />
+                  {newDocument.time}
+                </p>
+              )}
             </div>
 
             {/* Existing match */}
@@ -109,11 +157,26 @@ export function DuplicateWarningDialog({
               <p className="text-sm font-semibold truncate">{bestMatch.vendor || '—'}</p>
               <p className="text-sm">${bestMatch.amount.toFixed(2)}</p>
               <p className="text-xs text-muted-foreground">{bestMatch.date || '—'}</p>
+              {bestMatch.time && (
+                <p className="text-xs text-muted-foreground flex items-center gap-1">
+                  <Clock className="h-3 w-3" />
+                  {bestMatch.time}
+                </p>
+              )}
               {bestMatch.file_name && (
                 <p className="text-xs text-muted-foreground truncate">{bestMatch.file_name}</p>
               )}
             </div>
           </div>
+
+          {/* Contextual hint */}
+          {bestMatch.confidence === 'low' && (
+            <p className="text-xs text-muted-foreground bg-muted/50 rounded-md p-2 italic">
+              {isEs
+                ? '💡 Las diferencias sugieren que son compras separadas. Puedes conservar ambos con tranquilidad.'
+                : '💡 The differences suggest these are separate purchases. You can safely keep both.'}
+            </p>
+          )}
 
           {/* Additional matches */}
           {matches.length > 1 && (
@@ -139,22 +202,22 @@ export function DuplicateWarningDialog({
 
         <DialogFooter className="flex-col gap-2 sm:flex-col">
           <Button
+            variant="outline"
+            size="sm"
+            className="w-full gap-2 border-emerald-500/30 hover:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
+            onClick={() => { onKeepBoth(); }}
+          >
+            <Check className="h-4 w-4" />
+            {isEs ? 'Es una compra nueva — conservar' : 'New purchase — keep both'}
+          </Button>
+          <Button
             variant="destructive"
             size="sm"
             className="w-full gap-2"
             onClick={() => { onDeleteNew(); }}
           >
             <Trash2 className="h-4 w-4" />
-            {isEs ? 'Es duplicado — eliminar nuevo' : 'Is duplicate — delete new'}
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-full gap-2"
-            onClick={() => { onKeepBoth(); }}
-          >
-            <Check className="h-4 w-4" />
-            {isEs ? 'Son diferentes — conservar ambos' : 'Different — keep both'}
+            {isEs ? 'Sí, es duplicado — eliminar' : 'Yes, duplicate — delete'}
           </Button>
           <Button
             variant="secondary"
