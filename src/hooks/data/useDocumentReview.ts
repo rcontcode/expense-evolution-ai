@@ -315,8 +315,18 @@ export function useDocumentImageUrl(filePath: string | null) {
         return;
       }
 
-      const mimeType = filePath.toLowerCase().endsWith('.pdf') ? 'application/pdf' : data.type || 'application/octet-stream';
-      const normalizedBlob = data.type ? data : new Blob([data], { type: mimeType });
+      // Always force the correct MIME based on extension, never trust blob.type
+      const ext = filePath.split('.').pop()?.toLowerCase() || '';
+      const mimeMap: Record<string, string> = {
+        pdf: 'application/pdf',
+        jpg: 'image/jpeg',
+        jpeg: 'image/jpeg',
+        png: 'image/png',
+        webp: 'image/webp',
+        gif: 'image/gif',
+      };
+      const correctMime = mimeMap[ext] || data.type || 'application/octet-stream';
+      const normalizedBlob = new Blob([data], { type: correctMime });
       objectUrl = URL.createObjectURL(normalizedBlob);
       setUrl(objectUrl);
     };

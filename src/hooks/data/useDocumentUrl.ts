@@ -68,9 +68,8 @@ export function useDocumentUrl(documentId: string | null | undefined) {
           return;
         }
 
-        const normalizedBlob = downloadedBlob.type
-          ? downloadedBlob
-          : new Blob([downloadedBlob], { type: mime });
+        // Always force correct MIME based on extension, never trust blob.type
+        const normalizedBlob = new Blob([downloadedBlob], { type: mime });
 
         if (blobUrlRef.current) {
           URL.revokeObjectURL(blobUrlRef.current);
