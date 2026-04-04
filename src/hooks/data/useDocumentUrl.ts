@@ -3,12 +3,14 @@ import { supabase } from '@/integrations/supabase/client';
 
 export function useDocumentUrl(documentId: string | null | undefined) {
   const [url, setUrl] = useState<string | null>(null);
+  const [fileName, setFileName] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!documentId) {
       setUrl(null);
+      setFileName(null);
       return;
     }
 
@@ -29,6 +31,8 @@ export function useDocumentUrl(documentId: string | null | undefined) {
           setUrl(null);
           return;
         }
+
+        setFileName(document.file_name);
 
         // Get signed URL from storage
         const { data: urlData, error: urlError } = await supabase
@@ -54,5 +58,5 @@ export function useDocumentUrl(documentId: string | null | undefined) {
     fetchDocumentUrl();
   }, [documentId]);
 
-  return { url, isLoading, error };
+  return { url, fileName, isLoading, error };
 }
