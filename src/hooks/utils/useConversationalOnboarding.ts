@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUpsertFinancialProfile } from '@/hooks/data/useFinancialProfile';
 import { useUpsertLifeProfile, useMarkSectionComplete, LifeProfileSection } from '@/hooks/data/useLifeProfile';
@@ -392,6 +393,7 @@ const ALL_QUESTIONS = [...ESSENTIAL_QUESTIONS, ...EXTENDED_QUESTIONS];
 export function useConversationalOnboarding() {
   const { user } = useAuth();
   const { language } = useLanguage();
+  const queryClient = useQueryClient();
   const upsertFinancialProfile = useUpsertFinancialProfile();
   const upsertLifeProfile = useUpsertLifeProfile();
   const markSectionComplete = useMarkSectionComplete();
@@ -628,6 +630,7 @@ export function useConversationalOnboarding() {
         }
       }
       
+      await queryClient.invalidateQueries({ queryKey: ['profile'] });
       setState(prev => ({ ...prev, isComplete: true, isLoading: false }));
       const successMessage = language === 'es' ? '¡Perfil completado! 🎉' : 'Profile completed! 🎉';
       toast.success(successMessage);

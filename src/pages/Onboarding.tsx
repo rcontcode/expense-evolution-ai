@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -44,6 +45,7 @@ export default function Onboarding() {
   const [clients, setClients] = useState<string[]>(['']);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { t, language } = useLanguage();
   const { user } = useAuth();
   const { data: profile } = useProfile();
@@ -157,6 +159,7 @@ export default function Onboarding() {
         }
       }
 
+      await queryClient.invalidateQueries({ queryKey: ['profile'] });
       toast.success(t('common.success'));
       return true;
     } catch (error: any) {
