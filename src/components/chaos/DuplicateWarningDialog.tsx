@@ -1,11 +1,14 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { HelpCircle, Trash2, Check, ArrowLeftRight, Receipt, FileText, Clock, RefreshCw } from 'lucide-react';
+import { HelpCircle, Trash2, Check, ArrowLeftRight, Receipt, FileText, Clock, RefreshCw, Eye } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { DuplicateMatch } from '@/hooks/data/useContentDuplicateDetector';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { useState } from 'react';
 
 interface DuplicateWarningDialogProps {
   open: boolean;
@@ -18,6 +21,7 @@ interface DuplicateWarningDialogProps {
     time?: string;
     description?: string;
   };
+  newDocId?: string;
   queuePosition?: number;
   queueTotal?: number;
   onKeepBoth: () => void;
@@ -30,6 +34,7 @@ export function DuplicateWarningDialog({
   onOpenChange,
   matches,
   newDocument,
+  newDocId,
   queuePosition,
   queueTotal,
   onKeepBoth,
@@ -38,6 +43,7 @@ export function DuplicateWarningDialog({
 }: DuplicateWarningDialogProps) {
   const { language } = useLanguage();
   const isEs = language === 'es';
+  const [viewingDocs, setViewingDocs] = useState(false);
 
   const bestMatch = matches[0];
   if (!bestMatch) return null;
@@ -201,6 +207,53 @@ export function DuplicateWarningDialog({
         </div>
 
         <DialogFooter className="flex-col gap-2 sm:flex-col">
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full gap-2"
+            disabled={viewingDocs}
+            onClick={async () => {
+              setViewingDocs(true);
+              try {
+                // Open both the new doc and the existing match in new tabs
+                const docIdsToView: string[] = [];
+                if (newDocId) docIdsToView.push(newDocId);
+                
+                const existingDocId = bestMatch.type === 'document' ? bestMatch.id : bestMatch.document_id;
+                if (existingDocId) docIdsToView.push(existingDocId);
+
+                for (const docId of docIdsToView) {
+                  const { data: doc } = await supabase
+                    .from('documents')
+                    .select('file_path')
+                    .eq('id', docId)
+                    .single();
+                  
+                  if (doc?.file_path) {
+                    const { data: urlData } = await supabase.storage
+                      .from('expense-documents')
+                      .createSignedUrl(doc.file_path, 3600);
+                    if (urlData?.signedUrl) {
+                      window.open(urlData.signedUrl, '_blank');
+                    }
+                  }
+                }
+
+                if (docIdsToView.length === 0) {
+                  toast.info(isEs ? 'No hay documentos disponibles para ver' : 'No documents available to view');
+                }
+              } catch {
+                toast.error(isEs ? 'Error al abrir documentos' : 'Error opening documents');
+              } finally {
+                setViewingDocs(false);
+              }
+            }}
+          >
+            <Eye className="h-4 w-4" />
+            {viewingDocs
+              ? (isEs ? 'Abriendo...' : 'Opening...')
+              : (isEs ? 'Ver documentos para comparar' : 'View documents to compare')}
+          </Button>
           <Button
             variant="outline"
             size="sm"
