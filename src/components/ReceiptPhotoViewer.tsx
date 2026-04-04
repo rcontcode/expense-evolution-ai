@@ -350,14 +350,22 @@ export function ReceiptPhotoViewer({ documentId, size = 'sm', showButton = true 
                 <p className="text-sm">{error}</p>
               </div>
             ) : url && isPdf ? (
-              <DocumentPreviewRenderer
-                url={url}
-                fileName={fileName || undefined}
-                mimeType="application/pdf"
-                className="w-full h-full"
-                pdfWidth={700}
-                onDownload={downloadFile}
-              />
+              <div
+                style={{
+                  transform: `translate(${position.x}px, ${position.y}px) scale(${zoom}) rotate(${rotation}deg)`,
+                  transformOrigin: 'center center',
+                  transition: isDragging ? 'none' : 'transform 0.15s ease-out'
+                }}
+              >
+                <DocumentPreviewRenderer
+                  url={url}
+                  fileName={fileName || undefined}
+                  mimeType="application/pdf"
+                  className="w-full h-full"
+                  pdfWidth={700}
+                  onDownload={downloadFile}
+                />
+              </div>
             ) : url ? (
               <img
                 ref={imageRef}

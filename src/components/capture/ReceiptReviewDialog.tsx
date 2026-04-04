@@ -626,14 +626,22 @@ export function ReceiptReviewDialog({
               >
                 {imageUrl ? (
                   isPdfDocument ? (
-                    <DocumentPreviewRenderer
-                      url={imageUrl}
-                      fileName={document.file_name}
-                      mimeType="application/pdf"
-                      className="w-full h-full min-h-[500px]"
-                      pdfWidth={550}
-                      onDownload={downloadImage}
-                    />
+                    <div
+                      style={{
+                        transform: `translate(${imagePosition.x}px, ${imagePosition.y}px) scale(${imageZoom}) rotate(${imageRotation}deg)`,
+                        transformOrigin: 'center center',
+                        transition: isDragging ? 'none' : 'transform 0.15s ease-out'
+                      }}
+                    >
+                      <DocumentPreviewRenderer
+                        url={imageUrl}
+                        fileName={document.file_name}
+                        mimeType="application/pdf"
+                        className="w-full h-full min-h-[500px]"
+                        pdfWidth={550}
+                        onDownload={downloadImage}
+                      />
+                    </div>
                   ) : (
                     <img 
                       src={imageUrl} 
