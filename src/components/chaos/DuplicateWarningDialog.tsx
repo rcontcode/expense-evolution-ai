@@ -1,11 +1,14 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { HelpCircle, Trash2, Check, ArrowLeftRight, Receipt, FileText, Clock, RefreshCw } from 'lucide-react';
+import { HelpCircle, Trash2, Check, ArrowLeftRight, Receipt, FileText, Clock, RefreshCw, Eye } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { DuplicateMatch } from '@/hooks/data/useContentDuplicateDetector';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { useState } from 'react';
 
 interface DuplicateWarningDialogProps {
   open: boolean;
@@ -18,6 +21,7 @@ interface DuplicateWarningDialogProps {
     time?: string;
     description?: string;
   };
+  newDocId?: string;
   queuePosition?: number;
   queueTotal?: number;
   onKeepBoth: () => void;
