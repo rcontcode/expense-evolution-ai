@@ -65,12 +65,14 @@ export function ReceiptReviewCard({
   onReject,
   onAddComment,
   onDelete,
+  onCheckDuplicates,
   isLoading,
   onDataExtracted 
 }: ReceiptReviewCardProps) {
   const { language } = useLanguage();
   const [showReviewDialog, setShowReviewDialog] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [checkingDups, setCheckingDups] = useState(false);
 
   const data = document.extracted_data || {};
   const isPending = document.review_status === 'pending_review';
