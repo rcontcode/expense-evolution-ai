@@ -349,11 +349,19 @@ export function ReceiptPhotoViewer({ documentId, size = 'sm', showButton = true 
                 <p className="text-sm">{error}</p>
               </div>
             ) : url && isPdf ? (
-              <iframe
-                src={url}
-                className="w-full h-full border-0"
-                title="PDF Preview"
-              />
+              <object
+                data={url}
+                type="application/pdf"
+                className="w-full h-full"
+                aria-label="PDF Preview"
+              >
+                <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center text-muted-foreground">
+                  <ImageOff className="h-12 w-12" />
+                  <p className="text-sm">{fileName || 'PDF'}</p>
+                  <p className="text-xs">No pude previsualizar este PDF dentro de la app.</p>
+                  <Button variant="outline" size="sm" onClick={downloadFile}>Descargar PDF</Button>
+                </div>
+              </object>
             ) : url ? (
               <img
                 ref={imageRef}

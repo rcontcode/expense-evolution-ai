@@ -55,26 +55,28 @@ export function useDocumentUrl(documentId: string | null | undefined) {
         const mime = inferMimeType(document.file_name || document.file_path);
         setMimeType(mime);
 
-        // Download as blob to avoid signed URL blocking
-        const { data: blob, error: dlError } = await supabase
+        const { data: downloadedBlob, error: dlError } = await supabase
           .storage
           .from('expense-documents')
           .download(document.file_path);
 
         if (cancelled) return;
 
-        if (dlError || !blob) {
+        if (dlError || !downloadedBlob) {
           setError('Could not load file');
           setUrl(null);
           return;
         }
 
-        // Revoke previous blob URL
+        const normalizedBlob = downloadedBlob.type
+          ? downloadedBlob
+          : new Blob([downloadedBlob], { type: mime });
+
         if (blobUrlRef.current) {
           URL.revokeObjectURL(blobUrlRef.current);
         }
 
-        const blobUrl = URL.createObjectURL(blob);
+        const blobUrl = URL.createObjectURL(normalizedBlob);
         blobUrlRef.current = blobUrl;
         setUrl(blobUrl);
       } catch {
@@ -114,16 +116,20 @@ export async function getDocumentBlobUrl(docId: string): Promise<{ blobUrl: stri
 
   if (!doc?.file_path) return null;
 
-  const { data: blob } = await supabase
+  const { data: downloadedBlob } = await supabase
     .storage
     .from('expense-documents')
     .download(doc.file_path);
 
-  if (!blob) return null;
+  if (!downloadedBlob) return null;
 
   const mime = inferMimeType(doc.file_name || doc.file_path);
+  const normalizedBlob = downloadedBlob.type
+    ? downloadedBlob
+    : new Blob([downloadedBlob], { type: mime });
+
   return {
-    blobUrl: URL.createObjectURL(blob),
+    blobUrl: URL.createObjectURL(normalizedBlob),
     fileName: doc.file_name || doc.file_path.split('/').pop() || 'document',
     mimeType: mime,
   };

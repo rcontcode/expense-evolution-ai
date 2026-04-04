@@ -18,7 +18,7 @@ import {
   Building2, Landmark, Calendar, DollarSign, Tag, Store,
   AlertTriangle, CheckCircle2, Clock, RotateCcw, Save, Sparkles, Trash2,
   RotateCw, Download, Maximize2, Move, RefreshCw, ChevronDown, ChevronUp,
-  Receipt, CreditCard, List, ExternalLink
+  Receipt, CreditCard, List, ExternalLink, FileText
 } from 'lucide-react';
 import {
   AlertDialog,
@@ -238,6 +238,7 @@ export function ReceiptReviewDialog({
   };
 
   const isPdfDocument = document.file_type?.includes('pdf') || document.file_name?.toLowerCase().endsWith('.pdf');
+  const urlWithPdfParams = (url: string) => `${url}#toolbar=1&navpanes=0&scrollbar=1&view=FitH`;
 
   const downloadImage = () => {
     if (imageUrl) {
@@ -624,12 +625,23 @@ export function ReceiptReviewDialog({
               >
                 {imageUrl ? (
                   isPdfDocument ? (
-                    <iframe
-                      src={`${imageUrl}#toolbar=1&navpanes=0&scrollbar=1&view=FitH`}
-                      title={document.file_name}
-                      className="w-full h-full rounded-lg border-0 bg-background"
+                    <object
+                      data={urlWithPdfParams(imageUrl)}
+                      type="application/pdf"
+                      aria-label={document.file_name}
+                      className="w-full h-full rounded-lg bg-background"
                       style={{ minHeight: '500px' }}
-                    />
+                    >
+                      <div className="flex h-full min-h-[500px] flex-col items-center justify-center gap-3 p-6 text-center text-muted-foreground">
+                        <FileText className="h-12 w-12" />
+                        <p className="text-sm font-medium">{document.file_name}</p>
+                        <p className="text-xs">{language === 'es' ? 'No pude mostrar este PDF dentro de la app.' : 'Could not preview this PDF inside the app.'}</p>
+                        <Button variant="outline" size="sm" onClick={downloadImage}>
+                          <Download className="h-4 w-4 mr-1" />
+                          {language === 'es' ? 'Descargar PDF' : 'Download PDF'}
+                        </Button>
+                      </div>
+                    </object>
                   ) : (
                     <img 
                       src={imageUrl} 
