@@ -11,6 +11,7 @@ import { DocumentPreviewRenderer } from '@/components/shared/DocumentPreviewRend
 import { toast } from 'sonner';
 import { useState, useEffect } from 'react';
 
+type Selection = 'new' | 'existing' | null;
 interface DuplicateWarningDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
