@@ -1,52 +1,81 @@
 
 
-# Plan: Manejo de Documentos No Reconocidos + Feedback Visual de Status de Subida
+# Plan: Detección Inteligente de Duplicados con Confirmación del Usuario
 
-## Problemas
+## Problema
 
-1. **Documentos "unknown"**: Cuando la IA no reconoce un documento, se guarda silenciosamente como "Sin clasificar" sin avisar al usuario. Debería mostrar un mensaje claro: "No reconozco este documento, ¿quieres eliminarlo o indicarme qué es?"
-2. **Sin feedback visual de progreso**: Al subir un archivo desde el tab "Centro de Revisión", no hay indicación visible de que se recibió, se está procesando, o se clasificó. El usuario no sabe qué está pasando.
+El sistema actual marca automáticamente como duplicado cualquier documento con mismo monto y vendor, sin preguntar. Esto genera falsos positivos:
+- **Combustible**: siempre el mismo monto, misma gasolinera, diferentes fechas
+- **Comida**: dos hamburguesas del mismo valor el mismo día pero a horas diferentes
+- **Suscripciones**: pagos recurrentes idénticos mensuales
+
+La detección debe ser más inteligente y **siempre preguntar** antes de actuar.
 
 ## Cambios
 
-### 1. `src/components/chaos/UnifiedChaosInboxPanel.tsx` — Alerta para documentos "unknown"
+### 1. `src/hooks/data/useContentDuplicateDetector.ts` — Lógica más inteligente
 
-En el `DocumentCard`, cuando `classification.document_type === 'unknown'` y el status es `classified`:
-- Mostrar un bloque visual destacado (borde naranja/amarillo) con mensaje: "No reconozco este tipo de documento. ¿Quieres eliminarlo o indicarme qué es para intentar procesarlo?"
-- Dos acciones: 
-  - **"Eliminar"** → llama `onRemove`
-  - **"Cambiar tipo"** → enfoca/abre el dropdown de reclasificación existente
-- Ocultar el botón "Procesar" cuando es `unknown`, ya que no tiene sentido procesarlo sin clasificación
+**Añadir campo `time` al análisis:**
+- El `extracted_preview` del OCR puede incluir la hora de la boleta. Incluir `time` en la interfaz `DuplicateMatch` y en la comparación.
+- Si dos documentos tienen mismo vendor+monto+fecha pero **hora diferente** (≥30 min), bajar la confianza a `low` y ajustar el motivo: "Mismo proveedor y monto pero hora diferente — probablemente compras separadas"
 
-### 2. `src/hooks/data/useUnifiedChaosInbox.ts` — Toast para unknown
+**Añadir campo `frequency_pattern`:**
+- Si existen 3+ gastos previos con el mismo vendor y monto similar (±5%), marcar como "patrón recurrente" en vez de duplicado: confianza `low`, razón "Este proveedor tiene pagos recurrentes del mismo monto"
 
-Después de clasificar, si `document_type === 'unknown'`:
-- Mostrar toast de advertencia: "⚠️ No pudimos identificar [nombre]. Revísalo e indícanos qué tipo es."
-- En vez del toast genérico de éxito
+**Nuevo campo en `DuplicateMatch`:**
+- `is_recurring_pattern: boolean` — indica si el match parece un patrón de compra recurrente
+- `time?: string` — hora extraída de la boleta
 
-### 3. `src/pages/ChaosInbox.tsx` — Feedback visual de progreso en tab Revisión
+**Cambio de confianza:**
+- `high`: mismo vendor + monto + fecha + hora similar (o sin hora) → probablemente duplicado real
+- `medium`: mismo vendor + monto + fecha diferente, sin patrón recurrente
+- `low`: mismo vendor + monto pero hora diferente, O patrón recurrente detectado
 
-Agregar un componente `UploadProgressToast` inline (no solo toasts efímeros) que muestre:
-- **Recibido**: "📥 archivo.pdf recibido" (aparece al iniciar upload)
-- **Subiendo**: "⬆️ Subiendo..." con spinner
-- **Procesando IA**: "🧠 Analizando con IA..." con spinner
-- **Clasificado**: "✅ Clasificado como [tipo]" o "⚠️ No reconocido"
+### 2. `src/components/chaos/DuplicateWarningDialog.tsx` — Diálogo conversacional
 
-Implementar como un estado `uploadProgress` con fases, que se renderiza encima de la lista de documentos pendientes. Se auto-oculta después de 5 segundos del último paso.
+Transformar el diálogo para que sea una **pregunta al usuario**, no una advertencia agresiva:
 
-### 4. `src/pages/ChaosInbox.tsx` — Manejo post-OCR de unknown
+- **Título**: "🤔 Encontré algo similar" en vez de "⚠ Posible duplicado detectado"
+- **Mensaje contextual** según confianza:
+  - `high`: "Este documento parece ser el mismo que uno ya registrado. ¿Es duplicado?"
+  - `medium`: "Encontré un registro similar. ¿Podrías confirmar si es el mismo?"  
+  - `low` + recurring: "Este proveedor tiene compras frecuentes por el mismo monto. ¿Es una compra nueva o ya la tenías registrada?"
+- **Mostrar hora** si está disponible en ambos documentos para facilitar la comparación
+- **Botones rediseñados**:
+  - "✅ Es una compra nueva — conservar" (en vez de "Son diferentes — keep both")
+  - "🗑 Sí, es duplicado — eliminar" (en vez de "Es duplicado — delete new")
+  - "🔄 Reemplazar el anterior" (mantener)
 
-Cuando `process-receipt` devuelve datos pero la clasificación es `unknown` o no tiene `vendor`/`amount` significativos:
-- Mostrar toast persistente de advertencia
-- Marcar el documento con un badge especial en la lista de pendientes
+### 3. `src/hooks/data/useUnifiedChaosInbox.ts` — Pasar hora extraída
+
+Al comparar documentos locales post-clasificación, incluir el campo `time` del `extracted_preview` en la comparación. Si ambos documentos tienen hora y difieren por ≥30 minutos, no marcar como duplicado automáticamente sino con confianza `low`.
+
+## Flujo resultante
+
+```text
+Documento clasificado por IA
+  ↓
+¿Mismo vendor + monto que otro registro?
+  ├─ SÍ + misma fecha + misma hora → confianza HIGH
+  │   → "Este parece ser el mismo documento"
+  ├─ SÍ + misma fecha + hora diferente → confianza LOW  
+  │   → "Mismo lugar y monto pero hora diferente"
+  ├─ SÍ + fecha diferente + patrón recurrente → confianza LOW
+  │   → "Compra frecuente en este proveedor"
+  └─ SÍ + fecha diferente sin patrón → confianza MEDIUM
+      → "Registro similar encontrado, ¿confirmas?"
+  ↓
+SIEMPRE mostrar diálogo conversacional
+El usuario decide: nueva compra / duplicado / reemplazar
+```
 
 ## Archivos afectados
 
 | Acción | Archivo |
 |--------|---------|
-| Modificar | `src/components/chaos/UnifiedChaosInboxPanel.tsx` |
+| Modificar | `src/hooks/data/useContentDuplicateDetector.ts` |
+| Modificar | `src/components/chaos/DuplicateWarningDialog.tsx` |
 | Modificar | `src/hooks/data/useUnifiedChaosInbox.ts` |
-| Modificar | `src/pages/ChaosInbox.tsx` |
 
 Sin migraciones de base de datos.
 
