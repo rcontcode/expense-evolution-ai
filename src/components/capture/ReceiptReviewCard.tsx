@@ -6,7 +6,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { EXPENSE_CATEGORIES } from '@/lib/constants/expense-categories';
 import { 
   Check, X, Loader2, Eye,
-  AlertTriangle, CheckCircle2, Clock, Trash2, FileText
+  AlertTriangle, CheckCircle2, Clock, Trash2, FileText, Search
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
