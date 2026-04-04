@@ -100,7 +100,7 @@ const FinancialQuiz = () => {
 
   const handleRetakeQuiz = () => {
     setResult(null);
-    setQuizInitialStep(5);
+    setQuizInitialStep(0);
     setIsQuizOpen(true);
   };
 
