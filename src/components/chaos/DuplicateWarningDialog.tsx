@@ -34,6 +34,7 @@ export function DuplicateWarningDialog({
   onOpenChange,
   matches,
   newDocument,
+  newDocId,
   queuePosition,
   queueTotal,
   onKeepBoth,
@@ -42,6 +43,7 @@ export function DuplicateWarningDialog({
 }: DuplicateWarningDialogProps) {
   const { language } = useLanguage();
   const isEs = language === 'es';
+  const [viewingDocs, setViewingDocs] = useState(false);
 
   const bestMatch = matches[0];
   if (!bestMatch) return null;
