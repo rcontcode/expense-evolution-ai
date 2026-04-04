@@ -1672,9 +1672,9 @@
     @apply tracking-tight;
   }
 
-  /* Ensure excellent contrast for all text */
+  /* Preserve parent/utility text colors so dark-surface modules keep readable contrast */
   p, span, label, a {
-    @apply text-foreground;
+    color: inherit;
   }
 
   .text-muted-foreground {
