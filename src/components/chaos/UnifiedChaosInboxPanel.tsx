@@ -216,6 +216,7 @@ function DocumentCard({
   const { language } = useLanguage();
   const classification = doc.classification;
   const typeInfo = classification ? TYPE_LABELS[classification.document_type] : null;
+  const hasLocalDuplicates = Boolean(doc.duplicateMatches?.length);
 
   const statusConfig: Record<string, { color: string; pulse?: boolean; label: { es: string; en: string } }> = {
     uploading: { color: 'bg-blue-500/10 text-blue-600 border-blue-500/30', pulse: true, label: { es: 'Subiendo...', en: 'Uploading...' } },
@@ -242,6 +243,7 @@ function DocumentCard({
         doc.status === 'classified' && "ring-1 ring-primary/40 shadow-sm shadow-primary/5",
         doc.status === 'processed' && "opacity-75",
         doc.status === 'error' && "ring-1 ring-destructive/30",
+        hasLocalDuplicates && "ring-2 ring-amber-500/40 shadow-md shadow-amber-500/10",
         status.pulse && "animate-pulse-subtle"
       )}>
         <CardContent className="p-3 sm:p-4">
@@ -277,6 +279,11 @@ function DocumentCard({
                   {status.label[language === 'es' ? 'es' : 'en']}
                 </Badge>
                 {classification && <ConfidenceDot confidence={classification.confidence} />}
+                {hasLocalDuplicates && (
+                  <Badge variant="outline" className="text-[10px] border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400">
+                    ⚠ {language === 'es' ? 'Posible duplicado' : 'Possible duplicate'}
+                  </Badge>
+                )}
               </div>
 
               {/* Classification result */}
@@ -349,6 +356,14 @@ function DocumentCard({
                           👥 {classification.extracted_preview.parties.join(', ')}
                         </Badge>
                       )}
+                    </div>
+                  )}
+
+                  {hasLocalDuplicates && doc.status === 'classified' && (
+                    <div className="mt-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-2.5 py-2 text-[11px] text-amber-700 dark:text-amber-400">
+                      {language === 'es'
+                        ? 'Encontré otro documento muy parecido. Al procesar te preguntaré si es duplicado o una compra distinta.'
+                        : 'I found another very similar document. When you process it I will ask whether it is a duplicate or a separate purchase.'}
                     </div>
                   )}
 
@@ -643,7 +658,7 @@ export function UnifiedChaosInboxPanel() {
   const [wizardOpen, setWizardOpen] = useState(false);
   const [duplicateQueue, setDuplicateQueue] = useState<Array<{
     matches: DuplicateMatch[];
-    newDoc: { vendor?: string; amount?: number; date?: string; description?: string };
+    newDoc: { vendor?: string; amount?: number; date?: string; time?: string; description?: string };
     docId: string;
   }>>([]);
   const [duplicateDialogOpen, setDuplicateDialogOpen] = useState(false);
@@ -673,32 +688,44 @@ export function UnifiedChaosInboxPanel() {
     const result = await rawProcessDocument(docId);
     if (!result?.processedResult) return;
     
-    const pr = result.processedResult;
+     const pr = result.processedResult;
     const ep = result.extractedPreview || {};
     const dbDocId = pr.docId;
+     const localDoc = documents.find(d => d.id === docId);
+     const localMatches = localDoc?.duplicateMatches || [];
     
     // Extract data for duplicate check
     const vendor = ep.vendor || ep.remit_to?.name || ep.from_entity || '';
     const amount = parseFloat(String(ep.amount || ep.total || '0').replace(/,/g, '')) || 0;
     const date = ep.date || '';
-    const description = ep.description || '';
+     const description = ep.description || '';
+     const time = ep.time || '';
     
-    if ((vendor || amount > 0) && dbDocId) {
+     if ((vendor || amount > 0) && dbDocId) {
       setCheckingDuplicates(true);
       try {
-        const dupResult = await checkContent({ vendor, amount, date, description }, dbDocId);
-        if (dupResult.hasDuplicates) {
-          setDuplicateQueue(prev => [...prev, {
-            matches: dupResult.matches,
-            newDoc: { vendor, amount, date, description },
-            docId: dbDocId,
-          }]);
+         const dupResult = await checkContent({ vendor, amount, date, time, description }, dbDocId);
+         const mergedMatches = [...localMatches, ...dupResult.matches].filter((match, index, all) => {
+           return all.findIndex(item => item.type === match.type && item.id === match.id && item.document_id === match.document_id) === index;
+         });
+
+         if (mergedMatches.length > 0) {
+           setDuplicateQueue(prev => {
+             const next = [...prev, {
+               matches: mergedMatches,
+               newDoc: { vendor, amount, date, time, description },
+               docId: dbDocId,
+             }];
+             setDuplicateQueueTotal(next.length);
+             return next;
+           });
+           setDuplicateDialogOpen(true);
         }
       } finally {
         setCheckingDuplicates(false);
       }
     }
-  }, [rawProcessDocument, checkContent]);
+   }, [rawProcessDocument, checkContent, documents]);
 
   // Wrap processAllClassified to use our dup-checking version
   const processAllClassified = useCallback(async () => {
@@ -708,8 +735,6 @@ export function UnifiedChaosInboxPanel() {
     for (const doc of classified) {
       await processDocumentWithDupCheck(doc.id);
     }
-    
-    // Open duplicate dialog if queue accumulated items
     setDuplicateQueue(prev => {
       if (prev.length > 0) {
         setDuplicateQueueTotal(prev.length);

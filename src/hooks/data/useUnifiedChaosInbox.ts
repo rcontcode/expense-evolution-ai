@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEntity } from '@/contexts/EntityContext';
+import { compareDuplicateCandidate, DuplicateMatch } from '@/hooks/data/useContentDuplicateDetector';
 
 export type DocumentClassificationType = 
   | 'receipt' | 'utility_bill' | 'bank_statement' | 'income_proof'
@@ -37,6 +38,7 @@ export interface ClassifiedDocument {
     reason: string;
     matchedClient?: string;
   };
+  duplicateMatches?: DuplicateMatch[];
 }
 
 export interface HistoryEntry {
@@ -225,7 +227,7 @@ export function useUnifiedChaosInbox() {
             );
           }
 
-          // Local cross-check: compare against other classified docs in state
+          // Local cross-check: compare against other classified/processed docs in state
           if (classification.document_type !== 'unknown' && classification.extracted_preview) {
             const ep = classification.extracted_preview;
             const newAmount = Number(ep.amount) || 0;
@@ -234,34 +236,61 @@ export function useUnifiedChaosInbox() {
             const newTime = ep.time || '';
 
             if (newAmount > 0 && newVendor) {
-              // Dynamically import to avoid circular deps
-              const { vendorMatch: vMatch } = await import('@/hooks/data/useContentDuplicateDetector');
-              
               setDocuments(prev => {
                 const others = prev.filter(d => 
                   d.id !== doc.id && 
-                  d.status === 'classified' && 
+                  (d.status === 'classified' || d.status === 'processed') && 
                   d.classification?.extracted_preview
                 );
+                const localMatches: DuplicateMatch[] = [];
                 
                 for (const other of others) {
                   const oep = other.classification!.extracted_preview;
-                  const oAmount = Number(oep.amount) || 0;
-                  const oVendor = oep.vendor || oep.company || '';
-                  
-                  if (
-                    oAmount > 0 &&
-                    Math.abs(oAmount - newAmount) < 0.01 &&
-                    vMatch(newVendor, oVendor)
-                  ) {
-                    toast.warning(
-                      `🤔 "${doc.fileName}" parece similar a "${other.fileName}". Revisa antes de aprobar.`,
-                      { duration: 6000 }
-                    );
-                    break;
+                  const comparison = compareDuplicateCandidate(
+                    {
+                      vendor: newVendor,
+                      amount: newAmount,
+                      date: newDate,
+                      time: newTime,
+                    },
+                    {
+                      vendor: oep.vendor || oep.company || '',
+                      amount: Number(oep.amount) || 0,
+                      date: oep.date || '',
+                      time: oep.time || undefined,
+                    }
+                  );
+
+                  if (comparison.isMatch) {
+                    localMatches.push({
+                      type: 'document',
+                      id: other.processedResult?.docId || other.id,
+                      vendor: (oep.vendor || oep.company || '') || null,
+                      amount: Number(oep.amount) || 0,
+                      date: oep.date || '',
+                      time: oep.time || undefined,
+                      description: typeof oep.description === 'string' ? oep.description : null,
+                      confidence: comparison.confidence,
+                      reason_es: comparison.reasons.es,
+                      reason_en: comparison.reasons.en,
+                      file_name: other.fileName,
+                      is_recurring_pattern: false,
+                    });
                   }
                 }
-                return prev;
+
+                if (localMatches.length === 0) return prev;
+
+                toast.warning(
+                  `🤔 "${doc.fileName}" parece similar a otro documento cargado. Confírmalo al procesar.`,
+                  { duration: 7000 }
+                );
+
+                return prev.map(item =>
+                  item.id === doc.id
+                    ? { ...item, duplicateMatches: localMatches }
+                    : item
+                );
               });
             }
           }
@@ -665,7 +694,7 @@ export function useUnifiedChaosInbox() {
       }
 
       // Update doc with the ACTUAL processedResult
-      updateDoc(docId, { status: 'processed', processedResult });
+      updateDoc(docId, { status: 'processed', processedResult, duplicateMatches: [] });
       toast.success(`✅ ${doc.fileName} procesado`);
 
       // Add to history using the ACTUAL processedResult (not stale closure)
