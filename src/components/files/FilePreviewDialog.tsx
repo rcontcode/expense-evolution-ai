@@ -18,9 +18,6 @@ export function FilePreviewDialog({ file, previewUrl, isLoading, onClose, onDown
   const { language } = useLanguage();
   if (!file) return null;
 
-  const isImage = file.file_type && /jpg|jpeg|png|webp|gif/i.test(file.file_type);
-  const isPdf = file.file_type && /pdf/i.test(file.file_type);
-
   return (
     <Dialog open={!!file} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-3xl max-h-[85vh] flex flex-col">
@@ -29,27 +26,15 @@ export function FilePreviewDialog({ file, previewUrl, isLoading, onClose, onDown
         </DialogHeader>
 
         <div className="flex-1 min-h-0 overflow-auto rounded-lg bg-muted/30 flex items-center justify-center">
-          {isLoading ? (
-            <div className="p-12 text-muted-foreground animate-pulse">
-              {language === 'es' ? 'Cargando...' : 'Loading...'}
-            </div>
-          ) : previewUrl ? (
-            isImage ? (
-              <img src={previewUrl} alt={file.file_name} className="max-w-full max-h-[60vh] object-contain" />
-            ) : isPdf ? (
-              <iframe src={previewUrl} className="w-full h-[60vh] border-0 rounded" title={file.file_name} />
-            ) : (
-              <div className="p-12 text-center text-muted-foreground">
-                <FileText className="h-16 w-16 mx-auto mb-3 opacity-50" />
-                <p>{language === 'es' ? 'Vista previa no disponible para este tipo de archivo' : 'Preview not available for this file type'}</p>
-              </div>
-            )
-          ) : (
-            <div className="p-12 text-center text-muted-foreground">
-              <FileText className="h-16 w-16 mx-auto mb-3 opacity-50" />
-              <p>{language === 'es' ? 'No se pudo cargar la vista previa' : 'Could not load preview'}</p>
-            </div>
-          )}
+          <DocumentPreviewRenderer
+            url={previewUrl}
+            fileName={file.file_name}
+            mimeType={file.file_type}
+            isLoading={isLoading}
+            className="w-full min-h-[300px] max-h-[60vh]"
+            pdfWidth={600}
+            onDownload={() => onDownload(file)}
+          />
         </div>
 
         <div className="flex gap-2 justify-end pt-2">
