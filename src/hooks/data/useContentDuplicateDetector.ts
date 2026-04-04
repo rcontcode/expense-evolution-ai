@@ -281,7 +281,8 @@ export async function findContentDuplicates(
     docQuery = docQuery.neq('id', excludeDocId);
   }
   
-  const { data: docMatches } = await docQuery;
+  const { data: docMatches, error: docErr } = await docQuery;
+  console.log('[DupCheck] Document query results:', docMatches?.length, 'error:', docErr);
 
   if (docMatches) {
     for (const doc of docMatches) {
