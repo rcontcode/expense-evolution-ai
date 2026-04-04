@@ -623,11 +623,11 @@ export function ReceiptReviewDialog({
                 onTouchEnd={handleTouchEnd}
               >
                 {imageUrl ? (
-                  document.file_type?.includes('pdf') || document.file_name?.toLowerCase().endsWith('.pdf') ? (
+                  isPdfDocument ? (
                     <iframe
-                      src={imageUrl}
+                      src={`${imageUrl}#toolbar=1&navpanes=0&scrollbar=1&view=FitH`}
                       title={document.file_name}
-                      className="w-full h-full rounded-lg border-0"
+                      className="w-full h-full rounded-lg border-0 bg-background"
                       style={{ minHeight: '500px' }}
                     />
                   ) : (

@@ -299,20 +299,34 @@ export function useDocumentImageUrl(filePath: string | null) {
       return;
     }
 
-    const fetchUrl = async () => {
-      const { data } = await supabase.storage
-        .from('expense-documents')
-        .createSignedUrl(filePath, 3600);
+    let isCancelled = false;
+    let objectUrl: string | null = null;
 
-      if (data?.signedUrl) {
-        setUrl(data.signedUrl);
-      } else {
-        console.warn('Failed to get signed URL for:', filePath);
+    const fetchUrl = async () => {
+      const { data, error } = await supabase.storage
+        .from('expense-documents')
+        .download(filePath);
+
+      if (isCancelled) return;
+
+      if (error || !data) {
+        console.warn('Failed to download document for preview:', filePath, error);
         setUrl(null);
+        return;
       }
+
+      objectUrl = URL.createObjectURL(data);
+      setUrl(objectUrl);
     };
 
     fetchUrl();
+
+    return () => {
+      isCancelled = true;
+      if (objectUrl) {
+        URL.revokeObjectURL(objectUrl);
+      }
+    };
   }, [filePath]);
 
   return url;

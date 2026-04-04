@@ -116,13 +116,12 @@ export function ReceiptReviewCard({
             {imageUrl ? (
               document.file_name?.toLowerCase().endsWith('.pdf') ? (
                 <>
-                  <div className="flex flex-col items-center justify-center h-full gap-2 bg-muted/50">
-                    <FileText className="h-10 w-10 text-muted-foreground" />
-                    <span className="text-xs text-muted-foreground truncate max-w-[80%] text-center">
-                      {document.file_name}
-                    </span>
-                  </div>
-                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <iframe
+                    src={`${imageUrl}#toolbar=0&navpanes=0&scrollbar=0&view=FitH`}
+                    title={document.file_name}
+                    className="w-full h-full border-0 pointer-events-none bg-background"
+                  />
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                     <Eye className="h-6 w-6 text-white" />
                     <span className="text-white ml-2 text-sm font-medium">
                       {language === 'es' ? 'Ver y revisar' : 'View & review'}
