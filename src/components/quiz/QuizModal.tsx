@@ -123,7 +123,7 @@ const getQuestions = (language: string) => ({
   },
 });
 
-export const QuizModal = ({ isOpen, onClose, onComplete, referralInfo }: QuizModalProps) => {
+export const QuizModal = ({ isOpen, onClose, onComplete, referralInfo, initialStep }: QuizModalProps) => {
   const { language } = useLanguage();
   const questions = getQuestions(language);
   const { saveProgress, loadProgress, clearProgress } = useQuizPersistence();
@@ -133,7 +133,7 @@ export const QuizModal = ({ isOpen, onClose, onComplete, referralInfo }: QuizMod
   const [showExitIntent, setShowExitIntent] = useState(false);
   const hasShownExitIntentRef = useRef(false);
 
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState(initialStep ?? 0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<QuizData>({
     name: "",
