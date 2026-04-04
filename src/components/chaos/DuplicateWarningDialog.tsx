@@ -1,14 +1,14 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { HelpCircle, Trash2, Check, ArrowLeftRight, Receipt, FileText, Clock, RefreshCw, Eye } from 'lucide-react';
+import { HelpCircle, Trash2, Check, ArrowLeftRight, Receipt, FileText, Clock, RefreshCw, Eye, X, Download } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { DuplicateMatch } from '@/hooks/data/useContentDuplicateDetector';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { supabase } from '@/integrations/supabase/client';
+import { getDocumentBlobUrl } from '@/hooks/data/useDocumentUrl';
 import { toast } from 'sonner';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface DuplicateWarningDialogProps {
   open: boolean;
@@ -29,6 +29,37 @@ interface DuplicateWarningDialogProps {
   onReplaceOld: () => void;
 }
 
+interface DocPreview {
+  blobUrl: string;
+  fileName: string;
+  mimeType: string;
+}
+
+function DocumentPreviewInline({ preview, label }: { preview: DocPreview | null; label: string }) {
+  if (!preview) {
+    return (
+      <div className="flex-1 min-h-[200px] rounded-lg border border-dashed border-muted flex items-center justify-center">
+        <p className="text-xs text-muted-foreground">{label}</p>
+      </div>
+    );
+  }
+
+  const isPdf = preview.mimeType === 'application/pdf';
+
+  return (
+    <div className="flex-1 min-h-0 rounded-lg border overflow-hidden flex flex-col">
+      <p className="text-xs font-medium px-2 py-1 bg-muted/50 truncate">{preview.fileName}</p>
+      <div className="flex-1 min-h-[200px] max-h-[300px] overflow-auto bg-muted/20">
+        {isPdf ? (
+          <iframe src={preview.blobUrl} className="w-full h-[280px] border-0" title={preview.fileName} />
+        ) : (
+          <img src={preview.blobUrl} alt={preview.fileName} className="w-full h-auto object-contain" />
+        )}
+      </div>
+    </div>
+  );
+}
+
 export function DuplicateWarningDialog({
   open,
   onOpenChange,
@@ -43,14 +74,28 @@ export function DuplicateWarningDialog({
 }: DuplicateWarningDialogProps) {
   const { language } = useLanguage();
   const isEs = language === 'es';
-  const [viewingDocs, setViewingDocs] = useState(false);
+  const [showComparison, setShowComparison] = useState(false);
+  const [loadingPreviews, setLoadingPreviews] = useState(false);
+  const [newDocPreview, setNewDocPreview] = useState<DocPreview | null>(null);
+  const [existingDocPreview, setExistingDocPreview] = useState<DocPreview | null>(null);
 
   const bestMatch = matches[0];
+
+  // Cleanup blob URLs when dialog closes
+  useEffect(() => {
+    if (!open) {
+      if (newDocPreview?.blobUrl) URL.revokeObjectURL(newDocPreview.blobUrl);
+      if (existingDocPreview?.blobUrl) URL.revokeObjectURL(existingDocPreview.blobUrl);
+      setNewDocPreview(null);
+      setExistingDocPreview(null);
+      setShowComparison(false);
+    }
+  }, [open]);
+
   if (!bestMatch) return null;
 
   const isRecurring = bestMatch.is_recurring_pattern;
 
-  // Conversational title based on confidence
   const getTitle = () => {
     if (bestMatch.confidence === 'high') {
       return isEs ? '🤔 Esto parece ser el mismo documento' : '🤔 This looks like the same document';
@@ -61,7 +106,6 @@ export function DuplicateWarningDialog({
     return isEs ? '🤔 Encontré algo similar' : '🤔 Found something similar';
   };
 
-  // Contextual description
   const getDescription = () => {
     if (bestMatch.confidence === 'high') {
       return isEs
@@ -97,9 +141,42 @@ export function DuplicateWarningDialog({
 
   const MatchIcon = bestMatch.type === 'expense' ? Receipt : FileText;
 
+  const handleViewDocuments = async () => {
+    setLoadingPreviews(true);
+    try {
+      const promises: Promise<void>[] = [];
+
+      if (newDocId) {
+        promises.push(
+          getDocumentBlobUrl(newDocId).then(result => { setNewDocPreview(result); })
+        );
+      }
+
+      const existingDocId = bestMatch.type === 'document' ? bestMatch.id : bestMatch.document_id;
+      if (existingDocId) {
+        promises.push(
+          getDocumentBlobUrl(existingDocId).then(result => { setExistingDocPreview(result); })
+        );
+      }
+
+      await Promise.all(promises);
+
+      if (!newDocId && !existingDocId) {
+        toast.info(isEs ? 'No hay documentos disponibles para ver' : 'No documents available to view');
+        return;
+      }
+
+      setShowComparison(true);
+    } catch {
+      toast.error(isEs ? 'Error al cargar documentos' : 'Error loading documents');
+    } finally {
+      setLoadingPreviews(false);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      <DialogContent className={cn("transition-all", showComparison ? "max-w-3xl" : "max-w-md")}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-base">
             <HelpCircle className="h-5 w-5 text-primary" />
@@ -137,9 +214,8 @@ export function DuplicateWarningDialog({
             )}
           </div>
 
-          {/* Comparison */}
+          {/* Comparison metadata */}
           <div className="grid grid-cols-2 gap-3">
-            {/* New document */}
             <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 space-y-1">
               <p className="text-xs font-medium text-primary">
                 {isEs ? 'Nuevo' : 'New'}
@@ -155,7 +231,6 @@ export function DuplicateWarningDialog({
               )}
             </div>
 
-            {/* Existing match */}
             <div className="rounded-lg border border-muted bg-muted/30 p-3 space-y-1">
               <p className="text-xs font-medium text-muted-foreground">
                 {isEs ? 'Existente' : 'Existing'}
@@ -174,6 +249,30 @@ export function DuplicateWarningDialog({
               )}
             </div>
           </div>
+
+          {/* Inline document comparison */}
+          {showComparison && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-medium text-muted-foreground">
+                  {isEs ? 'Comparación visual' : 'Visual comparison'}
+                </p>
+                <Button variant="ghost" size="sm" className="h-6 px-2" onClick={() => setShowComparison(false)}>
+                  <X className="h-3 w-3" />
+                </Button>
+              </div>
+              <div className="flex gap-3">
+                <DocumentPreviewInline
+                  preview={newDocPreview}
+                  label={isEs ? 'Nuevo (no disponible)' : 'New (not available)'}
+                />
+                <DocumentPreviewInline
+                  preview={existingDocPreview}
+                  label={isEs ? 'Existente (no disponible)' : 'Existing (not available)'}
+                />
+              </div>
+            </div>
+          )}
 
           {/* Contextual hint */}
           {bestMatch.confidence === 'low' && (
@@ -207,53 +306,20 @@ export function DuplicateWarningDialog({
         </div>
 
         <DialogFooter className="flex-col gap-2 sm:flex-col">
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-full gap-2"
-            disabled={viewingDocs}
-            onClick={async () => {
-              setViewingDocs(true);
-              try {
-                // Open both the new doc and the existing match in new tabs
-                const docIdsToView: string[] = [];
-                if (newDocId) docIdsToView.push(newDocId);
-                
-                const existingDocId = bestMatch.type === 'document' ? bestMatch.id : bestMatch.document_id;
-                if (existingDocId) docIdsToView.push(existingDocId);
-
-                for (const docId of docIdsToView) {
-                  const { data: doc } = await supabase
-                    .from('documents')
-                    .select('file_path')
-                    .eq('id', docId)
-                    .single();
-                  
-                  if (doc?.file_path) {
-                    const { data: urlData } = await supabase.storage
-                      .from('expense-documents')
-                      .createSignedUrl(doc.file_path, 3600);
-                    if (urlData?.signedUrl) {
-                      window.open(urlData.signedUrl, '_blank');
-                    }
-                  }
-                }
-
-                if (docIdsToView.length === 0) {
-                  toast.info(isEs ? 'No hay documentos disponibles para ver' : 'No documents available to view');
-                }
-              } catch {
-                toast.error(isEs ? 'Error al abrir documentos' : 'Error opening documents');
-              } finally {
-                setViewingDocs(false);
-              }
-            }}
-          >
-            <Eye className="h-4 w-4" />
-            {viewingDocs
-              ? (isEs ? 'Abriendo...' : 'Opening...')
-              : (isEs ? 'Ver documentos para comparar' : 'View documents to compare')}
-          </Button>
+          {!showComparison && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full gap-2"
+              disabled={loadingPreviews}
+              onClick={handleViewDocuments}
+            >
+              <Eye className="h-4 w-4" />
+              {loadingPreviews
+                ? (isEs ? 'Cargando...' : 'Loading...')
+                : (isEs ? 'Ver documentos para comparar' : 'View documents to compare')}
+            </Button>
+          )}
           <Button
             variant="outline"
             size="sm"
