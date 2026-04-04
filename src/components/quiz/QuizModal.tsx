@@ -21,6 +21,7 @@ interface QuizModalProps {
   onClose: () => void;
   onComplete: (result: QuizResult) => void;
   referralInfo?: ReferralInfo | null;
+  initialStep?: number;
 }
 
 const TOTAL_STEPS = 17;
@@ -122,7 +123,7 @@ const getQuestions = (language: string) => ({
   },
 });
 
-export const QuizModal = ({ isOpen, onClose, onComplete, referralInfo }: QuizModalProps) => {
+export const QuizModal = ({ isOpen, onClose, onComplete, referralInfo, initialStep }: QuizModalProps) => {
   const { language } = useLanguage();
   const questions = getQuestions(language);
   const { saveProgress, loadProgress, clearProgress } = useQuizPersistence();
@@ -132,7 +133,7 @@ export const QuizModal = ({ isOpen, onClose, onComplete, referralInfo }: QuizMod
   const [showExitIntent, setShowExitIntent] = useState(false);
   const hasShownExitIntentRef = useRef(false);
 
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState(initialStep ?? 0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<QuizData>({
     name: "",
@@ -152,9 +153,18 @@ export const QuizModal = ({ isOpen, onClose, onComplete, referralInfo }: QuizMod
   
   const hasVipReferral = referralInfo?.isValid && referralInfo?.referrerName;
 
+  // Reset step when initialStep changes (e.g. retake quiz)
+  useEffect(() => {
+    if (isOpen && initialStep !== undefined && initialStep > 0) {
+      setStep(initialStep);
+      setFormData(prev => ({ ...prev, answers: Array(10).fill(false) }));
+      clearProgress();
+    }
+  }, [isOpen, initialStep]);
+
   // Load persisted progress on mount
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && (initialStep === undefined || initialStep === 0)) {
       const persisted = loadProgress();
       if (persisted && persisted.step > 1) {
         setStep(persisted.step);

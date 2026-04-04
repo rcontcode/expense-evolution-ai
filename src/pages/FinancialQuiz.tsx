@@ -37,6 +37,7 @@ const FinancialQuiz = () => {
   const navigate = useNavigate();
   const [isQuizOpen, setIsQuizOpen] = useState(false);
   const [result, setResult] = useState<QuizResult | null>(null);
+  const [quizInitialStep, setQuizInitialStep] = useState(0);
   const [referralInfo, setReferralInfo] = useState<ReferralInfo | null>(null);
   const [isLoadingReferral, setIsLoadingReferral] = useState(false);
 
@@ -93,11 +94,13 @@ const FinancialQuiz = () => {
   };
 
   const handleStartQuiz = () => {
+    setQuizInitialStep(0);
     setIsQuizOpen(true);
   };
 
   const handleRetakeQuiz = () => {
     setResult(null);
+    setQuizInitialStep(5);
     setIsQuizOpen(true);
   };
 
@@ -131,9 +134,10 @@ const FinancialQuiz = () => {
 
       <QuizModal
         isOpen={isQuizOpen}
-        onClose={() => setIsQuizOpen(false)}
+        onClose={() => { setIsQuizOpen(false); setQuizInitialStep(0); }}
         onComplete={handleQuizComplete}
         referralInfo={referralInfo}
+        initialStep={quizInitialStep}
       />
     </div>
   );
