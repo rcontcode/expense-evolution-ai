@@ -348,6 +348,12 @@ export function ReceiptPhotoViewer({ documentId, size = 'sm', showButton = true 
                 <ImageOff className="h-16 w-16" />
                 <p className="text-sm">{error}</p>
               </div>
+            ) : url && isPdf ? (
+              <iframe
+                src={url}
+                className="w-full h-full border-0"
+                title="PDF Preview"
+              />
             ) : url ? (
               <img
                 ref={imageRef}
