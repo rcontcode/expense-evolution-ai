@@ -902,6 +902,7 @@ export default function ChaosInbox() {
                     onReject={handleReject}
                     onAddComment={handleAddComment}
                     onDelete={handleDelete}
+                    onCheckDuplicates={handleCheckDuplicates}
                     isLoading={approveDocument.isPending || processing === doc.id}
                     onDataExtracted={() => refetch()}
                   />
