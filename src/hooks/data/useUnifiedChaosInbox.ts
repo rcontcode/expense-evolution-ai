@@ -224,6 +224,47 @@ export function useUnifiedChaosInbox() {
               { duration: 8000 }
             );
           }
+
+          // Local cross-check: compare against other classified docs in state
+          if (classification.document_type !== 'unknown' && classification.extracted_preview) {
+            const ep = classification.extracted_preview;
+            const newAmount = Number(ep.amount) || 0;
+            const newVendor = ep.vendor || ep.company || '';
+            const newDate = ep.date || '';
+            const newTime = ep.time || '';
+
+            if (newAmount > 0 && newVendor) {
+              // Dynamically import to avoid circular deps
+              const { vendorMatch: vMatch } = await import('@/hooks/data/useContentDuplicateDetector');
+              
+              setDocuments(prev => {
+                const others = prev.filter(d => 
+                  d.id !== doc.id && 
+                  d.status === 'classified' && 
+                  d.classification?.extracted_preview
+                );
+                
+                for (const other of others) {
+                  const oep = other.classification!.extracted_preview;
+                  const oAmount = Number(oep.amount) || 0;
+                  const oVendor = oep.vendor || oep.company || '';
+                  
+                  if (
+                    oAmount > 0 &&
+                    Math.abs(oAmount - newAmount) < 0.01 &&
+                    vMatch(newVendor, oVendor)
+                  ) {
+                    toast.warning(
+                      `🤔 "${doc.fileName}" parece similar a "${other.fileName}". Revisa antes de aprobar.`,
+                      { duration: 6000 }
+                    );
+                    break;
+                  }
+                }
+                return prev;
+              });
+            }
+          }
         }
 
       } catch (error: any) {
