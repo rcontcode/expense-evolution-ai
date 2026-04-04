@@ -315,7 +315,9 @@ export function useDocumentImageUrl(filePath: string | null) {
         return;
       }
 
-      objectUrl = URL.createObjectURL(data);
+      const mimeType = filePath.toLowerCase().endsWith('.pdf') ? 'application/pdf' : data.type || 'application/octet-stream';
+      const normalizedBlob = data.type ? data : new Blob([data], { type: mimeType });
+      objectUrl = URL.createObjectURL(normalizedBlob);
       setUrl(objectUrl);
     };
 

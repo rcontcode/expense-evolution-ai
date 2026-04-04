@@ -237,7 +237,7 @@ export function ReceiptReviewDialog({
     localStorage.removeItem(`receipt-rotation-${document.id}`);
   };
 
-  const isPdfDocument = document.file_type?.includes('pdf') || document.file_name?.toLowerCase().endsWith('.pdf');
+  const urlWithPdfParams = (url: string) => `${url}#toolbar=1&navpanes=0&scrollbar=1&view=FitH`;
 
   const downloadImage = () => {
     if (imageUrl) {
