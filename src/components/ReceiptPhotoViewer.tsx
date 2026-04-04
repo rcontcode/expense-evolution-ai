@@ -125,12 +125,12 @@ export function ReceiptPhotoViewer({ documentId, size = 'sm', showButton = true 
   // Toggle fullscreen
   const toggleFullscreen = () => setIsFullscreen(prev => !prev);
 
-  // Download image
-  const downloadImage = () => {
+  // Download file
+  const downloadFile = () => {
     if (url) {
       const link = document.createElement('a');
       link.href = url;
-      link.download = 'receipt.jpg';
+      link.download = fileName || (isPdf ? 'document.pdf' : 'receipt.jpg');
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
