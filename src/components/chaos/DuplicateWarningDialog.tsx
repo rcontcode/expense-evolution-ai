@@ -7,6 +7,7 @@ import { DuplicateMatch } from '@/hooks/data/useContentDuplicateDetector';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { getDocumentBlobUrl } from '@/hooks/data/useDocumentUrl';
+import { DocumentPreviewRenderer } from '@/components/shared/DocumentPreviewRenderer';
 import { toast } from 'sonner';
 import { useState, useEffect } from 'react';
 
