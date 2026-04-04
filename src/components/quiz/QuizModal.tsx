@@ -157,12 +157,14 @@ export const QuizModal = ({ isOpen, onClose, onComplete, referralInfo, initialSt
   useEffect(() => {
     if (isOpen && initialStep !== undefined && initialStep > 0) {
       setStep(initialStep);
+      setFormData(prev => ({ ...prev, answers: Array(10).fill(false) }));
+      clearProgress();
     }
   }, [isOpen, initialStep]);
 
   // Load persisted progress on mount
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && (initialStep === undefined || initialStep === 0)) {
       const persisted = loadProgress();
       if (persisted && persisted.step > 1) {
         setStep(persisted.step);
