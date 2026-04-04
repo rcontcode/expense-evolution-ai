@@ -451,6 +451,42 @@ export default function ChaosInbox() {
     await deleteDocument.mutateAsync(id);
   };
 
+  const handleCheckDuplicates = async (id: string, data: ExtractedData) => {
+    if (!user?.id) return;
+    setCheckingDuplicates(true);
+    try {
+      const dupResult = await checkContent({
+        vendor: data.vendor,
+        amount: data.amount,
+        date: data.date,
+        description: data.description,
+      }, id);
+
+      if (dupResult.hasDuplicates) {
+        setDuplicateQueue([{
+          matches: dupResult.matches,
+          newDoc: {
+            vendor: data.vendor,
+            amount: data.amount,
+            date: data.date,
+            description: data.description,
+          },
+          docId: id,
+        }]);
+        setDuplicateQueueTotal(1);
+        setDuplicateDialogOpen(true);
+      } else {
+        toast.info(
+          language === 'es' 
+            ? '✅ No se encontraron duplicados para este documento' 
+            : '✅ No duplicates found for this document'
+        );
+      }
+    } finally {
+      setCheckingDuplicates(false);
+    }
+  };
+
   const handleCameraPhotos = async (photos: CapturedPhoto[]) => {
     if (!user || photos.length === 0) return;
 
