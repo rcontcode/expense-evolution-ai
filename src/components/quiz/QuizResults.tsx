@@ -578,10 +578,10 @@ export const QuizResults = ({ result, onRetake, referralInfo, onNavigateToAuth }
               transition={{ delay: 0.5 + i * 0.1 }}
               className="bg-white/5 border border-white/10 rounded-xl p-3 hover:bg-white/10 transition-colors"
             >
-              <span className="text-white/50 block text-xs font-medium uppercase tracking-wide">{item.label}</span>
+              <span className="block text-xs font-medium uppercase tracking-wide text-white/70">{item.label}</span>
               <span className="text-white flex items-center gap-1.5 mt-1.5 font-semibold">
                 <span className="text-lg">{item.icon}</span>
-                <span className="truncate text-sm">{item.value}</span>
+                <span className="truncate text-sm text-white">{item.value}</span>
               </span>
             </motion.div>
           ))}
@@ -752,7 +752,7 @@ export const QuizResults = ({ result, onRetake, referralInfo, onNavigateToAuth }
                   : t.ctaTitle
                 }
               </h3>
-              <p className="text-white/70 text-sm mb-5">
+              <p className="mb-5 text-sm text-white/80">
                 {hasVipReferral
                   ? (language === "es"
                     ? "Únete ahora y activa tu acceso VIP de 90 días"
@@ -826,7 +826,7 @@ export const QuizResults = ({ result, onRetake, referralInfo, onNavigateToAuth }
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 1.2 + index * 0.1 }}
-                    className="flex items-center gap-1.5 text-white/80 bg-white/5 px-3 py-1.5 rounded-full text-xs font-medium"
+                    className="flex items-center gap-1.5 rounded-full bg-white/5 px-3 py-1.5 text-xs font-medium text-white/90"
                   >
                     <benefit.icon className="w-3.5 h-3.5 text-emerald-400" />
                     {benefit.text}
