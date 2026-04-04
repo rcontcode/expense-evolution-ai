@@ -294,6 +294,8 @@ export async function findContentDuplicates(
       const docDate = ed.date || '';
       const docTime = ed.time || undefined;
 
+      console.log('[DupCheck] Comparing doc', doc.id, { docVendor, docAmount, docDate, extractedVendor: extracted.vendor, extractedAmount: extracted.amount });
+
       const comparison = compareDuplicateCandidate(
         extracted,
         {
@@ -304,6 +306,7 @@ export async function findContentDuplicates(
         },
         { isRecurring }
       );
+      console.log('[DupCheck] Comparison result:', comparison.isMatch, comparison);
 
       if (comparison.isMatch) {
         if (matches.some(m => m.document_id === doc.id || m.id === doc.id)) continue;
