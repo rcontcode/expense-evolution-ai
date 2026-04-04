@@ -235,7 +235,8 @@ export async function findContentDuplicates(
       expQuery = expQuery.neq('document_id', excludeDocId);
     }
     
-    const { data: expenseMatches } = await expQuery;
+    const { data: expenseMatches, error: expErr } = await expQuery;
+    console.log('[DupCheck] Expense query results:', expenseMatches?.length, 'error:', expErr);
 
     if (expenseMatches) {
       for (const exp of expenseMatches) {
