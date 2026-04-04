@@ -355,42 +355,80 @@ export function DuplicateWarningDialog({
             </Button>
           )}
 
-          {/* Contextual label */}
-          <p className="text-xs text-muted-foreground text-center pt-1">
-            {isEs ? '¿Qué quieres hacer?' : 'What do you want to do?'}
-          </p>
-
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-full gap-2 border-emerald-500/30 hover:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
-            onClick={() => { onKeepBoth(); }}
-          >
-            <Check className="h-4 w-4" />
-            {isEs ? 'Son diferentes — conservar ambos' : 'They\'re different — keep both'}
-          </Button>
-          <Button
-            variant="destructive"
-            size="sm"
-            className="w-full gap-2"
-            onClick={() => { onDeleteNew(); }}
-          >
-            <Trash2 className="h-4 w-4" />
-            {isEs 
-              ? `Eliminar el NUEVO (${newDocument.vendor || 'nuevo documento'})` 
-              : `Delete the NEW one (${newDocument.vendor || 'new document'})`}
-          </Button>
-          <Button
-            variant="secondary"
-            size="sm"
-            className="w-full gap-2"
-            onClick={() => { onReplaceOld(); }}
-          >
-            <ArrowLeftRight className="h-4 w-4" />
-            {isEs 
-              ? `Conservar nuevo y eliminar el EXISTENTE (${bestMatch.vendor || 'anterior'})` 
-              : `Keep new and delete the EXISTING one (${bestMatch.vendor || 'old'})`}
-          </Button>
+          {/* Selection-aware actions */}
+          {selected ? (
+            <>
+              <p className="text-xs text-center font-medium text-primary pt-1">
+                {isEs 
+                  ? `✅ Seleccionado: ${selected === 'new' ? 'Nuevo' : 'Existente'} — ¿qué hacer?`
+                  : `✅ Selected: ${selected === 'new' ? 'New' : 'Existing'} — what to do?`}
+              </p>
+              <Button
+                variant="default"
+                size="sm"
+                className="w-full gap-2"
+                onClick={() => {
+                  if (selected === 'new') onReplaceOld();
+                  else onDeleteNew();
+                }}
+              >
+                <Check className="h-4 w-4" />
+                {isEs 
+                  ? `Conservar ${selected === 'new' ? 'NUEVO' : 'EXISTENTE'} y eliminar el otro`
+                  : `Keep ${selected === 'new' ? 'NEW' : 'EXISTING'} and delete the other`}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full gap-2"
+                onClick={() => { onKeepBoth(); }}
+              >
+                <Check className="h-4 w-4" />
+                {isEs ? 'No son duplicados — conservar ambos' : 'Not duplicates — keep both'}
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full text-xs text-muted-foreground"
+                onClick={() => setSelected(null)}
+              >
+                {isEs ? 'Limpiar selección' : 'Clear selection'}
+              </Button>
+            </>
+          ) : (
+            <>
+              <p className="text-xs text-muted-foreground text-center pt-1">
+                {isEs ? 'Selecciona uno arriba, o elige una acción:' : 'Select one above, or choose an action:'}
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full gap-2 border-emerald-500/30 hover:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
+                onClick={() => { onKeepBoth(); }}
+              >
+                <Check className="h-4 w-4" />
+                {isEs ? 'Son diferentes — conservar ambos' : 'They\'re different — keep both'}
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                className="w-full gap-2"
+                onClick={() => { onDeleteNew(); }}
+              >
+                <Trash2 className="h-4 w-4" />
+                {isEs ? 'Eliminar el nuevo' : 'Delete the new one'}
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                className="w-full gap-2"
+                onClick={() => { onReplaceOld(); }}
+              >
+                <ArrowLeftRight className="h-4 w-4" />
+                {isEs ? 'Reemplazar existente con el nuevo' : 'Replace existing with new'}
+              </Button>
+            </>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>
