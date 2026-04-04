@@ -45,21 +45,18 @@ function DocumentPreviewInline({ preview, label }: { preview: DocPreview | null;
     );
   }
 
-  const isPdf = preview.mimeType === 'application/pdf';
-
   return (
     <div className="flex-1 min-h-0 rounded-lg border overflow-hidden flex flex-col">
       <p className="text-xs font-medium px-2 py-1 bg-muted/50 truncate">{preview.fileName}</p>
       <div className="flex-1 min-h-[200px] max-h-[300px] overflow-auto bg-muted/20">
-        {isPdf ? (
-          <object data={preview.blobUrl} type="application/pdf" className="w-full h-[280px]">
-            <div className="h-[280px] flex items-center justify-center text-xs text-muted-foreground px-3 text-center">
-              No pude previsualizar este PDF aquí.
-            </div>
-          </object>
-        ) : (
-          <img src={preview.blobUrl} alt={preview.fileName} className="w-full h-auto object-contain" />
-        )}
+        <DocumentPreviewRenderer
+          url={preview.blobUrl}
+          fileName={preview.fileName}
+          mimeType={preview.mimeType}
+          className="w-full h-[280px]"
+          pdfWidth={350}
+          allPages={false}
+        />
       </div>
     </div>
   );
