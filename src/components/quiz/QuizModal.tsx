@@ -347,12 +347,14 @@ export const QuizModal = ({ isOpen, onClose, onComplete, referralInfo }: QuizMod
   const handleOptionSelect = (field: keyof QuizData, value: string) => {
     setFormData({ ...formData, [field]: value });
     setErrors({});
-    // Auto-advance after selection for multiple choice
+    // For country "Otro/Other", give time to read the info message
+    const isOtherCountry = field === "country" && (value === "🌍 Otro" || value === "🌍 Other");
+    const delay = isOtherCountry ? 4000 : 600;
     setTimeout(() => {
       if (step < TOTAL_STEPS - 1) {
         setStep(step + 1);
       }
-    }, 300);
+    }, delay);
   };
 
   const handleYesNo = (questionIndex: number, answer: boolean) => {
@@ -363,20 +365,20 @@ export const QuizModal = ({ isOpen, onClose, onComplete, referralInfo }: QuizMod
     // Show encouragement for "Yes" answers
     if (answer) {
       setShowEncouragement(questionIndex);
-      // Keep showing for 3.5 seconds before advancing
+      // Keep showing for 5.5 seconds so user can read the full message
       setTimeout(() => {
         setShowEncouragement(null);
         if (step < TOTAL_STEPS - 1) {
           setStep(step + 1);
         }
-      }, 3500);
+      }, 5500);
     } else {
-      // For "No" answers, advance quickly
+      // For "No" answers, brief pause before advancing
       setTimeout(() => {
         if (step < TOTAL_STEPS - 1) {
           setStep(step + 1);
         }
-      }, 400);
+      }, 700);
     }
   };
 

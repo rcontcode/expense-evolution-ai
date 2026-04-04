@@ -73,12 +73,10 @@ export const QuizProgress = ({ currentStep, totalSteps, language = "es" }: QuizP
           animate={{ width: `${progress}%` }}
           transition={{ duration: 0.4, ease: "easeOut" }}
         />
-        {/* Animated glow effect */}
-        <motion.div
-          className="absolute inset-y-0 w-8 bg-gradient-to-r from-transparent via-white/30 to-transparent"
-          animate={{ left: ["0%", "100%"] }}
-          transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-          style={{ left: `${Math.min(progress - 5, 95)}%` }}
+        {/* Subtle shine at the tip of the bar */}
+        <div
+          className="absolute inset-y-0 w-2 bg-white/20 rounded-r-full"
+          style={{ left: `${Math.max(0, progress - 1)}%` }}
         />
       </div>
     </div>
