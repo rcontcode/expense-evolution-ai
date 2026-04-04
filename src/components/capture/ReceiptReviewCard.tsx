@@ -199,9 +199,29 @@ export function ReceiptReviewCard({
             </div>
           )}
 
-          {/* Delete Button - Always visible */}
-          {onDelete && (
-            <div className="pt-2" onClick={(e) => e.stopPropagation()}>
+          {/* Duplicate Check + Delete Buttons */}
+          <div className="flex gap-2 pt-2" onClick={(e) => e.stopPropagation()}>
+            {onCheckDuplicates && isPending && (
+              <Button 
+                size="sm" 
+                variant="outline"
+                disabled={checkingDups}
+                onClick={async (e) => {
+                  e.stopPropagation();
+                  setCheckingDups(true);
+                  try {
+                    await onCheckDuplicates(document.id, data);
+                  } finally {
+                    setCheckingDups(false);
+                  }
+                }}
+                className="flex-1"
+              >
+                {checkingDups ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Search className="h-4 w-4 mr-1" />}
+                {language === 'es' ? 'Buscar duplicados' : 'Check duplicates'}
+              </Button>
+            )}
+            {onDelete && (
               <Button 
                 size="sm" 
                 variant="ghost"
@@ -209,13 +229,13 @@ export function ReceiptReviewCard({
                   e.stopPropagation();
                   setShowDeleteConfirm(true);
                 }} 
-                className="w-full text-destructive hover:text-destructive hover:bg-destructive/10"
+                className="flex-1 text-destructive hover:text-destructive hover:bg-destructive/10"
               >
                 <Trash2 className="h-4 w-4 mr-1" />
                 {language === 'es' ? 'Eliminar' : 'Delete'}
               </Button>
-            </div>
-          )}
+            )}
+          </div>
         </CardContent>
       </Card>
 
