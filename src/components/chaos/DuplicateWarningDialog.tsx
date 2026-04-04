@@ -11,6 +11,7 @@ import { DocumentPreviewRenderer } from '@/components/shared/DocumentPreviewRend
 import { toast } from 'sonner';
 import { useState, useEffect } from 'react';
 
+type Selection = 'new' | 'existing' | null;
 interface DuplicateWarningDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -80,6 +81,7 @@ export function DuplicateWarningDialog({
   const [loadingPreviews, setLoadingPreviews] = useState(false);
   const [newDocPreview, setNewDocPreview] = useState<DocPreview | null>(null);
   const [existingDocPreview, setExistingDocPreview] = useState<DocPreview | null>(null);
+  const [selected, setSelected] = useState<Selection>(null);
 
   const bestMatch = matches[0];
 
@@ -91,6 +93,7 @@ export function DuplicateWarningDialog({
       setNewDocPreview(null);
       setExistingDocPreview(null);
       setShowComparison(false);
+      setSelected(null);
     }
   }, [open]);
 
@@ -216,11 +219,27 @@ export function DuplicateWarningDialog({
             )}
           </div>
 
-          {/* Comparison metadata */}
+          {/* Selectable comparison cards */}
+          <p className="text-xs text-muted-foreground">
+            {isEs ? 'Haz clic en el que deseas conservar:' : 'Click the one you want to keep:'}
+          </p>
           <div className="grid grid-cols-2 gap-3">
-            <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 space-y-1">
+            <div 
+              className={cn(
+                "rounded-lg border-2 p-3 space-y-1 cursor-pointer transition-all relative",
+                selected === 'new' 
+                  ? "border-primary bg-primary/10 ring-2 ring-primary/30" 
+                  : "border-border hover:border-primary/50 bg-card"
+              )}
+              onClick={() => setSelected(prev => prev === 'new' ? null : 'new')}
+            >
+              {selected === 'new' && (
+                <div className="absolute top-2 right-2 h-5 w-5 rounded-full bg-primary flex items-center justify-center">
+                  <Check className="h-3 w-3 text-primary-foreground" />
+                </div>
+              )}
               <p className="text-xs font-medium text-primary">
-                {isEs ? 'Nuevo' : 'New'}
+                {isEs ? '📄 Nuevo' : '📄 New'}
               </p>
               <p className="text-sm font-semibold truncate">{newDocument.vendor || '—'}</p>
               <p className="text-sm">${Number(newDocument.amount || 0).toFixed(2)}</p>
@@ -233,9 +252,22 @@ export function DuplicateWarningDialog({
               )}
             </div>
 
-            <div className="rounded-lg border border-muted bg-muted/30 p-3 space-y-1">
+            <div 
+              className={cn(
+                "rounded-lg border-2 p-3 space-y-1 cursor-pointer transition-all relative",
+                selected === 'existing' 
+                  ? "border-primary bg-primary/10 ring-2 ring-primary/30" 
+                  : "border-border hover:border-primary/50 bg-card"
+              )}
+              onClick={() => setSelected(prev => prev === 'existing' ? null : 'existing')}
+            >
+              {selected === 'existing' && (
+                <div className="absolute top-2 right-2 h-5 w-5 rounded-full bg-primary flex items-center justify-center">
+                  <Check className="h-3 w-3 text-primary-foreground" />
+                </div>
+              )}
               <p className="text-xs font-medium text-muted-foreground">
-                {isEs ? 'Existente' : 'Existing'}
+                {isEs ? '📁 Existente' : '📁 Existing'}
               </p>
               <p className="text-sm font-semibold truncate">{bestMatch.vendor || '—'}</p>
               <p className="text-sm">${bestMatch.amount.toFixed(2)}</p>
@@ -323,42 +355,80 @@ export function DuplicateWarningDialog({
             </Button>
           )}
 
-          {/* Contextual label */}
-          <p className="text-xs text-muted-foreground text-center pt-1">
-            {isEs ? '¿Qué quieres hacer?' : 'What do you want to do?'}
-          </p>
-
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-full gap-2 border-emerald-500/30 hover:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
-            onClick={() => { onKeepBoth(); }}
-          >
-            <Check className="h-4 w-4" />
-            {isEs ? 'Son diferentes — conservar ambos' : 'They\'re different — keep both'}
-          </Button>
-          <Button
-            variant="destructive"
-            size="sm"
-            className="w-full gap-2"
-            onClick={() => { onDeleteNew(); }}
-          >
-            <Trash2 className="h-4 w-4" />
-            {isEs 
-              ? `Eliminar el NUEVO (${newDocument.vendor || 'nuevo documento'})` 
-              : `Delete the NEW one (${newDocument.vendor || 'new document'})`}
-          </Button>
-          <Button
-            variant="secondary"
-            size="sm"
-            className="w-full gap-2"
-            onClick={() => { onReplaceOld(); }}
-          >
-            <ArrowLeftRight className="h-4 w-4" />
-            {isEs 
-              ? `Conservar nuevo y eliminar el EXISTENTE (${bestMatch.vendor || 'anterior'})` 
-              : `Keep new and delete the EXISTING one (${bestMatch.vendor || 'old'})`}
-          </Button>
+          {/* Selection-aware actions */}
+          {selected ? (
+            <>
+              <p className="text-xs text-center font-medium text-primary pt-1">
+                {isEs 
+                  ? `✅ Seleccionado: ${selected === 'new' ? 'Nuevo' : 'Existente'} — ¿qué hacer?`
+                  : `✅ Selected: ${selected === 'new' ? 'New' : 'Existing'} — what to do?`}
+              </p>
+              <Button
+                variant="default"
+                size="sm"
+                className="w-full gap-2"
+                onClick={() => {
+                  if (selected === 'new') onReplaceOld();
+                  else onDeleteNew();
+                }}
+              >
+                <Check className="h-4 w-4" />
+                {isEs 
+                  ? `Conservar ${selected === 'new' ? 'NUEVO' : 'EXISTENTE'} y eliminar el otro`
+                  : `Keep ${selected === 'new' ? 'NEW' : 'EXISTING'} and delete the other`}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full gap-2"
+                onClick={() => { onKeepBoth(); }}
+              >
+                <Check className="h-4 w-4" />
+                {isEs ? 'No son duplicados — conservar ambos' : 'Not duplicates — keep both'}
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full text-xs text-muted-foreground"
+                onClick={() => setSelected(null)}
+              >
+                {isEs ? 'Limpiar selección' : 'Clear selection'}
+              </Button>
+            </>
+          ) : (
+            <>
+              <p className="text-xs text-muted-foreground text-center pt-1">
+                {isEs ? 'Selecciona uno arriba, o elige una acción:' : 'Select one above, or choose an action:'}
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full gap-2 border-emerald-500/30 hover:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
+                onClick={() => { onKeepBoth(); }}
+              >
+                <Check className="h-4 w-4" />
+                {isEs ? 'Son diferentes — conservar ambos' : 'They\'re different — keep both'}
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                className="w-full gap-2"
+                onClick={() => { onDeleteNew(); }}
+              >
+                <Trash2 className="h-4 w-4" />
+                {isEs ? 'Eliminar el nuevo' : 'Delete the new one'}
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                className="w-full gap-2"
+                onClick={() => { onReplaceOld(); }}
+              >
+                <ArrowLeftRight className="h-4 w-4" />
+                {isEs ? 'Reemplazar existente con el nuevo' : 'Replace existing with new'}
+              </Button>
+            </>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>
