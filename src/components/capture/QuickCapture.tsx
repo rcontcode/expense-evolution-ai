@@ -792,6 +792,7 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
         onOpenChange={setShowDuplicateDialog}
         matches={duplicateMatches}
         newDocument={duplicateNewDoc}
+        newDocId={duplicateDocId || undefined}
         onKeepBoth={() => {
           toast.info(language === 'es' ? 'Ambos conservados' : 'Both kept');
           setShowDuplicateDialog(false);
