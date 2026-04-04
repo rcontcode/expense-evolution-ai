@@ -393,6 +393,7 @@ const ALL_QUESTIONS = [...ESSENTIAL_QUESTIONS, ...EXTENDED_QUESTIONS];
 export function useConversationalOnboarding() {
   const { user } = useAuth();
   const { language } = useLanguage();
+  const queryClient = useQueryClient();
   const upsertFinancialProfile = useUpsertFinancialProfile();
   const upsertLifeProfile = useUpsertLifeProfile();
   const markSectionComplete = useMarkSectionComplete();
