@@ -286,7 +286,7 @@ export function useMissionControl(): MissionControlData {
         { label: { es: 'Importadas', en: 'Imported' }, count: bankTotal },
         { label: { es: 'Conciliadas', en: 'Matched' }, count: bankMatched },
       ],
-      actionUrl: '/bank', details: bankDetails,
+      actionUrl: '/banking', details: bankDetails,
     };
 
     // ── Contracts ──
@@ -434,7 +434,7 @@ export function useMissionControl(): MissionControlData {
       if (!hasIncome) missing.push({ label: { es: 'Historial de ingresos', en: 'Income history' }, actionUrl: '/income', priority: 'critical' });
       if (!hasExpenses) missing.push({ label: { es: 'Historial de gastos', en: 'Expense history' }, actionUrl: '/expenses', priority: 'critical' });
       if (!hasBills) missing.push({ label: { es: 'Obligaciones fijas mensuales', en: 'Monthly fixed obligations' }, actionUrl: '/bills', priority: 'important' });
-      if (!hasBankData) missing.push({ label: { es: 'Estado de cuenta bancario', en: 'Bank statement' }, actionUrl: '/bank', priority: 'nice' });
+      if (!hasBankData) missing.push({ label: { es: 'Estado de cuenta bancario', en: 'Bank statement' }, actionUrl: '/banking', priority: 'nice' });
       const pct = Math.round(([hasIncome, hasExpenses, hasBills, hasBankData].filter(Boolean).length / 4) * 100);
       featureReadiness.push({
         key: 'cashflow', name: { es: 'Runway y Flujo de Caja', en: 'Cash Flow Runway' },
@@ -478,14 +478,14 @@ export function useMissionControl(): MissionControlData {
     // 8. Conciliación bancaria
     {
       const missing: FeatureRequirement['missingData'] = [];
-      if (!hasBankData) missing.push({ label: { es: 'Importar estado de cuenta', en: 'Import bank statement' }, actionUrl: '/bank', priority: 'critical' });
+      if (!hasBankData) missing.push({ label: { es: 'Importar estado de cuenta', en: 'Import bank statement' }, actionUrl: '/banking', priority: 'critical' });
       if (!hasExpenses) missing.push({ label: { es: 'Gastos registrados para vincular', en: 'Expenses recorded to match' }, actionUrl: '/expenses', priority: 'critical' });
       const pct = Math.round(([hasBankData, hasExpenses].filter(Boolean).length / 2) * 100);
       featureReadiness.push({
         key: 'reconciliation', name: { es: 'Conciliación Bancaria', en: 'Bank Reconciliation' },
         description: { es: 'Vincula automáticamente tus transacciones bancarias con tus gastos registrados para detectar omisiones', en: 'Automatically match bank transactions with recorded expenses to detect missing entries' },
         emoji: '🏦', readiness: pct >= 100 ? 'ready' : pct >= 50 ? 'partial' : 'blocked',
-        percentage: pct, missingData: missing, actionUrl: '/bank',
+        percentage: pct, missingData: missing, actionUrl: '/banking',
       });
     }
 
