@@ -272,15 +272,15 @@ export function FinancialNarrativeCard() {
             <div className="flex flex-wrap gap-x-6 gap-y-1">
               <span>
                 <span className="text-muted-foreground">{l ? 'Ingresos' : 'Income'}:</span>{' '}
-                <span className="text-green-600 font-semibold">{fmt.formatCurrency(narrative.totalMonthlyIncome)}</span>
+                <span className="text-primary font-semibold">{fmt.formatCurrency(narrative.totalMonthlyIncome)}</span>
               </span>
               <span>
                 <span className="text-muted-foreground">{l ? 'Gastos' : 'Expenses'}:</span>{' '}
-                <span className="text-red-600 font-semibold">{fmt.formatCurrency(narrative.monthlyExpenses)}</span>
+                <span className="text-destructive font-semibold">{fmt.formatCurrency(narrative.monthlyExpenses)}</span>
               </span>
               <span>
                 <span className="text-muted-foreground">{l ? 'Ahorro' : 'Savings'}:</span>{' '}
-                <span className={`font-semibold ${narrative.savingsRate >= 20 ? 'text-green-600' : narrative.savingsRate >= 0 ? 'text-yellow-600' : 'text-red-600'}`}>
+                <span className={`font-semibold ${narrative.savingsRate >= 20 ? 'text-primary' : narrative.savingsRate >= 0 ? 'text-accent-foreground' : 'text-destructive'}`}>
                   {narrative.savingsRate}%
                 </span>
               </span>
