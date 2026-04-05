@@ -216,6 +216,13 @@ export default function Dashboard() {
                   </Suspense>
                 </div>
 
+                {/* Financial Narrative */}
+                <div id="financial-narrative" data-section="financial-narrative">
+                  <Suspense fallback={<Skeleton className="h-[300px]" />}>
+                    <FinancialNarrativeCard />
+                  </Suspense>
+                </div>
+
                 {/* Ecosystem */}
                 <div id="ecosystem" data-section="ecosystem">
                   <EcosystemSection />
