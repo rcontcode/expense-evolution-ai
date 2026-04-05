@@ -42,6 +42,7 @@ const MonthlyBillsWidget = lazy(() => import('@/components/dashboard/MonthlyBill
 const ProactiveAlertsWidget = lazy(() => import('@/components/dashboard/ProactiveAlertsWidget').then(m => ({ default: m.ProactiveAlertsWidget })));
 const FinancialAutopilot = lazy(() => import('@/components/dashboard/FinancialAutopilot').then(m => ({ default: m.FinancialAutopilot })));
 const LazyBankingSummaryCard = lazy(() => import('@/components/banking/BankingSummaryCard').then(m => ({ default: m.BankingSummaryCard })));
+const FinancialNarrativeCard = lazy(() => import('@/components/dashboard/FinancialNarrativeCard'));
 
 export default function Dashboard() {
   const { t, language } = useLanguage();
@@ -212,6 +213,13 @@ export default function Dashboard() {
                 <div id="banking-summary" data-section="banking-summary">
                   <Suspense fallback={<Skeleton className="h-[200px]" />}>
                     <LazyBankingSummaryCard />
+                  </Suspense>
+                </div>
+
+                {/* Financial Narrative */}
+                <div id="financial-narrative" data-section="financial-narrative">
+                  <Suspense fallback={<Skeleton className="h-[300px]" />}>
+                    <FinancialNarrativeCard />
                   </Suspense>
                 </div>
 
