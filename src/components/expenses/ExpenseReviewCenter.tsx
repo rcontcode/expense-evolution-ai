@@ -290,6 +290,13 @@ export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCe
       done: noReceipt.length === 0,
     },
     {
+      key: 'bank',
+      label: language === 'es' ? 'Banco' : 'Bank',
+      icon: Landmark,
+      count: pendingBankTx.length,
+      done: pendingBankTx.length === 0,
+    },
+    {
       key: 'pending',
       label: language === 'es' ? 'Pendientes' : 'Pending',
       icon: Clock,
@@ -303,7 +310,7 @@ export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCe
       count: readyExpenses.length,
       done: isAllGood,
     },
-  ], [language, discrepancies.length, pendingIncome.length, noReceipt.length, pendingDocs.length, readyExpenses.length, isAllGood]);
+  ], [language, discrepancies.length, pendingIncome.length, pendingBankTx.length, noReceipt.length, pendingDocs.length, readyExpenses.length, isAllGood]);
 
   const handleUpdateAmount = useCallback(async (expenseId: string, newAmount: number) => {
     // Check for duplicates with same amount
