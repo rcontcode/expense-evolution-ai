@@ -9,7 +9,8 @@ import {
   AlertTriangle, CheckCircle2, Clock, FileText, Eye, 
   Edit3, Trash2, RotateCw, ZoomIn, ZoomOut, Maximize2,
   ArrowRight, Camera, Download, ShieldCheck, XCircle,
-  CameraOff, ChevronRight, Sparkles, FileCheck, DollarSign
+  CameraOff, ChevronRight, Sparkles, FileCheck, DollarSign,
+  Landmark
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
@@ -19,6 +20,7 @@ import { useDocumentsForReview, useDocumentImageUrl } from '@/hooks/data/useDocu
 import { useDeleteExpense, useUpdateExpense } from '@/hooks/data/useExpenses';
 import { supabase } from '@/integrations/supabase/client';
 import { useCreateIncome } from '@/hooks/data/useIncome';
+import { useBankTransactions } from '@/hooks/data/useBankTransactions';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
