@@ -224,6 +224,17 @@ export function useBankImportFlow() {
     await buildSummary(idsForSummary, totalOriginal, duplicatesSkipped);
   }, []);
 
+  // Step 2: After duplicate resolution
+  const proceedWithImport = useCallback(async (includeDuplicates: boolean) => {
+    const txnsToImport = includeDuplicates
+      ? state.transactions
+      : state.newTransactions;
+    const dupsSkipped = includeDuplicates ? 0 : state.duplicates.length;
+
+    setState(prev => ({ ...prev, step: 'classifying' }));
+    await insertAndClassify(txnsToImport, state.transactions.length, dupsSkipped);
+  }, [state.transactions, state.newTransactions, state.duplicates, insertAndClassify]);
+
   // Build summary from classified data
   const buildSummary = useCallback(async (
     insertedIds: string[],
