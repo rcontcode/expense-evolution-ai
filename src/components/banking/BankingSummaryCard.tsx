@@ -20,7 +20,7 @@ export function BankingSummaryCard({ compact = false }: { compact?: boolean }) {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { formatCompact } = useFormatCurrency();
-  const { data: transactions = [], isLoading } = useBankTransactions();
+  const { data: transactions = [], isLoading, hasMore } = useBankTransactions();
   const l = language === 'es';
 
   // Last import session
@@ -223,6 +223,16 @@ export function BankingSummaryCard({ compact = false }: { compact?: boolean }) {
             </Badge>
             {' · '}
             {lastSession.total_transactions} {l ? 'transacciones' : 'transactions'}
+          </div>
+        )}
+
+        {/* Limit warning */}
+        {hasMore && (
+          <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/50 border border-border/50 text-xs text-muted-foreground">
+            <Landmark className="h-3.5 w-3.5 shrink-0" />
+            {l
+              ? 'Mostrando las últimas 5,000 transacciones. Puede haber más registros anteriores.'
+              : 'Showing the last 5,000 transactions. There may be older records.'}
           </div>
         )}
 

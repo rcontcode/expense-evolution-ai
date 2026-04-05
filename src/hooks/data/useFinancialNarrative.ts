@@ -153,8 +153,7 @@ export function useFinancialNarrative(months: number = 3): FinancialNarrative {
     const totalFixedExpenses = fixedExpenses.reduce((s, e) => s + e.amount, 0);
 
     // Banking summary
-    const txList = bankTx || [];
-    const matched = txList.filter(t => t.matched_expense_id || t.matched_income_id).length;
+    const txList = (bankTx as BankTransaction[] | undefined) || [];
     const banksSet = new Set(txList.map(t => t.bank_name).filter(Boolean));
 
     const bankingSummary = {
