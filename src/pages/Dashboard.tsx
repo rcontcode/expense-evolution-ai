@@ -207,6 +207,13 @@ export default function Dashboard() {
                   </div>
                 </div>
 
+                {/* Banking Summary */}
+                <div id="banking-summary" data-section="banking-summary">
+                  <Suspense fallback={<Skeleton className="h-[200px]" />}>
+                    <LazyBankingSummaryCard />
+                  </Suspense>
+                </div>
+
                 {/* Ecosystem */}
                 <div id="ecosystem" data-section="ecosystem">
                   <EcosystemSection />
