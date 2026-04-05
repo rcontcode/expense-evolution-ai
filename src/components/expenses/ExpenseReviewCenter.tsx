@@ -909,6 +909,53 @@ export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCe
             )}
           </TabsContent>
 
+          {/* Bank Transactions Tab */}
+          <TabsContent value="bank" className="space-y-3 mt-3">
+            {pendingBankTx.length === 0 ? (
+              <Card className="border-dashed border-emerald-200 dark:border-emerald-800">
+                <CardContent className="flex flex-col items-center justify-center py-8 gap-2">
+                  <CheckCircle2 className="h-8 w-8 text-emerald-500" />
+                  <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">
+                    {language === 'es' ? '¡Todas las transacciones bancarias están clasificadas!' : 'All bank transactions are classified!'}
+                  </p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-2">
+                <p className="text-xs text-muted-foreground">
+                  {language === 'es' 
+                    ? `${pendingBankTx.length} transacciones pendientes de clasificar o vincular`
+                    : `${pendingBankTx.length} transactions pending classification or matching`}
+                </p>
+                {pendingBankTx.slice(0, 20).map(tx => (
+                  <Card key={tx.id} className="border-border/50">
+                    <CardContent className="p-3">
+                      <div className="flex items-center justify-between">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-medium truncate">{tx.description || (language === 'es' ? 'Sin descripción' : 'No description')}</p>
+                          <p className="text-xs text-muted-foreground">{tx.transaction_date}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className={cn("text-sm font-bold", Number(tx.amount) > 0 ? "text-emerald-600" : "text-foreground")}>
+                            {fmtCurr(Math.abs(Number(tx.amount)))}
+                          </p>
+                          <Badge variant="outline" className="text-[10px]">
+                            {tx.status || 'pending'}
+                          </Badge>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+                {pendingBankTx.length > 20 && (
+                  <p className="text-xs text-center text-muted-foreground py-2">
+                    +{pendingBankTx.length - 20} {language === 'es' ? 'más...' : 'more...'}
+                  </p>
+                )}
+              </div>
+            )}
+          </TabsContent>
+
           <TabsContent value="noreceipt" className="space-y-3 mt-3">
             {noReceipt.length === 0 ? (
               <Card className="border-dashed border-emerald-200 dark:border-emerald-800">
