@@ -70,7 +70,30 @@ export function BankingSummaryCard({ compact = false }: { compact?: boolean }) {
     return <Skeleton className={compact ? "h-24" : "h-40"} />;
   }
 
-  if (!stats || stats.total === 0) return null;
+  if (!stats || stats.total === 0) {
+    if (compact) return null;
+    return (
+      <Card className="border-dashed" data-section="banking-summary">
+        <CardContent className="py-6 flex flex-col items-center gap-3 text-center">
+          <div className="p-3 rounded-full bg-primary/10">
+            <Landmark className="h-6 w-6 text-primary" />
+          </div>
+          <div>
+            <p className="text-sm font-medium">
+              {l ? 'Sin transacciones bancarias' : 'No bank transactions'}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {l ? 'Importa tu estado de cuenta para ver un resumen aquí' : 'Import your bank statement to see a summary here'}
+            </p>
+          </div>
+          <Button size="sm" onClick={() => navigate('/banking')} className="gap-2">
+            <Landmark className="h-4 w-4" />
+            {l ? 'Importar estado de cuenta' : 'Import bank statement'}
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
 
   const fmt = (n: number) => formatCompact(n);
 
