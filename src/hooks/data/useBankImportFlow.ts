@@ -153,7 +153,7 @@ export function useBankImportFlow() {
 
     setState(prev => ({ ...prev, step: 'classifying' }));
     await insertAndClassify(txnsToImport, state.transactions.length, dupsSkipped);
-  }, [state.transactions, state.newTransactions, state.duplicates]);
+  }, [state.transactions, state.newTransactions, state.duplicates, insertAndClassify]);
 
   // Insert transactions and run batch classification
   const insertAndClassify = useCallback(async (
@@ -297,7 +297,7 @@ export function useBankImportFlow() {
         file_name: state.fileName,
         total_transactions: state.transactions.length || state.insertedIds.length,
         duplicates_found: state.duplicates.length,
-        duplicates_skipped: state.duplicates.length - (state.transactions.length - state.newTransactions.length),
+        duplicates_skipped: duplicatesSkipped ?? 0,
         income_count: summary.incomeCount,
         expense_count: summary.expenseCount,
         income_total: summary.incomeTotal,
