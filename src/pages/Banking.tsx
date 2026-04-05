@@ -12,6 +12,7 @@ import { WeeklySpendingDigest } from '@/components/banking/WeeklySpendingDigest'
 import { MerchantIntelligence } from '@/components/banking/MerchantIntelligence';
 import { SmartSearchChat } from '@/components/banking/SmartSearchChat';
 import { CashFlowRunwayCalculator } from '@/components/banking/CashFlowRunwayCalculator';
+import { BankTransactionSummary } from '@/components/banking/BankTransactionSummary';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Upload, Search, AlertTriangle, TrendingDown } from 'lucide-react';
 import { PageHeader } from '@/components/PageHeader';
@@ -35,7 +36,6 @@ export default function Banking() {
 
         {!isMobile && <MentorQuoteBanner context="dashboard" className="mb-2" />}
         
-        {/* Contextual Page Guide - hidden on mobile */}
         {!isMobile && (
           <PageContextGuide
             {...PAGE_GUIDES.banking}
@@ -48,23 +48,21 @@ export default function Banking() {
           />
         )}
 
-        {/* Workflow Visualizer - hidden on mobile */}
         {!isMobile && <MiniWorkflow workflowId="bank-reconciliation" />}
 
-        {/* Banking Integration Guide with Tooltips - collapsed by default on mobile */}
         {!isMobile && (
           <div data-highlight="bank-import-guide">
             <BankingIntegrationGuide onImportClick={() => setImportDialogOpen(true)} />
           </div>
         )}
         
-        {/* Banking Insights Summary */}
         <BankingInsightsSummary />
 
-        {/* Smart Search Chat - prominent standalone */}
+        {/* Smart Transaction Summary - forest view */}
+        <BankTransactionSummary />
+
         <SmartSearchChat />
 
-        {/* Intelligence Cards */}
         <div className="grid gap-4 lg:grid-cols-2">
           <SpendingVelocityMonitor />
           <CashFlowRunwayCalculator />
@@ -81,7 +79,6 @@ export default function Banking() {
           <BankAnalysisDashboard onImportClick={() => setImportDialogOpen(true)} />
         </div>
 
-        {/* Import Dialog */}
         <BankImportDialog open={importDialogOpen} onClose={() => setImportDialogOpen(false)} />
       </div>
     </Layout>

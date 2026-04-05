@@ -9,7 +9,8 @@ import {
   AlertTriangle, CheckCircle2, Clock, FileText, Eye, 
   Edit3, Trash2, RotateCw, ZoomIn, ZoomOut, Maximize2,
   ArrowRight, Camera, Download, ShieldCheck, XCircle,
-  CameraOff, ChevronRight, Sparkles, FileCheck, DollarSign
+  CameraOff, ChevronRight, Sparkles, FileCheck, DollarSign,
+  Landmark
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
@@ -19,6 +20,7 @@ import { useDocumentsForReview, useDocumentImageUrl } from '@/hooks/data/useDocu
 import { useDeleteExpense, useUpdateExpense } from '@/hooks/data/useExpenses';
 import { supabase } from '@/integrations/supabase/client';
 import { useCreateIncome } from '@/hooks/data/useIncome';
+import { useBankTransactions } from '@/hooks/data/useBankTransactions';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
@@ -196,6 +198,7 @@ export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCe
   const deleteMutation = useDeleteExpense();
   const updateMutation = useUpdateExpense();
   const createIncome = useCreateIncome();
+  const { data: bankTransactions = [] } = useBankTransactions();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editAmount, setEditAmount] = useState('');
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
@@ -248,13 +251,19 @@ export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCe
   // Expenses without receipts
   const noReceipt = useMemo(() => expenses.filter(e => !e.document_id), [expenses]);
 
+  // Bank transactions pending classification
+  const pendingBankTx = useMemo(() => 
+    bankTransactions.filter(t => t.status === 'pending' || !t.status),
+    [bankTransactions]
+  );
+
   // All good - expenses with matched receipts and no discrepancies
   const readyExpenses = useMemo(() => 
     expenses.filter(e => e.document_id && !discrepancies.find(d => d.expense.id === e.id)),
     [expenses, discrepancies]
   );
 
-  const totalIssues = discrepancies.length + pendingDocs.length + noReceipt.length + pendingIncome.length;
+  const totalIssues = discrepancies.length + pendingDocs.length + noReceipt.length + pendingIncome.length + pendingBankTx.length;
   const isAllGood = totalIssues === 0 && expenses.length > 0;
 
   // Flow steps for visual indicator
@@ -281,6 +290,13 @@ export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCe
       done: noReceipt.length === 0,
     },
     {
+      key: 'bank',
+      label: language === 'es' ? 'Banco' : 'Bank',
+      icon: Landmark,
+      count: pendingBankTx.length,
+      done: pendingBankTx.length === 0,
+    },
+    {
       key: 'pending',
       label: language === 'es' ? 'Pendientes' : 'Pending',
       icon: Clock,
@@ -294,7 +310,7 @@ export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCe
       count: readyExpenses.length,
       done: isAllGood,
     },
-  ], [language, discrepancies.length, pendingIncome.length, noReceipt.length, pendingDocs.length, readyExpenses.length, isAllGood]);
+  ], [language, discrepancies.length, pendingIncome.length, pendingBankTx.length, noReceipt.length, pendingDocs.length, readyExpenses.length, isAllGood]);
 
   const handleUpdateAmount = useCallback(async (expenseId: string, newAmount: number) => {
     // Check for duplicates with same amount
@@ -470,7 +486,7 @@ export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCe
       {/* Tabs for different review categories */}
       {!isAllGood && (
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="w-full grid grid-cols-5">
+          <TabsList className="w-full grid grid-cols-6">
             <TabsTrigger value="discrepancies" className="relative text-xs sm:text-sm">
               <AlertTriangle className="h-3.5 w-3.5 mr-1 sm:mr-2" />
               <span className="hidden sm:inline">{language === 'es' ? 'Discrepancias' : 'Discrepancies'}</span>
@@ -485,6 +501,14 @@ export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCe
               <span className="sm:hidden">💰</span>
               {pendingIncome.length > 0 && (
                 <Badge variant="secondary" className="ml-1 px-1.5 py-0 text-[10px] bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400">{pendingIncome.length}</Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="bank" className="text-xs sm:text-sm">
+              <Landmark className="h-3.5 w-3.5 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">{language === 'es' ? 'Banco' : 'Bank'}</span>
+              <span className="sm:hidden">🏦</span>
+              {pendingBankTx.length > 0 && (
+                <Badge variant="secondary" className="ml-1 px-1.5 py-0 text-[10px] bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400">{pendingBankTx.length}</Badge>
               )}
             </TabsTrigger>
             <TabsTrigger value="noreceipt" className="text-xs sm:text-sm">
@@ -881,6 +905,53 @@ export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCe
                     </motion.div>
                   );
                 })}
+              </div>
+            )}
+          </TabsContent>
+
+          {/* Bank Transactions Tab */}
+          <TabsContent value="bank" className="space-y-3 mt-3">
+            {pendingBankTx.length === 0 ? (
+              <Card className="border-dashed border-emerald-200 dark:border-emerald-800">
+                <CardContent className="flex flex-col items-center justify-center py-8 gap-2">
+                  <CheckCircle2 className="h-8 w-8 text-emerald-500" />
+                  <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">
+                    {language === 'es' ? '¡Todas las transacciones bancarias están clasificadas!' : 'All bank transactions are classified!'}
+                  </p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-2">
+                <p className="text-xs text-muted-foreground">
+                  {language === 'es' 
+                    ? `${pendingBankTx.length} transacciones pendientes de clasificar o vincular`
+                    : `${pendingBankTx.length} transactions pending classification or matching`}
+                </p>
+                {pendingBankTx.slice(0, 20).map(tx => (
+                  <Card key={tx.id} className="border-border/50">
+                    <CardContent className="p-3">
+                      <div className="flex items-center justify-between">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-medium truncate">{tx.description || (language === 'es' ? 'Sin descripción' : 'No description')}</p>
+                          <p className="text-xs text-muted-foreground">{tx.transaction_date}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className={cn("text-sm font-bold", Number(tx.amount) > 0 ? "text-emerald-600" : "text-foreground")}>
+                            {fmtCurr(Math.abs(Number(tx.amount)))}
+                          </p>
+                          <Badge variant="outline" className="text-[10px]">
+                            {tx.status || 'pending'}
+                          </Badge>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+                {pendingBankTx.length > 20 && (
+                  <p className="text-xs text-center text-muted-foreground py-2">
+                    +{pendingBankTx.length - 20} {language === 'es' ? 'más...' : 'more...'}
+                  </p>
+                )}
               </div>
             )}
           </TabsContent>
