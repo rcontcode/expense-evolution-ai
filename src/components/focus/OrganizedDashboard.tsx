@@ -3,7 +3,7 @@
  import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
  import { Skeleton } from '@/components/ui/skeleton';
  import { SortableAreaWrapper } from './SortableAreaWrapper';
- import { SwipeableAreaSection } from './SwipeableAreaSection';
+ 
  import { AreaSearchBar } from './AreaSearchBar';
  import { FocusSelector } from './FocusSelector';
  import { ControlCenterHeader } from './ControlCenterHeader';
