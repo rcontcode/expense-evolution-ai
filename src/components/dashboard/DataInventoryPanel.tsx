@@ -49,6 +49,12 @@ function useDataInventory() {
           .eq('user_id', user.id).order('created_at', { ascending: true }),
       ]);
 
+      const extract = (res: typeof docs) => ({
+        count: res.count || 0,
+        first: res.data?.[0]?.created_at || null,
+        last: res.data?.length ? res.data[res.data.length - 1]?.created_at : null,
+      });
+
       return {
         documents: extract(docs),
         expenses: extract(expenses),
