@@ -38,6 +38,7 @@ export interface FinancialNarrative {
   savingsRate: number;
   isLoading: boolean;
   hasData: boolean;
+  periodMonths: number;
 }
 
 function detectDayOfMonth(dates: string[]): number | undefined {
@@ -49,7 +50,7 @@ function detectDayOfMonth(dates: string[]): number | undefined {
   return count >= 2 ? Number(bestDay) : undefined;
 }
 
-export function useFinancialNarrative(): FinancialNarrative {
+export function useFinancialNarrative(months: number = 3): FinancialNarrative {
   const { user } = useAuth();
   const { data: profile, isLoading: profileLoading } = useProfile();
   const { data: allIncome, isLoading: incomeLoading } = useIncome();
@@ -57,7 +58,6 @@ export function useFinancialNarrative(): FinancialNarrative {
   const { data: bankTx, isLoading: bankLoading } = useBankTransactions();
   const { data: stats, isLoading: statsLoading } = useDashboardStats();
 
-  // Lightweight counts for documents and import sessions
   const { data: docCounts, isLoading: docsLoading } = useQuery({
     queryKey: ['financial-narrative-docs', user?.id],
     queryFn: async () => {
@@ -86,14 +86,24 @@ export function useFinancialNarrative(): FinancialNarrative {
     const workTypes = (profile?.work_types as string[]) || [];
     const country = profile?.country || 'CA';
 
-    // Group income by type+source and detect recurring day
     const now = new Date();
-    const thisYear = now.getFullYear();
     const incomeRecords = allIncome || [];
 
-    // Calculate average monthly income from last 3 months
-    const threeMonthsAgo = new Date(thisYear, now.getMonth() - 3, 1);
-    const recentIncome = incomeRecords.filter(i => new Date(i.date) >= threeMonthsAgo);
+    // Use parameterized months for filtering
+    const periodStart = new Date(now.getFullYear(), now.getMonth() - months, 1);
+    const recentIncome = months === 0
+      ? incomeRecords // "All" mode
+      : incomeRecords.filter(i => new Date(i.date) >= periodStart);
+
+    // Determine divisor for monthly averages
+    const divisor = months === 0
+      ? Math.max(1, (() => {
+          if (incomeRecords.length === 0) return 1;
+          const oldest = new Date(incomeRecords[incomeRecords.length - 1]?.date || now);
+          const diffMs = now.getTime() - oldest.getTime();
+          return Math.max(1, Math.round(diffMs / (30.44 * 24 * 60 * 60 * 1000)));
+        })())
+      : months;
 
     // Group by income_type + client
     const groupMap: Record<string, { amounts: number[]; dates: string[]; type: string; clientName?: string }> = {};
@@ -107,7 +117,7 @@ export function useFinancialNarrative(): FinancialNarrative {
     });
 
     const incomeStreams: IncomeStream[] = Object.entries(groupMap).map(([, g]) => {
-      const avg = g.amounts.reduce((a, b) => a + b, 0) / Math.max(g.amounts.length / 3, 1);
+      const avg = g.amounts.reduce((a, b) => a + b, 0) / Math.max(g.amounts.length / divisor, 1);
       return {
         source: g.clientName || g.type,
         type: g.type,
@@ -128,7 +138,7 @@ export function useFinancialNarrative(): FinancialNarrative {
       }
     });
     const clients = clientsData
-      .map(c => ({ name: c.name, totalIncome: Math.round((clientIncomeMap[c.id] || 0) / 3) }))
+      .map(c => ({ name: c.name, totalIncome: Math.round((clientIncomeMap[c.id] || 0) / divisor) }))
       .sort((a, b) => b.totalIncome - a.totalIncome);
 
     // Fixed expenses from recurring bills
@@ -179,6 +189,7 @@ export function useFinancialNarrative(): FinancialNarrative {
       savingsRate,
       isLoading,
       hasData,
+      periodMonths: months,
     };
-  }, [profile, allIncome, bills, bankTx, stats, docCounts, profileLoading, incomeLoading, billsLoading, bankLoading, statsLoading, docsLoading]);
+  }, [profile, allIncome, bills, bankTx, stats, docCounts, profileLoading, incomeLoading, billsLoading, bankLoading, statsLoading, docsLoading, months]);
 }

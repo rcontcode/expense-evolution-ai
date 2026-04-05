@@ -1,12 +1,14 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { useFinancialNarrative } from '@/hooks/data/useFinancialNarrative';
 import { useNavigate } from 'react-router-dom';
+import { PieChart, Pie, Cell, Tooltip } from 'recharts';
 import {
   ChevronDown,
   ChevronRight,
@@ -18,6 +20,7 @@ import {
   BarChart3,
   ArrowRight,
   Sparkles,
+  CheckCircle2,
 } from 'lucide-react';
 
 const WORK_TYPE_LABELS: Record<string, Record<string, string>> = {
@@ -58,6 +61,27 @@ const INCOME_TYPE_LABELS: Record<string, Record<string, string>> = {
   },
 };
 
+const DONUT_COLORS = [
+  'hsl(var(--primary))',
+  'hsl(var(--destructive))',
+  'hsl(262, 80%, 55%)',
+  'hsl(35, 90%, 50%)',
+  'hsl(180, 60%, 45%)',
+];
+
+const EXPENSE_CATEGORY_LABELS: Record<string, Record<string, string>> = {
+  es: {
+    housing: 'Vivienda', utilities: 'Servicios', insurance: 'Seguros', subscriptions: 'Suscripciones',
+    transport: 'Transporte', food: 'Comida', health: 'Salud', education: 'Educación', other: 'Otro',
+    entertainment: 'Entretenimiento', communication: 'Comunicación', taxes: 'Impuestos',
+  },
+  en: {
+    housing: 'Housing', utilities: 'Utilities', insurance: 'Insurance', subscriptions: 'Subscriptions',
+    transport: 'Transport', food: 'Food', health: 'Health', education: 'Education', other: 'Other',
+    entertainment: 'Entertainment', communication: 'Communication', taxes: 'Taxes',
+  },
+};
+
 function SectionToggle({ title, icon: Icon, open, onToggle, badge }: {
   title: string;
   icon: React.ElementType;
@@ -79,12 +103,77 @@ function SectionToggle({ title, icon: Icon, open, onToggle, badge }: {
   );
 }
 
+function SavingsGauge({ rate, l }: { rate: number; l: boolean }) {
+  const clampedRate = Math.max(0, Math.min(100, rate));
+  const radius = 36;
+  const strokeWidth = 7;
+  const circumference = Math.PI * radius;
+  const offset = circumference - (clampedRate / 100) * circumference;
+  const color = rate >= 20 ? 'hsl(var(--primary))' : rate >= 10 ? 'hsl(45, 90%, 50%)' : 'hsl(var(--destructive))';
+
+  return (
+    <div className="flex flex-col items-center">
+      <svg width="84" height="50" viewBox="0 0 84 50" className="overflow-visible">
+        <path
+          d={`M 6,46 A ${radius} ${radius} 0 0 1 78,46`}
+          fill="none"
+          stroke="hsl(var(--muted))"
+          strokeWidth={strokeWidth}
+          strokeLinecap="round"
+        />
+        <path
+          d={`M 6,46 A ${radius} ${radius} 0 0 1 78,46`}
+          fill="none"
+          stroke={color}
+          strokeWidth={strokeWidth}
+          strokeLinecap="round"
+          strokeDasharray={`${circumference}`}
+          strokeDashoffset={offset}
+          className="transition-all duration-700"
+        />
+        <text x="42" y="40" textAnchor="middle" className="fill-foreground text-sm font-bold">{rate}%</text>
+      </svg>
+      <span className="text-[10px] text-muted-foreground mt-0.5">{l ? 'Tasa de ahorro' : 'Savings rate'}</span>
+    </div>
+  );
+}
+
+function CompletionBar({ narrative, l }: { narrative: ReturnType<typeof useFinancialNarrative>; l: boolean }) {
+  const sections = [
+    { key: 'profile', filled: narrative.workTypes.length > 0, label: l ? 'Perfil' : 'Profile' },
+    { key: 'income', filled: narrative.incomeStreams.length > 0, label: l ? 'Ingresos' : 'Income' },
+    { key: 'expenses', filled: narrative.fixedExpenses.length > 0, label: l ? 'Gastos' : 'Expenses' },
+    { key: 'banking', filled: narrative.bankingSummary.total > 0, label: l ? 'Banca' : 'Banking' },
+    { key: 'docs', filled: narrative.documentSources.receipts > 0, label: l ? 'Docs' : 'Docs' },
+  ];
+  const filled = sections.filter(s => s.filled).length;
+  const pct = Math.round((filled / sections.length) * 100);
+
+  return (
+    <div className="flex items-center gap-2 px-1 py-1.5">
+      <div className="flex gap-0.5 flex-1">
+        {sections.map(s => (
+          <div
+            key={s.key}
+            className={`h-1.5 flex-1 rounded-full transition-colors ${s.filled ? 'bg-primary' : 'bg-muted'}`}
+            title={s.label}
+          />
+        ))}
+      </div>
+      <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+        {filled}/{sections.length} {l ? 'secciones' : 'sections'} · {pct}%
+      </span>
+    </div>
+  );
+}
+
 export function FinancialNarrativeCard() {
   const { language } = useLanguage();
   const l = language === 'es';
   const fmt = useFormatCurrency();
   const navigate = useNavigate();
-  const narrative = useFinancialNarrative();
+  const [periodMonths, setPeriodMonths] = useState(3);
+  const narrative = useFinancialNarrative(periodMonths);
 
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     profile: true,
@@ -96,6 +185,28 @@ export function FinancialNarrativeCard() {
   });
 
   const toggle = (key: string) => setOpenSections(prev => ({ ...prev, [key]: !prev[key] }));
+
+  // Donut data for expense categories
+  const donutData = useMemo(() => {
+    const catMap: Record<string, number> = {};
+    narrative.fixedExpenses.forEach(e => {
+      const cat = e.category || 'other';
+      catMap[cat] = (catMap[cat] || 0) + e.amount;
+    });
+    return Object.entries(catMap)
+      .map(([cat, amount]) => ({
+        name: (EXPENSE_CATEGORY_LABELS[language] || EXPENSE_CATEGORY_LABELS.es)[cat] || cat,
+        value: amount,
+      }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 5);
+  }, [narrative.fixedExpenses, language]);
+
+  const maxIncome = useMemo(() => Math.max(...narrative.incomeStreams.map(s => s.amount), 1), [narrative.incomeStreams]);
+
+  const periodLabel = periodMonths === 0
+    ? (l ? 'Todo el historial' : 'All history')
+    : (l ? `Últimos ${periodMonths} ${periodMonths === 1 ? 'mes' : 'meses'}` : `Last ${periodMonths} month${periodMonths > 1 ? 's' : ''}`);
 
   if (narrative.isLoading) {
     return <Skeleton className="h-[300px] rounded-xl" />;
@@ -131,28 +242,44 @@ export function FinancialNarrativeCard() {
   return (
     <Card className="overflow-hidden" data-section="financial-narrative">
       <CardHeader className="pb-1 bg-gradient-to-r from-primary/5 to-transparent">
-        <CardTitle className="flex items-center gap-2 text-lg">
-          <BarChart3 className="h-5 w-5 text-primary" />
-          {narrative.userName
-            ? `${l ? 'Hola' : 'Hello'} ${narrative.userName.split(' ')[0]} 👋 — ${l ? 'Tu Panorama Financiero' : 'Your Financial Overview'}`
-            : l ? 'Tu Panorama Financiero' : 'Your Financial Overview'}
-        </CardTitle>
-        <p className="text-xs text-muted-foreground mt-0.5">
-          {l ? 'Basado en los últimos 3 meses de actividad' : 'Based on the last 3 months of activity'}
-        </p>
+        <div className="flex items-center justify-between gap-2">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <BarChart3 className="h-5 w-5 text-primary" />
+            {narrative.userName
+              ? `${l ? 'Hola' : 'Hello'} ${narrative.userName.split(' ')[0]} 👋`
+              : l ? 'Tu Panorama Financiero' : 'Your Financial Overview'}
+          </CardTitle>
+          <Select value={String(periodMonths)} onValueChange={v => setPeriodMonths(Number(v))}>
+            <SelectTrigger className="h-7 w-auto min-w-[100px] text-xs border-primary/20">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="1">{l ? '1 mes' : '1 month'}</SelectItem>
+              <SelectItem value="3">{l ? '3 meses' : '3 months'}</SelectItem>
+              <SelectItem value="6">{l ? '6 meses' : '6 months'}</SelectItem>
+              <SelectItem value="12">{l ? '12 meses' : '12 months'}</SelectItem>
+              <SelectItem value="0">{l ? 'Todo' : 'All'}</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <p className="text-xs text-muted-foreground mt-0.5">{periodLabel}</p>
       </CardHeader>
+
       <CardContent className="space-y-1 pt-2">
+        {/* COMPLETION */}
+        <CompletionBar narrative={narrative} l={l} />
+
         {/* PROFILE */}
         {(narrative.workTypes.length > 0 || narrative.clients.length > 0) && (
           <Collapsible open={openSections.profile}>
             <SectionToggle title={l ? 'Perfil' : 'Profile'} icon={User} open={openSections.profile} onToggle={() => toggle('profile')} />
             <CollapsibleContent className="pl-6 pb-2 text-sm text-muted-foreground">
-              {l
-                ? `Eres persona natural, trabajas como ${workLabels}.`
-                : `You work as ${workLabels}.`}
+              {narrative.workTypes.length > 0 && (
+                <span>{l ? `Eres persona natural, trabajas como ${workLabels}.` : `You work as ${workLabels}.`} </span>
+              )}
               {narrative.clients.length > 0 && (
                 <span>
-                  {' '}{l ? `Tienes ${narrative.clients.length} cliente${narrative.clients.length > 1 ? 's' : ''}` : `You have ${narrative.clients.length} client${narrative.clients.length > 1 ? 's' : ''}`}
+                  {l ? `Tienes ${narrative.clients.length} cliente${narrative.clients.length > 1 ? 's' : ''}` : `You have ${narrative.clients.length} client${narrative.clients.length > 1 ? 's' : ''}`}
                   : {narrative.clients.map(c =>
                     c.totalIncome > 0
                       ? c.name
@@ -173,25 +300,32 @@ export function FinancialNarrativeCard() {
             onToggle={() => toggle('income')}
             badge={fmt.formatCurrency(narrative.totalMonthlyIncome) + (l ? '/mes' : '/mo')}
           />
-          <CollapsibleContent className="pl-6 pb-2 text-sm space-y-1">
+          <CollapsibleContent className="pl-6 pb-2 text-sm space-y-1.5">
             {narrative.incomeStreams.length === 0 ? (
               <p className="text-muted-foreground">{l ? 'Sin ingresos registrados aún.' : 'No income recorded yet.'}</p>
             ) : (
               narrative.incomeStreams.map((stream, i) => {
                 const typeLabel = (INCOME_TYPE_LABELS[language] || INCOME_TYPE_LABELS.es)[stream.type] || stream.type;
+                const barWidth = Math.max(8, (stream.amount / maxIncome) * 100);
                 return (
-                  <div key={i} className="flex items-start gap-1">
-                    <span className="text-muted-foreground">•</span>
-                    <span>
-                      <span className="font-medium">{stream.clientName || typeLabel}</span>
-                      {': '}
-                      <span className="text-primary font-semibold">{fmt.formatCurrency(stream.amount)}</span>
-                      {stream.dayOfMonth && (
-                        <span className="text-muted-foreground">
-                          {' '}({l ? `día ${stream.dayOfMonth}` : `day ${stream.dayOfMonth}`})
-                        </span>
-                      )}
-                    </span>
+                  <div key={i} className="space-y-0.5">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-sm truncate">
+                        <span className="font-medium">{stream.clientName || typeLabel}</span>
+                        {stream.dayOfMonth && (
+                          <span className="text-muted-foreground text-xs ml-1">
+                            ({l ? `día ${stream.dayOfMonth}` : `day ${stream.dayOfMonth}`})
+                          </span>
+                        )}
+                      </span>
+                      <span className="text-primary font-semibold text-sm whitespace-nowrap">{fmt.formatCurrency(stream.amount)}</span>
+                    </div>
+                    <div className="h-2 rounded-full bg-muted/50 overflow-hidden">
+                      <div
+                        className="h-full rounded-full bg-primary/60 transition-all duration-500"
+                        style={{ width: `${barWidth}%` }}
+                      />
+                    </div>
                   </div>
                 );
               })
@@ -215,16 +349,52 @@ export function FinancialNarrativeCard() {
             {narrative.fixedExpenses.length === 0 ? (
               <p className="text-muted-foreground">{l ? 'Sin pagos recurrentes configurados.' : 'No recurring payments set up.'}</p>
             ) : (
-              <div className="flex flex-wrap gap-x-4 gap-y-1">
-                {narrative.fixedExpenses.slice(0, 8).map((exp, i) => (
-                  <span key={i}>
-                    <span className="text-muted-foreground">{exp.name}:</span>{' '}
-                    <span className="font-medium">{fmt.formatCurrency(exp.amount)}</span>
-                  </span>
-                ))}
-                {narrative.fixedExpenses.length > 8 && (
-                  <span className="text-muted-foreground">+{narrative.fixedExpenses.length - 8} {l ? 'más' : 'more'}</span>
+              <div className="flex items-start gap-4">
+                {/* Donut */}
+                {donutData.length > 0 && (
+                  <div className="shrink-0">
+                    <PieChart width={70} height={70}>
+                      <Pie
+                        data={donutData}
+                        cx={35}
+                        cy={35}
+                        innerRadius={18}
+                        outerRadius={32}
+                        paddingAngle={2}
+                        dataKey="value"
+                        strokeWidth={0}
+                      >
+                        {donutData.map((_, idx) => (
+                          <Cell key={idx} fill={DONUT_COLORS[idx % DONUT_COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        formatter={(value: number) => fmt.formatCurrency(value)}
+                        contentStyle={{ fontSize: '11px', borderRadius: '8px' }}
+                      />
+                    </PieChart>
+                  </div>
                 )}
+                {/* List */}
+                <div className="flex-1 space-y-0.5">
+                  <div className="flex flex-wrap gap-x-4 gap-y-1">
+                    {narrative.fixedExpenses.slice(0, 8).map((exp, i) => (
+                      <span key={i} className="flex items-center gap-1">
+                        <span
+                          className="w-2 h-2 rounded-full shrink-0"
+                          style={{ backgroundColor: DONUT_COLORS[
+                            donutData.findIndex(d => d.name === ((EXPENSE_CATEGORY_LABELS[language] || EXPENSE_CATEGORY_LABELS.es)[exp.category] || exp.category)) % DONUT_COLORS.length
+                          ] || DONUT_COLORS[0] }}
+                        />
+                        <span className="text-muted-foreground">{exp.name}:</span>{' '}
+                        <span className="font-medium">{fmt.formatCurrency(exp.amount)}</span>
+                      </span>
+                    ))}
+                    {narrative.fixedExpenses.length > 8 && (
+                      <span className="text-muted-foreground">+{narrative.fixedExpenses.length - 8} {l ? 'más' : 'more'}</span>
+                    )}
+                  </div>
+                </div>
               </div>
             )}
             <Button variant="ghost" size="sm" className="h-6 text-xs px-1 text-primary mt-1" onClick={() => navigate('/bills')}>
@@ -242,7 +412,7 @@ export function FinancialNarrativeCard() {
             onToggle={() => toggle('banking')}
             badge={String(narrative.bankingSummary.total)}
           />
-          <CollapsibleContent className="pl-6 pb-2 text-sm text-muted-foreground">
+          <CollapsibleContent className="pl-6 pb-2 text-sm text-muted-foreground space-y-2">
             {narrative.bankingSummary.total === 0 ? (
               <p>{l ? 'Sin transacciones bancarias importadas.' : 'No bank transactions imported.'}</p>
             ) : (
@@ -250,9 +420,32 @@ export function FinancialNarrativeCard() {
                 <p>
                   {narrative.bankingSummary.total} {l ? 'registradas' : 'recorded'}
                   {narrative.bankingSummary.banks.length > 0 && ` (${narrative.bankingSummary.banks.join(', ')})`}.
-                  {' '}{narrative.bankingSummary.matched} {l ? 'clasificadas' : 'classified'},
-                  {' '}{narrative.bankingSummary.pending} {l ? 'pendientes' : 'pending'}.
                 </p>
+                {/* Segmented bar */}
+                <div className="space-y-1">
+                  <div className="flex h-3 rounded-full overflow-hidden bg-muted/50 border border-border/50">
+                    <div
+                      className="bg-primary/70 transition-all duration-500"
+                      style={{ width: `${(narrative.bankingSummary.matched / Math.max(narrative.bankingSummary.total, 1)) * 100}%` }}
+                      title={l ? 'Clasificadas' : 'Classified'}
+                    />
+                    <div
+                      className="bg-amber-400/70 transition-all duration-500"
+                      style={{ width: `${(narrative.bankingSummary.pending / Math.max(narrative.bankingSummary.total, 1)) * 100}%` }}
+                      title={l ? 'Pendientes' : 'Pending'}
+                    />
+                  </div>
+                  <div className="flex justify-between text-[10px]">
+                    <span className="flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-full bg-primary/70" />
+                      {narrative.bankingSummary.matched} {l ? 'clasificadas' : 'classified'}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-full bg-amber-400/70" />
+                      {narrative.bankingSummary.pending} {l ? 'pendientes' : 'pending'}
+                    </span>
+                  </div>
+                </div>
                 {narrative.bankingSummary.lastImport && (
                   <p className="text-xs">
                     {l ? 'Última importación' : 'Last import'}: {new Date(narrative.bankingSummary.lastImport).toLocaleDateString(language === 'es' ? 'es-CL' : 'en-CA')}
@@ -275,34 +468,41 @@ export function FinancialNarrativeCard() {
             onToggle={() => toggle('balance')}
             badge={`${narrative.balance >= 0 ? '+' : ''}${fmt.formatCurrency(narrative.balance)}`}
           />
-          <CollapsibleContent className="pl-6 pb-2 text-sm space-y-2">
-            <div className="flex flex-wrap gap-x-6 gap-y-1">
-              <span>
-                <span className="text-muted-foreground">{l ? 'Ingresos' : 'Income'}:</span>{' '}
-                <span className="text-primary font-semibold">{fmt.formatCurrency(narrative.totalMonthlyIncome)}</span>
-              </span>
-              <span>
-                <span className="text-muted-foreground">{l ? 'Gastos' : 'Expenses'}:</span>{' '}
-                <span className="text-destructive font-semibold">{fmt.formatCurrency(narrative.monthlyExpenses)}</span>
-              </span>
-              <span>
-                <span className="text-muted-foreground">{l ? 'Ahorro' : 'Savings'}:</span>{' '}
-                <span className={`font-semibold ${narrative.savingsRate >= 20 ? 'text-primary' : narrative.savingsRate >= 0 ? 'text-accent-foreground' : 'text-destructive'}`}>
-                  {narrative.savingsRate}%
-                </span>
-              </span>
+          <CollapsibleContent className="pl-6 pb-2 text-sm space-y-3">
+            <div className="flex items-center gap-6">
+              {/* Gauge */}
+              <SavingsGauge rate={narrative.savingsRate} l={l} />
+              {/* Numbers */}
+              <div className="flex-1 space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="w-3 h-3 rounded-full bg-primary/70" />
+                  <span className="text-muted-foreground text-xs">{l ? 'Ingresos' : 'Income'}</span>
+                  <span className="text-primary font-semibold ml-auto">{fmt.formatCurrency(narrative.totalMonthlyIncome)}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-3 h-3 rounded-full bg-destructive/60" />
+                  <span className="text-muted-foreground text-xs">{l ? 'Gastos' : 'Expenses'}</span>
+                  <span className="text-destructive font-semibold ml-auto">{fmt.formatCurrency(narrative.monthlyExpenses)}</span>
+                </div>
+                <div className="flex items-center gap-2 pt-1 border-t border-border/50">
+                  <CheckCircle2 className="h-3 w-3 text-primary" />
+                  <span className="text-muted-foreground text-xs">{l ? 'Balance' : 'Balance'}</span>
+                  <span className={`font-bold ml-auto ${narrative.balance >= 0 ? 'text-primary' : 'text-destructive'}`}>
+                    {narrative.balance >= 0 ? '+' : ''}{fmt.formatCurrency(narrative.balance)}
+                  </span>
+                </div>
+              </div>
             </div>
+            {/* Proportion bar */}
             {narrative.totalMonthlyIncome > 0 && (
               <div className="flex h-3 rounded-full overflow-hidden bg-muted/50 border border-border/50">
                 <div
                   className="bg-primary/70 transition-all duration-500"
-                  style={{ width: `${Math.min(100, narrative.monthlyExpenses > 0 ? (narrative.totalMonthlyIncome / (narrative.totalMonthlyIncome + narrative.monthlyExpenses)) * 100 : 100)}%` }}
-                  title={l ? 'Ingresos' : 'Income'}
+                  style={{ width: `${Math.min(100, (narrative.totalMonthlyIncome / (narrative.totalMonthlyIncome + narrative.monthlyExpenses)) * 100)}%` }}
                 />
                 <div
                   className="bg-destructive/60 transition-all duration-500"
-                  style={{ width: `${Math.min(100, narrative.totalMonthlyIncome > 0 ? (narrative.monthlyExpenses / (narrative.totalMonthlyIncome + narrative.monthlyExpenses)) * 100 : 0)}%` }}
-                  title={l ? 'Gastos' : 'Expenses'}
+                  style={{ width: `${Math.min(100, (narrative.monthlyExpenses / (narrative.totalMonthlyIncome + narrative.monthlyExpenses)) * 100)}%` }}
                 />
               </div>
             )}
