@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from './useProfile';
 import { useIncome } from './useIncome';
 import { useRecurringBills } from './useRecurringBills';
-import { useBankTransactions } from './useBankTransactions';
+import { useBankTransactions, type BankTransaction } from './useBankTransactions';
 import { useDashboardStats } from './useDashboardStats';
 
 export interface IncomeStream {
@@ -154,12 +154,13 @@ export function useFinancialNarrative(months: number = 3): FinancialNarrative {
 
     // Banking summary
     const txList = (bankTx as BankTransaction[] | undefined) || [];
+    const matchedCount = txList.filter(t => t.matched_expense_id || t.matched_income_id).length;
     const banksSet = new Set(txList.map(t => t.bank_name).filter(Boolean));
 
     const bankingSummary = {
       total: txList.length,
-      matched,
-      pending: txList.length - matched,
+      matched: matchedCount,
+      pending: txList.length - matchedCount,
       banks: Array.from(banksSet) as string[],
       lastImport: docCounts?.lastImport,
     };
