@@ -144,17 +144,6 @@ export function useBankImportFlow() {
     }
   }, [user]);
 
-  // Step 2: After duplicate resolution (defined after insertAndClassify below)
-  const proceedWithImport = useCallback(async (includeDuplicates: boolean) => {
-    const txnsToImport = includeDuplicates
-      ? state.transactions
-      : state.newTransactions;
-    const dupsSkipped = includeDuplicates ? 0 : state.duplicates.length;
-
-    setState(prev => ({ ...prev, step: 'classifying' }));
-    await insertAndClassifyRef.current(txnsToImport, state.transactions.length, dupsSkipped);
-  }, [state.transactions, state.newTransactions, state.duplicates]);
-
   // Insert transactions and run batch classification
   const insertAndClassify = useCallback(async (
     transactions: EnrichedTransaction[], 
