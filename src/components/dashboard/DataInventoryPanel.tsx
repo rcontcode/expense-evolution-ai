@@ -17,12 +17,23 @@ interface InventoryItem {
   label_en: string;
   count: number;
   icon: React.ElementType;
+  colorKey: string;
   firstDate?: string | null;
   lastDate?: string | null;
   suggestion_es?: string;
   suggestion_en?: string;
   link?: string;
 }
+
+const CATEGORY_COLORS: Record<string, { bg: string; text: string; icon: string }> = {
+  documents: { bg: 'bg-blue-500/10', text: 'text-blue-600 dark:text-blue-400', icon: 'text-blue-500' },
+  expenses: { bg: 'bg-red-500/10', text: 'text-red-600 dark:text-red-400', icon: 'text-red-500' },
+  income: { bg: 'bg-emerald-500/10', text: 'text-emerald-600 dark:text-emerald-400', icon: 'text-emerald-500' },
+  contracts: { bg: 'bg-purple-500/10', text: 'text-purple-600 dark:text-purple-400', icon: 'text-purple-500' },
+  clients: { bg: 'bg-orange-500/10', text: 'text-orange-600 dark:text-orange-400', icon: 'text-orange-500' },
+  bank: { bg: 'bg-teal-500/10', text: 'text-teal-600 dark:text-teal-400', icon: 'text-teal-500' },
+  bills: { bg: 'bg-amber-500/10', text: 'text-amber-600 dark:text-amber-400', icon: 'text-amber-500' },
+};
 
 function useDataInventory() {
   const { user } = useAuth();
@@ -82,13 +93,13 @@ export function DataInventoryPanel() {
   const totalItems = data.documents.count + data.expenses.count + data.income.count + data.contracts.count + data.clients.count + data.bankTransactions.count + data.recurringBills.count;
 
   const items: InventoryItem[] = [
-    { label_es: 'Documentos', label_en: 'Documents', count: data.documents.count, icon: FileText, firstDate: data.documents.first, lastDate: data.documents.last, suggestion_es: 'Sube boletas en la Bandeja del Caos', suggestion_en: 'Upload receipts in the Chaos Inbox', link: '/chaos-inbox' },
-    { label_es: 'Gastos', label_en: 'Expenses', count: data.expenses.count, icon: Receipt, firstDate: data.expenses.first, lastDate: data.expenses.last, suggestion_es: 'Registra tus gastos manualmente o sube boletas', suggestion_en: 'Log expenses manually or upload receipts', link: '/chaos-inbox' },
-    { label_es: 'Ingresos', label_en: 'Income', count: data.income.count, icon: DollarSign, firstDate: data.income.first, lastDate: data.income.last, suggestion_es: 'Registra tus ingresos', suggestion_en: 'Log your income', link: '/income' },
-    { label_es: 'Contratos', label_en: 'Contracts', count: data.contracts.count, icon: FileCheck, firstDate: data.contracts.first, lastDate: data.contracts.last, suggestion_es: 'Sube tus contratos', suggestion_en: 'Upload your contracts', link: '/contracts' },
-    { label_es: 'Clientes', label_en: 'Clients', count: data.clients.count, icon: Users, firstDate: data.clients.first, lastDate: data.clients.last, suggestion_es: 'Agrega tus clientes', suggestion_en: 'Add your clients', link: '/clients' },
-    { label_es: 'Transacciones Banco', label_en: 'Bank Transactions', count: data.bankTransactions.count, icon: Landmark, firstDate: data.bankTransactions.first, lastDate: data.bankTransactions.last, suggestion_es: 'Importa tu estado de cuenta', suggestion_en: 'Import your bank statement', link: '/banking' },
-    { label_es: 'Pagos Recurrentes', label_en: 'Recurring Bills', count: data.recurringBills.count, icon: CalendarCheck, firstDate: data.recurringBills.first, lastDate: data.recurringBills.last, suggestion_es: 'Configura tus pagos fijos', suggestion_en: 'Set up your fixed payments', link: '/bills' },
+    { label_es: 'Documentos', label_en: 'Documents', count: data.documents.count, icon: FileText, colorKey: 'documents', firstDate: data.documents.first, lastDate: data.documents.last, suggestion_es: 'Sube boletas en la Bandeja del Caos', suggestion_en: 'Upload receipts in the Chaos Inbox', link: '/chaos-inbox' },
+    { label_es: 'Gastos', label_en: 'Expenses', count: data.expenses.count, icon: Receipt, colorKey: 'expenses', firstDate: data.expenses.first, lastDate: data.expenses.last, suggestion_es: 'Registra tus gastos manualmente o sube boletas', suggestion_en: 'Log expenses manually or upload receipts', link: '/chaos-inbox' },
+    { label_es: 'Ingresos', label_en: 'Income', count: data.income.count, icon: DollarSign, colorKey: 'income', firstDate: data.income.first, lastDate: data.income.last, suggestion_es: 'Registra tus ingresos', suggestion_en: 'Log your income', link: '/income' },
+    { label_es: 'Contratos', label_en: 'Contracts', count: data.contracts.count, icon: FileCheck, colorKey: 'contracts', firstDate: data.contracts.first, lastDate: data.contracts.last, suggestion_es: 'Sube tus contratos', suggestion_en: 'Upload your contracts', link: '/contracts' },
+    { label_es: 'Clientes', label_en: 'Clients', count: data.clients.count, icon: Users, colorKey: 'clients', firstDate: data.clients.first, lastDate: data.clients.last, suggestion_es: 'Agrega tus clientes', suggestion_en: 'Add your clients', link: '/clients' },
+    { label_es: 'Transacciones Banco', label_en: 'Bank Transactions', count: data.bankTransactions.count, icon: Landmark, colorKey: 'bank', firstDate: data.bankTransactions.first, lastDate: data.bankTransactions.last, suggestion_es: 'Importa tu estado de cuenta', suggestion_en: 'Import your bank statement', link: '/banking' },
+    { label_es: 'Pagos Recurrentes', label_en: 'Recurring Bills', count: data.recurringBills.count, icon: CalendarCheck, colorKey: 'bills', firstDate: data.recurringBills.first, lastDate: data.recurringBills.last, suggestion_es: 'Configura tus pagos fijos', suggestion_en: 'Set up your fixed payments', link: '/bills' },
   ];
 
   const categoriesWithData = items.filter(i => i.count > 0).length;
@@ -113,7 +124,6 @@ export function DataInventoryPanel() {
                 <Badge variant="secondary" className="text-xs">{totalItems}</Badge>
               </div>
               <div className="flex items-center gap-2">
-                {/* Mini progress indicator */}
                 <div className="hidden sm:flex items-center gap-1.5">
                   <Progress value={completeness} className="w-16 h-1.5" />
                   <span className="text-[10px] text-muted-foreground">{categoriesWithData}/{items.length}</span>
@@ -130,29 +140,34 @@ export function DataInventoryPanel() {
 
         <CollapsibleContent>
           <CardContent className="pt-0 pb-3">
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
-              {items.map((item) => (
-                <div key={item.label_en} className="rounded-lg border bg-muted/20 p-2 text-center space-y-0.5">
-                  <item.icon className="h-4 w-4 mx-auto text-muted-foreground" />
-                  <p className="text-lg font-bold">{item.count}</p>
-                  <p className="text-[10px] text-muted-foreground">{isEs ? item.label_es : item.label_en}</p>
-                  {item.count > 0 ? (
-                    <p className="text-[9px] text-muted-foreground/60">
-                      {formatDate(item.firstDate)} → {formatDate(item.lastDate)}
-                    </p>
-                  ) : item.link ? (
-                    <Button
-                      variant="link"
-                      size="sm"
-                      className="h-auto p-0 text-[9px] text-primary gap-0.5"
-                      onClick={(e) => { e.stopPropagation(); navigate(item.link!); }}
-                    >
-                      {isEs ? item.suggestion_es : item.suggestion_en}
-                      <ArrowRight className="h-2.5 w-2.5" />
-                    </Button>
-                  ) : null}
-                </div>
-              ))}
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
+              {items.map((item) => {
+                const colors = CATEGORY_COLORS[item.colorKey] || CATEGORY_COLORS.documents;
+                return (
+                  <div key={item.label_en} className="rounded-lg border bg-muted/20 p-2 text-center space-y-1">
+                    <div className={cn('mx-auto w-8 h-8 rounded-full flex items-center justify-center', colors.bg)}>
+                      <item.icon className={cn('h-4 w-4', colors.icon)} />
+                    </div>
+                    <p className={cn('text-lg font-bold', colors.text)}>{item.count}</p>
+                    <p className="text-[10px] text-muted-foreground leading-tight">{isEs ? item.label_es : item.label_en}</p>
+                    {item.count > 0 ? (
+                      <p className="text-[9px] text-muted-foreground/60">
+                        {formatDate(item.firstDate)} → {formatDate(item.lastDate)}
+                      </p>
+                    ) : item.link ? (
+                      <Button
+                        variant="link"
+                        size="sm"
+                        className="h-auto p-0 text-[9px] text-primary gap-0.5"
+                        onClick={(e) => { e.stopPropagation(); navigate(item.link!); }}
+                      >
+                        {isEs ? item.suggestion_es : item.suggestion_en}
+                        <ArrowRight className="h-2.5 w-2.5" />
+                      </Button>
+                    ) : null}
+                  </div>
+                );
+              })}
             </div>
 
             {/* Completeness bar */}
