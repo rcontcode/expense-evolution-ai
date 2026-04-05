@@ -352,12 +352,13 @@ export function useBankImportFlow() {
 
         if (!error && created) {
           expensesCreated += created.length;
-          for (let j = 0; j < created.length; j++) {
-            await supabase
-              .from('bank_transactions')
-              .update({ matched_expense_id: created[j].id, status: 'matched' })
-              .eq('id', batch[j].id);
-          }
+          // Batch update matched_expense_id
+          const updates = created.map((c, j) => 
+            supabase.from('bank_transactions')
+              .update({ matched_expense_id: c.id, status: 'matched' })
+              .eq('id', batch[j].id)
+          );
+          await Promise.all(updates);
         }
       }
     }
@@ -390,12 +391,12 @@ export function useBankImportFlow() {
 
         if (!error && created) {
           incomeCreated += created.length;
-          for (let j = 0; j < created.length; j++) {
-            await supabase
-              .from('bank_transactions')
-              .update({ matched_income_id: created[j].id, status: 'matched' })
-              .eq('id', batch[j].id);
-          }
+          const updates = created.map((c, j) => 
+            supabase.from('bank_transactions')
+              .update({ matched_income_id: c.id, status: 'matched' })
+              .eq('id', batch[j].id)
+          );
+          await Promise.all(updates);
         }
       }
     }
