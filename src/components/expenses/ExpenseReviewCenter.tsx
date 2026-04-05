@@ -251,13 +251,19 @@ export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCe
   // Expenses without receipts
   const noReceipt = useMemo(() => expenses.filter(e => !e.document_id), [expenses]);
 
+  // Bank transactions pending classification
+  const pendingBankTx = useMemo(() => 
+    bankTransactions.filter(t => t.status === 'pending' || !t.status),
+    [bankTransactions]
+  );
+
   // All good - expenses with matched receipts and no discrepancies
   const readyExpenses = useMemo(() => 
     expenses.filter(e => e.document_id && !discrepancies.find(d => d.expense.id === e.id)),
     [expenses, discrepancies]
   );
 
-  const totalIssues = discrepancies.length + pendingDocs.length + noReceipt.length + pendingIncome.length;
+  const totalIssues = discrepancies.length + pendingDocs.length + noReceipt.length + pendingIncome.length + pendingBankTx.length;
   const isAllGood = totalIssues === 0 && expenses.length > 0;
 
   // Flow steps for visual indicator
