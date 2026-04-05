@@ -12,6 +12,7 @@ import { WeeklySpendingDigest } from '@/components/banking/WeeklySpendingDigest'
 import { MerchantIntelligence } from '@/components/banking/MerchantIntelligence';
 import { SmartSearchChat } from '@/components/banking/SmartSearchChat';
 import { CashFlowRunwayCalculator } from '@/components/banking/CashFlowRunwayCalculator';
+import { BankImportHistory } from '@/components/banking/BankImportHistory';
 import { BankTransactionSummary } from '@/components/banking/BankTransactionSummary';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Upload, Search, AlertTriangle, TrendingDown } from 'lucide-react';
@@ -60,6 +61,8 @@ export default function Banking() {
 
         {/* Smart Transaction Summary - forest view */}
         <BankTransactionSummary />
+
+        <BankImportHistory />
 
         <SmartSearchChat />
 

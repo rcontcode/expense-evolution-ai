@@ -183,6 +183,38 @@ export function BankTransactionSummary() {
 
       {expanded && (
         <CardContent className="space-y-4">
+          {/* Data Sources Panel */}
+          <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
+            <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5">
+              <CheckCircle2 className="h-3.5 w-3.5" />
+              {language === 'es' ? 'Fuentes de Datos' : 'Data Sources'}
+            </h4>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+              <div>
+                <span className="text-muted-foreground">{language === 'es' ? 'Total en DB' : 'Total in DB'}</span>
+                <p className="font-medium">{transactions.length}</p>
+              </div>
+              <div>
+                <span className="text-muted-foreground">{language === 'es' ? 'Clasificadas' : 'Classified'}</span>
+                <p className="font-medium">
+                  {transactions.filter(t => t.category).length} ({transactions.length > 0 ? Math.round((transactions.filter(t => t.category).length / transactions.length) * 100) : 0}%)
+                </p>
+              </div>
+              <div>
+                <span className="text-muted-foreground">{language === 'es' ? 'Vinculadas' : 'Linked'}</span>
+                <p className="font-medium">
+                  {transactions.filter(t => t.status === 'matched').length} ({transactions.length > 0 ? Math.round((transactions.filter(t => t.status === 'matched').length / transactions.length) * 100) : 0}%)
+                </p>
+              </div>
+              <div>
+                <span className="text-muted-foreground">{language === 'es' ? 'Rango' : 'Range'}</span>
+                <p className="font-medium text-[11px]">
+                  {transactions.length > 0 ? `${transactions[transactions.length - 1]?.transaction_date?.substring(0, 7)} → ${transactions[0]?.transaction_date?.substring(0, 7)}` : '—'}
+                </p>
+              </div>
+            </div>
+          </div>
+
           {/* Period selector */}
           <div className="flex items-center gap-2 flex-wrap">
             <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as any)}>
