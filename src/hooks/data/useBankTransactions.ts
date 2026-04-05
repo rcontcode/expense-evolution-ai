@@ -52,7 +52,7 @@ const BANK_TX_LIMIT = 5000;
 export function useBankTransactions() {
   const { user } = useAuth();
 
-  return useQuery({
+  const query = useQuery({
     queryKey: ['bank-transactions', user?.id],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -63,14 +63,14 @@ export function useBankTransactions() {
         .limit(BANK_TX_LIMIT);
 
       if (error) throw error;
-      const transactions = data as BankTransaction[];
-      return {
-        transactions,
-        hasMore: transactions.length === BANK_TX_LIMIT,
-      };
+      return data as BankTransaction[];
     },
     enabled: !!user,
   });
+
+  const hasMore = (query.data?.length ?? 0) === BANK_TX_LIMIT;
+
+  return { ...query, hasMore };
 }
 
 export function useBankTransactionsWithMatches() {
