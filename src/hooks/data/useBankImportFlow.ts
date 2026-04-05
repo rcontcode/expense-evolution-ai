@@ -40,6 +40,13 @@ export interface ImportFlowState {
     unclassifiedCount: number;
   } | null;
   insertedIds: string[];
+  sourceType: 'csv' | 'pdf' | 'photo';
+  fileName: string | null;
+  sessionSummary: {
+    expensesCreated: number;
+    incomeCreated: number;
+    sessionId: string | null;
+  } | null;
 }
 
 function generateDuplicateHash(date: string, amount: number, description: string): string {
@@ -65,6 +72,9 @@ export function useBankImportFlow() {
     classifyProgress: { current: 0, total: 0 },
     classifiedSummary: null,
     insertedIds: [],
+    sourceType: 'csv',
+    fileName: null,
+    sessionSummary: null,
   });
 
   const reset = useCallback(() => {
@@ -76,7 +86,14 @@ export function useBankImportFlow() {
       classifyProgress: { current: 0, total: 0 },
       classifiedSummary: null,
       insertedIds: [],
+      sourceType: 'csv',
+      fileName: null,
+      sessionSummary: null,
     });
+  }, []);
+
+  const setSource = useCallback((sourceType: 'csv' | 'pdf' | 'photo', fileName: string | null) => {
+    setState(prev => ({ ...prev, sourceType, fileName }));
   }, []);
 
   // Step 1: Check for duplicates
@@ -85,7 +102,6 @@ export function useBankImportFlow() {
 
     const hashes = transactions.map(t => generateDuplicateHash(t.date, t.amount, t.description));
 
-    // Fetch existing hashes
     const { data: existing } = await supabase
       .from('bank_transactions')
       .select('id, duplicate_hash, transaction_date, amount, description')
@@ -123,27 +139,30 @@ export function useBankImportFlow() {
       step: duplicates.length > 0 ? 'duplicates' : 'classifying',
     }));
 
-    // If no duplicates, auto-proceed to insert + classify
     if (duplicates.length === 0) {
-      await insertAndClassify(newTxns);
+      await insertAndClassify(newTxns, transactions.length, 0);
     }
   }, [user]);
 
-  // Step 2: After duplicate resolution, insert and classify
-  const proceedWithImport = useCallback(async (includeduplicates: boolean) => {
-    const txnsToImport = includeduplicates
+  // Step 2: After duplicate resolution
+  const proceedWithImport = useCallback(async (includeDuplicates: boolean) => {
+    const txnsToImport = includeDuplicates
       ? state.transactions
       : state.newTransactions;
+    const dupsSkipped = includeDuplicates ? 0 : state.duplicates.length;
 
     setState(prev => ({ ...prev, step: 'classifying' }));
-    await insertAndClassify(txnsToImport);
-  }, [state.transactions, state.newTransactions]);
+    await insertAndClassify(txnsToImport, state.transactions.length, dupsSkipped);
+  }, [state.transactions, state.newTransactions, state.duplicates]);
 
   // Insert transactions and run batch classification
-  const insertAndClassify = useCallback(async (transactions: EnrichedTransaction[]) => {
+  const insertAndClassify = useCallback(async (
+    transactions: EnrichedTransaction[], 
+    totalOriginal?: number,
+    duplicatesSkipped?: number
+  ) => {
     if (!user || transactions.length === 0) return;
 
-    // Insert all transactions
     const toInsert = transactions.map(t => ({
       user_id: user.id,
       transaction_date: t.date,
@@ -153,7 +172,6 @@ export function useBankImportFlow() {
       status: 'pending',
       bank_name: t.bank_name || null,
       duplicate_hash: generateDuplicateHash(t.date, t.amount, t.description),
-      // Pre-fill if we already have AI data from analyze-bank-statement
       transaction_type: t.transaction_type || 'expense',
       category: t.category || null,
       is_recurring: t.is_recurring || false,
@@ -175,19 +193,22 @@ export function useBankImportFlow() {
     const insertedIds = (inserted || []).map(r => r.id);
     setState(prev => ({ ...prev, insertedIds }));
 
-    // Find which ones need classification (no category yet)
     const unclassifiedIds = insertedIds.filter((_, i) => !toInsert[i]?.category);
 
     if (unclassifiedIds.length > 0) {
-      await runBatchClassification(unclassifiedIds, insertedIds);
+      await runBatchClassification(unclassifiedIds, insertedIds, totalOriginal, duplicatesSkipped);
     } else {
-      // All already classified, go to summary
-      await buildSummary(insertedIds);
+      await buildSummary(insertedIds, totalOriginal, duplicatesSkipped);
     }
   }, [user, language]);
 
   // Run batch AI classification
-  const runBatchClassification = useCallback(async (transactionIds: string[], allInsertedIds?: string[]) => {
+  const runBatchClassification = useCallback(async (
+    transactionIds: string[], 
+    allInsertedIds?: string[],
+    totalOriginal?: number,
+    duplicatesSkipped?: number
+  ) => {
     const totalBatches = Math.ceil(transactionIds.length / BATCH_SIZE);
     setState(prev => ({
       ...prev,
@@ -197,36 +218,29 @@ export function useBankImportFlow() {
 
     for (let i = 0; i < totalBatches; i++) {
       const batchIds = transactionIds.slice(i * BATCH_SIZE, (i + 1) * BATCH_SIZE);
-
       try {
-        const { data, error } = await supabase.functions.invoke('classify-bank-transactions', {
-          body: {
-            transactionIds: batchIds,
-            batchIndex: i + 1,
-            totalBatches,
-          },
+        await supabase.functions.invoke('classify-bank-transactions', {
+          body: { transactionIds: batchIds, batchIndex: i + 1, totalBatches },
         });
-
-        if (error) {
-          console.error(`Batch ${i + 1} error:`, error);
-        }
       } catch (e) {
         console.error(`Batch ${i + 1} failed:`, e);
       }
-
       setState(prev => ({
         ...prev,
         classifyProgress: { current: i + 1, total: totalBatches },
       }));
     }
 
-    // Use the explicitly passed IDs to avoid stale closure
     const idsForSummary = allInsertedIds && allInsertedIds.length > 0 ? allInsertedIds : transactionIds;
-    await buildSummary(idsForSummary);
+    await buildSummary(idsForSummary, totalOriginal, duplicatesSkipped);
   }, []);
 
   // Build summary from classified data
-  const buildSummary = useCallback(async (insertedIds: string[]) => {
+  const buildSummary = useCallback(async (
+    insertedIds: string[],
+    totalOriginal?: number,
+    duplicatesSkipped?: number
+  ) => {
     if (!user || insertedIds.length === 0) {
       setState(prev => ({ ...prev, step: 'summary', classifiedSummary: { incomeCount: 0, expenseCount: 0, incomeTotal: 0, expenseTotal: 0, recurringCount: 0, unclassifiedCount: 0 } }));
       return;
@@ -239,13 +253,12 @@ export function useBankImportFlow() {
       .in('id', insertedIds);
 
     const summary = {
-      incomeCount: 0,
-      expenseCount: 0,
-      incomeTotal: 0,
-      expenseTotal: 0,
-      recurringCount: 0,
-      unclassifiedCount: 0,
+      incomeCount: 0, expenseCount: 0,
+      incomeTotal: 0, expenseTotal: 0,
+      recurringCount: 0, unclassifiedCount: 0,
     };
+
+    const categoryBreakdown: Record<string, number> = {};
 
     for (const tx of classified || []) {
       if (tx.transaction_type === 'income') {
@@ -257,6 +270,9 @@ export function useBankImportFlow() {
       }
       if (tx.is_recurring) summary.recurringCount++;
       if (!tx.category) summary.unclassifiedCount++;
+      if (tx.category) {
+        categoryBreakdown[tx.category] = (categoryBreakdown[tx.category] || 0) + 1;
+      }
     }
 
     setState(prev => ({
@@ -267,7 +283,39 @@ export function useBankImportFlow() {
     }));
   }, [user]);
 
-  // Step 3: Auto-create expenses and income from classified transactions
+  // Save import session to history
+  const saveImportSession = useCallback(async (extra: { expensesCreated: number; incomeCreated: number }) => {
+    if (!user) return null;
+    const summary = state.classifiedSummary;
+    if (!summary) return null;
+
+    const { data, error } = await supabase
+      .from('bank_import_sessions')
+      .insert({
+        user_id: user.id,
+        source_type: state.sourceType,
+        file_name: state.fileName,
+        total_transactions: state.transactions.length || state.insertedIds.length,
+        duplicates_found: state.duplicates.length,
+        duplicates_skipped: state.duplicates.length - (state.transactions.length - state.newTransactions.length),
+        income_count: summary.incomeCount,
+        expense_count: summary.expenseCount,
+        income_total: summary.incomeTotal,
+        expense_total: summary.expenseTotal,
+        recurring_count: summary.recurringCount,
+        unclassified_count: summary.unclassifiedCount,
+        expenses_created: extra.expensesCreated,
+        income_created: extra.incomeCreated,
+        status: 'completed',
+      } as any)
+      .select('id')
+      .maybeSingle();
+
+    if (error) console.error('Failed to save import session:', error);
+    return data?.id || null;
+  }, [user, state]);
+
+  // Step 3: Auto-create expenses and income
   const autoCreateRecords = useCallback(async () => {
     if (!user || state.insertedIds.length === 0) return;
 
@@ -282,15 +330,11 @@ export function useBankImportFlow() {
     let expensesCreated = 0;
     let incomeCreated = 0;
 
-    // Create expenses for debit transactions
+    // Create expenses
     const expenseTxns = transactions.filter(t => t.transaction_type === 'expense');
     if (expenseTxns.length > 0) {
-      const expenseBatches = [];
       for (let i = 0; i < expenseTxns.length; i += 100) {
-        expenseBatches.push(expenseTxns.slice(i, i + 100));
-      }
-
-      for (const batch of expenseBatches) {
+        const batch = expenseTxns.slice(i, i + 100);
         const expenseRecords = batch.map(t => ({
           user_id: user.id,
           amount: Number(t.amount),
@@ -308,7 +352,6 @@ export function useBankImportFlow() {
 
         if (!error && created) {
           expensesCreated += created.length;
-          // Link back to bank transactions
           for (let j = 0; j < created.length; j++) {
             await supabase
               .from('bank_transactions')
@@ -319,17 +362,12 @@ export function useBankImportFlow() {
       }
     }
 
-    // Create income for credit transactions
+    // Create income
     const incomeTxns = transactions.filter(t => t.transaction_type === 'income');
     if (incomeTxns.length > 0) {
-      const incomeBatches = [];
       for (let i = 0; i < incomeTxns.length; i += 100) {
-        incomeBatches.push(incomeTxns.slice(i, i + 100));
-      }
-
-      for (const batch of incomeBatches) {
+        const batch = incomeTxns.slice(i, i + 100);
         const incomeRecords = batch.map(t => {
-          // Map bank category to income_type
           let incomeType = 'client_payment';
           if (t.category === 'salary') incomeType = 'salary';
           else if (t.category === 'refund') incomeType = 'refund';
@@ -353,7 +391,6 @@ export function useBankImportFlow() {
 
         if (!error && created) {
           incomeCreated += created.length;
-          // Link back
           for (let j = 0; j < created.length; j++) {
             await supabase
               .from('bank_transactions')
@@ -364,11 +401,15 @@ export function useBankImportFlow() {
       }
     }
 
+    // Save session to history
+    const sessionId = await saveImportSession({ expensesCreated, incomeCreated });
+
     // Invalidate queries
     queryClient.invalidateQueries({ queryKey: ['bank-transactions'] });
     queryClient.invalidateQueries({ queryKey: ['bank-transactions-with-matches'] });
     queryClient.invalidateQueries({ queryKey: ['expenses'] });
     queryClient.invalidateQueries({ queryKey: ['income'] });
+    queryClient.invalidateQueries({ queryKey: ['bank-import-sessions'] });
 
     toast.success(
       language === 'es'
@@ -376,12 +417,17 @@ export function useBankImportFlow() {
         : `Created: ${expensesCreated} expenses and ${incomeCreated} income records`
     );
 
-    setState(prev => ({ ...prev, step: 'done' }));
-  }, [user, state.insertedIds, language, queryClient]);
+    setState(prev => ({ 
+      ...prev, 
+      step: 'done',
+      sessionSummary: { expensesCreated, incomeCreated, sessionId },
+    }));
+  }, [user, state.insertedIds, language, queryClient, saveImportSession]);
 
   return {
     state,
     reset,
+    setSource,
     checkDuplicates,
     proceedWithImport,
     autoCreateRecords,

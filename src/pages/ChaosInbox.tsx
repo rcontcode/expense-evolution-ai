@@ -260,10 +260,28 @@ export default function ChaosInbox() {
     const files = e.target.files;
     if (!files || files.length === 0 || !user) return;
 
+    // Detect CSV/XLS bank files and redirect to banking
+    const bankFiles = Array.from(files).filter(f => /\.(csv|xlsx?|xls)$/i.test(f.name));
+    if (bankFiles.length > 0) {
+      const l = language === 'es';
+      toast.info(
+        l ? 'Los extractos bancarios en formato CSV/Excel se importan desde Análisis Bancario → Importar Estado' 
+          : 'Bank statements in CSV/Excel format are imported from Bank Analysis → Import Statement',
+        {
+          action: { label: l ? 'Ir a Banking' : 'Go to Banking', onClick: () => window.location.href = '/banking' },
+          duration: 8000,
+        }
+      );
+      // Remove bank files, keep others
+      const otherFiles = Array.from(files).filter(f => !/\.(csv|xlsx?|xls)$/i.test(f.name));
+      if (otherFiles.length === 0) return;
+      // Continue with non-bank files only
+    }
+
     setUploading(true);
 
     try {
-      for (const file of Array.from(files)) {
+      for (const file of Array.from(files).filter(f => !/\.(csv|xlsx?|xls)$/i.test(f.name))) {
         // Phase: Received
         setUploadProgress({ fileName: file.name, phase: 'received' });
 

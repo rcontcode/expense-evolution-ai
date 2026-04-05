@@ -37,6 +37,11 @@ export function BankImportDialog({ open, onClose }: BankImportDialogProps) {
   const importFlow = useBankImportFlow();
   const { state } = importFlow;
 
+  // Track source type when files are selected
+  const trackSource = (type: 'csv' | 'pdf' | 'photo', fileName: string) => {
+    importFlow.setSource(type, fileName);
+  };
+
   const handleCSVUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
