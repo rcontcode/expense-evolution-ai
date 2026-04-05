@@ -221,37 +221,43 @@ export const OrganizedDashboard = memo(({ deepLinkArea, deepLinkTab, deepLinkKey
        </div>
 
        {/* Area Sections with Drag & Drop */}
-       <DndContext
-         sensors={sensors}
-         collisionDetection={closestCenter}
-         onDragEnd={handleDragEnd}
-       >
+       {isMobile ? (
+          <div className="space-y-4">
+            {visibleAreas.map((areaId, index) => (
+              <div key={areaId} data-area-id={areaId}>
+                <AreaSection
+                  areaId={areaId}
+                  isCollapsed={isAreaCollapsed(areaId)}
+                  onToggleCollapse={() => handleToggleCollapse(areaId)}
+                >
+                  <AreaContentRenderer areaId={areaId} isCollapsed={isAreaCollapsed(areaId)} forcedTab={deepLinkArea === areaId ? deepLinkTab : undefined} />
+                </AreaSection>
+              </div>
+            ))}
+          </div>
+        ) : (
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
           <SortableContext items={visibleAreas} strategy={verticalListSortingStrategy}>
             <div className="space-y-4 lg:space-y-5">
             {visibleAreas.map((areaId, index) => (
               <SortableAreaWrapper key={areaId} id={areaId} index={index} data-area-id={areaId}>
-               {isMobile ? (
-                 <SwipeableAreaSection
-                   areaId={areaId}
-                   isCollapsed={isAreaCollapsed(areaId)}
-                   onToggleCollapse={() => handleToggleCollapse(areaId)}
-                 >
-                    <AreaContentRenderer areaId={areaId} isCollapsed={isAreaCollapsed(areaId)} forcedTab={deepLinkArea === areaId ? deepLinkTab : undefined} />
-                 </SwipeableAreaSection>
-               ) : (
-                 <AreaSection
-                   areaId={areaId}
-                   isCollapsed={isAreaCollapsed(areaId)}
-                   onToggleCollapse={() => handleToggleCollapse(areaId)}
-                 >
-                   <AreaContentRenderer areaId={areaId} isCollapsed={isAreaCollapsed(areaId)} forcedTab={deepLinkArea === areaId ? deepLinkTab : undefined} />
-                 </AreaSection>
-               )}
-             </SortableAreaWrapper>
-           ))}
+                <AreaSection
+                  areaId={areaId}
+                  isCollapsed={isAreaCollapsed(areaId)}
+                  onToggleCollapse={() => handleToggleCollapse(areaId)}
+                >
+                  <AreaContentRenderer areaId={areaId} isCollapsed={isAreaCollapsed(areaId)} forcedTab={deepLinkArea === areaId ? deepLinkTab : undefined} />
+                </AreaSection>
+              </SortableAreaWrapper>
+            ))}
             </div>
           </SortableContext>
-       </DndContext>
+        </DndContext>
+        )}
 
        {/* Empty state */}
        {visibleAreas.length === 0 && (
