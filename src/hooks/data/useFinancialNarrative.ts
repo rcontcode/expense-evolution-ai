@@ -117,17 +117,19 @@ export function useFinancialNarrative(months: number = 3): FinancialNarrative {
     });
 
     const incomeStreams: IncomeStream[] = Object.entries(groupMap).map(([, g]) => {
-      const avg = g.amounts.reduce((a, b) => a + b, 0) / Math.max(g.amounts.length / divisor, 1);
+      const total = g.amounts.reduce((a, b) => a + b, 0);
+      const avg = Math.round(total / divisor);
       return {
         source: g.clientName || g.type,
         type: g.type,
-        amount: Math.round(avg),
+        amount: avg,
         dayOfMonth: detectDayOfMonth(g.dates),
         clientName: g.clientName,
       };
     });
 
-    const totalMonthlyIncome = stats?.monthlyIncome || incomeStreams.reduce((s, i) => s + i.amount, 0);
+    // Use sum of calculated streams (coherent with selected period) instead of stats.monthlyIncome (current month only)
+    const totalMonthlyIncome = incomeStreams.reduce((s, i) => s + i.amount, 0);
 
     // Clients with income
     const clientsData = docCounts?.clients || [];

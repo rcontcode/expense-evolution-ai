@@ -47,6 +47,8 @@ export interface TransactionWithMatches extends BankTransaction {
   suggestedMatches: ExpenseMatch[];
 }
 
+const BANK_TX_LIMIT = 5000;
+
 export function useBankTransactions() {
   const { user } = useAuth();
 
@@ -58,10 +60,14 @@ export function useBankTransactions() {
         .select('*')
         .eq('user_id', user!.id)
         .order('transaction_date', { ascending: false })
-        .limit(5000);
+        .limit(BANK_TX_LIMIT);
 
       if (error) throw error;
-      return data as BankTransaction[];
+      const transactions = data as BankTransaction[];
+      return {
+        transactions,
+        hasMore: transactions.length === BANK_TX_LIMIT,
+      };
     },
     enabled: !!user,
   });
