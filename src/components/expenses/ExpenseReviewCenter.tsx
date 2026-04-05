@@ -486,7 +486,7 @@ export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCe
       {/* Tabs for different review categories */}
       {!isAllGood && (
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="w-full grid grid-cols-5">
+          <TabsList className="w-full grid grid-cols-6">
             <TabsTrigger value="discrepancies" className="relative text-xs sm:text-sm">
               <AlertTriangle className="h-3.5 w-3.5 mr-1 sm:mr-2" />
               <span className="hidden sm:inline">{language === 'es' ? 'Discrepancias' : 'Discrepancies'}</span>
@@ -501,6 +501,14 @@ export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCe
               <span className="sm:hidden">💰</span>
               {pendingIncome.length > 0 && (
                 <Badge variant="secondary" className="ml-1 px-1.5 py-0 text-[10px] bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400">{pendingIncome.length}</Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="bank" className="text-xs sm:text-sm">
+              <Landmark className="h-3.5 w-3.5 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">{language === 'es' ? 'Banco' : 'Bank'}</span>
+              <span className="sm:hidden">🏦</span>
+              {pendingBankTx.length > 0 && (
+                <Badge variant="secondary" className="ml-1 px-1.5 py-0 text-[10px] bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400">{pendingBankTx.length}</Badge>
               )}
             </TabsTrigger>
             <TabsTrigger value="noreceipt" className="text-xs sm:text-sm">
