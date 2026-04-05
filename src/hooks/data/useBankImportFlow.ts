@@ -179,7 +179,7 @@ export function useBankImportFlow() {
     const unclassifiedIds = insertedIds.filter((_, i) => !toInsert[i]?.category);
 
     if (unclassifiedIds.length > 0) {
-      await runBatchClassification(unclassifiedIds);
+      await runBatchClassification(unclassifiedIds, insertedIds);
     } else {
       // All already classified, go to summary
       await buildSummary(insertedIds);
@@ -187,7 +187,7 @@ export function useBankImportFlow() {
   }, [user, language]);
 
   // Run batch AI classification
-  const runBatchClassification = useCallback(async (transactionIds: string[]) => {
+  const runBatchClassification = useCallback(async (transactionIds: string[], allInsertedIds?: string[]) => {
     const totalBatches = Math.ceil(transactionIds.length / BATCH_SIZE);
     setState(prev => ({
       ...prev,
@@ -220,8 +220,9 @@ export function useBankImportFlow() {
       }));
     }
 
-    // After all batches, build summary
-    await buildSummary(state.insertedIds.length > 0 ? state.insertedIds : transactionIds);
+    // Use the explicitly passed IDs to avoid stale closure
+    const idsForSummary = allInsertedIds && allInsertedIds.length > 0 ? allInsertedIds : transactionIds;
+    await buildSummary(idsForSummary);
   }, []);
 
   // Build summary from classified data
@@ -294,7 +295,7 @@ export function useBankImportFlow() {
           user_id: user.id,
           amount: Number(t.amount),
           date: t.transaction_date,
-          vendor: t.description || undefined,
+          vendor: t.description || null,
           category: t.category || 'other',
           description: `[Banco] ${t.description || ''}`.trim(),
           status: 'approved' as const,
@@ -339,7 +340,7 @@ export function useBankImportFlow() {
             user_id: user.id,
             amount: Number(t.amount),
             date: t.transaction_date,
-            source: t.description || undefined,
+            source: t.description || null,
             income_type: incomeType,
             description: `[Banco] ${t.description || ''}`.trim(),
           };

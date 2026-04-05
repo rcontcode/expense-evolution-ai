@@ -295,7 +295,8 @@ Return ONLY valid JSON, no explanations.`;
       { role: 'system', content: systemPrompt }
     ];
 
-    if (contentType === 'image') {
+    if (contentType === 'image' || contentType === 'pdf') {
+      // Both images and PDFs can be sent as data URIs to Gemini
       messages.push({
         role: 'user',
         content: [

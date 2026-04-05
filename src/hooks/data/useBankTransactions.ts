@@ -12,7 +12,16 @@ export interface BankTransaction {
   description: string | null;
   status: string | null;
   matched_expense_id: string | null;
+  matched_income_id: string | null;
   created_at: string | null;
+  transaction_type: string | null;
+  category: string | null;
+  is_recurring: boolean | null;
+  recurring_type: string | null;
+  bank_name: string | null;
+  original_amount: number | null;
+  duplicate_hash: string | null;
+  auto_categorized: boolean | null;
 }
 
 export interface ParsedTransaction {
