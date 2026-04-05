@@ -47,10 +47,12 @@ export interface TransactionWithMatches extends BankTransaction {
   suggestedMatches: ExpenseMatch[];
 }
 
+const BANK_TX_LIMIT = 5000;
+
 export function useBankTransactions() {
   const { user } = useAuth();
 
-  return useQuery({
+  const query = useQuery({
     queryKey: ['bank-transactions', user?.id],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -58,13 +60,17 @@ export function useBankTransactions() {
         .select('*')
         .eq('user_id', user!.id)
         .order('transaction_date', { ascending: false })
-        .limit(5000);
+        .limit(BANK_TX_LIMIT);
 
       if (error) throw error;
       return data as BankTransaction[];
     },
     enabled: !!user,
   });
+
+  const hasMore = (query.data?.length ?? 0) === BANK_TX_LIMIT;
+
+  return { ...query, hasMore };
 }
 
 export function useBankTransactionsWithMatches() {

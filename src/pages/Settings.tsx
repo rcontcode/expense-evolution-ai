@@ -32,6 +32,7 @@ import { cn } from '@/lib/utils';
 // Lazy load heavy sections to reduce mount pressure (root cause of nav desync)
 const DataPrivacyCard = lazy(() => import('@/components/settings/DataPrivacyCard').then(m => ({ default: m.DataPrivacyCard })));
 const SampleDataManager = lazy(() => import('@/components/settings/SampleDataManager').then(m => ({ default: m.SampleDataManager })));
+const DataManagementCard = lazy(() => import('@/components/settings/DataManagementCard').then(m => ({ default: m.DataManagementCard })));
 const VoicePreferencesCard = lazy(() => import('@/components/settings/VoicePreferencesCard').then(m => ({ default: m.VoicePreferencesCard })));
 const SoundPreferencesPanel = lazy(() => import('@/components/settings/SoundPreferencesPanel').then(m => ({ default: m.SoundPreferencesPanel })));
 import { SecurityCard } from '@/components/settings/SecurityCard';
@@ -431,6 +432,7 @@ export default function Settings() {
             <SecurityCard />
             <Suspense fallback={<SectionSkeleton />}>
               <SampleDataManager />
+              <DataManagementCard />
               <DataPrivacyCard />
             </Suspense>
           </TabsContent>

@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from './useProfile';
 import { useIncome } from './useIncome';
 import { useRecurringBills } from './useRecurringBills';
-import { useBankTransactions } from './useBankTransactions';
+import { useBankTransactions, type BankTransaction } from './useBankTransactions';
 import { useDashboardStats } from './useDashboardStats';
 
 export interface IncomeStream {
@@ -117,17 +117,19 @@ export function useFinancialNarrative(months: number = 3): FinancialNarrative {
     });
 
     const incomeStreams: IncomeStream[] = Object.entries(groupMap).map(([, g]) => {
-      const avg = g.amounts.reduce((a, b) => a + b, 0) / Math.max(g.amounts.length / divisor, 1);
+      const total = g.amounts.reduce((a, b) => a + b, 0);
+      const avg = Math.round(total / divisor);
       return {
         source: g.clientName || g.type,
         type: g.type,
-        amount: Math.round(avg),
+        amount: avg,
         dayOfMonth: detectDayOfMonth(g.dates),
         clientName: g.clientName,
       };
     });
 
-    const totalMonthlyIncome = stats?.monthlyIncome || incomeStreams.reduce((s, i) => s + i.amount, 0);
+    // Use sum of calculated streams (coherent with selected period) instead of stats.monthlyIncome (current month only)
+    const totalMonthlyIncome = incomeStreams.reduce((s, i) => s + i.amount, 0);
 
     // Clients with income
     const clientsData = docCounts?.clients || [];
@@ -151,14 +153,14 @@ export function useFinancialNarrative(months: number = 3): FinancialNarrative {
     const totalFixedExpenses = fixedExpenses.reduce((s, e) => s + e.amount, 0);
 
     // Banking summary
-    const txList = bankTx || [];
-    const matched = txList.filter(t => t.matched_expense_id || t.matched_income_id).length;
+    const txList = (bankTx as BankTransaction[] | undefined) || [];
+    const matchedCount = txList.filter(t => t.matched_expense_id || t.matched_income_id).length;
     const banksSet = new Set(txList.map(t => t.bank_name).filter(Boolean));
 
     const bankingSummary = {
       total: txList.length,
-      matched,
-      pending: txList.length - matched,
+      matched: matchedCount,
+      pending: txList.length - matchedCount,
       banks: Array.from(banksSet) as string[],
       lastImport: docCounts?.lastImport,
     };
