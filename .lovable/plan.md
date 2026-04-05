@@ -1,105 +1,56 @@
 
 
-# Plan: Resumen Narrativo Financiero Personalizado
+# Plan: Mejoras Finales al Panorama Financiero
 
-## Qué es
+## Problemas Encontrados
 
-Un nuevo componente **"Tu Panorama Financiero"** que genera un resumen en lenguaje natural — como una carta personalizada — describiendo todo lo que el sistema sabe del usuario: quién es, qué ingresos tiene, qué gasta, sus pagos recurrentes, clientes, y de dónde viene esa información. Se muestra en el Dashboard principal (vista "Resumen") justo debajo del Timeline.
+### 1. No aparece en Mobile
+El `FinancialNarrativeCard` solo se renderiza en el Dashboard desktop. El `MobileDashboard.tsx` no lo incluye. El usuario actual tiene viewport de 360px -- esta viendo mobile y **nunca ve el Panorama Financiero**.
 
-## Ejemplo de resultado
+### 2. Balance section carece de contexto visual
+La seccion de balance solo muestra numeros en texto plano. Falta una barra visual de proporcion ingreso/gasto que de claridad instantanea.
 
-> **Hola Carlos 👋 — Tu Panorama Financiero**
->
-> Eres **persona natural**, trabajas como **empleado** y **contratista independiente**.
->
-> 📥 **Ingresos** — $2.850.000/mes
-> • Como empleado: sueldo de $1.800.000 (día 30 de cada mes)
-> • Como contratista: 2 clientes activos
->   - **Acme Corp**: $650.000/mes (día 15)
->   - **Beta Ltd**: $400.000/mes (día 5)
->
-> 📤 **Gastos fijos** — $1.200.000/mes
-> • Arriendo: $450.000 • Electricidad: $35.000 • Internet: $29.990 ...
->
-> 💳 **Transacciones bancarias**: 342 registradas (Banco Estado)
-> Último import: 2 abr 2026 — 89 clasificadas, 12 pendientes
->
-> 📊 **Balance**: +$1.650.000/mes · Tasa de ahorro: 58%
->
-> 📁 **Fuentes**: 4 extractos bancarios, 23 boletas, 2 contratos procesados.
-> Si algo no cuadra, revisa en [Centro de Revisión] o [Bandeja del Caos].
+### 3. Clientes sin ingresos no aparecen
+Si un cliente existe pero no tiene ingresos en los ultimos 3 meses, se filtra completamente. El usuario pierde visibilidad de clientes inactivos.
 
-## Fuentes de datos (hooks existentes)
+### 4. Seccion de Perfil no se muestra si no hay work_types
+Si el usuario no configuro work_types en su perfil, toda la seccion Perfil desaparece, incluyendo la info de clientes.
 
-| Dato | Fuente |
-|------|--------|
-| Nombre, work_types, país | `useProfile()` |
-| Clientes | `supabase.from('clients')` |
-| Ingresos por tipo/fuente | `useIncome()` + `useIncomeSummary()` |
-| Gastos recurrentes | `useRecurringBills()` |
-| Transacciones bancarias | `useBankTransactions()` |
-| Historial de importaciones | `bank_import_sessions` query |
-| Documentos procesados | `supabase.from('documents')` count |
-| Gastos del mes | `useDashboardStats()` |
+### 5. No hay indicador de "datos del periodo"
+El usuario no sabe que periodo de datos esta mirando (ultimos 3 meses promediados). Falta contexto temporal.
 
-## Archivos a crear/modificar
+## Solucion
 
-| Archivo | Acción |
+### 1. Agregar FinancialNarrativeCard al MobileDashboard
+Importar lazy y renderizar despues del BankingSummaryCard, antes de gamification. Modo compacto no necesario -- el componente ya es responsive con sus collapsibles.
+
+### 2. Barra visual de proporcion en Balance
+Agregar un `div` con dos barras horizontales proporcionales (ingreso verde, gasto rojo) debajo de los numeros. Simple CSS `flex` con width porcentual.
+
+### 3. Mostrar clientes inactivos
+Incluir clientes con `totalIncome === 0` pero marcarlos como "(sin actividad reciente)" en gris. El usuario sabe que existen.
+
+### 4. Perfil siempre visible si hay clientes
+Cambiar la condicion: mostrar seccion Perfil si hay `workTypes.length > 0 OR clients.length > 0`.
+
+### 5. Indicador de periodo
+Agregar una linea sutil debajo del titulo: "Basado en los ultimos 3 meses" con el rango de fechas.
+
+## Archivos a Modificar
+
+| Archivo | Cambio |
 |---------|--------|
-| `src/hooks/data/useFinancialNarrative.ts` | **Crear** — hook que agrega todos los datos y genera la estructura narrativa |
-| `src/components/dashboard/FinancialNarrativeCard.tsx` | **Crear** — componente visual con secciones colapsables |
-| `src/pages/Dashboard.tsx` | **Modificar** — agregar el componente después del Banking Summary |
+| `src/components/dashboard/MobileDashboard.tsx` | Agregar FinancialNarrativeCard lazy-loaded |
+| `src/components/dashboard/FinancialNarrativeCard.tsx` | Barra visual balance, perfil siempre con clientes, indicador de periodo, clientes inactivos |
+| `src/hooks/data/useFinancialNarrative.ts` | No filtrar clientes con totalIncome 0 |
 
-## Diseño técnico
+## Detalle Tecnico
 
-### Hook `useFinancialNarrative`
+**MobileDashboard**: Agregar import lazy + Suspense del FinancialNarrativeCard entre BankingSummaryCard y ProfileCompletionNudge.
 
-Consume los hooks existentes (no queries nuevas) y retorna un objeto estructurado:
+**Barra de proporcion**: Simple `flex` con dos divs, max = totalMonthlyIncome, widths proporcionales. Verde para ingreso, rojo para gasto.
 
-```typescript
-interface FinancialNarrative {
-  userName: string;
-  workProfile: { types: string[]; country: string };
-  incomeStreams: { source: string; type: string; amount: number; dayOfMonth?: number }[];
-  totalMonthlyIncome: number;
-  clients: { name: string; totalIncome: number }[];
-  fixedExpenses: { name: string; amount: number; category: string }[];
-  totalFixedExpenses: number;
-  bankingSummary: { total: number; matched: number; pending: number; banks: string[]; lastImport?: string };
-  documentSources: { receipts: number; contracts: number; bankStatements: number };
-  balance: number;
-  savingsRate: number;
-  isLoading: boolean;
-}
-```
+**Clientes**: En `useFinancialNarrative`, remover `.filter(c => c.totalIncome > 0)` y en el componente renderizar los de `totalIncome === 0` con estilo atenuado.
 
-Agrega datos de `useProfile`, `useIncome`, `useRecurringBills`, `useBankTransactions`, y queries ligeras de conteo para documentos e importaciones. Detecta patrones de recurrencia (día del mes más frecuente por fuente de ingreso) analizando las fechas de los registros existentes.
-
-### Componente `FinancialNarrativeCard`
-
-- Card con gradiente sutil y título "Tu Panorama Financiero" / "Your Financial Overview"
-- Secciones: Perfil → Ingresos → Gastos Fijos → Banca → Balance → Fuentes
-- Cada sección colapsable con chevron
-- Links internos: "Centro de Revisión", "Bandeja del Caos", "Pagos Fijos"
-- Bilingüe (es/en) usando `useLanguage()`
-- Estado vacío: si no hay datos suficientes, muestra guía de qué cargar primero
-
-### Dashboard integration
-
-Lazy-load del componente, insertado entre Banking Summary y Ecosystem:
-
-```tsx
-const FinancialNarrativeCard = lazy(() => import('@/components/dashboard/FinancialNarrativeCard'));
-
-{/* After banking summary */}
-<Suspense fallback={<Skeleton className="h-[300px]" />}>
-  <FinancialNarrativeCard />
-</Suspense>
-```
-
-## Alcance
-
-- Sin IA ni edge functions — pura lógica client-side con datos existentes
-- Sin tablas nuevas ni migraciones
-- Sin nuevas dependencias
+**Periodo**: Texto `text-xs text-muted-foreground` bajo el CardTitle: "Basado en datos de [mes-3] a [mes actual]".
 
