@@ -129,7 +129,6 @@ export function useFinancialNarrative(): FinancialNarrative {
     });
     const clients = clientsData
       .map(c => ({ name: c.name, totalIncome: Math.round((clientIncomeMap[c.id] || 0) / 3) }))
-      .filter(c => c.totalIncome > 0)
       .sort((a, b) => b.totalIncome - a.totalIncome);
 
     // Fixed expenses from recurring bills
