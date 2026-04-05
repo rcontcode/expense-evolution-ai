@@ -144,7 +144,7 @@ export function useBankImportFlow() {
     }
   }, [user]);
 
-  // Step 2: After duplicate resolution
+  // Step 2: After duplicate resolution (defined after insertAndClassify below)
   const proceedWithImport = useCallback(async (includeDuplicates: boolean) => {
     const txnsToImport = includeDuplicates
       ? state.transactions
@@ -152,8 +152,8 @@ export function useBankImportFlow() {
     const dupsSkipped = includeDuplicates ? 0 : state.duplicates.length;
 
     setState(prev => ({ ...prev, step: 'classifying' }));
-    await insertAndClassify(txnsToImport, state.transactions.length, dupsSkipped);
-  }, [state.transactions, state.newTransactions, state.duplicates, insertAndClassify]);
+    await insertAndClassifyRef.current(txnsToImport, state.transactions.length, dupsSkipped);
+  }, [state.transactions, state.newTransactions, state.duplicates]);
 
   // Insert transactions and run batch classification
   const insertAndClassify = useCallback(async (
@@ -284,7 +284,7 @@ export function useBankImportFlow() {
   }, [user]);
 
   // Save import session to history
-  const saveImportSession = useCallback(async (extra: { expensesCreated: number; incomeCreated: number }) => {
+  const saveImportSession = useCallback(async (extra: { expensesCreated: number; incomeCreated: number; duplicatesSkipped?: number }) => {
     if (!user) return null;
     const summary = state.classifiedSummary;
     if (!summary) return null;
@@ -297,7 +297,7 @@ export function useBankImportFlow() {
         file_name: state.fileName,
         total_transactions: state.transactions.length || state.insertedIds.length,
         duplicates_found: state.duplicates.length,
-        duplicates_skipped: duplicatesSkipped ?? 0,
+        duplicates_skipped: extra.duplicatesSkipped ?? 0,
         income_count: summary.incomeCount,
         expense_count: summary.expenseCount,
         income_total: summary.incomeTotal,
