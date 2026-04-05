@@ -130,17 +130,20 @@ export function FinancialNarrativeCard() {
 
   return (
     <Card className="overflow-hidden" data-section="financial-narrative">
-      <CardHeader className="pb-2 bg-gradient-to-r from-primary/5 to-transparent">
+      <CardHeader className="pb-1 bg-gradient-to-r from-primary/5 to-transparent">
         <CardTitle className="flex items-center gap-2 text-lg">
           <BarChart3 className="h-5 w-5 text-primary" />
           {narrative.userName
             ? `${l ? 'Hola' : 'Hello'} ${narrative.userName.split(' ')[0]} 👋 — ${l ? 'Tu Panorama Financiero' : 'Your Financial Overview'}`
             : l ? 'Tu Panorama Financiero' : 'Your Financial Overview'}
         </CardTitle>
+        <p className="text-xs text-muted-foreground mt-0.5">
+          {l ? 'Basado en los últimos 3 meses de actividad' : 'Based on the last 3 months of activity'}
+        </p>
       </CardHeader>
       <CardContent className="space-y-1 pt-2">
         {/* PROFILE */}
-        {narrative.workTypes.length > 0 && (
+        {(narrative.workTypes.length > 0 || narrative.clients.length > 0) && (
           <Collapsible open={openSections.profile}>
             <SectionToggle title={l ? 'Perfil' : 'Profile'} icon={User} open={openSections.profile} onToggle={() => toggle('profile')} />
             <CollapsibleContent className="pl-6 pb-2 text-sm text-muted-foreground">
@@ -149,8 +152,12 @@ export function FinancialNarrativeCard() {
                 : `You work as ${workLabels}.`}
               {narrative.clients.length > 0 && (
                 <span>
-                  {' '}{l ? `Tienes ${narrative.clients.length} cliente${narrative.clients.length > 1 ? 's' : ''} activo${narrative.clients.length > 1 ? 's' : ''}` : `You have ${narrative.clients.length} active client${narrative.clients.length > 1 ? 's' : ''}`}
-                  : {narrative.clients.map(c => c.name).join(', ')}.
+                  {' '}{l ? `Tienes ${narrative.clients.length} cliente${narrative.clients.length > 1 ? 's' : ''}` : `You have ${narrative.clients.length} client${narrative.clients.length > 1 ? 's' : ''}`}
+                  : {narrative.clients.map(c =>
+                    c.totalIncome > 0
+                      ? c.name
+                      : <span key={c.name} className="text-muted-foreground/60 italic">{c.name} ({l ? 'sin actividad reciente' : 'no recent activity'})</span>
+                  ).reduce<React.ReactNode[]>((acc, el, i) => i === 0 ? [el] : [...acc, ', ', el], [])}.
                 </span>
               )}
             </CollapsibleContent>
@@ -268,7 +275,7 @@ export function FinancialNarrativeCard() {
             onToggle={() => toggle('balance')}
             badge={`${narrative.balance >= 0 ? '+' : ''}${fmt.formatCurrency(narrative.balance)}`}
           />
-          <CollapsibleContent className="pl-6 pb-2 text-sm">
+          <CollapsibleContent className="pl-6 pb-2 text-sm space-y-2">
             <div className="flex flex-wrap gap-x-6 gap-y-1">
               <span>
                 <span className="text-muted-foreground">{l ? 'Ingresos' : 'Income'}:</span>{' '}
@@ -285,6 +292,20 @@ export function FinancialNarrativeCard() {
                 </span>
               </span>
             </div>
+            {narrative.totalMonthlyIncome > 0 && (
+              <div className="flex h-3 rounded-full overflow-hidden bg-muted/50 border border-border/50">
+                <div
+                  className="bg-primary/70 transition-all duration-500"
+                  style={{ width: `${Math.min(100, narrative.monthlyExpenses > 0 ? (narrative.totalMonthlyIncome / (narrative.totalMonthlyIncome + narrative.monthlyExpenses)) * 100 : 100)}%` }}
+                  title={l ? 'Ingresos' : 'Income'}
+                />
+                <div
+                  className="bg-destructive/60 transition-all duration-500"
+                  style={{ width: `${Math.min(100, narrative.totalMonthlyIncome > 0 ? (narrative.monthlyExpenses / (narrative.totalMonthlyIncome + narrative.monthlyExpenses)) * 100 : 0)}%` }}
+                  title={l ? 'Gastos' : 'Expenses'}
+                />
+              </div>
+            )}
           </CollapsibleContent>
         </Collapsible>
 
