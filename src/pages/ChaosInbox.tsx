@@ -189,6 +189,7 @@ export default function ChaosInbox() {
   const [showApproved, setShowApproved] = useState(false);
   const [showRejected, setShowRejected] = useState(false);
   const [activeTab, setActiveTab] = useState('unified');
+  const [reviewFilter, setReviewFilter] = useState<'pending' | 'processed' | 'all'>('pending');
   const [recurringCandidate, setRecurringCandidate] = useState<RecurringBillCandidate | null>(null);
   const [recurringDialogOpen, setRecurringDialogOpen] = useState(false);
   const [duplicateQueue, setDuplicateQueue] = useState<Array<{
