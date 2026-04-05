@@ -9,6 +9,7 @@ import { useBankTransactions } from '@/hooks/data/useBankTransactions';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { 
   Landmark, ArrowUpRight, ArrowDownRight, 
   RefreshCw, TrendingUp, ExternalLink, Clock
@@ -18,6 +19,7 @@ export function BankingSummaryCard({ compact = false }: { compact?: boolean }) {
   const { language } = useLanguage();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { formatCompact } = useFormatCurrency();
   const { data: transactions = [], isLoading } = useBankTransactions();
   const l = language === 'es';
 
@@ -42,8 +44,8 @@ export function BankingSummaryCard({ compact = false }: { compact?: boolean }) {
 
     const classified = transactions.filter(t => t.category && t.category !== 'uncategorized');
     const pending = transactions.filter(t => !t.category || t.category === 'uncategorized');
-    const income = transactions.filter(t => t.transaction_type === 'credit');
-    const expenses = transactions.filter(t => t.transaction_type === 'debit');
+    const income = transactions.filter(t => t.transaction_type === 'income' || t.transaction_type === 'credit');
+    const expenses = transactions.filter(t => t.transaction_type === 'expense' || t.transaction_type === 'debit');
     const recurring = transactions.filter(t => t.is_recurring);
     const linked = transactions.filter(t => t.matched_expense_id || t.matched_income_id);
 
@@ -70,9 +72,7 @@ export function BankingSummaryCard({ compact = false }: { compact?: boolean }) {
 
   if (!stats || stats.total === 0) return null;
 
-  const fmt = (n: number) => new Intl.NumberFormat(l ? 'es-CL' : 'en-US', {
-    style: 'currency', currency: 'CLP', maximumFractionDigits: 0
-  }).format(n);
+  const fmt = (n: number) => formatCompact(n);
 
   if (compact) {
     return (
