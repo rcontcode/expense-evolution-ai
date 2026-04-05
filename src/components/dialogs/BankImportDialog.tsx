@@ -46,6 +46,7 @@ export function BankImportDialog({ open, onClose }: BankImportDialogProps) {
     const file = e.target.files?.[0];
     if (!file) return;
     setSelectedFile(file);
+    trackSource('csv', file.name);
     setIsLoading(true);
     try {
       const text = await file.text();
@@ -71,6 +72,7 @@ export function BankImportDialog({ open, onClose }: BankImportDialogProps) {
     const file = e.target.files?.[0];
     if (!file) return;
     setSelectedFile(file);
+    trackSource('photo', file.name);
     setIsLoading(true);
     try {
       const base64 = await new Promise<string>((resolve, reject) => {
@@ -101,6 +103,7 @@ export function BankImportDialog({ open, onClose }: BankImportDialogProps) {
     const file = e.target.files?.[0];
     if (!file) return;
     setSelectedFile(file);
+    trackSource('pdf', file.name);
     setIsLoading(true);
     try {
       const base64 = await new Promise<string>((resolve, reject) => {
@@ -329,24 +332,68 @@ export function BankImportDialog({ open, onClose }: BankImportDialogProps) {
   }
 
   if (state.step === 'done') {
+    const ss = state.sessionSummary;
+    const summary = state.classifiedSummary;
     return (
       <Dialog open={open} onOpenChange={handleClose}>
         <DialogContent className="max-w-md">
-          <div className="flex flex-col items-center gap-4 py-6">
-            <div className="w-16 h-16 rounded-full bg-success/20 flex items-center justify-center">
-              <CheckCircle2 className="h-8 w-8 text-success" />
+          <div className="flex flex-col items-center gap-4 py-4">
+            <div className="w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center">
+              <CheckCircle2 className="h-8 w-8 text-emerald-600" />
             </div>
             <h3 className="text-lg font-semibold text-center">
               {l ? '¡Importación completa!' : 'Import complete!'}
             </h3>
-            <p className="text-sm text-muted-foreground text-center">
-              {l
-                ? 'Tus transacciones bancarias han sido importadas, clasificadas y vinculadas automáticamente.'
-                : 'Your bank transactions have been imported, classified and linked automatically.'}
-            </p>
-            <Button onClick={handleClose} className="w-full">
-              {l ? 'Cerrar' : 'Close'}
-            </Button>
+            
+            {/* Detailed summary */}
+            <div className="w-full space-y-3">
+              {summary && (
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-center">
+                    <p className="text-xs text-muted-foreground">{l ? 'Ingresos creados' : 'Income created'}</p>
+                    <p className="text-lg font-bold text-emerald-600">{ss?.incomeCreated ?? summary.incomeCount}</p>
+                    <p className="text-[10px] text-muted-foreground">${summary.incomeTotal.toFixed(0)}</p>
+                  </div>
+                  <div className="p-2.5 rounded-lg bg-red-500/10 border border-red-500/20 text-center">
+                    <p className="text-xs text-muted-foreground">{l ? 'Gastos creados' : 'Expenses created'}</p>
+                    <p className="text-lg font-bold text-red-600">{ss?.expensesCreated ?? summary.expenseCount}</p>
+                    <p className="text-[10px] text-muted-foreground">${summary.expenseTotal.toFixed(0)}</p>
+                  </div>
+                </div>
+              )}
+
+              <div className="bg-muted/50 rounded-lg p-3 space-y-1 text-xs">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">{l ? 'Transacciones totales' : 'Total transactions'}</span>
+                  <span className="font-medium">{state.insertedIds.length}</span>
+                </div>
+                {state.duplicates.length > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">{l ? 'Duplicados detectados' : 'Duplicates detected'}</span>
+                    <span className="font-medium">{state.duplicates.length}</span>
+                  </div>
+                )}
+                {summary && summary.recurringCount > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">{l ? 'Recurrentes detectados' : 'Recurring detected'}</span>
+                    <span className="font-medium">{summary.recurringCount}</span>
+                  </div>
+                )}
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">{l ? 'Fuente' : 'Source'}</span>
+                  <span className="font-medium">{state.sourceType.toUpperCase()} {state.fileName ? `• ${state.fileName}` : ''}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-2 w-full">
+              <Button variant="outline" onClick={handleClose} className="flex-1">
+                {l ? 'Cerrar' : 'Close'}
+              </Button>
+              <Button onClick={() => { handleClose(); window.location.href = '/banking'; }} className="flex-1">
+                {l ? 'Ver en Banking' : 'View in Banking'}
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
