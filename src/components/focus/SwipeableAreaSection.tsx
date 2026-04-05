@@ -61,17 +61,16 @@
          </div>
        </motion.div>
  
-       <motion.div
-         drag="x"
-         dragConstraints={{ left: 0, right: 0 }}
-         dragElastic={0.2}
-         onDragStart={() => setIsDragging(true)}
-         onDragEnd={handleDragEnd}
-         style={{ x, scale }}
-         className={cn(
-           "touch-pan-y",
-           isDragging && "cursor-grabbing"
-         )}
+        <motion.div
+          drag="x"
+          dragConstraints={{ left: 0, right: 0 }}
+          dragElastic={0.2}
+          onDragStart={() => setIsDragging(true)}
+          onDragEnd={handleDragEnd}
+          style={{ x, scale, touchAction: 'pan-y' }}
+          className={cn(
+            isDragging && "cursor-grabbing"
+          )}
        >
          <AreaSection
            areaId={areaId}
