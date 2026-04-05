@@ -1,59 +1,75 @@
 
 
-# Plan: Mejoras Visuales + Selector de Ventana de Tiempo
+# Plan: Límite de Transacciones, Ingreso Incorrecto y Eliminación por Secciones
 
-## Dos partes
+## Problemas Identificados
 
-### Parte 1: Mejoras visuales (plan aprobado previamente)
+### 1. Límite de 5000 transacciones bancarias
+El hook `useBankTransactions` tiene `.limit(5000)`. Si el usuario tiene más, las últimas se pierden silenciosamente. No hay aviso. El `BankingSummaryCard` y el `FinancialNarrativeCard` muestran datos parciales sin indicar que hay más.
 
-**FinancialNarrativeCard.tsx**:
-- Barras horizontales proporcionales en cada income stream (ancho relativo al mayor ingreso)
-- Mini donut chart (Recharts PieChart 60x60) para distribución de gastos fijos por categoría
-- Gauge SVG semicircular para savings rate (rojo <10%, amarillo 10-20%, verde >20%)
-- Barra segmentada en banca (clasificadas verde vs pendientes amarillo)
-- Indicador de completitud (barra mostrando cuantas secciones tienen datos)
-
-**DataInventoryPanel.tsx**:
-- Colores semánticos por categoría: Documentos=azul, Gastos=rojo, Ingresos=verde, Contratos=púrpura, Clientes=naranja, Banco=teal, Bills=amber
-- Iconos con fondo circular coloreado en vez de gris plano
-
-### Parte 2: Selector de ventana de tiempo
-
-**Mejor enfoque**: Un selector simple de periodo en el header del Panorama Financiero. Opciones predefinidas (no calendario libre, que seria confuso para promedios):
-
-- **1 mes** — solo el mes actual
-- **3 meses** — default actual, promedios de 3 meses
-- **6 meses** — vista más amplia
-- **12 meses** — todo el año
-- **Todo** — todos los datos disponibles
-
-Se implementa como un `Select` compacto junto al titulo. El valor seleccionado se pasa a `useFinancialNarrative(months)` que ajusta el filtro de fechas `threeMonthsAgo` al periodo elegido. Los labels del componente se actualizan: "Basado en los últimos X meses".
-
-**Impacto en datos**: El hook ya filtra por `threeMonthsAgo`. Solo hay que parametrizarlo:
-
-```text
-useFinancialNarrative(months: number)
-  → threeMonthsAgo = new Date(now.getFullYear(), now.getMonth() - months, 1)
-  → divisor para promedios = months en vez de hardcoded 3
+### 2. BUG — Cálculo incorrecto de ingresos mensuales en el Panorama
+En `useFinancialNarrative.ts` línea 120, la fórmula de promedio es:
 ```
+sum / Math.max(amounts.length / divisor, 1)
+```
+Esto es matemáticamente incorrecto. Con 6 registros en 3 meses, calcula `sum / 2` en vez de `sum / 3`. La fórmula correcta es simplemente `sum / divisor`. Esto infla los promedios y explica el $29,024,000.
 
-## Archivos a modificar
+Además, el `totalMonthlyIncome` usa `stats?.monthlyIncome` que es solo del mes actual (no promedio del periodo seleccionado). Hay incoherencia entre los streams y el total.
+
+### 3. No existe forma de eliminar datos por secciones
+Solo hay: (a) papelera individual, (b) vaciar toda la papelera, (c) eliminar cuenta completa. No hay opción de "borrar todos mis gastos" o "borrar todas mis transacciones bancarias" sin tocar ingresos, clientes, etc.
+
+## Solución
+
+### Fix 1: Transacciones — aviso de límite + paginación futura
+- En `useBankTransactions`, si `data.length === 5000`, el hook retorna un flag `hasMore: true`.
+- En `BankingSummaryCard`, si `hasMore`, mostrar badge de advertencia: "Mostrando las últimas 5000 transacciones. Puede haber más."
+- En `FinancialNarrativeCard`, usar count real via query `head: true` para el resumen bancario en vez del `.length` del array.
+
+### Fix 2: Corregir fórmula de ingreso mensual
+Cambiar línea 120 de:
+```typescript
+const avg = g.amounts.reduce((a, b) => a + b, 0) / Math.max(g.amounts.length / divisor, 1);
+```
+A:
+```typescript
+const total = g.amounts.reduce((a, b) => a + b, 0);
+const avg = Math.round(total / divisor);
+```
+Y reemplazar `totalMonthlyIncome` para que use la suma de los streams calculados (coherente con el periodo) en vez del `stats?.monthlyIncome` del mes actual.
+
+### Fix 3: Gestión de datos por secciones (nueva funcionalidad)
+Crear un panel "Gestión de Datos" en Settings (junto a DataPrivacyCard) con opciones para eliminar por sección:
+- Gastos
+- Ingresos
+- Transacciones bancarias
+- Contratos
+- Kilometraje
+- Clientes y Proyectos
+- Documentos/Archivos
+
+Cada sección muestra el conteo actual y un botón "Eliminar todo". Requiere confirmación con texto "ELIMINAR" y ejecuta hard delete (no soft delete). Incluye audit log.
+
+## Archivos a Crear/Modificar
 
 | Archivo | Cambio |
 |---------|--------|
-| `src/components/dashboard/FinancialNarrativeCard.tsx` | Barras de ingreso, donut de gastos, gauge SVG, barra banca, completitud, selector de periodo |
-| `src/hooks/data/useFinancialNarrative.ts` | Parametrizar `months`, ajustar divisor de promedios |
-| `src/components/dashboard/DataInventoryPanel.tsx` | Colores semánticos e iconos con fondo circular |
+| `src/hooks/data/useFinancialNarrative.ts` | Fix fórmula de promedio, usar suma de streams como total |
+| `src/hooks/data/useBankTransactions.ts` | Retornar flag `hasMore` cuando llega al límite |
+| `src/components/banking/BankingSummaryCard.tsx` | Mostrar aviso si `hasMore` |
+| `src/components/settings/DataManagementCard.tsx` | **Crear** — panel de eliminación por secciones |
+| `src/pages/Settings.tsx` | Agregar DataManagementCard |
 
-## Detalle tecnico
+## Detalle Técnico
 
-**Selector de periodo**: Estado local `periodMonths` en FinancialNarrativeCard, default 3. Select compacto (h-7 text-xs) a la derecha del titulo. Se pasa como argumento al hook.
+**DataManagementCard**: Cada sección usa un query `{ count: 'exact', head: true }` para mostrar el conteo. Al confirmar eliminación:
+1. Elimina relaciones dependientes primero (expense_tags, documents.expense_id)
+2. Hard delete de la tabla principal con `.eq('user_id', user.id)`
+3. Para transacciones bancarias: también limpia `bank_import_sessions`
+4. Invalida caches relevantes
+5. Muestra toast con conteo eliminado
 
-**Income bars**: CSS puro, `width` proporcional a `max(incomeStreams.amount)`. Color `bg-primary/60`.
+Confirmación: el usuario debe escribir "ELIMINAR" (o "DELETE" en inglés) para activar el botón. Cada sección tiene su propio diálogo independiente.
 
-**Expense donut**: Recharts `PieChart` con `Pie` sin labels, solo 60x60px. Top 5 categorias con colores fijos. Ya hay Recharts en el proyecto.
-
-**Savings gauge**: SVG con `circle` + `stroke-dasharray`. Semicirculo de 80x50px con texto central. Colores: `hsl(var(--primary))` verde, `hsl(var(--destructive))` rojo, amber intermedio.
-
-**DataInventory colors**: Mapa estatico `CATEGORY_COLORS` con `bg`, `text`, `icon` por categoria. Aplicar al icono wrapper con `rounded-full p-1.5`.
+**Flujo de corrección de datos para el usuario**: El panel incluirá un texto explicativo: "Si ves datos incorrectos, puedes: (1) Ir a la sección correspondiente y editar/eliminar registros individuales, (2) Usar la Papelera para recuperar eliminaciones recientes, (3) Eliminar toda una sección aquí si necesitas empezar de cero."
 
