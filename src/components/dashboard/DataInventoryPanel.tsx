@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useState } from 'react';
-import { ChevronDown, Database, FileText, Receipt, DollarSign, FileCheck, Users, ShieldCheck, ArrowRight } from 'lucide-react';
+import { ChevronDown, Database, FileText, Receipt, DollarSign, FileCheck, Users, ShieldCheck, ArrowRight, Landmark, CalendarCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 
@@ -32,7 +32,7 @@ function useDataInventory() {
     queryFn: async () => {
       if (!user?.id) return null;
 
-      const [docs, expenses, income, contracts, clients] = await Promise.all([
+      const [docs, expenses, income, contracts, clients, bankTx, bills] = await Promise.all([
         supabase.from('documents').select('created_at', { count: 'exact', head: false })
           .eq('user_id', user.id).order('created_at', { ascending: true }),
         supabase.from('expenses').select('created_at', { count: 'exact', head: false })
@@ -43,13 +43,11 @@ function useDataInventory() {
           .eq('user_id', user.id).is('deleted_at', null).order('created_at', { ascending: true }),
         supabase.from('clients').select('created_at', { count: 'exact', head: false })
           .eq('user_id', user.id).is('deleted_at', null).order('created_at', { ascending: true }),
+        supabase.from('bank_transactions').select('created_at', { count: 'exact', head: false })
+          .eq('user_id', user.id).order('created_at', { ascending: true }),
+        supabase.from('recurring_bills').select('created_at', { count: 'exact', head: false })
+          .eq('user_id', user.id).order('created_at', { ascending: true }),
       ]);
-
-      const extract = (res: typeof docs) => ({
-        count: res.count || 0,
-        first: res.data?.[0]?.created_at || null,
-        last: res.data?.length ? res.data[res.data.length - 1]?.created_at : null,
-      });
 
       return {
         documents: extract(docs),
@@ -57,6 +55,8 @@ function useDataInventory() {
         income: extract(income),
         contracts: extract(contracts),
         clients: extract(clients),
+        bankTransactions: extract(bankTx),
+        recurringBills: extract(bills),
       };
     },
     enabled: !!user?.id,
@@ -73,7 +73,7 @@ export function DataInventoryPanel() {
 
   if (isLoading || !data) return null;
 
-  const totalItems = data.documents.count + data.expenses.count + data.income.count + data.contracts.count + data.clients.count;
+  const totalItems = data.documents.count + data.expenses.count + data.income.count + data.contracts.count + data.clients.count + data.bankTransactions.count + data.recurringBills.count;
 
   const items: InventoryItem[] = [
     { label_es: 'Documentos', label_en: 'Documents', count: data.documents.count, icon: FileText, firstDate: data.documents.first, lastDate: data.documents.last, suggestion_es: 'Sube boletas en la Bandeja del Caos', suggestion_en: 'Upload receipts in the Chaos Inbox', link: '/chaos-inbox' },
@@ -81,6 +81,8 @@ export function DataInventoryPanel() {
     { label_es: 'Ingresos', label_en: 'Income', count: data.income.count, icon: DollarSign, firstDate: data.income.first, lastDate: data.income.last, suggestion_es: 'Registra tus ingresos', suggestion_en: 'Log your income', link: '/income' },
     { label_es: 'Contratos', label_en: 'Contracts', count: data.contracts.count, icon: FileCheck, firstDate: data.contracts.first, lastDate: data.contracts.last, suggestion_es: 'Sube tus contratos', suggestion_en: 'Upload your contracts', link: '/contracts' },
     { label_es: 'Clientes', label_en: 'Clients', count: data.clients.count, icon: Users, firstDate: data.clients.first, lastDate: data.clients.last, suggestion_es: 'Agrega tus clientes', suggestion_en: 'Add your clients', link: '/clients' },
+    { label_es: 'Transacciones Banco', label_en: 'Bank Transactions', count: data.bankTransactions.count, icon: Landmark, firstDate: data.bankTransactions.first, lastDate: data.bankTransactions.last, suggestion_es: 'Importa tu estado de cuenta', suggestion_en: 'Import your bank statement', link: '/banking' },
+    { label_es: 'Pagos Recurrentes', label_en: 'Recurring Bills', count: data.recurringBills.count, icon: CalendarCheck, firstDate: data.recurringBills.first, lastDate: data.recurringBills.last, suggestion_es: 'Configura tus pagos fijos', suggestion_en: 'Set up your fixed payments', link: '/bills' },
   ];
 
   const categoriesWithData = items.filter(i => i.count > 0).length;
