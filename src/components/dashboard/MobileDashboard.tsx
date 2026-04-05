@@ -17,6 +17,7 @@ import { MobileSectionPills } from '@/components/dashboard/MobileSectionPills';
 import { MissionControl } from '@/components/dashboard/MissionControl';
 
 const LazyEcosystemWidgets = lazy(() => import('@/components/ecosystem/EcosystemDashboardWidgets'));
+const LazyBankingSummaryCard = lazy(() => import('@/components/banking/BankingSummaryCard').then(m => ({ default: m.BankingSummaryCard })));
 const OrganizedDashboard = lazy(() => import('@/components/focus').then(m => ({ default: m.OrganizedDashboard })));
 
 interface MobileDashboardProps {
@@ -94,6 +95,10 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
               onAddIncome={handleAddIncome}
               onAddExpense={handleAddExpense}
             />
+
+            <Suspense fallback={null}>
+              <LazyBankingSummaryCard compact />
+            </Suspense>
 
             <div data-section="gamification">
               <ProfileCompletionNudge />

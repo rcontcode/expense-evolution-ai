@@ -189,6 +189,7 @@ export default function ChaosInbox() {
   const [showApproved, setShowApproved] = useState(false);
   const [showRejected, setShowRejected] = useState(false);
   const [activeTab, setActiveTab] = useState('unified');
+  const [reviewFilter, setReviewFilter] = useState<'pending' | 'processed' | 'all'>('pending');
   const [recurringCandidate, setRecurringCandidate] = useState<RecurringBillCandidate | null>(null);
   const [recurringDialogOpen, setRecurringDialogOpen] = useState(false);
   const [duplicateQueue, setDuplicateQueue] = useState<Array<{
@@ -802,18 +803,18 @@ export default function ChaosInbox() {
             <Alert className={cn(
               "transition-all duration-300 animate-in fade-in slide-in-from-top-2",
               uploadProgress.phase === 'received' && "border-primary/50 bg-primary/5",
-              uploadProgress.phase === 'uploading' && "border-blue-500/50 bg-blue-500/5",
-              uploadProgress.phase === 'analyzing' && "border-purple-500/50 bg-purple-500/5 animate-pulse",
-              uploadProgress.phase === 'classified' && "border-green-500/50 bg-green-500/5",
-              uploadProgress.phase === 'unknown' && "border-amber-500/50 bg-amber-500/5",
+              uploadProgress.phase === 'uploading' && "border-primary/30 bg-primary/5",
+              uploadProgress.phase === 'analyzing' && "border-accent/50 bg-accent/5 animate-pulse",
+              uploadProgress.phase === 'classified' && "border-success/50 bg-success/5",
+              uploadProgress.phase === 'unknown' && "border-warning/50 bg-warning/5",
               uploadProgress.phase === 'error' && "border-destructive/50 bg-destructive/5",
             )}>
               {(uploadProgress.phase === 'uploading' || uploadProgress.phase === 'analyzing') ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : uploadProgress.phase === 'classified' ? (
-                <CheckCircle2 className="h-4 w-4 text-green-600" />
+                <CheckCircle2 className="h-4 w-4 text-success" />
               ) : uploadProgress.phase === 'unknown' ? (
-                <AlertTriangle className="h-4 w-4 text-amber-600" />
+                <AlertTriangle className="h-4 w-4 text-warning" />
               ) : uploadProgress.phase === 'error' ? (
                 <X className="h-4 w-4 text-destructive" />
               ) : (
@@ -829,6 +830,7 @@ export default function ChaosInbox() {
               </AlertTitle>
             </Alert>
           )}
+
           {/* Contextual Page Guide - Hidden on mobile */}
           {!isMobile && (
             <PageContextGuide
@@ -888,31 +890,99 @@ export default function ChaosInbox() {
             </CardContent>
           </Card>
 
-          {/* Main Content - Pending Review Section */}
-          {pendingDocs.length > 0 && (
-            <section className="space-y-4">
-              <SectionHeader
-                icon={Clock}
-                title={language === 'es' ? 'Pendientes de Revisar' : 'Pending Review'}
-                count={pendingDocs.length}
-                color="bg-warning/20 text-warning"
-                description={language === 'es' 
-                  ? 'Haz clic en cualquier recibo para revisar y aprobar los datos'
-                  : 'Click on any receipt to review and approve the data'}
-              />
-              
-              <Alert className="border-warning/50 bg-warning/10">
-                <Eye className="h-4 w-4" />
-                <AlertTitle>{language === 'es' ? 'Acción requerida' : 'Action required'}</AlertTitle>
-                <AlertDescription>
-                  {language === 'es' 
-                    ? 'Haz clic en cualquier tarjeta de recibo para abrir el revisor. Ahí podrás ver la imagen, editar los datos y aprobar o rechazar.'
-                    : 'Click on any receipt card to open the reviewer. There you can see the image, edit the data and approve or reject.'}
-                </AlertDescription>
-              </Alert>
-              
+          {/* Mini-resumen de estado */}
+          <div className="flex flex-wrap gap-2 items-center">
+            <Badge variant={pendingDocs.length > 0 ? "warning" : "secondary"} className="gap-1">
+              <Clock className="h-3 w-3" />
+              {pendingDocs.length} {language === 'es' ? 'pendientes' : 'pending'}
+            </Badge>
+            <Badge variant="success" className="gap-1">
+              <CheckCircle2 className="h-3 w-3" />
+              {approvedDocs.length} {language === 'es' ? 'aprobados' : 'approved'}
+            </Badge>
+            {needsCorrectionDocs.length > 0 && (
+              <Badge variant="outline" className="gap-1 border-warning text-warning">
+                <MessageSquare className="h-3 w-3" />
+                {needsCorrectionDocs.length} {language === 'es' ? 'con comentarios' : 'with comments'}
+              </Badge>
+            )}
+            {rejectedDocs.length > 0 && (
+              <Badge variant="destructive" className="gap-1">
+                <X className="h-3 w-3" />
+                {rejectedDocs.length} {language === 'es' ? 'rechazados' : 'rejected'}
+              </Badge>
+            )}
+            <span className="text-xs text-muted-foreground ml-auto">
+              {documents.length} {language === 'es' ? 'total' : 'total'}
+            </span>
+          </div>
+
+          {/* Filter pills */}
+          <div className="flex gap-2">
+            {(['pending', 'processed', 'all'] as const).map(filter => {
+              const counts = { 
+                pending: pendingDocs.length + needsCorrectionDocs.length,
+                processed: approvedDocs.length + rejectedDocs.length,
+                all: documents.length
+              };
+              const labels = {
+                pending: language === 'es' ? 'Pendientes' : 'Pending',
+                processed: language === 'es' ? 'Procesados' : 'Processed',
+                all: language === 'es' ? 'Todos' : 'All',
+              };
+              return (
+                <Button
+                  key={filter}
+                  variant={reviewFilter === filter ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setReviewFilter(filter)}
+                  className="gap-1.5"
+                >
+                  {labels[filter]} ({counts[filter]})
+                </Button>
+              );
+            })}
+          </div>
+
+          {/* Filtered document list */}
+          {(() => {
+            const filteredDocs = reviewFilter === 'pending' 
+              ? [...pendingDocs, ...needsCorrectionDocs]
+              : reviewFilter === 'processed' 
+                ? [...approvedDocs, ...rejectedDocs]
+                : documents;
+
+            if (filteredDocs.length === 0) {
+              return (
+                <Card className="border-dashed">
+                  <CardContent className="flex flex-col items-center justify-center py-12">
+                    <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-3">
+                      {reviewFilter === 'pending' ? (
+                        <CheckCircle2 className="h-6 w-6 text-success" />
+                      ) : (
+                        <Layers className="h-6 w-6 text-muted-foreground" />
+                      )}
+                    </div>
+                    <h3 className="font-semibold mb-1">
+                      {reviewFilter === 'pending' 
+                        ? (language === 'es' ? '¡Todo al día!' : 'All caught up!')
+                        : reviewFilter === 'processed'
+                          ? (language === 'es' ? 'Sin procesados aún' : 'No processed yet')
+                          : (language === 'es' ? 'Sin documentos' : 'No documents')}
+                    </h3>
+                    <p className="text-sm text-muted-foreground text-center max-w-md">
+                      {reviewFilter === 'pending'
+                        ? (language === 'es' ? 'No tienes documentos pendientes de revisar.' : 'You have no pending documents to review.')
+                        : (language === 'es' ? 'Sube documentos para comenzar.' : 'Upload documents to get started.')}
+                    </p>
+                  </CardContent>
+                </Card>
+              );
+            }
+
+            return (
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                {pendingDocs.map((doc) => (
+                {filteredDocs.map((doc) => (
                   <DocumentImageWrapper
                     key={doc.id}
                     document={doc}
@@ -926,165 +996,11 @@ export default function ChaosInbox() {
                   />
                 ))}
               </div>
-            </section>
-          )}
+            );
+          })()}
 
-          {/* Needs Correction Section */}
-          {needsCorrectionDocs.length > 0 && (
-            <section className="space-y-4">
-              <SectionHeader
-                icon={MessageSquare}
-                title={language === 'es' ? 'Con Comentarios' : 'With Comments'}
-                count={needsCorrectionDocs.length}
-                color="bg-amber-500/20 text-amber-600"
-                description={language === 'es' 
-                  ? 'Recibos que marcaste con comentarios para revisar después'
-                  : 'Receipts you marked with comments to review later'}
-              />
-              
-              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                {needsCorrectionDocs.map((doc) => (
-                  <DocumentImageWrapper
-                    key={doc.id}
-                    document={doc}
-                    onApprove={handleApprove}
-                    onReject={handleReject}
-                    onAddComment={handleAddComment}
-                    onDelete={handleDelete}
-                    onCheckDuplicates={handleCheckDuplicates}
-                    isLoading={approveDocument.isPending}
-                    onDataExtracted={() => refetch()}
-                  />
-                ))}
-              </div>
-            </section>
-          )}
-
-          {/* Empty State - No pending work */}
-          {!hasPendingWork && documents.length === 0 && (
-            <Card className="border-dashed">
-              <CardContent className="flex flex-col items-center justify-center py-16">
-                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                  <Camera className="h-8 w-8 text-primary" />
-                </div>
-                <h3 className="text-xl font-semibold mb-2">
-                  {language === 'es' ? '¡Comienza a capturar recibos!' : 'Start capturing receipts!'}
-                </h3>
-                <p className="text-muted-foreground text-center max-w-md mb-6">
-                  {language === 'es' 
-                    ? 'Sube fotos de tus recibos y EvoFinz extraerá automáticamente el vendedor, monto, fecha y categoría.'
-                    : 'Upload photos of your receipts and EvoFinz will automatically extract vendor, amount, date and category.'}
-                </p>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    onClick={() => setCameraDialogOpen(true)}
-                  >
-                    <Video className="mr-2 h-4 w-4" />
-                    {language === 'es' ? 'Usar Cámara' : 'Use Camera'}
-                  </Button>
-                  <label htmlFor="file-upload-empty">
-                    <Button asChild className="bg-gradient-primary">
-                      <span className="cursor-pointer">
-                        <Upload className="mr-2 h-4 w-4" />
-                        {language === 'es' ? 'Subir Fotos' : 'Upload Photos'}
-                      </span>
-                    </Button>
-                    <input
-                      id="file-upload-empty"
-                      type="file"
-                      multiple
-                      accept="image/*"
-                      onChange={handleFileUpload}
-                      className="hidden"
-                    />
-                  </label>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* All caught up state */}
-          {!hasPendingWork && documents.length > 0 && (
-            <Card className="border-success/30 bg-success/5">
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <div className="w-16 h-16 rounded-full bg-success/20 flex items-center justify-center mb-4">
-                  <CheckCircle2 className="h-8 w-8 text-success" />
-                </div>
-                <h3 className="text-xl font-semibold mb-2">
-                  {language === 'es' ? '¡Todo al día!' : 'All caught up!'}
-                </h3>
-                <p className="text-muted-foreground text-center max-w-md">
-                  {language === 'es' 
-                    ? 'No tienes recibos pendientes de revisar. Sube más fotos cuando tengas nuevos gastos.'
-                    : 'You have no pending receipts to review. Upload more photos when you have new expenses.'}
-                </p>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Collapsible: Approved Receipts */}
-          {approvedDocs.length > 0 && (
-            <Collapsible open={showApproved} onOpenChange={setShowApproved}>
-              <CollapsibleTrigger asChild>
-                <Button variant="ghost" className="w-full justify-between hover:bg-muted/50">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-success" />
-                    <span>{language === 'es' ? 'Aprobados' : 'Approved'}</span>
-                    <Badge variant="secondary">{approvedDocs.length}</Badge>
-                  </div>
-                  {showApproved ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                </Button>
-              </CollapsibleTrigger>
-              <CollapsibleContent className="mt-4">
-                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                   {approvedDocs.map((doc) => (
-                    <DocumentImageWrapper
-                      key={doc.id}
-                      document={doc}
-                      onApprove={handleApprove}
-                      onReject={handleReject}
-                      onAddComment={handleAddComment}
-                      onDelete={handleDelete}
-                      onCheckDuplicates={handleCheckDuplicates}
-                      onDataExtracted={() => refetch()}
-                    />
-                  ))}
-                </div>
-              </CollapsibleContent>
-            </Collapsible>
-          )}
-
-          {/* Collapsible: Rejected Receipts */}
-          {rejectedDocs.length > 0 && (
-            <Collapsible open={showRejected} onOpenChange={setShowRejected}>
-              <CollapsibleTrigger asChild>
-                <Button variant="ghost" className="w-full justify-between hover:bg-muted/50">
-                  <div className="flex items-center gap-2">
-                    <X className="h-4 w-4 text-destructive" />
-                    <span>{language === 'es' ? 'Rechazados' : 'Rejected'}</span>
-                    <Badge variant="secondary">{rejectedDocs.length}</Badge>
-                  </div>
-                  {showRejected ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                </Button>
-              </CollapsibleTrigger>
-              <CollapsibleContent className="mt-4">
-                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                  {rejectedDocs.map((doc) => (
-                    <DocumentImageWrapper
-                      key={doc.id}
-                      document={doc}
-                      onApprove={handleApprove}
-                      onReject={handleReject}
-                      onAddComment={handleAddComment}
-                      onDelete={handleDelete}
-                      onDataExtracted={() => refetch()}
-                    />
-                  ))}
-                </div>
-              </CollapsibleContent>
-            </Collapsible>
-          )}
+          {/* Scan Session History */}
+          <ScanSessionHistory />
 
             </TabsContent>
           </Tabs>

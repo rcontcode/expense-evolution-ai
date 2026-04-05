@@ -41,6 +41,7 @@ const WorkflowSummaryWidget = lazy(() => import('@/components/dashboard/Workflow
 const MonthlyBillsWidget = lazy(() => import('@/components/dashboard/MonthlyBillsWidget').then(m => ({ default: m.MonthlyBillsWidget })));
 const ProactiveAlertsWidget = lazy(() => import('@/components/dashboard/ProactiveAlertsWidget').then(m => ({ default: m.ProactiveAlertsWidget })));
 const FinancialAutopilot = lazy(() => import('@/components/dashboard/FinancialAutopilot').then(m => ({ default: m.FinancialAutopilot })));
+const LazyBankingSummaryCard = lazy(() => import('@/components/banking/BankingSummaryCard').then(m => ({ default: m.BankingSummaryCard })));
 
 export default function Dashboard() {
   const { t, language } = useLanguage();
@@ -205,6 +206,13 @@ export default function Dashboard() {
                       onAddExpense={handleAddExpense}
                     />
                   </div>
+                </div>
+
+                {/* Banking Summary */}
+                <div id="banking-summary" data-section="banking-summary">
+                  <Suspense fallback={<Skeleton className="h-[200px]" />}>
+                    <LazyBankingSummaryCard />
+                  </Suspense>
                 </div>
 
                 {/* Ecosystem */}
