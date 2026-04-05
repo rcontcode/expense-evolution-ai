@@ -1,97 +1,55 @@
 
 
-# Plan: Resumen Inteligente de Transacciones + Correcciones de Ruta y Centro de Revisión
+# Plan: Depurar y Completar el Sistema de Importación Bancaria
 
-## Problemas Identificados
+## Problemas Encontrados
 
-1. **Ruta rota `/bank` → 404**: En `useMissionControl.ts` (líneas 289, 437, 481, 488), `actionUrl` apunta a `/bank` pero la ruta real es `/banking`. El botón "Ir a completar" del Mission Control lleva a una página inexistente.
+1. **Tipo `BankTransaction` incompleto**: La interfaz en `useBankTransactions.ts` no incluye las columnas nuevas (`transaction_type`, `category`, `is_recurring`, `recurring_type`, `bank_name`, `original_amount`, `duplicate_hash`, `auto_categorized`, `matched_income_id`). Los componentes acceden a estos campos sin tipado correcto.
 
-2. **Falta resumen mensual/anual inteligente**: No existe un componente que muestre un panorama tipo "vista de bosque" con patrones detectados (ingresos recurrentes, transferencias, gastos por categoría, pagos recurrentes vs no recurrentes).
+2. **Bug de closure en `runBatchClassification`**: En línea 224 de `useBankImportFlow.ts`, se usa `state.insertedIds` dentro de un `useCallback` sin incluirlo en las dependencias. Cuando se ejecuta, `state.insertedIds` todavía es `[]` porque se setea en `insertAndClassify` pero el callback ya fue creado. Resultado: el summary se construye con un array vacío.
 
-3. **Centro de Revisión limitado a boletas**: `ExpenseReviewCenter` solo maneja `expenses` y sus documentos asociados. No incluye transacciones bancarias, ingresos, contratos ni otros tipos de registros financieros.
+3. **Edge Function `analyze-bank-statement` no existe**: El handler de PDF (línea 107 de `BankImportDialog.tsx`) invoca `analyze-bank-statement` pero esa función no existe en `supabase/functions/`. El upload de PDF siempre falla silenciosamente.
+
+4. **`autoCreateRecords` inserta `vendor: undefined`**: En línea 298, `vendor: t.description || undefined` debería ser `null` en vez de `undefined` para compatibilidad con Supabase.
 
 ## Solución
 
-### 1. Corregir rutas rotas (5 min)
-**Archivo**: `src/hooks/utils/useMissionControl.ts`
-- Cambiar todas las referencias de `/bank` a `/banking` (líneas 289, 437, 481, 488).
+### 1. Actualizar interfaz `BankTransaction` (useBankTransactions.ts)
+Agregar los campos que ya existen en la DB:
+- `transaction_type`, `category`, `is_recurring`, `recurring_type`
+- `bank_name`, `original_amount`, `duplicate_hash`, `auto_categorized`
+- `matched_income_id`
 
-### 2. Crear componente `BankTransactionSummary` (nuevo)
-**Archivo**: `src/components/banking/BankTransactionSummary.tsx`
+### 2. Corregir bug de closure en `useBankImportFlow.ts`
+Cambiar `runBatchClassification` para que reciba `insertedIds` como parámetro en vez de leerlo del state. Pasar los IDs explícitamente desde `insertAndClassify`.
 
-Un componente que analiza las transacciones bancarias clasificadas y genera un resumen visual con:
+### 3. Crear Edge Function `analyze-bank-statement` para PDFs
+Reusar la misma lógica del `process-bank-statement` existente pero aceptando PDF en base64. Enviar el contenido a la IA para extraer transacciones del PDF.
 
-- **Ingresos recurrentes detectados**: "1 ingreso mensual de [cliente/descripción] por $XXX, generalmente los días XX"
-- **Transferencias detectadas**: Si no se identifica el propósito, preguntar al usuario "¿De qué es esta transferencia a XXX?"
-- **Gastos recurrentes confirmados**: Lista de pagos fijos detectados (subscriptions, utilities, etc.) con botón "Confirmar"
-- **Gastos no recurrentes por categoría**: Groceries $XXX, Combustible $XXX, Restaurantes $XXX, etc.
-- **Vista mensual y anual** con toggle
-
-La lógica:
-- Agrupa transacciones por `description` normalizada
-- Detecta patrones de recurrencia (misma descripción, monto similar, frecuencia regular)
-- Clasifica por `transaction_type` y `category` (campos ya disponibles en la DB)
-- Para transferencias sin categoría clara, muestra un prompt interactivo
-- Calcula totales mensuales y anuales
-
-### 3. Ampliar el Centro de Revisión
-**Archivo**: `src/components/expenses/ExpenseReviewCenter.tsx`
-
-Agregar tabs adicionales para revisar:
-- **Transacciones bancarias**: pendientes de clasificar o vincular
-- **Ingresos**: registros de income con/sin documento
-- Los tabs existentes de gastos se mantienen
-
-Esto requiere importar `useBankTransactions` y `useIncome` y agregar `TabsTrigger`/`TabsContent` para cada tipo.
-
-### 4. Integrar el resumen en la página Banking
-**Archivo**: `src/pages/Banking.tsx`
-
-Agregar `<BankTransactionSummary />` entre `BankingInsightsSummary` y `SmartSearchChat`, dándole prominencia como panel principal de visibilidad.
+### 4. Corregir `undefined` → `null` en autoCreateRecords
+Cambiar `vendor: t.description || undefined` a `vendor: t.description || null` y `source: t.description || undefined` a `source: t.description || null`.
 
 ## Archivos a Modificar
 
 | Archivo | Cambio |
 |---------|--------|
-| `src/hooks/utils/useMissionControl.ts` | `/bank` → `/banking` (4 ocurrencias) |
-| `src/components/banking/BankTransactionSummary.tsx` | **NUEVO** - Resumen inteligente mensual/anual |
-| `src/components/expenses/ExpenseReviewCenter.tsx` | Agregar tabs para bank transactions e income |
-| `src/pages/Banking.tsx` | Integrar BankTransactionSummary |
+| `src/hooks/data/useBankTransactions.ts` | Actualizar interfaz `BankTransaction` con todas las columnas nuevas |
+| `src/hooks/data/useBankImportFlow.ts` | Fix closure bug en `runBatchClassification`, fix `undefined` → `null` |
+| `supabase/functions/analyze-bank-statement/index.ts` | **NUEVO** - Edge Function para procesar PDFs bancarios |
+| `src/components/dialogs/BankImportDialog.tsx` | Ajuste menor: asegurar que el PDF handler envíe el formato correcto |
 
-## Detalle del Resumen Inteligente
+## Detalle Técnico
 
-```text
-┌─────────────────────────────────────────────┐
-│  📊 Resumen de Actividad  [Mensual ▼]       │
-├─────────────────────────────────────────────┤
-│                                             │
-│  💰 INGRESOS DETECTADOS                     │
-│  ├── Salario de EMPRESA X: $2,500,000       │
-│  │   📅 Generalmente los días 28-30         │
-│  └── Transferencia de CLIENTE Y: $450,000   │
-│      📅 2 veces este mes                    │
-│                                             │
-│  🔄 PAGOS RECURRENTES                       │
-│  ├── Netflix: $9,990/mes ✅ Confirmado      │
-│  ├── Spotify: $5,490/mes ✅ Confirmado      │
-│  └── Luz Enel: ~$45,000/mes ⚠️ Confirmar   │
-│                                             │
-│  ❓ TRANSFERENCIAS SIN IDENTIFICAR          │
-│  └── Transferencia a J.PEREZ: $150,000      │
-│      [¿Qué es?] [Arriendo] [Préstamo] [Otro]│
-│                                             │
-│  🛒 GASTOS NO RECURRENTES                   │
-│  ├── 🛒 Supermercado: $285,000 (12 compras) │
-│  ├── ⛽ Combustible: $120,000 (4 cargas)    │
-│  ├── 🍽️ Restaurantes: $95,000 (8 visitas)  │
-│  └── 🛍️ Compras: $67,000 (3 compras)       │
-│                                             │
-│  📈 TOTALES                                 │
-│  Ingresos: $2,950,000                       │
-│  Gastos:   $1,892,000                       │
-│  Neto:     +$1,058,000                      │
-└─────────────────────────────────────────────┘
+**Closure fix**: `insertAndClassify` ya tiene los `insertedIds`. En vez de que `runBatchClassification` lea `state.insertedIds` (que está vacío por el timing), se le pasan directamente:
+
+```typescript
+// Antes (bug):
+await buildSummary(state.insertedIds.length > 0 ? state.insertedIds : transactionIds);
+
+// Después (fix):
+// runBatchClassification recibe insertedIds como segundo parámetro
+await buildSummary(insertedIds);
 ```
 
-Sin cambios de backend. Todo se calcula client-side a partir de datos ya clasificados en `bank_transactions`.
+**Edge Function `analyze-bank-statement`**: Acepta `{ content: base64, contentType: 'pdf' }`, envía a Gemini para extraer transacciones del PDF, devuelve el mismo formato que `process-bank-statement` para mantener compatibilidad con el dialog.
 
