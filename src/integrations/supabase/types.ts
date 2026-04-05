@@ -279,6 +279,72 @@ export type Database = {
         }
         Relationships: []
       }
+      bank_import_sessions: {
+        Row: {
+          categories: Json | null
+          created_at: string | null
+          duplicates_found: number | null
+          duplicates_skipped: number | null
+          expense_count: number | null
+          expense_total: number | null
+          expenses_created: number | null
+          file_name: string | null
+          id: string
+          imported_at: string | null
+          income_count: number | null
+          income_created: number | null
+          income_total: number | null
+          recurring_count: number | null
+          source_type: string
+          status: string | null
+          total_transactions: number | null
+          unclassified_count: number | null
+          user_id: string
+        }
+        Insert: {
+          categories?: Json | null
+          created_at?: string | null
+          duplicates_found?: number | null
+          duplicates_skipped?: number | null
+          expense_count?: number | null
+          expense_total?: number | null
+          expenses_created?: number | null
+          file_name?: string | null
+          id?: string
+          imported_at?: string | null
+          income_count?: number | null
+          income_created?: number | null
+          income_total?: number | null
+          recurring_count?: number | null
+          source_type?: string
+          status?: string | null
+          total_transactions?: number | null
+          unclassified_count?: number | null
+          user_id: string
+        }
+        Update: {
+          categories?: Json | null
+          created_at?: string | null
+          duplicates_found?: number | null
+          duplicates_skipped?: number | null
+          expense_count?: number | null
+          expense_total?: number | null
+          expenses_created?: number | null
+          file_name?: string | null
+          id?: string
+          imported_at?: string | null
+          income_count?: number | null
+          income_created?: number | null
+          income_total?: number | null
+          recurring_count?: number | null
+          source_type?: string
+          status?: string | null
+          total_transactions?: number | null
+          unclassified_count?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       bank_transactions: {
         Row: {
           amount: number
