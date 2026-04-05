@@ -342,7 +342,7 @@ export function useBankImportFlow() {
           vendor: t.description || null,
           category: t.category || 'other',
           description: `[Banco] ${t.description || ''}`.trim(),
-          status: 'approved' as const,
+          status: 'pending' as const,
         }));
 
         const { data: created, error } = await supabase
@@ -368,11 +368,10 @@ export function useBankImportFlow() {
       for (let i = 0; i < incomeTxns.length; i += 100) {
         const batch = incomeTxns.slice(i, i + 100);
         const incomeRecords = batch.map(t => {
-          let incomeType = 'client_payment';
+          let incomeType: 'client_payment' | 'salary' | 'refund' | 'investment_stocks' | 'other' = 'client_payment';
           if (t.category === 'salary') incomeType = 'salary';
           else if (t.category === 'refund') incomeType = 'refund';
           else if (t.category === 'investment_return') incomeType = 'investment_stocks';
-          else if (t.category === 'transfer_in') incomeType = 'client_payment';
 
           return {
             user_id: user.id,
