@@ -144,17 +144,6 @@ export function useBankImportFlow() {
     }
   }, [user]);
 
-  // Step 2: After duplicate resolution
-  const proceedWithImport = useCallback(async (includeDuplicates: boolean) => {
-    const txnsToImport = includeDuplicates
-      ? state.transactions
-      : state.newTransactions;
-    const dupsSkipped = includeDuplicates ? 0 : state.duplicates.length;
-
-    setState(prev => ({ ...prev, step: 'classifying' }));
-    await insertAndClassify(txnsToImport, state.transactions.length, dupsSkipped);
-  }, [state.transactions, state.newTransactions, state.duplicates]);
-
   // Insert transactions and run batch classification
   const insertAndClassify = useCallback(async (
     transactions: EnrichedTransaction[], 
@@ -235,6 +224,17 @@ export function useBankImportFlow() {
     await buildSummary(idsForSummary, totalOriginal, duplicatesSkipped);
   }, []);
 
+  // Step 2: After duplicate resolution
+  const proceedWithImport = useCallback(async (includeDuplicates: boolean) => {
+    const txnsToImport = includeDuplicates
+      ? state.transactions
+      : state.newTransactions;
+    const dupsSkipped = includeDuplicates ? 0 : state.duplicates.length;
+
+    setState(prev => ({ ...prev, step: 'classifying' }));
+    await insertAndClassify(txnsToImport, state.transactions.length, dupsSkipped);
+  }, [state.transactions, state.newTransactions, state.duplicates, insertAndClassify]);
+
   // Build summary from classified data
   const buildSummary = useCallback(async (
     insertedIds: string[],
@@ -284,7 +284,7 @@ export function useBankImportFlow() {
   }, [user]);
 
   // Save import session to history
-  const saveImportSession = useCallback(async (extra: { expensesCreated: number; incomeCreated: number }) => {
+  const saveImportSession = useCallback(async (extra: { expensesCreated: number; incomeCreated: number; duplicatesSkipped?: number }) => {
     if (!user) return null;
     const summary = state.classifiedSummary;
     if (!summary) return null;
@@ -297,7 +297,7 @@ export function useBankImportFlow() {
         file_name: state.fileName,
         total_transactions: state.transactions.length || state.insertedIds.length,
         duplicates_found: state.duplicates.length,
-        duplicates_skipped: state.duplicates.length - (state.transactions.length - state.newTransactions.length),
+        duplicates_skipped: extra.duplicatesSkipped ?? 0,
         income_count: summary.incomeCount,
         expense_count: summary.expenseCount,
         income_total: summary.incomeTotal,
@@ -352,12 +352,13 @@ export function useBankImportFlow() {
 
         if (!error && created) {
           expensesCreated += created.length;
-          for (let j = 0; j < created.length; j++) {
-            await supabase
-              .from('bank_transactions')
-              .update({ matched_expense_id: created[j].id, status: 'matched' })
-              .eq('id', batch[j].id);
-          }
+          // Batch update matched_expense_id
+          const updates = created.map((c, j) => 
+            supabase.from('bank_transactions')
+              .update({ matched_expense_id: c.id, status: 'matched' })
+              .eq('id', batch[j].id)
+          );
+          await Promise.all(updates);
         }
       }
     }
@@ -390,12 +391,12 @@ export function useBankImportFlow() {
 
         if (!error && created) {
           incomeCreated += created.length;
-          for (let j = 0; j < created.length; j++) {
-            await supabase
-              .from('bank_transactions')
-              .update({ matched_income_id: created[j].id, status: 'matched' })
-              .eq('id', batch[j].id);
-          }
+          const updates = created.map((c, j) => 
+            supabase.from('bank_transactions')
+              .update({ matched_income_id: c.id, status: 'matched' })
+              .eq('id', batch[j].id)
+          );
+          await Promise.all(updates);
         }
       }
     }

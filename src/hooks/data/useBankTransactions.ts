@@ -57,7 +57,8 @@ export function useBankTransactions() {
         .from('bank_transactions')
         .select('*')
         .eq('user_id', user!.id)
-        .order('transaction_date', { ascending: false });
+        .order('transaction_date', { ascending: false })
+        .limit(5000);
 
       if (error) throw error;
       return data as BankTransaction[];
@@ -394,7 +395,7 @@ export function parseCSV(csvText: string): ParsedTransaction[] {
 
     transactions.push({
       date: parsedDate.toISOString().split('T')[0],
-      amount: Math.abs(amount),
+      amount,
       description,
     });
   }

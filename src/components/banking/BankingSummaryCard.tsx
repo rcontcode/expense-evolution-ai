@@ -220,11 +220,18 @@ export function BankingSummaryCard({ compact = false }: { compact?: boolean }) {
   );
 }
 
+const statBoxColors: Record<string, string> = {
+  success: 'bg-emerald-500/5 border-emerald-500/10',
+  destructive: 'bg-red-500/5 border-red-500/10',
+  primary: 'bg-primary/5 border-primary/10',
+  muted: 'bg-muted/50 border-border',
+};
+
 function StatBox({ icon, label, value, sub, color }: {
   icon: React.ReactNode; label: string; value: string; sub: string; color: string;
 }) {
   return (
-    <div className={`rounded-lg bg-${color}/5 border border-${color}/10 p-3`}>
+    <div className={`rounded-lg border p-3 ${statBoxColors[color] || 'bg-muted/50 border-border'}`}>
       <div className="flex items-center gap-2 mb-1">
         {icon}
         <span className="text-xs text-muted-foreground">{label}</span>
