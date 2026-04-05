@@ -1,54 +1,105 @@
 
 
-# Plan: Mejoras Finales de Claridad, Inventario y Guía del Usuario
+# Plan: Resumen Narrativo Financiero Personalizado
 
-## Problemas Identificados
+## Qué es
 
-### 1. DataInventoryPanel no incluye Transacciones Bancarias
-El inventario de datos del dashboard muestra documentos, gastos, ingresos, contratos y clientes — pero **omite las transacciones bancarias**. Esto confunde al usuario porque importó datos bancarios pero no aparecen en el conteo de "su inventario".
+Un nuevo componente **"Tu Panorama Financiero"** que genera un resumen en lenguaje natural — como una carta personalizada — describiendo todo lo que el sistema sabe del usuario: quién es, qué ingresos tiene, qué gasta, sus pagos recurrentes, clientes, y de dónde viene esa información. Se muestra en el Dashboard principal (vista "Resumen") justo debajo del Timeline.
 
-### 2. DataInventoryPanel no incluye Pagos Recurrentes (Bills)
-Si el usuario tiene pagos recurrentes configurados, tampoco se reflejan en el inventario.
+## Ejemplo de resultado
 
-### 3. BankingSummaryCard: sin estado vacío guía
-Cuando no hay transacciones bancarias (`stats.total === 0`), el componente retorna `null`. No ofrece ningún camino al usuario para descubrir que puede importar. Sería útil un estado vacío con CTA "Importar estado de cuenta".
+> **Hola Carlos 👋 — Tu Panorama Financiero**
+>
+> Eres **persona natural**, trabajas como **empleado** y **contratista independiente**.
+>
+> 📥 **Ingresos** — $2.850.000/mes
+> • Como empleado: sueldo de $1.800.000 (día 30 de cada mes)
+> • Como contratista: 2 clientes activos
+>   - **Acme Corp**: $650.000/mes (día 15)
+>   - **Beta Ltd**: $400.000/mes (día 5)
+>
+> 📤 **Gastos fijos** — $1.200.000/mes
+> • Arriendo: $450.000 • Electricidad: $35.000 • Internet: $29.990 ...
+>
+> 💳 **Transacciones bancarias**: 342 registradas (Banco Estado)
+> Último import: 2 abr 2026 — 89 clasificadas, 12 pendientes
+>
+> 📊 **Balance**: +$1.650.000/mes · Tasa de ahorro: 58%
+>
+> 📁 **Fuentes**: 4 extractos bancarios, 23 boletas, 2 contratos procesados.
+> Si algo no cuadra, revisa en [Centro de Revisión] o [Bandeja del Caos].
 
-### 4. Redundancia de comentarios en Dashboard.tsx
-Los comentarios de sección dicen `{/* 8. ... */}` tres veces (Mission Control, View Tabs, View Content). Menor pero confuso para mantenimiento.
+## Fuentes de datos (hooks existentes)
 
-## Solución
+| Dato | Fuente |
+|------|--------|
+| Nombre, work_types, país | `useProfile()` |
+| Clientes | `supabase.from('clients')` |
+| Ingresos por tipo/fuente | `useIncome()` + `useIncomeSummary()` |
+| Gastos recurrentes | `useRecurringBills()` |
+| Transacciones bancarias | `useBankTransactions()` |
+| Historial de importaciones | `bank_import_sessions` query |
+| Documentos procesados | `supabase.from('documents')` count |
+| Gastos del mes | `useDashboardStats()` |
 
-### 1. Agregar banco y bills al DataInventoryPanel
-Agregar dos queries paralelas más al hook `useDataInventory`:
-- `bank_transactions` → count + fechas
-- `recurring_bills` → count + fechas
+## Archivos a crear/modificar
 
-Renderizar como dos items más en el grid (total: 7 categorías). Completeness se calcula sobre 7 en vez de 5.
-
-### 2. BankingSummaryCard: estado vacío con CTA
-Cuando `stats === null` o `total === 0`, en lugar de `return null`, mostrar un card compacto con icono de banco y botón "Importar estado de cuenta" → `/banking`. Solo en modo no-compact.
-
-### 3. Fix comentarios duplicados en Dashboard
-Renumerar comentarios correctamente (7, 8, 9, 10).
-
-## Archivos a Modificar
-
-| Archivo | Cambio |
+| Archivo | Acción |
 |---------|--------|
-| `src/components/dashboard/DataInventoryPanel.tsx` | Agregar bank_transactions + recurring_bills al inventario |
-| `src/components/banking/BankingSummaryCard.tsx` | Estado vacío con CTA en modo full (no compact) |
-| `src/pages/Dashboard.tsx` | Fix numeración de comentarios |
+| `src/hooks/data/useFinancialNarrative.ts` | **Crear** — hook que agrega todos los datos y genera la estructura narrativa |
+| `src/components/dashboard/FinancialNarrativeCard.tsx` | **Crear** — componente visual con secciones colapsables |
+| `src/pages/Dashboard.tsx` | **Modificar** — agregar el componente después del Banking Summary |
 
-## Detalle Técnico
+## Diseño técnico
 
-**DataInventoryPanel** — agregar al `Promise.all`:
+### Hook `useFinancialNarrative`
+
+Consume los hooks existentes (no queries nuevas) y retorna un objeto estructurado:
+
 ```typescript
-supabase.from('bank_transactions').select('created_at', { count: 'exact', head: false })
-  .eq('user_id', user.id),
-supabase.from('recurring_bills').select('created_at', { count: 'exact', head: false })
-  .eq('user_id', user.id),
+interface FinancialNarrative {
+  userName: string;
+  workProfile: { types: string[]; country: string };
+  incomeStreams: { source: string; type: string; amount: number; dayOfMonth?: number }[];
+  totalMonthlyIncome: number;
+  clients: { name: string; totalIncome: number }[];
+  fixedExpenses: { name: string; amount: number; category: string }[];
+  totalFixedExpenses: number;
+  bankingSummary: { total: number; matched: number; pending: number; banks: string[]; lastImport?: string };
+  documentSources: { receipts: number; contracts: number; bankStatements: number };
+  balance: number;
+  savingsRate: number;
+  isLoading: boolean;
+}
 ```
-Y agregar items al array con iconos `Landmark` y `CalendarCheck`, links a `/banking` y `/bills`.
 
-**BankingSummaryCard vacío** — card dashed con icono + texto "Importa tu estado de cuenta para ver un resumen aquí" + botón navigate(`/banking`).
+Agrega datos de `useProfile`, `useIncome`, `useRecurringBills`, `useBankTransactions`, y queries ligeras de conteo para documentos e importaciones. Detecta patrones de recurrencia (día del mes más frecuente por fuente de ingreso) analizando las fechas de los registros existentes.
+
+### Componente `FinancialNarrativeCard`
+
+- Card con gradiente sutil y título "Tu Panorama Financiero" / "Your Financial Overview"
+- Secciones: Perfil → Ingresos → Gastos Fijos → Banca → Balance → Fuentes
+- Cada sección colapsable con chevron
+- Links internos: "Centro de Revisión", "Bandeja del Caos", "Pagos Fijos"
+- Bilingüe (es/en) usando `useLanguage()`
+- Estado vacío: si no hay datos suficientes, muestra guía de qué cargar primero
+
+### Dashboard integration
+
+Lazy-load del componente, insertado entre Banking Summary y Ecosystem:
+
+```tsx
+const FinancialNarrativeCard = lazy(() => import('@/components/dashboard/FinancialNarrativeCard'));
+
+{/* After banking summary */}
+<Suspense fallback={<Skeleton className="h-[300px]" />}>
+  <FinancialNarrativeCard />
+</Suspense>
+```
+
+## Alcance
+
+- Sin IA ni edge functions — pura lógica client-side con datos existentes
+- Sin tablas nuevas ni migraciones
+- Sin nuevas dependencias
 
