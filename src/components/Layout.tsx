@@ -482,7 +482,7 @@ export const Layout = ({ children }: LayoutProps) => {
   // Mobile Layout
   if (isMobile) {
     return (
-      <div className="relative flex h-[100dvh] max-h-[100dvh] flex-col overflow-hidden bg-background">
+      <div className="flex flex-col min-h-screen bg-background relative">
         <ThemeBackground />
         {/* Mobile Header */}
         <header className="sticky top-0 z-50 backdrop-blur-2xl border-b border-border/30 px-4 py-2" style={{ background: 'hsl(var(--background) / 0.98)' }}>
@@ -717,11 +717,8 @@ export const Layout = ({ children }: LayoutProps) => {
           </div>
         </header>
 
-        <main
-          className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden touch-pan-y"
-          style={{ WebkitOverflowScrolling: 'touch' }}
-        >
-          <div className="min-h-full pb-20 touch-pan-y">
+        <main className="flex-1 pb-20">
+          <div>
             {children}
           </div>
         </main>
