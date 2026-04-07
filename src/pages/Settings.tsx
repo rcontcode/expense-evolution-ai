@@ -3,11 +3,13 @@ import { useSearchParams } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 import { Layout } from '@/components/Layout';
 import { useSafeNavigation } from '@/hooks/useSafeNavigation';
+import { useUserSettings, useUpdateUserPreferences, UserPreferences } from '@/hooks/data/useUserSettings';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Switch } from '@/components/ui/switch';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Skeleton } from '@/components/ui/skeleton';
 import { 
