@@ -94,6 +94,10 @@ export default function Settings() {
   const { t, language, setLanguage } = useLanguage();
   const { data: isAdmin } = useIsAdmin();
   const isMobile = useIsMobile();
+  const { data: settingsData } = useUserSettings();
+  const updatePreferences = useUpdateUserPreferences();
+  const userPrefs = (settingsData?.preferences as UserPreferences) || {};
+  const gamificationEnabled = userPrefs.gamification_enabled !== false;
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState('preferences');
   const [isExiting, setIsExiting] = useState(false);
@@ -296,6 +300,45 @@ export default function Settings() {
                  </Suspense>
                </div>
              </SettingsSection>
+
+            {/* Gamification Toggle */}
+            <SettingsSection 
+              title={language === 'es' ? 'Gamificación' : 'Gamification'} 
+              icon={Settings2} 
+              isMobile={isMobile}
+            >
+              <Card>
+                <CardHeader className="pb-3">
+                  <div className="flex items-center gap-2">
+                    <Settings2 className="h-5 w-5 text-primary" />
+                    <div>
+                      <CardTitle className="text-base">
+                        {language === 'es' ? 'Celebraciones y Logros' : 'Celebrations & Achievements'}
+                      </CardTitle>
+                      <CardDescription className="text-xs sm:text-sm">
+                        {language === 'es' 
+                          ? 'Activa o desactiva las animaciones de celebración, confeti y el sistema de logros' 
+                          : 'Enable or disable celebration animations, confetti and the achievements system'}
+                      </CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="gamification-toggle" className="text-sm">
+                      {language === 'es' ? 'Activar gamificación' : 'Enable gamification'}
+                    </Label>
+                    <Switch
+                      id="gamification-toggle"
+                      checked={gamificationEnabled}
+                      onCheckedChange={(checked) => {
+                        updatePreferences.mutate({ gamification_enabled: checked });
+                      }}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            </SettingsSection>
 
             {/* Theme Section */}
             <SettingsSection 
