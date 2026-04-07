@@ -5,8 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { OnboardingAmbientMusic } from '@/components/onboarding/OnboardingAmbientMusic';
 import { useAuth } from '@/contexts/AuthContext';
-import confetti from 'canvas-confetti';
-import { 
+import {
   Sparkles, Gift, Crown, Zap, Heart, Star,
   ArrowRight, CheckCircle2, Rocket
 } from 'lucide-react';
