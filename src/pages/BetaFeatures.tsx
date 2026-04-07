@@ -140,13 +140,8 @@ export default function BetaFeatures() {
   const currentFeature = features[currentIndex];
   const progress = ((currentIndex + 1) / features.length) * 100;
 
-  const triggerConfetti = (colors: string[]) => {
-    confetti({
-      particleCount: 50,
-      spread: 60,
-      origin: { y: 0.6 },
-      colors
-    });
+  const triggerConfetti = (_colors: string[]) => {
+    // Confetti removed - users reported it felt unprofessional
   };
 
   const handleNext = () => {
