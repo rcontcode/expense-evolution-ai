@@ -26,32 +26,6 @@ export default function BetaWelcome() {
   }, [user]);
 
   useEffect(() => {
-    // Celebration confetti
-    const duration = 3000;
-    const end = Date.now() + duration;
-
-    const frame = () => {
-      confetti({
-        particleCount: 3,
-        angle: 60,
-        spread: 55,
-        origin: { x: 0, y: 0.8 },
-        colors: ['#1e3a5f', '#14b8a6', '#f59e0b']
-      });
-      confetti({
-        particleCount: 3,
-        angle: 120,
-        spread: 55,
-        origin: { x: 1, y: 0.8 },
-        colors: ['#1e3a5f', '#14b8a6', '#f59e0b']
-      });
-
-      if (Date.now() < end) {
-        requestAnimationFrame(frame);
-      }
-    };
-    frame();
-
     setTimeout(() => setShowContent(true), 500);
   }, []);
 
