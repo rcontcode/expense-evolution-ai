@@ -140,43 +140,17 @@ export default function BetaFeatures() {
   const currentFeature = features[currentIndex];
   const progress = ((currentIndex + 1) / features.length) * 100;
 
-  const triggerConfetti = (colors: string[]) => {
-    confetti({
-      particleCount: 50,
-      spread: 60,
-      origin: { y: 0.6 },
-      colors
-    });
+  const triggerConfetti = (_colors: string[]) => {
+    // Confetti removed - users reported it felt unprofessional
   };
 
   const handleNext = () => {
     if (currentIndex < features.length - 1) {
       setCurrentIndex(prev => prev + 1);
-      triggerConfetti(features[currentIndex + 1].colors);
+      triggerConfetti([]);
     } else {
-      // Final celebration
-      const duration = 2000;
-      const end = Date.now() + duration;
-      const frame = () => {
-        confetti({
-          particleCount: 5,
-          angle: 60,
-          spread: 55,
-          origin: { x: 0, y: 0.8 },
-          colors: ['#fbbf24', '#f59e0b', '#d97706']
-        });
-        confetti({
-          particleCount: 5,
-          angle: 120,
-          spread: 55,
-          origin: { x: 1, y: 0.8 },
-          colors: ['#fbbf24', '#f59e0b', '#d97706']
-        });
-        if (Date.now() < end) requestAnimationFrame(frame);
-      };
-      frame();
-      
-      setTimeout(() => navigate('/dashboard'), 1500);
+      // Navigate to dashboard
+      setTimeout(() => navigate('/dashboard'), 500);
     }
   };
 

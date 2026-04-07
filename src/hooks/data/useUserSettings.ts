@@ -13,6 +13,7 @@ export interface UserPreferences {
   expenses_confirmed_month?: string;
   expenses_dismissed_month?: string;
   expenses_snoozed_until?: string;
+  gamification_enabled?: boolean;
 }
 
 export function useUserSettings() {
