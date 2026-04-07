@@ -473,7 +473,7 @@ export function ReceiptReviewDialog({
           </div>
         </DialogHeader>
 
-        <div className="flex-1 overflow-hidden grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="flex-1 min-h-0 overflow-y-auto grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Left: Document Image with Advanced Controls */}
           <TooltipProvider>
             <div className={cn(
