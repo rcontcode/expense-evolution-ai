@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, Star, Zap, Trophy, Flame } from 'lucide-react';
-import confetti from 'canvas-confetti';
+import { useConfetti } from '@/hooks/utils/useConfetti';
 
 export type CelebrationType = 'xp' | 'streak' | 'milestone' | 'achievement' | 'level';
 

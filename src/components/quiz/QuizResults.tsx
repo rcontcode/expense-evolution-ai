@@ -8,7 +8,7 @@ import { PhoenixScoreAnimation } from "./PhoenixScoreAnimation";
 import { QuizRecommendations } from "./QuizRecommendations";
 import { UrgencyBanner } from "@/components/landing/UrgencyBanner";
 import type { QuizResult, ReferralInfo } from "@/pages/FinancialQuiz";
-import confetti from "canvas-confetti";
+import { useConfetti } from '@/hooks/utils/useConfetti';
 
 interface QuizResultsProps {
   result: QuizResult;

@@ -4,7 +4,7 @@ import { Progress } from '@/components/ui/progress';
 import { Trophy, Flame, Target, Star, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
-import confetti from 'canvas-confetti';
+import { useConfetti } from '@/hooks/utils/useConfetti';
 import { useEffect, useRef } from 'react';
 
 interface MobileCaptureStatsProps {

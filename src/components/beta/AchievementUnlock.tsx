@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import confetti from 'canvas-confetti';
+import { useConfetti } from '@/hooks/utils/useConfetti';
 import { X, Star, Trophy, Sparkles } from 'lucide-react';
 import { useCelebrationSound } from '@/hooks/utils/useCelebrationSound';
 import { useLanguage } from '@/contexts/LanguageContext';

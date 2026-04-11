@@ -5,7 +5,7 @@ import { useUnlockAchievement } from './useGamification';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCelebrationSound } from '@/hooks/utils/useCelebrationSound';
-import confetti from 'canvas-confetti';
+import { useConfetti } from '@/hooks/utils/useConfetti';
 
 interface GoalNotificationsProps {
   savingsGoals: any[];

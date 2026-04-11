@@ -23,7 +23,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useWorkflowProgress } from "@/hooks/data/useWorkflowProgress";
 import { useCelebrationSound } from "@/hooks/utils/useCelebrationSound";
 import { cn } from "@/lib/utils";
-import confetti from "canvas-confetti";
+import { useConfetti } from '@/hooks/utils/useConfetti';
 
 interface WorkflowConfig {
   id: string;

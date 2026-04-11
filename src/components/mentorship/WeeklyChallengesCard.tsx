@@ -18,7 +18,7 @@ import { useChallengeAutoTracker } from '@/hooks/data/useChallengeAutoTracker';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { addExperience, useUnlockAchievement } from '@/hooks/data/useGamification';
-import confetti from 'canvas-confetti';
+import { useConfetti } from '@/hooks/utils/useConfetti';
 
 const STORAGE_KEY = 'mentorship-weekly-challenges';
 
