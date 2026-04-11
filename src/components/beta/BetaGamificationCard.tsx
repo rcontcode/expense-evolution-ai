@@ -37,6 +37,7 @@ import { BetaExpirationBadge } from './BetaExpirationBadge';
 
 export const BetaGamificationCard = () => {
   const { language } = useLanguage();
+  const { fire: confetti } = useConfetti();
   const { data: profile } = useProfile();
   const {
     userPoints,

@@ -23,6 +23,7 @@ export function MobileCaptureStats({
   goalReached,
 }: MobileCaptureStatsProps) {
   const { language } = useLanguage();
+  const { fire: confetti } = useConfetti();
   const prevGoalReached = useRef(goalReached);
   const celebrationTriggered = useRef(false);
 

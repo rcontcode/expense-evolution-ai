@@ -58,6 +58,7 @@ export function MiniCelebration({
   duration = 3000,
   onComplete
 }: MiniCelebrationProps) {
+  const { fire: confetti } = useConfetti();
   const [isVisible, setIsVisible] = useState(true);
   const config = celebrationConfig[type];
   const Icon = config.icon;

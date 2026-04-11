@@ -130,6 +130,7 @@ const triggerStarburst = () => {
 
  export function GamificationCelebration({ celebration, onClose }: GamificationCelebrationProps) {
    const { language } = useLanguage();
+   const { fire: confetti } = useConfetti();
    const { playFullCelebration } = useCelebrationSound();
    const [showContent, setShowContent] = useState(false);
    const [randomQuote, setRandomQuote] = useState<typeof CELEBRATION_QUOTES.es[0] | null>(null);

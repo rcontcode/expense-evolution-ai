@@ -103,6 +103,7 @@ function WorkflowMiniCard({
   onComplete?: (workflowId: string) => void;
 }) {
   const { language } = useLanguage();
+  const { fire: confetti } = useConfetti();
   const navigate = useNavigate();
   const { data: progress, isLoading } = useWorkflowProgress(config.id);
   const previousProgressRef = React.useRef<number | null>(null);

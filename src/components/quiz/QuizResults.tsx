@@ -314,6 +314,7 @@ const ScoreRing = ({ score, color }: { score: number; color: string }) => {
 
 export const QuizResults = ({ result, onRetake, referralInfo, onNavigateToAuth }: QuizResultsProps) => {
   const { language } = useLanguage();
+  const { fire: confetti } = useConfetti();
   const navigate = useNavigate();
   const [animatedScore, setAnimatedScore] = useState(0);
   const [showConfetti, setShowConfetti] = useState(false);

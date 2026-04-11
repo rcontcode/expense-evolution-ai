@@ -80,6 +80,7 @@ function WeekDateRange({ es }: { es: boolean }) {
 export function WeeklyChallengesCard() {
   const { language } = useLanguage();
   const es = language === 'es';
+  const { fire: confetti } = useConfetti();
   const navigate = useNavigate();
   const { user } = useAuth();
   const unlockAchievement = useUnlockAchievement();

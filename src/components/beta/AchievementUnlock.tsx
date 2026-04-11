@@ -44,6 +44,7 @@ const RARITY_CONFIG = {
 
 export const AchievementUnlock = ({ achievement, onClose }: AchievementUnlockProps) => {
   const { language } = useLanguage();
+  const { fire: confetti } = useConfetti();
   const { playFullCelebration } = useCelebrationSound();
   const [showDetails, setShowDetails] = useState(false);
 

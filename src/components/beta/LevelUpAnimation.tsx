@@ -13,6 +13,7 @@ interface LevelUpAnimationProps {
 
 export const LevelUpAnimation = ({ newTier, isVisible, onComplete }: LevelUpAnimationProps) => {
   const { language } = useLanguage();
+  const { fire: confetti } = useConfetti();
   const { playFullCelebration } = useCelebrationSound();
   const tierConfig = TIER_CONFIG[newTier];
 
