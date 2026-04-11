@@ -402,225 +402,134 @@ export default function Income() {
 
             {incomeList && incomeList.length > 0 && <IncomeDuplicatePanel incomes={incomeList} />}
 
-            {/* Tabs */}
             <Tabs defaultValue="income" className="space-y-4">
               <TabsList>
                 <TabsTrigger value="income">{t('income.incomeTab')}</TabsTrigger>
                 <TabsTrigger value="projects">{t('income.projectsTab')}</TabsTrigger>
               </TabsList>
 
-          <TabsContent value="income">
-            {incomeLoading ? (
-              <Card>
-                <CardContent className="py-8 sm:py-12 text-center text-muted-foreground">
-                  {t('common.loading')}
-                </CardContent>
-              </Card>
-            ) : incomeList && incomeList.length > 0 ? (
-              isMobile ? (
-                /* Mobile: Card view */
-                <div className="space-y-2" data-highlight="income-list">
-                  {incomeList.map((income) => (
-                    <SwipeableCard
-                      key={income.id}
-                      onSwipeLeft={() => {
-                        setDeleteId(income.id);
-                        setDeleteType('income');
-                      }}
-                      leftAction={{ label: language === 'es' ? 'Eliminar' : 'Delete' }}
-                      threshold={80}
-                    >
-                      <IncomeCard
-                        income={income}
-                        onEdit={handleEditIncome}
-                        onDelete={(id) => {
-                          setDeleteId(id);
-                          setDeleteType('income');
-                        }}
-                      />
-                    </SwipeableCard>
-                  ))}
-                </div>
-              ) : (
-                /* Desktop: Table view */
-                <Card data-highlight="income-table">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>{t('income.date')}</TableHead>
-                        <TableHead>{t('income.type')}</TableHead>
-                        <TableHead>{t('income.source')}</TableHead>
-                        <TableHead>{t('income.project')}</TableHead>
-                        <TableHead className="text-right">{t('income.amount')}</TableHead>
-                        <TableHead>{t('income.recurrence')}</TableHead>
-                        <TableHead className="w-[50px]"></TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {incomeList.map((income) => {
-                        const category = getIncomeCategory(income.income_type);
-                        return (
-                          <TableRow key={income.id}>
-                            <TableCell>
-                              <div className="flex items-center gap-2">
-                                <Calendar className="h-4 w-4 text-muted-foreground" />
-                                {format(new Date(income.date), 'PP', { locale: dateLocale })}
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <Badge 
-                                style={{ backgroundColor: category?.color }} 
-                                className="text-white"
-                              >
-                                {category?.icon} {language === 'es' ? category?.label : category?.labelEn}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              <div>
-                                <div className="font-medium">{income.source || income.description || '-'}</div>
-                                {income.client && (
-                                  <div className="text-xs text-muted-foreground">
-                                    {income.client.name}
+              <TabsContent value="income">
+                {incomeLoading ? (
+                  <Card><CardContent className="py-12 text-center text-muted-foreground">{t('common.loading')}</CardContent></Card>
+                ) : incomeList && incomeList.length > 0 ? (
+                  <Card data-highlight="income-table">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>{t('income.date')}</TableHead>
+                          <TableHead>{t('income.type')}</TableHead>
+                          <TableHead>{t('income.source')}</TableHead>
+                          <TableHead>{t('income.project')}</TableHead>
+                          <TableHead className="text-right">{t('income.amount')}</TableHead>
+                          <TableHead>{t('income.recurrence')}</TableHead>
+                          <TableHead className="w-[50px]"></TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {incomeList.map((income) => {
+                          const category = getIncomeCategory(income.income_type);
+                          return (
+                            <TableRow key={income.id}>
+                              <TableCell>
+                                <div className="flex items-center gap-2">
+                                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                                  {format(new Date(income.date), 'PP', { locale: dateLocale })}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <Badge style={{ backgroundColor: category?.color }} className="text-white">
+                                  {category?.icon} {language === 'es' ? category?.label : category?.labelEn}
+                                </Badge>
+                              </TableCell>
+                              <TableCell>
+                                <div>
+                                  <div className="font-medium">{income.source || income.description || '-'}</div>
+                                  {income.client && <div className="text-xs text-muted-foreground">{income.client.name}</div>}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                {income.project ? (
+                                  <Badge variant="outline" style={{ borderColor: income.project.color, color: income.project.color }}>{income.project.name}</Badge>
+                                ) : <span className="text-muted-foreground">-</span>}
+                              </TableCell>
+                              <TableCell className="text-right font-bold text-chart-1">${Number(income.amount).toFixed(2)}</TableCell>
+                              <TableCell>
+                                {income.recurrence !== 'one_time' && (
+                                  <div className="flex items-center gap-1 text-muted-foreground">
+                                    <Repeat className="h-3 w-3" />
+                                    <span className="text-xs capitalize">{income.recurrence}</span>
                                   </div>
                                 )}
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              {income.project ? (
-                                <Badge 
-                                  variant="outline" 
-                                  style={{ borderColor: income.project.color, color: income.project.color }}
-                                >
-                                  {income.project.name}
-                                </Badge>
-                              ) : (
-                                <span className="text-muted-foreground">-</span>
-                              )}
-                            </TableCell>
-                            <TableCell className="text-right font-bold text-chart-1">
-                              ${Number(income.amount).toFixed(2)}
-                            </TableCell>
-                            <TableCell>
-                              {income.recurrence !== 'one_time' && (
-                                <div className="flex items-center gap-1 text-muted-foreground">
-                                  <Repeat className="h-3 w-3" />
-                                  <span className="text-xs capitalize">{income.recurrence}</span>
-                                </div>
-                              )}
-                            </TableCell>
-                            <TableCell>
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" size="icon">
-                                    <MoreHorizontal className="h-4 w-4" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuItem onClick={() => handleEditIncome(income)}>
-                                    <Edit className="mr-2 h-4 w-4" />
-                                    {t('common.edit')}
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem
-                                    onClick={() => {
-                                      setDeleteId(income.id);
-                                      setDeleteType('income');
-                                    }}
-                                    className="text-destructive"
-                                  >
-                                    <Trash2 className="mr-2 h-4 w-4" />
-                                    {t('common.delete')}
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })}
-                    </TableBody>
-                  </Table>
-                </Card>
-              )
-            ) : (
-              <SectionEmptyState 
-                section="income" 
-                onAction={() => setIncomeDialogOpen(true)}
-                showSampleDataButton={true}
-              />
-            )}
-          </TabsContent>
+                              </TableCell>
+                              <TableCell>
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild><Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onClick={() => handleEditIncome(income)}><Edit className="mr-2 h-4 w-4" />{t('common.edit')}</DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => { setDeleteId(income.id); setDeleteType('income'); }} className="text-destructive"><Trash2 className="mr-2 h-4 w-4" />{t('common.delete')}</DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </Card>
+                ) : (
+                  <SectionEmptyState section="income" onAction={() => setIncomeDialogOpen(true)} showSampleDataButton={true} />
+                )}
+              </TabsContent>
 
-          <TabsContent value="projects">
-            {projectsLoading ? (
-              <Card>
-                <CardContent className="py-12 text-center text-muted-foreground">
-                  {t('common.loading')}
-                </CardContent>
-              </Card>
-            ) : projects && projects.length > 0 ? (
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {projects.map(project => (
-                  <Card key={project.id} className="hover:shadow-md transition-shadow">
-                    <CardHeader className="pb-2">
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-center gap-2">
-                          <div 
-                            className="w-3 h-3 rounded-full" 
-                            style={{ backgroundColor: project.color }}
-                          />
-                          <CardTitle className="text-lg">{project.name}</CardTitle>
-                        </div>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => handleEditProject(project)}>
-                              <Edit className="mr-2 h-4 w-4" />
-                              {t('common.edit')}
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-                      {project.client && (
-                        <CardDescription>{project.client.name}</CardDescription>
-                      )}
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-2 text-sm">
-                        {project.description && (
-                          <p className="text-muted-foreground line-clamp-2">{project.description}</p>
-                        )}
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">{t('income.budget')}:</span>
-                          <span className="font-medium">
-                            {project.budget ? `$${Number(project.budget).toFixed(2)}` : '-'}
-                          </span>
-                        </div>
-                        <Badge variant={project.status === 'active' ? 'default' : 'secondary'}>
-                          {project.status}
-                        </Badge>
-                      </div>
+              <TabsContent value="projects">
+                {projectsLoading ? (
+                  <Card><CardContent className="py-12 text-center text-muted-foreground">{t('common.loading')}</CardContent></Card>
+                ) : projects && projects.length > 0 ? (
+                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    {projects.map(project => (
+                      <Card key={project.id} className="hover:shadow-md transition-shadow">
+                        <CardHeader className="pb-2">
+                          <div className="flex items-start justify-between">
+                            <div className="flex items-center gap-2">
+                              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: project.color }} />
+                              <CardTitle className="text-lg">{project.name}</CardTitle>
+                            </div>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => handleEditProject(project)}><Edit className="mr-2 h-4 w-4" />{t('common.edit')}</DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
+                          {project.client && <CardDescription>{project.client.name}</CardDescription>}
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-2 text-sm">
+                            {project.description && <p className="text-muted-foreground line-clamp-2">{project.description}</p>}
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">{t('income.budget')}:</span>
+                              <span className="font-medium">{project.budget ? `$${Number(project.budget).toFixed(2)}` : '-'}</span>
+                            </div>
+                            <Badge variant={project.status === 'active' ? 'default' : 'secondary'}>{project.status}</Badge>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <Card className="border-dashed">
+                    <CardContent className="flex flex-col items-center justify-center py-12">
+                      <FolderKanban className="h-12 w-12 text-muted-foreground mb-4" />
+                      <p className="text-lg font-medium">{t('income.noProjects')}</p>
+                      <p className="text-sm text-muted-foreground">{t('income.createProject')}</p>
+                      <Button onClick={() => setProjectDialogOpen(true)} className="mt-4"><Plus className="mr-2 h-4 w-4" />{t('income.addFirstProject')}</Button>
                     </CardContent>
                   </Card>
-                ))}
-              </div>
-            ) : (
-              <Card className="border-dashed">
-                <CardContent className="flex flex-col items-center justify-center py-12">
-                  <FolderKanban className="h-12 w-12 text-muted-foreground mb-4" />
-                  <p className="text-lg font-medium">{t('income.noProjects')}</p>
-                  <p className="text-sm text-muted-foreground">{t('income.createProject')}</p>
-                  <Button onClick={() => setProjectDialogOpen(true)} className="mt-4">
-                    <Plus className="mr-2 h-4 w-4" />
-                    {t('income.addFirstProject')}
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
-          </TabsContent>
-        </Tabs>
+                )}
+              </TabsContent>
+            </Tabs>
+          </>
+        )}
 
         {/* Dialogs */}
         <IncomeDialog 
