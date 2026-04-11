@@ -222,17 +222,7 @@ export function ControlCenterTour({ onTabChange }: ControlCenterTourProps) {
 
     const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min;
 
-    const interval = setInterval(() => {
-      const timeLeft = animationEnd - Date.now();
-
-      if (timeLeft <= 0) {
-        clearInterval(interval);
-        return;
-      }
-
-      const particleCount = 50 * (timeLeft / duration);
-
-      // Confetti removed - routine tour action
+    // Confetti removed - routine tour action
   };
 
   const handleNext = () => {

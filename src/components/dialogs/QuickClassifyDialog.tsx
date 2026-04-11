@@ -21,7 +21,7 @@ import { ExpenseWithRelations } from '@/types/expense.types';
 import { getCategoryLabelByLanguage } from '@/lib/constants/expense-categories';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import confetti from 'canvas-confetti';
+
 
 interface QuickClassifyDialogProps {
   open: boolean;
