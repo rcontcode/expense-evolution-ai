@@ -4,6 +4,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useExpenses } from '@/hooks/data/useExpenses';
 import { Scale } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { MobileTabLayout, type MobileTab } from '@/components/mobile';
+import { PageHeader } from '@/components/PageHeader';
 
 const SmartMonthlyReport = lazy(() => import('@/components/dashboard/SmartMonthlyReport').then(m => ({ default: m.SmartMonthlyReport })));
 const IncomeVsExpensesChart = lazy(() => import('@/components/analytics/IncomeVsExpensesChart').then(m => ({ default: m.IncomeVsExpensesChart })));
@@ -42,75 +45,126 @@ const AnalyticsSkeleton = () => (
 
 export default function Analytics() {
   const { language } = useLanguage();
+  const isMobile = useIsMobile();
   const { data: allExpenses, isLoading } = useExpenses();
   const { data: stats } = useDashboardStats();
 
   return (
     <Layout>
       <div className="page-container section-gap">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 shadow-md">
-            <Scale className="h-5 w-5 text-white" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold">
-              {language === 'es' ? 'Análisis Financiero' : 'Financial Analytics'}
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              {language === 'es' ? 'Gráficos, tendencias, correlaciones y predicciones' : 'Charts, trends, correlations & predictions'}
-            </p>
-          </div>
-        </div>
+        <PageHeader
+          title={language === 'es' ? 'Análisis Financiero' : 'Financial Analytics'}
+          description={!isMobile ? (language === 'es' ? 'Gráficos, tendencias, correlaciones y predicciones' : 'Charts, trends, correlations & predictions') : undefined}
+        />
 
-        <Suspense fallback={<AnalyticsSkeleton />}>
-          <div className="space-y-6">
-            <DashboardCharts
-              categoryBreakdown={stats?.categoryBreakdown || []}
-              clientBreakdown={stats?.clientBreakdown || []}
-              monthlyTrends={stats?.monthlyTrends || []}
-              isLoading={isLoading}
+        {isMobile ? (
+          <Suspense fallback={<AnalyticsSkeleton />}>
+            <MobileTabLayout
+              tabs={[
+                {
+                  id: 'charts',
+                  label: language === 'es' ? 'Gráficos' : 'Charts',
+                  emoji: '📊',
+                  content: (
+                    <div className="space-y-3">
+                      <DashboardCharts
+                        categoryBreakdown={stats?.categoryBreakdown || []}
+                        clientBreakdown={stats?.clientBreakdown || []}
+                        monthlyTrends={stats?.monthlyTrends || []}
+                        isLoading={isLoading}
+                      />
+                      <SmartMonthlyReport />
+                      <IncomeVsExpensesChart />
+                      <SavingsRateChart />
+                      <YearOverYearComparison />
+                      <CategoryTrendsChart />
+                      <FinancialHealthRadar />
+                    </div>
+                  ),
+                },
+                {
+                  id: 'predictions',
+                  label: language === 'es' ? 'Predicciones' : 'Predictions',
+                  emoji: '🔮',
+                  content: (
+                    <div className="space-y-3">
+                      <BudgetProjectionChart />
+                      <ExpensePredictions expenses={allExpenses || []} />
+                      <CashFlowProjection />
+                      <CashFlowSankey />
+                      <TransactionTimeline />
+                    </div>
+                  ),
+                },
+                {
+                  id: 'simulator',
+                  label: language === 'es' ? 'Simulador' : 'Simulator',
+                  emoji: '🎛️',
+                  content: (
+                    <div className="space-y-3">
+                      <MoneyMomentumScore />
+                      <WhatIfSimulator />
+                      <NegotiationScriptGenerator />
+                      <ProjectProfitability />
+                      <ClientProfitability />
+                      <FinancialCorrelations />
+                    </div>
+                  ),
+                },
+              ] as MobileTab[]}
             />
-            <SmartMonthlyReport />
-            <div id="income-vs-expenses">
-              <IncomeVsExpensesChart />
+          </Suspense>
+        ) : (
+          <Suspense fallback={<AnalyticsSkeleton />}>
+            <div className="space-y-6">
+              <DashboardCharts
+                categoryBreakdown={stats?.categoryBreakdown || []}
+                clientBreakdown={stats?.clientBreakdown || []}
+                monthlyTrends={stats?.monthlyTrends || []}
+                isLoading={isLoading}
+              />
+              <SmartMonthlyReport />
+              <div id="income-vs-expenses">
+                <IncomeVsExpensesChart />
+              </div>
+              <div className="grid gap-6 lg:grid-cols-2">
+                <SavingsRateChart />
+                <YearOverYearComparison />
+              </div>
+              <div className="grid gap-6 lg:grid-cols-2">
+                <CategoryTrendsChart />
+                <FinancialHealthRadar />
+              </div>
+              <div id="cashflow">
+                <CashFlowSankey />
+              </div>
+              <div id="profitability" className="grid gap-6 lg:grid-cols-2">
+                <ProjectProfitability />
+                <ClientProfitability />
+              </div>
+              <FinancialCorrelations />
+              <div id="simulator" className="grid gap-6 lg:grid-cols-2">
+                <MoneyMomentumScore />
+                <WhatIfSimulator />
+              </div>
+              <NegotiationScriptGenerator />
+              <BudgetProjectionChart />
+              <div id="predictions" className="grid gap-6 lg:grid-cols-2">
+                <ExpensePredictions expenses={allExpenses || []} />
+                <CashFlowProjection />
+              </div>
+              <TransactionTimeline />
+              <div className="grid gap-6 lg:grid-cols-2">
+                <NetWorthTreemap />
+                <SpendingHeatmap expenses={allExpenses || []} isLoading={isLoading} />
+              </div>
+              <div className="grid gap-6 lg:grid-cols-2">
+                <SeasonalityChart expenses={allExpenses || []} isLoading={isLoading} />
+                <MonthComparisonChart expenses={allExpenses || []} isLoading={isLoading} />
+              </div>
             </div>
-            <div className="grid gap-6 lg:grid-cols-2">
-              <SavingsRateChart />
-              <YearOverYearComparison />
-            </div>
-            <div className="grid gap-6 lg:grid-cols-2">
-              <CategoryTrendsChart />
-              <FinancialHealthRadar />
-            </div>
-            <div id="cashflow">
-              <CashFlowSankey />
-            </div>
-            <div id="profitability" className="grid gap-6 lg:grid-cols-2">
-              <ProjectProfitability />
-              <ClientProfitability />
-            </div>
-            <FinancialCorrelations />
-            <div id="simulator" className="grid gap-6 lg:grid-cols-2">
-              <MoneyMomentumScore />
-              <WhatIfSimulator />
-            </div>
-            <NegotiationScriptGenerator />
-            <BudgetProjectionChart />
-            <div id="predictions" className="grid gap-6 lg:grid-cols-2">
-              <ExpensePredictions expenses={allExpenses || []} />
-              <CashFlowProjection />
-            </div>
-            <TransactionTimeline />
-            <div className="grid gap-6 lg:grid-cols-2">
-              <NetWorthTreemap />
-              <SpendingHeatmap expenses={allExpenses || []} isLoading={isLoading} />
-            </div>
-            <div className="grid gap-6 lg:grid-cols-2">
-              <SeasonalityChart expenses={allExpenses || []} isLoading={isLoading} />
-              <MonthComparisonChart expenses={allExpenses || []} isLoading={isLoading} />
-            </div>
-          </div>
-        </Suspense>
+          </Suspense>
+        )}
       </div>
     </Layout>
   );
