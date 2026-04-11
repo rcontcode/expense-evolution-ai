@@ -88,12 +88,12 @@ const POWER_PHRASES = {
  };
  
 // Fireworks burst effect
-const triggerFireworks = () => {
+const triggerFireworks = (confettiFn: (opts?: any) => void) => {
   const count = 200;
   const defaults = { origin: { y: 0.7 }, zIndex: 1000 };
 
-  function fire(particleRatio: number, opts: confetti.Options) {
-    confetti({
+  function fire(particleRatio: number, opts: any) {
+    confettiFn({
       ...defaults,
       ...opts,
       particleCount: Math.floor(count * particleRatio),
@@ -108,12 +108,12 @@ const triggerFireworks = () => {
 };
 
 // Starburst effect
-const triggerStarburst = () => {
+const triggerStarburst = (confettiFn: (opts?: any) => void) => {
   const colors = ['#FFD700', '#FFA500', '#FF6347', '#FF1493', '#9400D3', '#00CED1', '#32CD32'];
   
   for (let i = 0; i < 3; i++) {
     setTimeout(() => {
-      confetti({
+      confettiFn({
         particleCount: 80,
         spread: 360,
         origin: { x: 0.5, y: 0.5 },
