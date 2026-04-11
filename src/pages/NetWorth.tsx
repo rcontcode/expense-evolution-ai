@@ -182,123 +182,120 @@ export default function NetWorth() {
             </div>
             <Skeleton className="h-[250px] sm:h-[350px]" />
           </div>
-        ) : (
-          {isMobile ? (
-            <MobileTabLayout
-              tabs={[
-                {
-                  id: 'summary',
-                  label: language === 'es' ? 'Resumen' : 'Summary',
-                  emoji: '📊',
-                  content: (
-                    <div className="space-y-3">
-                      <NetWorthSummary 
-                        totalAssets={totalAssets}
-                        totalLiabilities={totalLiabilities}
+        ) : isMobile ? (
+          <MobileTabLayout
+            tabs={[
+              {
+                id: 'summary',
+                label: language === 'es' ? 'Resumen' : 'Summary',
+                emoji: '📊',
+                content: (
+                  <div className="space-y-3">
+                    <NetWorthSummary 
+                      totalAssets={totalAssets}
+                      totalLiabilities={totalLiabilities}
+                      snapshots={snapshots}
+                    />
+                    <div data-highlight="net-worth-chart">
+                      <NetWorthChart 
                         snapshots={snapshots}
+                        currentNetWorth={netWorth}
+                        currentAssets={totalAssets}
+                        currentLiabilities={totalLiabilities}
                       />
-                      <div data-highlight="net-worth-chart">
-                        <NetWorthChart 
-                          snapshots={snapshots}
-                          currentNetWorth={netWorth}
-                          currentAssets={totalAssets}
-                          currentLiabilities={totalLiabilities}
-                        />
-                      </div>
-                      <NetWorthVelocityTracker snapshots={snapshots} currentNetWorth={netWorth} />
                     </div>
-                  ),
-                },
-                {
-                  id: 'assets',
-                  label: language === 'es' ? 'Activos' : 'Assets',
-                  emoji: '💰',
-                  content: (
-                    <div className="space-y-3">
-                      <AssetAllocationChart assets={assets} />
-                      <div data-highlight="assets-section">
-                        <AssetsList 
-                          assets={assets}
-                          onAdd={handleAddAsset}
-                          onEdit={handleEditAsset}
-                        />
-                      </div>
+                    <NetWorthVelocityTracker snapshots={snapshots} currentNetWorth={netWorth} />
+                  </div>
+                ),
+              },
+              {
+                id: 'assets',
+                label: language === 'es' ? 'Activos' : 'Assets',
+                emoji: '💰',
+                content: (
+                  <div className="space-y-3">
+                    <AssetAllocationChart assets={assets} />
+                    <div data-highlight="assets-section">
+                      <AssetsList 
+                        assets={assets}
+                        onAdd={handleAddAsset}
+                        onEdit={handleEditAsset}
+                      />
                     </div>
-                  ),
-                },
-                {
-                  id: 'debts',
-                  label: language === 'es' ? 'Deudas' : 'Debts',
-                  emoji: '💳',
-                  content: (
-                    <div className="space-y-3">
-                      <div data-highlight="liabilities-section">
-                        <LiabilitiesList 
-                          liabilities={liabilities}
-                          onAdd={handleAddLiability}
-                          onEdit={handleEditLiability}
-                        />
-                      </div>
-                      <LegalDisclaimer variant="investment" size="compact" />
+                  </div>
+                ),
+              },
+              {
+                id: 'debts',
+                label: language === 'es' ? 'Deudas' : 'Debts',
+                emoji: '💳',
+                content: (
+                  <div className="space-y-3">
+                    <div data-highlight="liabilities-section">
+                      <LiabilitiesList 
+                        liabilities={liabilities}
+                        onAdd={handleAddLiability}
+                        onEdit={handleEditLiability}
+                      />
                     </div>
-                  ),
-                },
-              ] as MobileTab[]}
+                    <LegalDisclaimer variant="investment" size="compact" />
+                  </div>
+                ),
+              },
+            ] as MobileTab[]}
+          />
+        ) : (
+          <>
+            <NetWorthSummary 
+              totalAssets={totalAssets}
+              totalLiabilities={totalLiabilities}
+              snapshots={snapshots}
             />
-          ) : (
-            <>
-              {/* Summary Cards */}
-              <NetWorthSummary 
-                totalAssets={totalAssets}
-                totalLiabilities={totalLiabilities}
+
+            {assets.length > 0 && liabilities.length > 0 && (
+              <Alert className="border-primary/20 bg-primary/5">
+                <Lightbulb className="h-4 w-4 text-primary" />
+                <AlertDescription>
+                  <strong>Tip:</strong> Para aumentar tu patrimonio neto, enfócate en reducir deudas con alto interés 
+                  primero (método avalancha) y luego invierte la diferencia en activos que generen ingresos pasivos.
+                </AlertDescription>
+              </Alert>
+            )}
+
+            <div data-highlight="net-worth-chart">
+              <NetWorthChart 
                 snapshots={snapshots}
+                currentNetWorth={netWorth}
+                currentAssets={totalAssets}
+                currentLiabilities={totalLiabilities}
               />
+            </div>
 
-              {assets.length > 0 && liabilities.length > 0 && (
-                <Alert className="border-primary/20 bg-primary/5">
-                  <Lightbulb className="h-4 w-4 text-primary" />
-                  <AlertDescription>
-                    <strong>Tip:</strong> Para aumentar tu patrimonio neto, enfócate en reducir deudas con alto interés 
-                    primero (método avalancha) y luego invierte la diferencia en activos que generen ingresos pasivos.
-                  </AlertDescription>
-                </Alert>
-              )}
+            <NetWorthVelocityTracker snapshots={snapshots} currentNetWorth={netWorth} />
 
-              <div data-highlight="net-worth-chart">
-                <NetWorthChart 
-                  snapshots={snapshots}
-                  currentNetWorth={netWorth}
-                  currentAssets={totalAssets}
-                  currentLiabilities={totalLiabilities}
-                />
+            <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-3">
+              <div className="lg:col-span-1">
+                <AssetAllocationChart assets={assets} />
               </div>
-
-              <NetWorthVelocityTracker snapshots={snapshots} currentNetWorth={netWorth} />
-
-              <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-3">
-                <div className="lg:col-span-1">
-                  <AssetAllocationChart assets={assets} />
+              <div className="lg:col-span-2 grid gap-4 grid-cols-1 md:grid-cols-2">
+                <div data-highlight="assets-section">
+                  <AssetsList 
+                    assets={assets}
+                    onAdd={handleAddAsset}
+                    onEdit={handleEditAsset}
+                  />
                 </div>
-                <div className="lg:col-span-2 grid gap-4 grid-cols-1 md:grid-cols-2">
-                  <div data-highlight="assets-section">
-                    <AssetsList 
-                      assets={assets}
-                      onAdd={handleAddAsset}
-                      onEdit={handleEditAsset}
-                    />
-                  </div>
-                  <div data-highlight="liabilities-section">
-                    <LiabilitiesList 
-                      liabilities={liabilities}
-                      onAdd={handleAddLiability}
-                      onEdit={handleEditLiability}
-                    />
-                  </div>
+                <div data-highlight="liabilities-section">
+                  <LiabilitiesList 
+                    liabilities={liabilities}
+                    onAdd={handleAddLiability}
+                    onEdit={handleEditLiability}
+                  />
                 </div>
               </div>
-              <LegalDisclaimer variant="investment" size="compact" />
-            </>
-          )}
+            </div>
+            <LegalDisclaimer variant="investment" size="compact" />
+          </>
         )}
 
         {/* Dialogs */}
