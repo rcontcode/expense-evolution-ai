@@ -702,118 +702,211 @@ const AdminCRM = () => {
           {/* CRM Tabs */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-6 items-start">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-              <TabsList className="flex flex-wrap gap-1 p-1 bg-muted/50 rounded-xl min-h-[48px]">
-                <TabsTrigger value="home" className="flex items-center gap-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-rose-500 data-[state=active]:to-pink-600 data-[state=active]:text-white rounded-lg font-semibold text-[10px] md:text-xs">
-                  <LayoutDashboard className="h-3.5 w-3.5" />
-                  <span className="hidden md:inline">Home</span>
-                  <span className="md:hidden">🏠</span>
-                </TabsTrigger>
-                <TabsTrigger value="agenda" className="flex items-center gap-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-teal-500 data-[state=active]:to-cyan-600 data-[state=active]:text-white rounded-lg font-semibold text-[10px] md:text-xs">
-                  <Clock className="h-3.5 w-3.5" />
-                  <span className="hidden md:inline">{isEs ? 'Agenda' : 'Agenda'}</span>
-                  <span className="md:hidden">📅</span>
-                </TabsTrigger>
-                <TabsTrigger value="users" className="flex items-center gap-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-violet-500 data-[state=active]:to-purple-600 data-[state=active]:text-white rounded-lg font-semibold text-[10px] md:text-xs">
-                  <Users className="h-3.5 w-3.5" />
-                  <span className="hidden md:inline">{isEs ? 'Usuarios' : 'Users'}</span>
-                  <span className="md:hidden">👥</span>
-                </TabsTrigger>
-                <TabsTrigger value="leads" className="flex items-center gap-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-500 data-[state=active]:to-orange-500 data-[state=active]:text-white rounded-lg font-semibold text-[10px] md:text-xs">
-                  <Target className="h-3.5 w-3.5" />
-                  <span className="hidden md:inline">Leads</span>
-                  <span className="md:hidden">🎯</span>
-                </TabsTrigger>
-                <TabsTrigger value="pipeline" className="flex items-center gap-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-blue-500 data-[state=active]:text-white rounded-lg font-semibold text-[10px] md:text-xs">
-                  <span className="hidden md:inline">Pipeline</span>
-                  <span className="md:hidden">📊</span>
-                </TabsTrigger>
-                <TabsTrigger value="ranking" className="flex items-center gap-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-yellow-500 data-[state=active]:text-white rounded-lg font-semibold text-[10px] md:text-xs">
-                  <TrendingUp className="h-3.5 w-3.5" />
-                  <span className="hidden md:inline">Ranking</span>
-                  <span className="md:hidden">🏆</span>
-                </TabsTrigger>
-                <TabsTrigger value="queue" className="flex items-center gap-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-orange-500 data-[state=active]:text-white rounded-lg font-semibold text-[10px] md:text-xs relative">
-                  <Phone className="h-3.5 w-3.5" />
-                  <span className="hidden md:inline">{isEs ? 'Contactar' : 'Queue'}</span>
-                  <span className="md:hidden">📞</span>
-                  {hotCount > 0 && (
-                    <span className="absolute -top-1 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white px-1 animate-pulse">
-                      {hotCount}
-                    </span>
-                  )}
-                </TabsTrigger>
-                <TabsTrigger value="history" className="flex items-center gap-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-sky-500 data-[state=active]:to-blue-600 data-[state=active]:text-white rounded-lg font-semibold text-[10px] md:text-xs">
-                  <span className="hidden md:inline">{isEs ? 'Historial' : 'History'}</span>
-                  <span className="md:hidden">📜</span>
-                </TabsTrigger>
-                <TabsTrigger value="templates" className="flex items-center gap-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-pink-500 data-[state=active]:to-rose-500 data-[state=active]:text-white rounded-lg font-semibold text-[10px] md:text-xs">
-                  <span className="hidden md:inline">{isEs ? 'Plantillas' : 'Templates'}</span>
-                  <span className="md:hidden">📝</span>
-                </TabsTrigger>
-                <TabsTrigger value="metrics" className="flex items-center gap-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-violet-600 data-[state=active]:text-white rounded-lg font-semibold text-[10px] md:text-xs">
-                  <span className="hidden md:inline">{isEs ? 'Métricas' : 'Metrics'}</span>
-                  <span className="md:hidden">📈</span>
-                </TabsTrigger>
-                <TabsTrigger value="automation" className="flex items-center gap-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-indigo-600 data-[state=active]:text-white rounded-lg font-semibold text-[10px] md:text-xs">
-                  <Zap className="h-3.5 w-3.5" />
-                  <span className="hidden md:inline">Auto</span>
-                  <span className="md:hidden">⚡</span>
-                </TabsTrigger>
-                <TabsTrigger value="subscriptions" className="flex items-center gap-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-600 data-[state=active]:text-white rounded-lg font-semibold text-[10px] md:text-xs">
-                  <CreditCard className="h-3.5 w-3.5" />
-                  <span className="hidden md:inline">{isEs ? 'Planes' : 'Plans'}</span>
-                  <span className="md:hidden">💳</span>
-                </TabsTrigger>
-                <TabsTrigger value="revenue" className="flex items-center gap-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-emerald-600 data-[state=active]:text-white rounded-lg font-semibold text-[10px] md:text-xs">
-                  <DollarSign className="h-3.5 w-3.5" />
-                  <span className="hidden md:inline">Revenue</span>
-                  <span className="md:hidden">💵</span>
-                </TabsTrigger>
-                <TabsTrigger value="roi" className="flex items-center gap-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-lime-500 data-[state=active]:to-green-600 data-[state=active]:text-white rounded-lg font-semibold text-[10px] md:text-xs">
-                  <Target className="h-3.5 w-3.5" />
-                  <span className="hidden md:inline">ROI</span>
-                  <span className="md:hidden">💰</span>
-                </TabsTrigger>
-                <TabsTrigger value="nurturing" className="flex items-center gap-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-teal-600 data-[state=active]:text-white rounded-lg font-semibold text-[10px] md:text-xs">
-                  <span className="hidden md:inline">Nurturing</span>
-                  <span className="md:hidden">🔄</span>
-                </TabsTrigger>
-                <TabsTrigger value="emails" className="flex items-center gap-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-indigo-600 data-[state=active]:text-white rounded-lg font-semibold text-[10px] md:text-xs">
-                  <Mail className="h-3.5 w-3.5" />
-                  <span className="hidden md:inline">Emails</span>
-                  <span className="md:hidden">📧</span>
-                </TabsTrigger>
-                <TabsTrigger value="webhook" className="flex items-center gap-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-gray-500 data-[state=active]:to-slate-600 data-[state=active]:text-white rounded-lg font-semibold text-[10px] md:text-xs">
-                  <Code className="h-3.5 w-3.5" />
-                  <span className="hidden md:inline">Webhook</span>
-                  <span className="md:hidden">🔗</span>
-                </TabsTrigger>
-                <TabsTrigger value="abtests" className="flex items-center gap-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-fuchsia-500 data-[state=active]:to-pink-600 data-[state=active]:text-white rounded-lg font-semibold text-[10px] md:text-xs">
-                  <span className="hidden md:inline">A/B</span>
-                  <span className="md:hidden">🧪</span>
-                </TabsTrigger>
-                <TabsTrigger value="webhooksout" className="flex items-center gap-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-600 data-[state=active]:text-white rounded-lg font-semibold text-[10px] md:text-xs">
-                  <span className="hidden md:inline">{isEs ? 'WH Out' : 'WH Out'}</span>
-                  <span className="md:hidden">📤</span>
-                </TabsTrigger>
-                <TabsTrigger value="pnl" className="flex items-center gap-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-600 data-[state=active]:to-green-700 data-[state=active]:text-white rounded-lg font-semibold text-[10px] md:text-xs">
-                  <DollarSign className="h-3.5 w-3.5" />
-                  <span className="hidden md:inline">P&L</span>
-                  <span className="md:hidden">📊</span>
-                </TabsTrigger>
-                <TabsTrigger value="health" className="flex items-center gap-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-pink-500 data-[state=active]:to-rose-600 data-[state=active]:text-white rounded-lg font-semibold text-[10px] md:text-xs">
-                  <span className="hidden md:inline">{isEs ? 'Salud' : 'Health'}</span>
-                  <span className="md:hidden">❤️</span>
-                </TabsTrigger>
-                <TabsTrigger value="simulator" className="flex items-center gap-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-blue-600 data-[state=active]:text-white rounded-lg font-semibold text-[10px] md:text-xs">
-                  <span className="hidden md:inline">{isEs ? 'Simulador' : 'Simulator'}</span>
-                  <span className="md:hidden">🧮</span>
-                </TabsTrigger>
-                <TabsTrigger value="bi" className="flex items-center gap-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-violet-600 data-[state=active]:to-purple-700 data-[state=active]:text-white rounded-lg font-semibold text-[10px] md:text-xs">
-                  <span className="hidden md:inline">BI</span>
-                  <span className="md:hidden">🧠</span>
-                </TabsTrigger>
-              </TabsList>
+              {/* Color-grouped tabs with tooltips */}
+              <div className="space-y-2 p-3 bg-muted/30 rounded-xl border">
+                {/* Group 1: General */}
+                <div className="flex items-center gap-1 flex-wrap">
+                  <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider mr-1 min-w-[50px]">🏠 {isEs ? 'General' : 'General'}</span>
+                  {([
+                    { value: 'home', icon: <LayoutDashboard className="h-3.5 w-3.5" />, label: 'Home', emoji: '🏠', desc: isEs ? 'Panel principal con KPIs y accesos rápidos' : 'Main dashboard with KPIs and quick actions' },
+                    { value: 'agenda', icon: <Clock className="h-3.5 w-3.5" />, label: isEs ? 'Agenda' : 'Agenda', emoji: '📅', desc: isEs ? 'Follow-ups programados y vencidos' : 'Scheduled and overdue follow-ups' },
+                  ] as const).map(tab => (
+                    <Tooltip key={tab.value}>
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={() => setActiveTab(tab.value)}
+                          className={cn(
+                            'flex items-center gap-1 px-2.5 py-1.5 rounded-lg font-semibold text-[10px] md:text-xs transition-all border',
+                            activeTab === tab.value
+                              ? 'bg-gradient-to-r from-rose-500 to-pink-600 text-white border-transparent shadow-md'
+                              : 'bg-background hover:bg-muted border-transparent hover:border-border'
+                          )}
+                        >
+                          {tab.icon}
+                          <span className="hidden md:inline">{tab.label}</span>
+                          <span className="md:hidden">{tab.emoji}</span>
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" className="max-w-[220px] text-xs">
+                        <p className="font-bold">{tab.emoji} {tab.label}</p>
+                        <p className="text-muted-foreground">{tab.desc}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  ))}
+                </div>
+
+                {/* Group 2: Leads & Pipeline */}
+                <div className="flex items-center gap-1 flex-wrap">
+                  <span className="text-[9px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider mr-1 min-w-[50px]">🎯 Leads</span>
+                  {([
+                    { value: 'users', icon: <Users className="h-3.5 w-3.5" />, label: isEs ? 'Usuarios' : 'Users', emoji: '👥', desc: isEs ? 'Usuarios registrados, planes, actividad' : 'Registered users, plans, activity', gradient: 'from-violet-500 to-purple-600' },
+                    { value: 'leads', icon: <Target className="h-3.5 w-3.5" />, label: 'Leads', emoji: '🎯', desc: isEs ? 'Tabla de leads con filtros y selección múltiple' : 'Lead table with filters and multi-select', gradient: 'from-red-500 to-orange-500' },
+                    { value: 'pipeline', icon: null, label: 'Pipeline', emoji: '📊', desc: isEs ? 'Kanban: arrastra leads entre etapas' : 'Kanban: drag leads between stages', gradient: 'from-cyan-500 to-blue-500' },
+                    { value: 'ranking', icon: <TrendingUp className="h-3.5 w-3.5" />, label: 'Ranking', emoji: '🏆', desc: isEs ? 'Ranking multi-app de usuarios' : 'Multi-app user ranking', gradient: 'from-amber-500 to-yellow-500' },
+                  ] as const).map(tab => (
+                    <Tooltip key={tab.value}>
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={() => setActiveTab(tab.value)}
+                          className={cn(
+                            'flex items-center gap-1 px-2.5 py-1.5 rounded-lg font-semibold text-[10px] md:text-xs transition-all border',
+                            activeTab === tab.value
+                              ? `bg-gradient-to-r ${tab.gradient} text-white border-transparent shadow-md`
+                              : 'bg-blue-50 dark:bg-blue-950/20 hover:bg-blue-100 dark:hover:bg-blue-950/40 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800'
+                          )}
+                        >
+                          {tab.icon}
+                          <span className="hidden md:inline">{tab.label}</span>
+                          <span className="md:hidden">{tab.emoji}</span>
+                          {tab.value === 'queue' && hotCount > 0 && (
+                            <span className="flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white px-1 animate-pulse">{hotCount}</span>
+                          )}
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" className="max-w-[220px] text-xs">
+                        <p className="font-bold">{tab.emoji} {tab.label}</p>
+                        <p className="text-muted-foreground">{tab.desc}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  ))}
+                </div>
+
+                {/* Group 3: Contacto & Comunicación */}
+                <div className="flex items-center gap-1 flex-wrap">
+                  <span className="text-[9px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider mr-1 min-w-[50px]">💬 {isEs ? 'Contacto' : 'Contact'}</span>
+                  {([
+                    { value: 'queue', icon: <Phone className="h-3.5 w-3.5" />, label: isEs ? 'Contactar' : 'Queue', emoji: '📞', desc: isEs ? 'Cola inteligente para contactar leads HOT' : 'Smart queue to contact HOT leads', gradient: 'from-amber-500 to-orange-500', showHot: true },
+                    { value: 'history', icon: null, label: isEs ? 'Historial' : 'History', emoji: '📜', desc: isEs ? 'Historial de interacciones con leads' : 'Lead interaction history', gradient: 'from-sky-500 to-blue-600' },
+                    { value: 'templates', icon: null, label: isEs ? 'Plantillas' : 'Templates', emoji: '📝', desc: isEs ? 'Plantillas de WhatsApp y Email' : 'WhatsApp & Email templates', gradient: 'from-pink-500 to-rose-500' },
+                    { value: 'nurturing', icon: null, label: 'Nurturing', emoji: '🔄', desc: isEs ? 'Secuencias automáticas de seguimiento' : 'Automated follow-up sequences', gradient: 'from-cyan-500 to-teal-600' },
+                    { value: 'emails', icon: <Mail className="h-3.5 w-3.5" />, label: 'Emails', emoji: '📧', desc: isEs ? 'Dashboard de emails enviados/fallidos' : 'Sent/failed email dashboard', gradient: 'from-blue-500 to-indigo-600' },
+                  ] as const).map(tab => (
+                    <Tooltip key={tab.value}>
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={() => setActiveTab(tab.value)}
+                          className={cn(
+                            'flex items-center gap-1 px-2.5 py-1.5 rounded-lg font-semibold text-[10px] md:text-xs transition-all border relative',
+                            activeTab === tab.value
+                              ? `bg-gradient-to-r ${tab.gradient} text-white border-transparent shadow-md`
+                              : 'bg-emerald-50 dark:bg-emerald-950/20 hover:bg-emerald-100 dark:hover:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
+                          )}
+                        >
+                          {tab.icon}
+                          <span className="hidden md:inline">{tab.label}</span>
+                          <span className="md:hidden">{tab.emoji}</span>
+                          {tab.showHot && hotCount > 0 && (
+                            <span className="absolute -top-1 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white px-1 animate-pulse">{hotCount}</span>
+                          )}
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" className="max-w-[220px] text-xs">
+                        <p className="font-bold">{tab.emoji} {tab.label}</p>
+                        <p className="text-muted-foreground">{tab.desc}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  ))}
+                </div>
+
+                {/* Group 4: Métricas & Analytics */}
+                <div className="flex items-center gap-1 flex-wrap">
+                  <span className="text-[9px] font-bold text-purple-600 dark:text-purple-400 uppercase tracking-wider mr-1 min-w-[50px]">📈 {isEs ? 'Métricas' : 'Metrics'}</span>
+                  {([
+                    { value: 'metrics', icon: null, label: isEs ? 'Métricas' : 'Metrics', emoji: '📈', desc: isEs ? 'Tendencias, tasas de conversión, tiempos' : 'Trends, conversion rates, response times', gradient: 'from-indigo-500 to-violet-600' },
+                    { value: 'subscriptions', icon: <CreditCard className="h-3.5 w-3.5" />, label: isEs ? 'Planes' : 'Plans', emoji: '💳', desc: isEs ? 'Suscripciones activas por plan' : 'Active subscriptions by plan', gradient: 'from-emerald-500 to-teal-600' },
+                    { value: 'revenue', icon: <DollarSign className="h-3.5 w-3.5" />, label: 'Revenue', emoji: '💵', desc: isEs ? 'Ingresos Stripe: MRR, ARR, crecimiento' : 'Stripe revenue: MRR, ARR, growth', gradient: 'from-green-500 to-emerald-600' },
+                    { value: 'roi', icon: <Target className="h-3.5 w-3.5" />, label: 'ROI', emoji: '💰', desc: isEs ? 'ROI por fuente de lead' : 'ROI by lead source', gradient: 'from-lime-500 to-green-600' },
+                  ] as const).map(tab => (
+                    <Tooltip key={tab.value}>
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={() => setActiveTab(tab.value)}
+                          className={cn(
+                            'flex items-center gap-1 px-2.5 py-1.5 rounded-lg font-semibold text-[10px] md:text-xs transition-all border',
+                            activeTab === tab.value
+                              ? `bg-gradient-to-r ${tab.gradient} text-white border-transparent shadow-md`
+                              : 'bg-purple-50 dark:bg-purple-950/20 hover:bg-purple-100 dark:hover:bg-purple-950/40 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800'
+                          )}
+                        >
+                          {tab.icon}
+                          <span className="hidden md:inline">{tab.label}</span>
+                          <span className="md:hidden">{tab.emoji}</span>
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" className="max-w-[220px] text-xs">
+                        <p className="font-bold">{tab.emoji} {tab.label}</p>
+                        <p className="text-muted-foreground">{tab.desc}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  ))}
+                </div>
+
+                {/* Group 5: Automatización & Técnico */}
+                <div className="flex items-center gap-1 flex-wrap">
+                  <span className="text-[9px] font-bold text-orange-600 dark:text-orange-400 uppercase tracking-wider mr-1 min-w-[50px]">⚙️ {isEs ? 'Técnico' : 'Tech'}</span>
+                  {([
+                    { value: 'automation', icon: <Zap className="h-3.5 w-3.5" />, label: 'Auto', emoji: '⚡', desc: isEs ? 'Reglas automáticas por temperatura' : 'Auto rules by lead temperature', gradient: 'from-purple-500 to-indigo-600' },
+                    { value: 'webhook', icon: <Code className="h-3.5 w-3.5" />, label: 'Webhook', emoji: '🔗', desc: isEs ? 'Webhook de entrada para formularios' : 'Inbound webhook for forms', gradient: 'from-gray-500 to-slate-600' },
+                    { value: 'abtests', icon: null, label: 'A/B', emoji: '🧪', desc: isEs ? 'Pruebas A/B de emails' : 'Email A/B testing', gradient: 'from-fuchsia-500 to-pink-600' },
+                    { value: 'webhooksout', icon: null, label: 'WH Out', emoji: '📤', desc: isEs ? 'Webhooks salientes a Zapier/Make' : 'Outbound webhooks to Zapier/Make', gradient: 'from-orange-500 to-red-600' },
+                  ] as const).map(tab => (
+                    <Tooltip key={tab.value}>
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={() => setActiveTab(tab.value)}
+                          className={cn(
+                            'flex items-center gap-1 px-2.5 py-1.5 rounded-lg font-semibold text-[10px] md:text-xs transition-all border',
+                            activeTab === tab.value
+                              ? `bg-gradient-to-r ${tab.gradient} text-white border-transparent shadow-md`
+                              : 'bg-orange-50 dark:bg-orange-950/20 hover:bg-orange-100 dark:hover:bg-orange-950/40 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-800'
+                          )}
+                        >
+                          {tab.icon}
+                          <span className="hidden md:inline">{tab.label}</span>
+                          <span className="md:hidden">{tab.emoji}</span>
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" className="max-w-[220px] text-xs">
+                        <p className="font-bold">{tab.emoji} {tab.label}</p>
+                        <p className="text-muted-foreground">{tab.desc}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  ))}
+                </div>
+
+                {/* Group 6: Business Intelligence */}
+                <div className="flex items-center gap-1 flex-wrap">
+                  <span className="text-[9px] font-bold text-rose-600 dark:text-rose-400 uppercase tracking-wider mr-1 min-w-[50px]">🧠 BI</span>
+                  {([
+                    { value: 'pnl', icon: <DollarSign className="h-3.5 w-3.5" />, label: 'P&L', emoji: '📊', desc: isEs ? 'Pérdidas y Ganancias, margen neto' : 'Profit & Loss, net margin', gradient: 'from-emerald-600 to-green-700' },
+                    { value: 'health', icon: null, label: isEs ? 'Salud' : 'Health', emoji: '❤️', desc: isEs ? 'Salud del cliente, retención, churn' : 'Customer health, retention, churn', gradient: 'from-pink-500 to-rose-600' },
+                    { value: 'simulator', icon: null, label: isEs ? 'Simulador' : 'Simulator', emoji: '🧮', desc: isEs ? 'Simulador de precios y márgenes' : 'Pricing and margin simulator', gradient: 'from-cyan-500 to-blue-600' },
+                    { value: 'bi', icon: null, label: 'BI', emoji: '🧠', desc: isEs ? 'Geografía, funnel, sugerencias de pricing' : 'Geography, funnel, pricing suggestions', gradient: 'from-violet-600 to-purple-700' },
+                  ] as const).map(tab => (
+                    <Tooltip key={tab.value}>
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={() => setActiveTab(tab.value)}
+                          className={cn(
+                            'flex items-center gap-1 px-2.5 py-1.5 rounded-lg font-semibold text-[10px] md:text-xs transition-all border',
+                            activeTab === tab.value
+                              ? `bg-gradient-to-r ${tab.gradient} text-white border-transparent shadow-md`
+                              : 'bg-rose-50 dark:bg-rose-950/20 hover:bg-rose-100 dark:hover:bg-rose-950/40 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800'
+                          )}
+                        >
+                          {tab.icon}
+                          <span className="hidden md:inline">{tab.label}</span>
+                          <span className="md:hidden">{tab.emoji}</span>
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" className="max-w-[220px] text-xs">
+                        <p className="font-bold">{tab.emoji} {tab.label}</p>
+                        <p className="text-muted-foreground">{tab.desc}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  ))}
+                </div>
+              </div>
               <TabsContent value="home"><AdminCRMHome language={language} onNavigateTab={setActiveTab} /></TabsContent>
               <TabsContent value="agenda"><AdminFollowUpsAgenda language={language} /></TabsContent>
               <TabsContent value="users"><AdminUserOverview /></TabsContent>
