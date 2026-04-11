@@ -114,12 +114,7 @@ export function QuickClassifyDialog({ open, onClose, expenses }: QuickClassifyDi
   }, []);
 
   const fireCelebration = useCallback(() => {
-    confetti({
-      particleCount: 120,
-      spread: 80,
-      origin: { y: 0.6 },
-      colors: ['#10B981', '#3B82F6', '#F59E0B', '#8B5CF6'],
-    });
+    // Confetti removed - routine classification action
   }, []);
 
   const handleClassify = async () => {
