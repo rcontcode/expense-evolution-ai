@@ -198,6 +198,7 @@ export function WorkflowSummaryWidget({ className }: { className?: string }) {
   const { language } = useLanguage();
   const navigate = useNavigate();
   const { playCelebrationSound, playFullCelebration } = useCelebrationSound();
+  const { fire: confetti } = useConfetti();
   const [showCelebration, setShowCelebration] = React.useState(false);
   const [celebratedWorkflow, setCelebratedWorkflow] = React.useState<string | null>(null);
 
