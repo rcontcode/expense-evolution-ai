@@ -11,6 +11,7 @@ import {
   Receipt, Tag, ArrowRight, Zap, PartyPopper
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+
 import { useClients } from '@/hooks/data/useClients';
 import { useContracts } from '@/hooks/data/useContracts';
 import { useProjects } from '@/hooks/data/useProjects';

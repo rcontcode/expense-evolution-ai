@@ -27,7 +27,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
-import confetti from 'canvas-confetti';
+
 import { MobileCaptureStats } from '@/components/capture/MobileCaptureStats';
 import { QuickEditPanel } from '@/components/capture/QuickEditPanel';
 import { RecurringBillConfirmDialog, type RecurringBillCandidate } from '@/components/bills/RecurringBillConfirmDialog';

@@ -12,7 +12,7 @@ import { useCreateProject, useUpdateProject } from '@/hooks/data/useProjects';
 import { useAddClientToProject } from '@/hooks/data/useProjectClients';
 import { ProjectWithRelations, ProjectFormData } from '@/types/income.types';
 import { Loader2, CheckCircle2, Link2, Sparkles } from 'lucide-react';
-import confetti from 'canvas-confetti';
+
 
 interface ProjectDialogProps {
   open: boolean;

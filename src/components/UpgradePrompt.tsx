@@ -17,7 +17,7 @@ import {
 import { PlanType, PLAN_LIMITS } from '@/hooks/data/usePlanLimits';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useProfile } from '@/hooks/data/useProfile';
-import confetti from 'canvas-confetti';
+
 
 interface UpgradePromptProps {
   isOpen: boolean;

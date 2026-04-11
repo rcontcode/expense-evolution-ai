@@ -9,7 +9,7 @@ import {
   Database, Sparkles, ArrowRight, Check, Users, Receipt, 
   TrendingUp, FileText, MapPin, Target, Loader2, AlertCircle
 } from 'lucide-react';
-import confetti from 'canvas-confetti';
+
 
 interface SampleDataOfferStepProps {
   onComplete: () => void;

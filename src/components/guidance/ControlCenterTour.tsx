@@ -9,7 +9,6 @@ import {
   RefreshCw, Landmark, Briefcase, X, ChevronRight, ChevronLeft,
   Sparkles, Play, RotateCcw, PartyPopper
 } from 'lucide-react';
-import confetti from 'canvas-confetti';
 import { useCelebrationSound } from '@/hooks/utils/useCelebrationSound';
 
 interface TourStep {

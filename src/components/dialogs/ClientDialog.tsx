@@ -11,7 +11,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { FlaskConical, Loader2, CheckCircle2 } from 'lucide-react';
 import { ClientProjectsSection } from '@/components/clients/ClientProjectsSection';
-import confetti from 'canvas-confetti';
+
 import {
   AlertDialog,
   AlertDialogAction,

@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { OnboardingAmbientMusic } from '@/components/onboarding/OnboardingAmbientMusic';
 import { useAuth } from '@/contexts/AuthContext';
-import confetti from 'canvas-confetti';
+
 import { 
   Camera, Receipt, FileText, Calculator, Trophy, GraduationCap,
   BarChart3, BookOpen, Building2, CreditCard, Mic, TrendingUp,

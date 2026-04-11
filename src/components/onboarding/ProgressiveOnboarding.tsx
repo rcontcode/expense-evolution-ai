@@ -7,7 +7,6 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useOnboardingProgress, OnboardingGoal } from '@/hooks/utils/useOnboardingProgress';
 import { CheckCircle2, Circle, ArrowRight, Sparkles, X, Rocket } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import confetti from 'canvas-confetti';
 
 interface GoalCardProps {
   goal: OnboardingGoal;

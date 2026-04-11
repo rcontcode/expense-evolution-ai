@@ -15,7 +15,7 @@ import { useVoicePreferences } from '@/hooks/utils/useVoicePreferences';
 import { useVoiceAssistant } from '@/hooks/utils/useVoiceAssistant';
 import { VoiceSettingsPanel } from '@/components/chat/VoiceSettingsPanel';
 import { cn } from '@/lib/utils';
-import confetti from 'canvas-confetti';
+
 
 interface ConversationalOnboardingProps {
   onComplete: () => void;
