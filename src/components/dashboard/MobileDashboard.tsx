@@ -1,6 +1,5 @@
 import { useState, useCallback, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AnimatePresence, motion } from 'framer-motion';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useDashboardStats } from '@/hooks/data/useDashboardStats';
@@ -43,15 +42,11 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
   const savingsRate = monthlyIncome > 0 ? ((monthlyIncome - monthlyExpenses) / monthlyIncome * 100) : 0;
 
   return (
-    <div className="mobile-page mobile-gap space-y-4">
-      <div className="flex items-center justify-between">
-        <LiveClock />
-      </div>
+    <div className="space-y-3 pb-4">
+      <LiveClock />
 
-      {/* THE ONLY alert center — no more MobileAlertsBanner or NextActionBanner */}
       <DashboardNotificationHub />
 
-      {/* Onboarding (auto-hides when complete) */}
       <ProgressiveOnboarding />
 
       <MobileStatsGrid
@@ -62,74 +57,55 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
         savingsRate={savingsRate}
       />
 
-      {/* Mission Control — compact widget for mobile */}
       <MissionControl compact />
 
-      {/* VIEW TABS — above content as primary navigation */}
       <DashboardViewTabs activeTab={activeView} onTabChange={setActiveView} />
       
-      {/* Section navigation pills */}
       <MobileSectionPills activeView={activeView} />
 
-      <AnimatePresence mode="wait">
-        {activeView === 'resumen' ? (
-          <motion.div
-            key="resumen"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            transition={{ duration: 0.2 }}
-            className="space-y-4"
-          >
-            <div className="overflow-x-auto -mx-4 px-4" data-section="timeline">
-              <YearTimelineChart
-                selectedMonth={selectedMonth}
-                onMonthSelect={setSelectedMonth}
-                selectedYear={selectedYear}
-                onYearChange={setSelectedYear}
-              />
-            </div>
-
-            <MonthDetailPanel
-              year={selectedYear}
-              month={selectedMonth}
-              onAddIncome={handleAddIncome}
-              onAddExpense={handleAddExpense}
+      {/* Simple conditional render — no AnimatePresence to avoid scroll bounce */}
+      {activeView === 'resumen' ? (
+        <div className="space-y-3">
+          <div className="overflow-x-auto -mx-4 px-4" data-section="timeline">
+            <YearTimelineChart
+              selectedMonth={selectedMonth}
+              onMonthSelect={setSelectedMonth}
+              selectedYear={selectedYear}
+              onYearChange={setSelectedYear}
             />
+          </div>
 
+          <MonthDetailPanel
+            year={selectedYear}
+            month={selectedMonth}
+            onAddIncome={handleAddIncome}
+            onAddExpense={handleAddExpense}
+          />
+
+          <Suspense fallback={null}>
+            <LazyBankingSummaryCard compact />
+          </Suspense>
+
+          <Suspense fallback={null}>
+            <LazyFinancialNarrative />
+          </Suspense>
+
+          <div data-section="gamification">
+            <ProfileCompletionNudge />
+            <DashboardGamificationWidget compact={true} />
+          </div>
+
+          <div data-section="ecosystem">
             <Suspense fallback={null}>
-              <LazyBankingSummaryCard compact />
+              <LazyEcosystemWidgets />
             </Suspense>
-
-            <Suspense fallback={null}>
-              <LazyFinancialNarrative />
-            </Suspense>
-
-            <div data-section="gamification">
-              <ProfileCompletionNudge />
-              <DashboardGamificationWidget compact={true} />
-            </div>
-
-            <div data-section="ecosystem">
-              <Suspense fallback={null}>
-                <LazyEcosystemWidgets />
-              </Suspense>
-            </div>
-          </motion.div>
-        ) : (
-          <motion.div
-            key="control"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 20 }}
-            transition={{ duration: 0.2 }}
-          >
-            <Suspense fallback={<Skeleton className="h-96" />}>
-              <OrganizedDashboard />
-            </Suspense>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          </div>
+        </div>
+      ) : (
+        <Suspense fallback={<Skeleton className="h-96" />}>
+          <OrganizedDashboard />
+        </Suspense>
+      )}
     </div>
   );
 }
