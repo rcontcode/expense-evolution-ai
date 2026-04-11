@@ -244,7 +244,7 @@ export function PageHeader({ title, description, showBack = true, children }: Pa
                   <ChevronLeft className="h-5 w-5" />
                 </Button>
               )}
-              <h1 className="text-xl font-bold tracking-tight truncate">{title}</h1>
+              <h1 className="text-lg font-bold tracking-tight truncate">{title}</h1>
             </div>
             <div className="flex items-center gap-1.5 shrink-0">
               {children}

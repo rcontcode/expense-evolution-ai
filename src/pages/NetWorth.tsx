@@ -27,6 +27,7 @@ import { Button } from '@/components/ui/button';
 import { Lightbulb, Sparkles, Plus, Wallet, TrendingUp, RefreshCw } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { MobileTabLayout, type MobileTab } from '@/components/mobile';
 import { LegalDisclaimer } from '@/components/ui/legal-disclaimer';
 
 export default function NetWorth() {
@@ -118,6 +119,7 @@ export default function NetWorth() {
   };
 
   const isLoading = assetsLoading || liabilitiesLoading || snapshotsLoading;
+  const isMobile = useIsMobile();
 
   // Show investment onboarding wizard
   if (showInvestmentOnboarding) {
@@ -132,8 +134,6 @@ export default function NetWorth() {
       </Layout>
     );
   }
-
-  const isMobile = useIsMobile();
 
   return (
     <Layout>
@@ -181,17 +181,77 @@ export default function NetWorth() {
             </div>
             <Skeleton className="h-[250px] sm:h-[350px]" />
           </div>
+        ) : isMobile ? (
+          <MobileTabLayout
+            tabs={[
+              {
+                id: 'summary',
+                label: language === 'es' ? 'Resumen' : 'Summary',
+                emoji: '📊',
+                content: (
+                  <div className="space-y-3">
+                    <NetWorthSummary 
+                      totalAssets={totalAssets}
+                      totalLiabilities={totalLiabilities}
+                      snapshots={snapshots}
+                    />
+                    <div data-highlight="net-worth-chart">
+                      <NetWorthChart 
+                        snapshots={snapshots}
+                        currentNetWorth={netWorth}
+                        currentAssets={totalAssets}
+                        currentLiabilities={totalLiabilities}
+                      />
+                    </div>
+                    <NetWorthVelocityTracker snapshots={snapshots} currentNetWorth={netWorth} />
+                  </div>
+                ),
+              },
+              {
+                id: 'assets',
+                label: language === 'es' ? 'Activos' : 'Assets',
+                emoji: '💰',
+                content: (
+                  <div className="space-y-3">
+                    <AssetAllocationChart assets={assets} />
+                    <div data-highlight="assets-section">
+                      <AssetsList 
+                        assets={assets}
+                        onAdd={handleAddAsset}
+                        onEdit={handleEditAsset}
+                      />
+                    </div>
+                  </div>
+                ),
+              },
+              {
+                id: 'debts',
+                label: language === 'es' ? 'Deudas' : 'Debts',
+                emoji: '💳',
+                content: (
+                  <div className="space-y-3">
+                    <div data-highlight="liabilities-section">
+                      <LiabilitiesList 
+                        liabilities={liabilities}
+                        onAdd={handleAddLiability}
+                        onEdit={handleEditLiability}
+                      />
+                    </div>
+                    <LegalDisclaimer variant="investment" size="compact" />
+                  </div>
+                ),
+              },
+            ] as MobileTab[]}
+          />
         ) : (
           <>
-            {/* Summary Cards */}
             <NetWorthSummary 
               totalAssets={totalAssets}
               totalLiabilities={totalLiabilities}
               snapshots={snapshots}
             />
 
-            {/* Tip - hidden on mobile */}
-            {!isMobile && assets.length > 0 && liabilities.length > 0 && (
+            {assets.length > 0 && liabilities.length > 0 && (
               <Alert className="border-primary/20 bg-primary/5">
                 <Lightbulb className="h-4 w-4 text-primary" />
                 <AlertDescription>
@@ -201,7 +261,6 @@ export default function NetWorth() {
               </Alert>
             )}
 
-            {/* Evolution Chart */}
             <div data-highlight="net-worth-chart">
               <NetWorthChart 
                 snapshots={snapshots}
@@ -211,10 +270,8 @@ export default function NetWorth() {
               />
             </div>
 
-            {/* Velocity Tracker */}
             <NetWorthVelocityTracker snapshots={snapshots} currentNetWorth={netWorth} />
 
-            {/* Asset Allocation + Lists */}
             <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-3">
               <div className="lg:col-span-1">
                 <AssetAllocationChart assets={assets} />

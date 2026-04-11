@@ -31,6 +31,7 @@ import { SectionEmptyState } from '@/components/guidance/SectionEmptyState';
 import { MentorQuoteBanner } from '@/components/MentorQuoteBanner';
 import { PageHeader } from '@/components/PageHeader';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { MobileTabLayout, type MobileTab } from '@/components/mobile';
 import { MobileActionBar } from '@/components/mobile';
 import { useDeleteExpense } from '@/hooks/data/useExpenses';
 import { ExpenseInsightsSummary } from '@/components/expenses/ExpenseInsightsSummary';
@@ -270,74 +271,148 @@ export default function Expenses() {
             </>
           )}
 
-          {/* Quick Insights Summary */}
-          {allExpenses && allExpenses.length > 0 && (
-            <ExpenseInsightsSummary expenses={allExpenses} />
-          )}
-
-          <div data-highlight="expense-filters">
-            <ExpenseFilters filters={filters} onChange={setFilters} />
-          </div>
-
-          {/* Health Panel - Data quality issues */}
-          {allExpenses && allExpenses.length > 0 && (
-            <ExpenseHealthPanel
-              expenses={allExpenses}
-              duplicates={duplicates}
-              onOpenClassify={() => setQuickClassifyOpen(true)}
-              onOpenLinkReceipt={handleOpenLinkReceipt}
-              onSelectExpenses={handleSelectExpenses}
-              onDeleteDuplicate={handleDeleteDuplicate}
+          {/* Mobile: tabbed layout to avoid endless scrolling */}
+          {isMobile ? (
+            <MobileTabLayout
+              tabs={[
+                {
+                  id: 'list',
+                  label: language === 'es' ? 'Lista' : 'List',
+                  emoji: '📋',
+                  content: (
+                    <div className="space-y-3">
+                      <div data-highlight="expense-filters">
+                        <ExpenseFilters filters={filters} onChange={setFilters} />
+                      </div>
+                      {isLoading ? (
+                        <Card className="border-dashed">
+                          <CardContent className="flex items-center justify-center py-8">
+                            <p className="text-muted-foreground text-sm">{t('expenses.loadingExpenses')}</p>
+                          </CardContent>
+                        </Card>
+                      ) : expenses && expenses.length > 0 ? (
+                        <div data-highlight="expenses-table">
+                          <ExpensesTable
+                            expenses={expenses}
+                            onEdit={handleEdit}
+                            selectedIds={selectedIds}
+                            onSelectionChange={setSelectedIds}
+                          />
+                        </div>
+                      ) : (
+                        <SectionEmptyState 
+                          section="expenses" 
+                          onAction={handleCreate}
+                          secondaryAction={{
+                            label: { es: 'Captura Rápida', en: 'Quick Capture' },
+                            onClick: () => setQuickCaptureOpen(true)
+                          }}
+                          showSampleDataButton={true}
+                        />
+                      )}
+                    </div>
+                  ),
+                },
+                {
+                  id: 'insights',
+                  label: language === 'es' ? 'Insights' : 'Insights',
+                  emoji: '💡',
+                  content: (
+                    <div className="space-y-3">
+                      {allExpenses && allExpenses.length > 0 && (
+                        <ExpenseInsightsSummary expenses={allExpenses} />
+                      )}
+                      {allExpenses && allExpenses.length > 0 && (
+                        <ExpenseHealthPanel
+                          expenses={allExpenses}
+                          duplicates={duplicates}
+                          onOpenClassify={() => setQuickClassifyOpen(true)}
+                          onOpenLinkReceipt={handleOpenLinkReceipt}
+                          onSelectExpenses={handleSelectExpenses}
+                          onDeleteDuplicate={handleDeleteDuplicate}
+                        />
+                      )}
+                      {allExpenses && allExpenses.length > 5 && <VendorIntelligenceAnalyzer />}
+                      {allExpenses && allExpenses.length > 10 && <SpendingAnomalyDetector />}
+                      <ExpenseReviewCenter
+                        expenses={allExpenses || []}
+                        onExportReady={() => setExportDialogOpen(true)}
+                      />
+                    </div>
+                  ),
+                },
+                {
+                  id: 'calendar',
+                  label: language === 'es' ? 'Calendario' : 'Calendar',
+                  emoji: '📅',
+                  content: (
+                    <div className="space-y-3">
+                      {allExpenses && allExpenses.length > 5 && <MoneyCalendarHeatmap />}
+                    </div>
+                  ),
+                },
+              ] as MobileTab[]}
             />
+          ) : (
+            <>
+              {/* Quick Insights Summary */}
+              {allExpenses && allExpenses.length > 0 && (
+                <ExpenseInsightsSummary expenses={allExpenses} />
+              )}
+
+              <div data-highlight="expense-filters">
+                <ExpenseFilters filters={filters} onChange={setFilters} />
+              </div>
+
+              {/* Health Panel - Data quality issues */}
+              {allExpenses && allExpenses.length > 0 && (
+                <ExpenseHealthPanel
+                  expenses={allExpenses}
+                  duplicates={duplicates}
+                  onOpenClassify={() => setQuickClassifyOpen(true)}
+                  onOpenLinkReceipt={handleOpenLinkReceipt}
+                  onSelectExpenses={handleSelectExpenses}
+                  onDeleteDuplicate={handleDeleteDuplicate}
+                />
+              )}
+
+              {allExpenses && allExpenses.length > 5 && <MoneyCalendarHeatmap />}
+              {allExpenses && allExpenses.length > 5 && <VendorIntelligenceAnalyzer />}
+              {allExpenses && allExpenses.length > 10 && <SpendingAnomalyDetector />}
+
+              <ExpenseReviewCenter
+                expenses={allExpenses || []}
+                onExportReady={() => setExportDialogOpen(true)}
+              />
+
+              {isLoading ? (
+                <Card className="border-dashed">
+                  <CardContent className="flex items-center justify-center py-8 sm:py-12">
+                    <p className="text-muted-foreground text-sm">{t('expenses.loadingExpenses')}</p>
+                  </CardContent>
+                </Card>
+              ) : expenses && expenses.length > 0 ? (
+                <div data-highlight="expenses-table">
+                  <ExpensesTable
+                    expenses={expenses}
+                    onEdit={handleEdit}
+                    selectedIds={selectedIds}
+                    onSelectionChange={setSelectedIds}
+                  />
+                </div>
+              ) : (
+                <SectionEmptyState 
+                  section="expenses" 
+                  onAction={handleCreate}
+                  secondaryAction={{
+                    label: { es: 'Captura Rápida', en: 'Quick Capture' },
+                    onClick: () => setQuickCaptureOpen(true)
+                  }}
+                  showSampleDataButton={true}
+                />
+              )}
+            </>
           )}
-
-          {/* Money Calendar Heatmap */}
-          {allExpenses && allExpenses.length > 5 && (
-            <MoneyCalendarHeatmap />
-          )}
-
-          {/* Vendor Intelligence */}
-          {allExpenses && allExpenses.length > 5 && (
-            <VendorIntelligenceAnalyzer />
-          )}
-
-          {/* Spending Anomaly Detector */}
-          {allExpenses && allExpenses.length > 10 && (
-            <SpendingAnomalyDetector />
-          )}
-
-          {/* Unified Review Center */}
-          <ExpenseReviewCenter
-            expenses={allExpenses || []}
-            onExportReady={() => setExportDialogOpen(true)}
-          />
-
-        {isLoading ? (
-          <Card className="border-dashed">
-            <CardContent className="flex items-center justify-center py-8 sm:py-12">
-              <p className="text-muted-foreground text-sm">{t('expenses.loadingExpenses')}</p>
-            </CardContent>
-          </Card>
-        ) : expenses && expenses.length > 0 ? (
-          <div data-highlight="expenses-table">
-            <ExpensesTable
-              expenses={expenses}
-              onEdit={handleEdit}
-              selectedIds={selectedIds}
-              onSelectionChange={setSelectedIds}
-            />
-          </div>
-        ) : (
-          <SectionEmptyState 
-            section="expenses" 
-            onAction={handleCreate}
-            secondaryAction={{
-              label: { es: 'Captura Rápida', en: 'Quick Capture' },
-              onClick: () => setQuickCaptureOpen(true)
-            }}
-            showSampleDataButton={true}
-          />
-        )}
 
         {/* Bulk Actions floating bar */}
         <ExpenseBulkActions

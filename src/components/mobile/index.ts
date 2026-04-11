@@ -6,3 +6,5 @@ export { SwipeableCard } from './SwipeableCard';
 export { QuickActionsDrawer } from './QuickActionsDrawer';
 export { MobileMenuEntitySelector } from './MobileMenuEntitySelector';
 export { MobileMenuLanguageSelector } from './MobileMenuLanguageSelector';
+export { MobileTabLayout } from './MobileTabLayout';
+export type { MobileTab } from './MobileTabLayout';

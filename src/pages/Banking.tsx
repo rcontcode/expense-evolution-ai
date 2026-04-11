@@ -19,6 +19,7 @@ import { Upload, Search, AlertTriangle, TrendingDown } from 'lucide-react';
 import { PageHeader } from '@/components/PageHeader';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { BankingInsightsSummary } from '@/components/banking/BankingInsightsSummary';
+import { MobileTabLayout, type MobileTab } from '@/components/mobile';
 
 export default function Banking() {
   const { language } = useLanguage();
@@ -56,31 +57,69 @@ export default function Banking() {
             <BankingIntegrationGuide onImportClick={() => setImportDialogOpen(true)} />
           </div>
         )}
-        
-        <BankingInsightsSummary />
 
-        {/* Smart Transaction Summary - forest view */}
-        <BankTransactionSummary />
-
-        <BankImportHistory />
-
-        <SmartSearchChat />
-
-        <div className="grid gap-4 lg:grid-cols-2">
-          <SpendingVelocityMonitor />
-          <CashFlowRunwayCalculator />
-        </div>
-
-        <div className="grid gap-4 lg:grid-cols-2">
-          <WeeklySpendingDigest />
-          <MerchantIntelligence />
-        </div>
-
-        <BalanceDateLookup />
-
-        <div data-highlight="bank-analysis-dashboard">
-          <BankAnalysisDashboard onImportClick={() => setImportDialogOpen(true)} />
-        </div>
+        {isMobile ? (
+          <MobileTabLayout
+            tabs={[
+              {
+                id: 'summary',
+                label: language === 'es' ? 'Resumen' : 'Summary',
+                emoji: '📊',
+                content: (
+                  <div className="space-y-3">
+                    <BankingInsightsSummary />
+                    <BankTransactionSummary />
+                    <BankImportHistory />
+                  </div>
+                ),
+              },
+              {
+                id: 'tools',
+                label: language === 'es' ? 'Herramientas' : 'Tools',
+                emoji: '🔧',
+                content: (
+                  <div className="space-y-3">
+                    <SmartSearchChat />
+                    <SpendingVelocityMonitor />
+                    <CashFlowRunwayCalculator />
+                    <WeeklySpendingDigest />
+                    <MerchantIntelligence />
+                    <BalanceDateLookup />
+                  </div>
+                ),
+              },
+              {
+                id: 'analysis',
+                label: language === 'es' ? 'Análisis' : 'Analysis',
+                emoji: '📈',
+                content: (
+                  <div data-highlight="bank-analysis-dashboard">
+                    <BankAnalysisDashboard onImportClick={() => setImportDialogOpen(true)} />
+                  </div>
+                ),
+              },
+            ] as MobileTab[]}
+          />
+        ) : (
+          <>
+            <BankingInsightsSummary />
+            <BankTransactionSummary />
+            <BankImportHistory />
+            <SmartSearchChat />
+            <div className="grid gap-4 lg:grid-cols-2">
+              <SpendingVelocityMonitor />
+              <CashFlowRunwayCalculator />
+            </div>
+            <div className="grid gap-4 lg:grid-cols-2">
+              <WeeklySpendingDigest />
+              <MerchantIntelligence />
+            </div>
+            <BalanceDateLookup />
+            <div data-highlight="bank-analysis-dashboard">
+              <BankAnalysisDashboard onImportClick={() => setImportDialogOpen(true)} />
+            </div>
+          </>
+        )}
 
         <BankImportDialog open={importDialogOpen} onClose={() => setImportDialogOpen(false)} />
       </div>
