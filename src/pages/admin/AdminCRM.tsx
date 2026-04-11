@@ -773,7 +773,7 @@ const AdminCRM = () => {
                 <div className="flex items-center gap-1 flex-wrap">
                   <span className="text-[9px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider mr-1 min-w-[50px]">💬 {isEs ? 'Contacto' : 'Contact'}</span>
                   {([
-                    { value: 'queue', icon: <Phone className="h-3.5 w-3.5" />, label: isEs ? 'Contactar' : 'Queue', emoji: '📞', desc: isEs ? 'Cola inteligente para contactar leads HOT' : 'Smart queue to contact HOT leads', gradient: 'from-amber-500 to-orange-500', showHot: true },
+                    { value: 'queue', icon: <Phone className="h-3.5 w-3.5" />, label: isEs ? 'Contactar' : 'Queue', emoji: '📞', desc: isEs ? 'Cola inteligente para contactar leads HOT' : 'Smart queue to contact HOT leads', gradient: 'from-amber-500 to-orange-500' },
                     { value: 'history', icon: null, label: isEs ? 'Historial' : 'History', emoji: '📜', desc: isEs ? 'Historial de interacciones con leads' : 'Lead interaction history', gradient: 'from-sky-500 to-blue-600' },
                     { value: 'templates', icon: null, label: isEs ? 'Plantillas' : 'Templates', emoji: '📝', desc: isEs ? 'Plantillas de WhatsApp y Email' : 'WhatsApp & Email templates', gradient: 'from-pink-500 to-rose-500' },
                     { value: 'nurturing', icon: null, label: 'Nurturing', emoji: '🔄', desc: isEs ? 'Secuencias automáticas de seguimiento' : 'Automated follow-up sequences', gradient: 'from-cyan-500 to-teal-600' },
