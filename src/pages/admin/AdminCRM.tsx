@@ -793,7 +793,7 @@ const AdminCRM = () => {
                           {tab.icon}
                           <span className="hidden md:inline">{tab.label}</span>
                           <span className="md:hidden">{tab.emoji}</span>
-                          {tab.showHot && hotCount > 0 && (
+                          {tab.value === 'queue' && hotCount > 0 && (
                             <span className="absolute -top-1 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white px-1 animate-pulse">{hotCount}</span>
                           )}
                         </button>
