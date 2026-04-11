@@ -5,7 +5,7 @@ import { useUnlockAchievement } from './useGamification';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCelebrationSound } from '@/hooks/utils/useCelebrationSound';
-import confetti from 'canvas-confetti';
+import { useConfetti } from '@/hooks/utils/useConfetti';
 
 interface GoalNotificationsProps {
   savingsGoals: any[];
@@ -18,8 +18,8 @@ const PHOENIX_COLORS = ['#FACC15', '#F59E0B', '#EF4444', '#FB923C', '#FEF08A'];
 const GOLDEN_COLORS = ['#FACC15', '#F59E0B', '#EAB308', '#FEF08A', '#FDE047'];
 
 // Celebrate goal completion with phoenix-themed confetti
-const celebrateGoal = () => {
-  confetti({
+const celebrateGoal = (fire: (opts?: any) => void) => {
+  fire({
     particleCount: 100,
     spread: 70,
     origin: { y: 0.6 },
@@ -28,19 +28,19 @@ const celebrateGoal = () => {
 };
 
 // Achievement celebration with phoenix rebirth effect
-const celebrateAchievement = () => {
+const celebrateAchievement = (fire: (opts?: any) => void) => {
   const duration = 3000;
   const end = Date.now() + duration;
 
   const frame = () => {
-    confetti({
+    fire({
       particleCount: 2,
       angle: 60,
       spread: 55,
       origin: { x: 0 },
       colors: PHOENIX_COLORS
     });
-    confetti({
+    fire({
       particleCount: 2,
       angle: 120,
       spread: 55,
@@ -57,9 +57,9 @@ const celebrateAchievement = () => {
 };
 
 // Golden rebirth celebration for major achievements
-const celebrateRebirth = () => {
+const celebrateRebirth = (fire: (opts?: any) => void) => {
   // First burst - flames
-  confetti({
+  fire({
     particleCount: 60,
     spread: 50,
     origin: { y: 0.7 },
@@ -68,7 +68,7 @@ const celebrateRebirth = () => {
   
   // Second burst - golden rebirth
   setTimeout(() => {
-    confetti({
+    fire({
       particleCount: 150,
       spread: 100,
       origin: { y: 0.5 },
@@ -97,6 +97,7 @@ export function useGoalNotifications({ savingsGoals, investmentGoals, userLevel 
   const { user } = useAuth();
   const unlockAchievement = useUnlockAchievement();
   const { playCelebrationSound, playFullCelebration, playSuccessSound } = useCelebrationSound();
+  const { fire } = useConfetti();
   const previousGoalsRef = useRef<Map<string, number>>(new Map());
   const notifiedMilestonesRef = useRef<Set<string>>(new Set());
   const hasInitialized = useRef(false);
@@ -217,7 +218,7 @@ export function useGoalNotifications({ savingsGoals, investmentGoals, userLevel 
           if (previousProgress < milestone && currentProgress >= milestone) {
             if (milestone === 100) {
               // Goal completed! Phoenix rebirth celebration
-              celebrateRebirth();
+              celebrateRebirth(fire);
               playFullCelebration();
               toast.success(
                 `🔥➜✨ ${language === 'es' ? '¡Has renacido!' : 'You have been reborn!'} ${goal.name}`,
@@ -377,6 +378,7 @@ export function useLevelUpNotification(userLevel: any) {
   const { t, language } = useLanguage();
   const { user } = useAuth();
   const { playFullCelebration } = useCelebrationSound();
+  const { fire } = useConfetti();
   const previousLevelRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -385,7 +387,7 @@ export function useLevelUpNotification(userLevel: any) {
     if (previousLevelRef.current !== null && userLevel.level > previousLevelRef.current) {
       // Level up! Phoenix rebirth celebration
       playFullCelebration();
-      celebrateRebirth();
+      celebrateRebirth(fire);
 
       toast.success(
         `🔥➜✨ ${language === 'es' ? '¡Nivel Alcanzado!' : 'Level Up!'}`,
@@ -416,13 +418,14 @@ export function useAchievementNotification() {
   const { user } = useAuth();
   const { language } = useLanguage();
   const { playCelebrationSound } = useCelebrationSound();
+  const { fire } = useConfetti();
 
   const notifyAchievement = useCallback(async (achievementKey: string, achievementName: string) => {
     if (!user) return;
 
     // Phoenix-themed celebration
     playCelebrationSound();
-    celebrateAchievement();
+    celebrateAchievement(fire);
 
     toast.success(
       language === 'es' ? '🔥 ¡Logro desbloqueado!' : '🔥 Achievement unlocked!',

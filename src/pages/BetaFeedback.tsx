@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import confetti from 'canvas-confetti';
+
 import { 
   Star, 
   MessageSquare, 
@@ -267,12 +267,7 @@ const BetaFeedback = () => {
   const text = t[language];
 
   const triggerConfetti = () => {
-    confetti({
-      particleCount: 100,
-      spread: 70,
-      origin: { y: 0.6 },
-      colors: ['#f59e0b', '#10b981', '#8b5cf6', '#ec4899']
-    });
+    // Confetti removed - routine feedback action
   };
 
   const handleSubmitFeedback = async () => {

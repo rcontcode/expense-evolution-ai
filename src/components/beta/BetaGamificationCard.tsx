@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import confetti from 'canvas-confetti';
+import { useConfetti } from '@/hooks/utils/useConfetti';
 import {
   Trophy,
   Star,
@@ -37,6 +37,7 @@ import { BetaExpirationBadge } from './BetaExpirationBadge';
 
 export const BetaGamificationCard = () => {
   const { language } = useLanguage();
+  const { fire: confetti } = useConfetti();
   const { data: profile } = useProfile();
   const {
     userPoints,

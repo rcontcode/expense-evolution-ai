@@ -8,7 +8,7 @@ import { PhoenixScoreAnimation } from "./PhoenixScoreAnimation";
 import { QuizRecommendations } from "./QuizRecommendations";
 import { UrgencyBanner } from "@/components/landing/UrgencyBanner";
 import type { QuizResult, ReferralInfo } from "@/pages/FinancialQuiz";
-import confetti from "canvas-confetti";
+import { useConfetti } from '@/hooks/utils/useConfetti';
 
 interface QuizResultsProps {
   result: QuizResult;
@@ -314,6 +314,7 @@ const ScoreRing = ({ score, color }: { score: number; color: string }) => {
 
 export const QuizResults = ({ result, onRetake, referralInfo, onNavigateToAuth }: QuizResultsProps) => {
   const { language } = useLanguage();
+  const { fire: confetti } = useConfetti();
   const navigate = useNavigate();
   const [animatedScore, setAnimatedScore] = useState(0);
   const [showConfetti, setShowConfetti] = useState(false);

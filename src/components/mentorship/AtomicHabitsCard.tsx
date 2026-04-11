@@ -34,7 +34,7 @@ import {
   Rocket
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import confetti from 'canvas-confetti';
+import { useConfetti } from '@/hooks/utils/useConfetti';
 
 interface AtomicHabitTip {
   id: string;
@@ -260,6 +260,7 @@ const LAW_INFO = {
 
 export function AtomicHabitsCard() {
   const { language } = useLanguage();
+  const { fire: confetti } = useConfetti();
   const { playCelebrationSound } = useCelebrationSound();
   const [selectedLaw, setSelectedLaw] = useState<'all' | 'obvious' | 'attractive' | 'easy' | 'satisfying'>('all');
   const [showCelebration, setShowCelebration] = useState(false);

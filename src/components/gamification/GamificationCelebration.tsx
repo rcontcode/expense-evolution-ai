@@ -1,6 +1,6 @@
  import { useEffect, useState } from 'react';
  import { motion, AnimatePresence } from 'framer-motion';
- import confetti from 'canvas-confetti';
+ import { useConfetti } from '@/hooks/utils/useConfetti';
  import { X, Star, Trophy, Sparkles, Crown, Zap, Flame, Gift, Target, TrendingUp } from 'lucide-react';
  import { useCelebrationSound } from '@/hooks/utils/useCelebrationSound';
  import { useLanguage } from '@/contexts/LanguageContext';
@@ -88,12 +88,12 @@ const POWER_PHRASES = {
  };
  
 // Fireworks burst effect
-const triggerFireworks = () => {
+const triggerFireworks = (confettiFn: (opts?: any) => void) => {
   const count = 200;
   const defaults = { origin: { y: 0.7 }, zIndex: 1000 };
 
-  function fire(particleRatio: number, opts: confetti.Options) {
-    confetti({
+  function fire(particleRatio: number, opts: any) {
+    confettiFn({
       ...defaults,
       ...opts,
       particleCount: Math.floor(count * particleRatio),
@@ -108,12 +108,12 @@ const triggerFireworks = () => {
 };
 
 // Starburst effect
-const triggerStarburst = () => {
+const triggerStarburst = (confettiFn: (opts?: any) => void) => {
   const colors = ['#FFD700', '#FFA500', '#FF6347', '#FF1493', '#9400D3', '#00CED1', '#32CD32'];
   
   for (let i = 0; i < 3; i++) {
     setTimeout(() => {
-      confetti({
+      confettiFn({
         particleCount: 80,
         spread: 360,
         origin: { x: 0.5, y: 0.5 },
@@ -130,6 +130,7 @@ const triggerStarburst = () => {
 
  export function GamificationCelebration({ celebration, onClose }: GamificationCelebrationProps) {
    const { language } = useLanguage();
+   const { fire: confetti } = useConfetti();
    const { playFullCelebration } = useCelebrationSound();
    const [showContent, setShowContent] = useState(false);
    const [randomQuote, setRandomQuote] = useState<typeof CELEBRATION_QUOTES.es[0] | null>(null);
@@ -150,8 +151,8 @@ const triggerStarburst = () => {
       setPowerPhrase(phrases[Math.floor(Math.random() * phrases.length)]);
       
       // Trigger multiple celebration effects
-      triggerFireworks();
-      setTimeout(triggerStarburst, 500);
+      triggerFireworks(confetti);
+      setTimeout(() => triggerStarburst(confetti), 500);
       
       // Show power phrase
       setTimeout(() => setShowPowerPhrase(true), 100);

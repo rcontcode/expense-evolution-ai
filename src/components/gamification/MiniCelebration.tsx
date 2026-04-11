@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, Star, Zap, Trophy, Flame } from 'lucide-react';
-import confetti from 'canvas-confetti';
+import { useConfetti } from '@/hooks/utils/useConfetti';
 
 export type CelebrationType = 'xp' | 'streak' | 'milestone' | 'achievement' | 'level';
 
@@ -58,6 +58,7 @@ export function MiniCelebration({
   duration = 3000,
   onComplete
 }: MiniCelebrationProps) {
+  const { fire: confetti } = useConfetti();
   const [isVisible, setIsVisible] = useState(true);
   const config = celebrationConfig[type];
   const Icon = config.icon;

@@ -11,6 +11,7 @@ import {
   Receipt, Tag, ArrowRight, Zap, PartyPopper
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+
 import { useClients } from '@/hooks/data/useClients';
 import { useContracts } from '@/hooks/data/useContracts';
 import { useProjects } from '@/hooks/data/useProjects';
@@ -20,7 +21,7 @@ import { ExpenseWithRelations } from '@/types/expense.types';
 import { getCategoryLabelByLanguage } from '@/lib/constants/expense-categories';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import confetti from 'canvas-confetti';
+
 
 interface QuickClassifyDialogProps {
   open: boolean;
@@ -113,12 +114,7 @@ export function QuickClassifyDialog({ open, onClose, expenses }: QuickClassifyDi
   }, []);
 
   const fireCelebration = useCallback(() => {
-    confetti({
-      particleCount: 120,
-      spread: 80,
-      origin: { y: 0.6 },
-      colors: ['#10B981', '#3B82F6', '#F59E0B', '#8B5CF6'],
-    });
+    // Confetti removed - routine classification action
   }, []);
 
   const handleClassify = async () => {

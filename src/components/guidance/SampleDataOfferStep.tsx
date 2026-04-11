@@ -9,7 +9,7 @@ import {
   Database, Sparkles, ArrowRight, Check, Users, Receipt, 
   TrendingUp, FileText, MapPin, Target, Loader2, AlertCircle
 } from 'lucide-react';
-import confetti from 'canvas-confetti';
+
 
 interface SampleDataOfferStepProps {
   onComplete: () => void;
@@ -97,13 +97,7 @@ export function SampleDataOfferStep({ onComplete, onSkip, userName }: SampleData
       setCurrentStep(GENERATION_STEPS.length - 1);
       setShowSuccess(true);
 
-      // Celebration confetti
-      confetti({
-        particleCount: 100,
-        spread: 70,
-        origin: { y: 0.6 },
-        colors: ['#10b981', '#3b82f6', '#f59e0b']
-      });
+      // Confetti removed - routine action
 
       setTimeout(() => {
         onComplete();

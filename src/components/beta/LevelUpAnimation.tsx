@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import confetti from 'canvas-confetti';
+import { useConfetti } from '@/hooks/utils/useConfetti';
 import { useCelebrationSound } from '@/hooks/utils/useCelebrationSound';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { TIER_CONFIG } from '@/hooks/data/useBetaGamification';
@@ -13,6 +13,7 @@ interface LevelUpAnimationProps {
 
 export const LevelUpAnimation = ({ newTier, isVisible, onComplete }: LevelUpAnimationProps) => {
   const { language } = useLanguage();
+  const { fire: confetti } = useConfetti();
   const { playFullCelebration } = useCelebrationSound();
   const tierConfig = TIER_CONFIG[newTier];
 

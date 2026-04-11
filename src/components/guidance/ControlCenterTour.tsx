@@ -9,7 +9,6 @@ import {
   RefreshCw, Landmark, Briefcase, X, ChevronRight, ChevronLeft,
   Sparkles, Play, RotateCcw, PartyPopper
 } from 'lucide-react';
-import confetti from 'canvas-confetti';
 import { useCelebrationSound } from '@/hooks/utils/useCelebrationSound';
 
 interface TourStep {
@@ -223,38 +222,7 @@ export function ControlCenterTour({ onTabChange }: ControlCenterTourProps) {
 
     const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min;
 
-    const interval = setInterval(() => {
-      const timeLeft = animationEnd - Date.now();
-
-      if (timeLeft <= 0) {
-        clearInterval(interval);
-        return;
-      }
-
-      const particleCount = 50 * (timeLeft / duration);
-
-      // Confetti from both sides
-      confetti({
-        ...defaults,
-        particleCount,
-        origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
-        colors: ['#3b82f6', '#8b5cf6', '#f59e0b', '#10b981', '#ef4444']
-      });
-      confetti({
-        ...defaults,
-        particleCount,
-        origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
-        colors: ['#06b6d4', '#ec4899', '#f97316', '#14b8a6', '#6366f1']
-      });
-    }, 250);
-
-    // Center burst
-    confetti({
-      particleCount: 100,
-      spread: 70,
-      origin: { y: 0.6 },
-      colors: ['#ffd700', '#ff6b6b', '#4ecdc4', '#45b7d1', '#96e6a1']
-    });
+    // Confetti removed - routine tour action
   };
 
   const handleNext = () => {

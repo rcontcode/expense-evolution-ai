@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import confetti from 'canvas-confetti';
+import { useConfetti } from '@/hooks/utils/useConfetti';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -64,6 +64,7 @@ type WizardStep = 'welcome' | 'select-flow' | 'import' | 'review-matches' | 'res
 
 export function ReconciliationWizard({ onExitWizard }: { onExitWizard: () => void }) {
   const { language } = useLanguage();
+  const { fire: confetti } = useConfetti();
   const [currentStep, setCurrentStep] = useState<WizardStep>('welcome');
   const [selectedFlow, setSelectedFlow] = useState<string | null>(null);
   const [importDialogOpen, setImportDialogOpen] = useState(false);

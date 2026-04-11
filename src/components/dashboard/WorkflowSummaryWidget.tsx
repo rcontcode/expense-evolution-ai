@@ -23,7 +23,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useWorkflowProgress } from "@/hooks/data/useWorkflowProgress";
 import { useCelebrationSound } from "@/hooks/utils/useCelebrationSound";
 import { cn } from "@/lib/utils";
-import confetti from "canvas-confetti";
+import { useConfetti } from '@/hooks/utils/useConfetti';
 
 interface WorkflowConfig {
   id: string;
@@ -103,6 +103,7 @@ function WorkflowMiniCard({
   onComplete?: (workflowId: string) => void;
 }) {
   const { language } = useLanguage();
+  const { fire: confetti } = useConfetti();
   const navigate = useNavigate();
   const { data: progress, isLoading } = useWorkflowProgress(config.id);
   const previousProgressRef = React.useRef<number | null>(null);
@@ -197,6 +198,7 @@ export function WorkflowSummaryWidget({ className }: { className?: string }) {
   const { language } = useLanguage();
   const navigate = useNavigate();
   const { playCelebrationSound, playFullCelebration } = useCelebrationSound();
+  const { fire: confetti } = useConfetti();
   const [showCelebration, setShowCelebration] = React.useState(false);
   const [celebratedWorkflow, setCelebratedWorkflow] = React.useState<string | null>(null);
 
