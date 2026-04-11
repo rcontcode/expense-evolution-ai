@@ -31,28 +31,7 @@ export function ProjectDialog({ open, onClose, project, defaultClientId }: Proje
   const [creationStep, setCreationStep] = useState<CreationStep>('idle');
 
   const triggerConfetti = () => {
-    const defaults = {
-      spread: 360,
-      ticks: 100,
-      gravity: 0.8,
-      decay: 0.94,
-      startVelocity: 30,
-      colors: ['#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899']
-    };
-
-    confetti({
-      ...defaults,
-      particleCount: 50,
-      scalar: 1.2,
-      shapes: ['circle', 'square']
-    });
-
-    confetti({
-      ...defaults,
-      particleCount: 30,
-      scalar: 0.8,
-      shapes: ['circle']
-    });
+    // Confetti removed - routine action
   };
 
   const handleSubmit = async (data: ProjectFormData) => {

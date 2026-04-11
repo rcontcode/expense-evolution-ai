@@ -242,12 +242,7 @@ export function ConversationalOnboarding({ onComplete, onBack }: ConversationalO
         voiceAssistant.speak(message);
       }
       
-      confetti({
-        particleCount: 100,
-        spread: 70,
-        origin: { y: 0.6 },
-        colors: ['#f97316', '#fb923c', '#fdba74'],
-      });
+      // Confetti removed - routine onboarding action
       
       setTimeout(() => {
         onComplete();

@@ -54,12 +54,7 @@ export function ClientDialog({ open, onClose, client }: ClientDialogProps) {
   }, [open, isEditing, isPlanLoading, isGodMode, canAddClient]);
 
   const triggerSuccessConfetti = () => {
-    confetti({
-      particleCount: 80,
-      spread: 70,
-      origin: { y: 0.6 },
-      colors: ['#10B981', '#34D399', '#6EE7B7', '#A7F3D0']
-    });
+    // Confetti removed - routine action
   };
 
   const { data: expenses } = useExpenses();

@@ -184,12 +184,7 @@ export default function MobileCapture() {
   };
 
   const triggerSuccessConfetti = () => {
-    confetti({
-      particleCount: 80,
-      spread: 60,
-      origin: { y: 0.7 },
-      colors: ['#10b981', '#3b82f6', '#8b5cf6', '#f59e0b'],
-    });
+    // Confetti removed - routine capture action
   };
 
   const handleProcessAndSave = async () => {

@@ -83,16 +83,10 @@ export function ProgressiveOnboarding() {
     return () => window.removeEventListener('storage', handleStorage);
   }, []);
 
-  // Celebrate when all goals are complete
+  // Onboarding complete - no confetti for routine actions
   useEffect(() => {
     if (isComplete && !celebrated && !isLoading) {
       setCelebrated(true);
-      confetti({
-        particleCount: 100,
-        spread: 70,
-        origin: { y: 0.6 },
-        colors: ['#10b981', '#34d399', '#6ee7b7'],
-      });
     }
   }, [isComplete, celebrated, isLoading]);
 

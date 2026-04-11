@@ -383,31 +383,9 @@ const friendlyMessages: Record<string, {
   },
 };
 
-// Animación de celebración épica
+// Celebration removed - routine action
 const triggerCelebration = () => {
-  // Primera ráfaga
-  confetti({
-    particleCount: 80,
-    spread: 70,
-    origin: { y: 0.6 },
-    colors: ['#f59e0b', '#8b5cf6', '#ec4899', '#10b981', '#3b82f6'],
-  });
-  
-  // Segunda ráfaga con delay
-  setTimeout(() => {
-    confetti({
-      particleCount: 50,
-      spread: 100,
-      origin: { y: 0.7, x: 0.3 },
-      colors: ['#f59e0b', '#8b5cf6'],
-    });
-    confetti({
-      particleCount: 50,
-      spread: 100,
-      origin: { y: 0.7, x: 0.7 },
-      colors: ['#ec4899', '#10b981'],
-    });
-  }, 200);
+  // No-op: confetti removed for professionalism
 };
 
 export function UpgradePrompt({
