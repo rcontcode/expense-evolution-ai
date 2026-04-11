@@ -119,6 +119,7 @@ export default function NetWorth() {
   };
 
   const isLoading = assetsLoading || liabilitiesLoading || snapshotsLoading;
+  const isMobile = useIsMobile();
 
   // Show investment onboarding wizard
   if (showInvestmentOnboarding) {
@@ -133,8 +134,6 @@ export default function NetWorth() {
       </Layout>
     );
   }
-
-  const isMobile = useIsMobile();
 
   return (
     <Layout>
