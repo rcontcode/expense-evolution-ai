@@ -97,6 +97,7 @@ export function useGoalNotifications({ savingsGoals, investmentGoals, userLevel 
   const { user } = useAuth();
   const unlockAchievement = useUnlockAchievement();
   const { playCelebrationSound, playFullCelebration, playSuccessSound } = useCelebrationSound();
+  const { fire } = useConfetti();
   const previousGoalsRef = useRef<Map<string, number>>(new Map());
   const notifiedMilestonesRef = useRef<Set<string>>(new Set());
   const hasInitialized = useRef(false);
