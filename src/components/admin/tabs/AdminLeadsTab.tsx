@@ -1,12 +1,13 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Users, ExternalLink, Flame, Phone, UserCheck, MessageSquare, Copy, CheckCircle } from 'lucide-react';
+import { Users, ExternalLink, Flame, Phone, UserCheck, MessageSquare, Copy, CheckCircle, Trash2, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { format } from 'date-fns';
 import { es as esLocale } from 'date-fns/locale';
 import { motion } from 'framer-motion';
@@ -25,6 +26,8 @@ export const AdminLeadsTab = ({ language, sourceFilter, onClearFilter }: Props) 
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [contactingId, setContactingId] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [sortDirection, setSortDirection] = useState<'desc' | 'asc'>('desc'); // desc = newest first
 
   const { data: leads = [], isLoading } = useQuery({
     queryKey: ['admin-leads-summary', sourceFilter],
@@ -44,6 +47,16 @@ export const AdminLeadsTab = ({ language, sourceFilter, onClearFilter }: Props) 
     },
   });
 
+  const sortedLeads = useMemo(() => {
+    const sorted = [...leads];
+    sorted.sort((a: any, b: any) => {
+      const dateA = new Date(a.created_at).getTime();
+      const dateB = new Date(b.created_at).getTime();
+      return sortDirection === 'desc' ? dateB - dateA : dateA - dateB;
+    });
+    return sorted;
+  }, [leads, sortDirection]);
+
   const stats = useMemo(() => {
     const total = leads.length;
     const contacted = leads.filter((l: any) => l.contacted_at && !l.contact_notes?.startsWith('[AUTO]')).length;
@@ -58,13 +71,13 @@ export const AdminLeadsTab = ({ language, sourceFilter, onClearFilter }: Props) 
     return { total, contacted, converted, withComments, priorities };
   }, [leads]);
 
-  // Top 10 hot leads
-  const hotLeads = useMemo(() => {
-    return leads
-      .map((lead: any) => ({ ...lead, score: calculateLeadScore(lead), priority: getLeadPriority(calculateLeadScore(lead)) }))
-      .sort((a: any, b: any) => b.score - a.score)
-      .slice(0, 10);
-  }, [leads]);
+  const scoredLeads = useMemo(() => {
+    return sortedLeads.map((lead: any) => ({
+      ...lead,
+      score: calculateLeadScore(lead),
+      priority: getLeadPriority(calculateLeadScore(lead)),
+    }));
+  }, [sortedLeads]);
 
   const handleMarkContacted = async (leadId: string) => {
     setContactingId(leadId);
@@ -81,6 +94,54 @@ export const AdminLeadsTab = ({ language, sourceFilter, onClearFilter }: Props) 
     } finally {
       setContactingId(null);
     }
+  };
+
+  const bulkDelete = useMutation({
+    mutationFn: async (ids: string[]) => {
+      const { error } = await supabase
+        .from('quiz_leads')
+        .delete()
+        .in('id', ids);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-leads-summary'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-leads'] });
+      queryClient.invalidateQueries({ queryKey: ['crm-lead-count'] });
+      setSelectedIds(new Set());
+      toast.success(isEs ? '🗑️ Leads eliminados' : '🗑️ Leads deleted');
+    },
+    onError: (err: any) => {
+      toast.error(err.message || 'Error deleting leads');
+    },
+  });
+
+  const handleBulkDelete = () => {
+    const count = selectedIds.size;
+    if (count === 0) return;
+    if (!confirm(isEs ? `¿Eliminar ${count} lead(s) seleccionado(s)? Esta acción no se puede deshacer.` : `Delete ${count} selected lead(s)? This cannot be undone.`)) return;
+    bulkDelete.mutate(Array.from(selectedIds));
+  };
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === scoredLeads.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(scoredLeads.map((l: any) => l.id)));
+    }
+  };
+
+  const toggleSortDirection = () => {
+    setSortDirection(prev => prev === 'desc' ? 'asc' : 'desc');
   };
 
   if (isLoading) {
@@ -136,22 +197,52 @@ export const AdminLeadsTab = ({ language, sourceFilter, onClearFilter }: Props) 
         </Card>
       </div>
 
-      {/* Hot leads table */}
-      <Card className="border-2 border-red-100 dark:border-red-900/50 shadow-xl">
-        <CardHeader className="border-b bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-950/30 dark:to-orange-950/30">
+      {/* Bulk actions bar */}
+      {selectedIds.size > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center gap-3 p-3 rounded-lg bg-destructive/10 border border-destructive/20"
+        >
+          <span className="text-sm font-medium">
+            {selectedIds.size} {isEs ? 'seleccionado(s)' : 'selected'}
+          </span>
+          <Button
+            size="sm"
+            variant="destructive"
+            className="gap-1.5"
+            onClick={handleBulkDelete}
+            disabled={bulkDelete.isPending}
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+            {isEs ? 'Eliminar seleccionados' : 'Delete selected'}
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => setSelectedIds(new Set())}
+          >
+            {isEs ? 'Deseleccionar' : 'Deselect all'}
+          </Button>
+        </motion.div>
+      )}
+
+      {/* All leads table */}
+      <Card className="border-2 shadow-xl">
+        <CardHeader className="border-b">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-red-100 dark:bg-red-900/50">
-                <Flame className="h-5 w-5 text-red-600" />
+              <div className="p-2 rounded-lg bg-primary/10">
+                <Users className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <CardTitle>{isEs ? '🔥 Top 10 Leads Prioritarios' : '🔥 Top 10 Priority Leads'}</CardTitle>
-                <CardDescription>{isEs ? 'Leads con mayor potencial de conversión' : 'Leads with highest conversion potential'}</CardDescription>
+                <CardTitle>{isEs ? '📋 Todos los Leads' : '📋 All Leads'} ({scoredLeads.length})</CardTitle>
+                <CardDescription>{isEs ? 'Lista completa con selección múltiple' : 'Full list with multi-select'}</CardDescription>
               </div>
             </div>
             <Button variant="outline" size="sm" onClick={() => navigate('/admin/leads')} className="gap-1">
               <ExternalLink className="h-3.5 w-3.5" />
-              {isEs ? 'Ver todos' : 'View all'}
+              {isEs ? 'Vista completa' : 'Full view'}
             </Button>
           </div>
         </CardHeader>
@@ -159,20 +250,58 @@ export const AdminLeadsTab = ({ language, sourceFilter, onClearFilter }: Props) 
           <Table>
             <TableHeader>
               <TableRow className="bg-muted/30">
+                <TableHead className="w-10">
+                  <Checkbox
+                    checked={scoredLeads.length > 0 && selectedIds.size === scoredLeads.length}
+                    onCheckedChange={toggleSelectAll}
+                  />
+                </TableHead>
                 <TableHead className="font-bold">#</TableHead>
                 <TableHead className="font-bold">{isEs ? 'Nombre' : 'Name'}</TableHead>
+                <TableHead className="font-bold">{isEs ? 'Fuente' : 'Source'}</TableHead>
                 <TableHead className="font-bold">{isEs ? 'País' : 'Country'}</TableHead>
                 <TableHead className="text-center font-bold">Score</TableHead>
                 <TableHead className="font-bold">{isEs ? 'Estado' : 'Status'}</TableHead>
-                <TableHead className="font-bold">{isEs ? 'Fecha' : 'Date'}</TableHead>
+                <TableHead className="font-bold">
+                  <button
+                    onClick={toggleSortDirection}
+                    className="flex items-center gap-1 hover:text-primary transition-colors"
+                  >
+                    {isEs ? 'Fecha' : 'Date'}
+                    {sortDirection === 'desc' ? (
+                      <ArrowDown className="h-3.5 w-3.5" />
+                    ) : (
+                      <ArrowUp className="h-3.5 w-3.5" />
+                    )}
+                  </button>
+                </TableHead>
                 <TableHead className="text-center font-bold">{isEs ? 'Acción' : 'Action'}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {hotLeads.map((lead: any, i: number) => {
+              {scoredLeads.map((lead: any, i: number) => {
                 const colors = getPriorityColors(lead.priority);
+                const sourceLabel = (lead.source || 'evofinz').toLowerCase();
+                const sourceEmoji = sourceLabel.includes('fokus') ? '🧠' : sourceLabel.includes('univers') ? '🌌' : '💰';
+                const sourceName = sourceLabel.includes('fokus') ? 'Fokuspark' : sourceLabel.includes('univers') ? 'UniversMind' : 'EvoFinz';
                 return (
-                  <motion.tr key={lead.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.03 }} className={cn('hover:bg-muted/30', colors.row)}>
+                  <motion.tr
+                    key={lead.id}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: Math.min(i * 0.02, 0.5) }}
+                    className={cn(
+                      'hover:bg-muted/30',
+                      colors.row,
+                      selectedIds.has(lead.id) && 'bg-primary/5'
+                    )}
+                  >
+                    <TableCell>
+                      <Checkbox
+                        checked={selectedIds.has(lead.id)}
+                        onCheckedChange={() => toggleSelect(lead.id)}
+                      />
+                    </TableCell>
                     <TableCell className="font-bold text-muted-foreground">{i + 1}</TableCell>
                     <TableCell>
                       <div>
@@ -182,6 +311,11 @@ export const AdminLeadsTab = ({ language, sourceFilter, onClearFilter }: Props) 
                         </div>
                         <p className="text-xs text-muted-foreground">{lead.email}</p>
                       </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className="text-[10px] gap-1">
+                        {sourceEmoji} {sourceName}
+                      </Badge>
                     </TableCell>
                     <TableCell className="text-sm">{lead.country}</TableCell>
                     <TableCell className="text-center">
@@ -200,7 +334,7 @@ export const AdminLeadsTab = ({ language, sourceFilter, onClearFilter }: Props) 
                       </div>
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground">
-                      {format(new Date(lead.created_at), 'dd MMM', { locale: isEs ? esLocale : undefined })}
+                      {format(new Date(lead.created_at), 'dd MMM yyyy', { locale: isEs ? esLocale : undefined })}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1.5 justify-center">
@@ -228,9 +362,9 @@ export const AdminLeadsTab = ({ language, sourceFilter, onClearFilter }: Props) 
                   </motion.tr>
                 );
               })}
-              {hotLeads.length === 0 && (
+              {scoredLeads.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-12">
+                  <TableCell colSpan={9} className="text-center py-12">
                     <Users className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
                     <p className="text-muted-foreground">{isEs ? 'No hay leads aún' : 'No leads yet'}</p>
                   </TableCell>
