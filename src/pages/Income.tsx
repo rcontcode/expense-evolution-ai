@@ -21,6 +21,7 @@ import { SectionEmptyState } from '@/components/guidance/SectionEmptyState';
 import { IncomeCard } from '@/components/tables/IncomeCard';
 import { SwipeableCard } from '@/components/mobile/SwipeableCard';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { MobileTabLayout, type MobileTab } from '@/components/mobile';
 import { IncomeDuplicatePanel } from '@/components/income/IncomeDuplicatePanel';
 import { IncomeInsightsSummary } from '@/components/income/IncomeInsightsSummary';
 import { IncomeStabilityScore } from '@/components/income/IncomeStabilityScore';
@@ -191,147 +192,222 @@ export default function Income() {
           />
         )}
 
-        {/* Income Insights Summary */}
-        <IncomeInsightsSummary />
+        {isMobile ? (
+          <MobileTabLayout
+            tabs={[
+              {
+                id: 'list',
+                label: language === 'es' ? 'Ingresos' : 'Income',
+                emoji: '💰',
+                content: (
+                  <div className="space-y-3">
+                    {/* Year Selector */}
+                    <div className="flex items-center gap-2">
+                      <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => setSelectedYear(selectedYear - 1)} disabled={selectedYear <= currentYear - 4}>
+                        <ChevronLeft className="h-4 w-4" />
+                      </Button>
+                      <Select value={selectedYear.toString()} onValueChange={(v) => setSelectedYear(parseInt(v))}>
+                        <SelectTrigger className="w-[90px] h-7 text-xs"><SelectValue /></SelectTrigger>
+                        <SelectContent>{years.map(y => <SelectItem key={y} value={y.toString()}>{y}</SelectItem>)}</SelectContent>
+                      </Select>
+                      <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => setSelectedYear(selectedYear + 1)} disabled={selectedYear >= currentYear}>
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </div>
 
-        {/* Income Stability Score */}
-        <IncomeStabilityScore />
+                    {/* Summary Cards */}
+                    <div className="grid grid-cols-2 gap-2">
+                      <Card>
+                        <CardContent className="p-2">
+                          <div className="flex items-center justify-between mb-0.5">
+                            <span className="text-[10px] text-muted-foreground">{t('income.totalIncome')}</span>
+                            <DollarSign className="h-3 w-3 text-chart-1" />
+                          </div>
+                          <p className="text-sm font-bold text-chart-1">${summary?.totalIncome.toFixed(0) || '0'}</p>
+                        </CardContent>
+                      </Card>
+                      <Card>
+                        <CardContent className="p-2">
+                          <div className="flex items-center justify-between mb-0.5">
+                            <span className="text-[10px] text-muted-foreground">{t('income.transactions')}</span>
+                            <TrendingUp className="h-3 w-3 text-chart-4" />
+                          </div>
+                          <p className="text-sm font-bold">{summary?.count || 0}</p>
+                        </CardContent>
+                      </Card>
+                    </div>
 
-        {/* Year Selector - positioned above summary cards */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <span className="text-sm font-medium text-muted-foreground">
-              {language === 'es' ? 'Año fiscal:' : 'Fiscal year:'}
-            </span>
-            <div className="flex items-center gap-1">
-              <Button
-                variant="outline"
-                size="icon"
-                className="h-8 w-8"
-                onClick={() => setSelectedYear(selectedYear - 1)}
-                disabled={selectedYear <= currentYear - 4}
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <Select
-                value={selectedYear.toString()}
-                onValueChange={(value) => setSelectedYear(parseInt(value))}
-              >
-                <SelectTrigger className="w-[100px] h-8">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {years.map((year) => (
-                    <SelectItem key={year} value={year.toString()}>
-                      {year}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Button
-                variant="outline"
-                size="icon"
-                className="h-8 w-8"
-                onClick={() => setSelectedYear(selectedYear + 1)}
-                disabled={selectedYear >= currentYear}
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        {/* Summary Cards - 2x2 mobile, 4 cols desktop */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 pb-1">
-              <CardTitle className="text-xs sm:text-sm font-medium">{t('income.totalIncome')}</CardTitle>
-              <DollarSign className="h-4 w-4 text-chart-1" />
-            </CardHeader>
-            <CardContent className="p-3 pt-0">
-              <div className="text-lg sm:text-2xl font-bold text-chart-1">
-                ${summary?.totalIncome.toFixed(2) || '0.00'}
-              </div>
-              <p className="text-xs text-muted-foreground hidden sm:block">{t('income.thisYear')}</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 pb-1">
-              <CardTitle className="text-xs sm:text-sm font-medium">{t('income.taxableIncome')}</CardTitle>
-              <Wallet className="h-4 w-4 text-chart-2" />
-            </CardHeader>
-            <CardContent className="p-3 pt-0">
-              <div className="text-lg sm:text-2xl font-bold text-chart-2">
-                ${summary?.taxableIncome.toFixed(2) || '0.00'}
-              </div>
-              <p className="text-xs text-muted-foreground hidden sm:block">{t('income.subjectToTax')}</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 pb-1">
-              <CardTitle className="text-xs sm:text-sm font-medium">{t('income.nonTaxable')}</CardTitle>
-              <PiggyBank className="h-4 w-4 text-chart-3" />
-            </CardHeader>
-            <CardContent className="p-3 pt-0">
-              <div className="text-lg sm:text-2xl font-bold text-chart-3">
-                ${summary?.nonTaxableIncome.toFixed(2) || '0.00'}
-              </div>
-              <p className="text-xs text-muted-foreground hidden sm:block">{t('income.taxExempt')}</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 pb-1">
-              <CardTitle className="text-xs sm:text-sm font-medium">{t('income.transactions')}</CardTitle>
-              <TrendingUp className="h-4 w-4 text-chart-4" />
-            </CardHeader>
-            <CardContent className="p-3 pt-0">
-              <div className="text-lg sm:text-2xl font-bold">{summary?.count || 0}</div>
-              <p className="text-xs text-muted-foreground hidden sm:block">{t('income.entries')}</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Income by Group */}
-        {incomeByGroup.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('income.byCategory')}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {incomeByGroup.map(group => (
-                <div key={group.key} className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="font-medium">
-                      {language === 'es' ? group.label : group.labelEn}
-                    </span>
-                    <span className="text-muted-foreground">
-                      ${group.total.toFixed(2)}
-                    </span>
+                    {/* Income List */}
+                    {incomeLoading ? (
+                      <Card><CardContent className="py-6 text-center text-muted-foreground text-sm">{t('common.loading')}</CardContent></Card>
+                    ) : incomeList && incomeList.length > 0 ? (
+                      <div className="space-y-2" data-highlight="income-list">
+                        {incomeList.map((income) => (
+                          <SwipeableCard
+                            key={income.id}
+                            onSwipeLeft={() => { setDeleteId(income.id); setDeleteType('income'); }}
+                            leftAction={{ label: language === 'es' ? 'Eliminar' : 'Delete' }}
+                            threshold={80}
+                          >
+                            <IncomeCard income={income} onEdit={handleEditIncome} onDelete={(id) => { setDeleteId(id); setDeleteType('income'); }} />
+                          </SwipeableCard>
+                        ))}
+                      </div>
+                    ) : (
+                      <SectionEmptyState section="income" onAction={() => setIncomeDialogOpen(true)} />
+                    )}
                   </div>
-                  <Progress 
-                    value={(group.total / (summary?.totalIncome || 1)) * 100} 
-                    className="h-2"
-                  />
+                ),
+              },
+              {
+                id: 'summary',
+                label: language === 'es' ? 'Resumen' : 'Summary',
+                emoji: '📊',
+                content: (
+                  <div className="space-y-3">
+                    <IncomeInsightsSummary />
+                    <IncomeStabilityScore />
+                    {incomeByGroup.length > 0 && (
+                      <Card>
+                        <CardHeader className="p-3 pb-1"><CardTitle className="text-sm">{t('income.byCategory')}</CardTitle></CardHeader>
+                        <CardContent className="p-3 pt-2 space-y-3">
+                          {incomeByGroup.map(group => (
+                            <div key={group.key} className="space-y-1">
+                              <div className="flex justify-between text-xs">
+                                <span className="font-medium">{language === 'es' ? group.label : group.labelEn}</span>
+                                <span className="text-muted-foreground">${group.total.toFixed(0)}</span>
+                              </div>
+                              <Progress value={(group.total / (summary?.totalIncome || 1)) * 100} className="h-1.5" />
+                            </div>
+                          ))}
+                        </CardContent>
+                      </Card>
+                    )}
+                    {incomeList && incomeList.length > 0 && <IncomeDuplicatePanel incomes={incomeList} />}
+                  </div>
+                ),
+              },
+              {
+                id: 'projects',
+                label: language === 'es' ? 'Proyectos' : 'Projects',
+                emoji: '📁',
+                content: (
+                  <div className="space-y-2">
+                    {projectsLoading ? (
+                      <Card><CardContent className="py-6 text-center text-muted-foreground text-sm">{t('common.loading')}</CardContent></Card>
+                    ) : projects && projects.length > 0 ? (
+                      projects.map(project => (
+                        <Card key={project.id} className="cursor-pointer active:scale-[0.98] transition-transform" onClick={() => handleEditProject(project)}>
+                          <CardContent className="p-3 flex items-center justify-between">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: project.color || 'hsl(var(--primary))' }} />
+                              <span className="text-sm font-medium truncate">{project.name}</span>
+                            </div>
+                            <Badge variant="outline" className="text-[10px] shrink-0">{project.status}</Badge>
+                          </CardContent>
+                        </Card>
+                      ))
+                    ) : (
+                      <SectionEmptyState section="projects" onAction={() => setProjectDialogOpen(true)} />
+                    )}
+                  </div>
+                ),
+              },
+            ] as MobileTab[]}
+          />
+        ) : (
+          <>
+            {/* Income Insights Summary */}
+            <IncomeInsightsSummary />
+            <IncomeStabilityScore />
+
+            {/* Year Selector */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <span className="text-sm font-medium text-muted-foreground">
+                  {language === 'es' ? 'Año fiscal:' : 'Fiscal year:'}
+                </span>
+                <div className="flex items-center gap-1">
+                  <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setSelectedYear(selectedYear - 1)} disabled={selectedYear <= currentYear - 4}>
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <Select value={selectedYear.toString()} onValueChange={(value) => setSelectedYear(parseInt(value))}>
+                    <SelectTrigger className="w-[100px] h-8"><SelectValue /></SelectTrigger>
+                    <SelectContent>{years.map((year) => <SelectItem key={year} value={year.toString()}>{year}</SelectItem>)}</SelectContent>
+                  </Select>
+                  <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setSelectedYear(selectedYear + 1)} disabled={selectedYear >= currentYear}>
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
                 </div>
-              ))}
-            </CardContent>
-          </Card>
-        )}
+              </div>
+            </div>
 
-        {/* Duplicate Detection Panel */}
-        {incomeList && incomeList.length > 0 && (
-          <IncomeDuplicatePanel incomes={incomeList} />
-        )}
+            {/* Summary Cards */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 pb-1">
+                  <CardTitle className="text-xs sm:text-sm font-medium">{t('income.totalIncome')}</CardTitle>
+                  <DollarSign className="h-4 w-4 text-chart-1" />
+                </CardHeader>
+                <CardContent className="p-3 pt-0">
+                  <div className="text-lg sm:text-2xl font-bold text-chart-1">${summary?.totalIncome.toFixed(2) || '0.00'}</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 pb-1">
+                  <CardTitle className="text-xs sm:text-sm font-medium">{t('income.taxableIncome')}</CardTitle>
+                  <Wallet className="h-4 w-4 text-chart-2" />
+                </CardHeader>
+                <CardContent className="p-3 pt-0">
+                  <div className="text-lg sm:text-2xl font-bold text-chart-2">${summary?.taxableIncome.toFixed(2) || '0.00'}</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 pb-1">
+                  <CardTitle className="text-xs sm:text-sm font-medium">{t('income.nonTaxable')}</CardTitle>
+                  <PiggyBank className="h-4 w-4 text-chart-3" />
+                </CardHeader>
+                <CardContent className="p-3 pt-0">
+                  <div className="text-lg sm:text-2xl font-bold text-chart-3">${summary?.nonTaxableIncome.toFixed(2) || '0.00'}</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 pb-1">
+                  <CardTitle className="text-xs sm:text-sm font-medium">{t('income.transactions')}</CardTitle>
+                  <TrendingUp className="h-4 w-4 text-chart-4" />
+                </CardHeader>
+                <CardContent className="p-3 pt-0">
+                  <div className="text-lg sm:text-2xl font-bold">{summary?.count || 0}</div>
+                </CardContent>
+              </Card>
+            </div>
 
-        {/* Tabs */}
-        <Tabs defaultValue="income" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="income">{t('income.incomeTab')}</TabsTrigger>
-            <TabsTrigger value="projects">{t('income.projectsTab')}</TabsTrigger>
-          </TabsList>
+            {/* Income by Group */}
+            {incomeByGroup.length > 0 && (
+              <Card>
+                <CardHeader><CardTitle>{t('income.byCategory')}</CardTitle></CardHeader>
+                <CardContent className="space-y-4">
+                  {incomeByGroup.map(group => (
+                    <div key={group.key} className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="font-medium">{language === 'es' ? group.label : group.labelEn}</span>
+                        <span className="text-muted-foreground">${group.total.toFixed(2)}</span>
+                      </div>
+                      <Progress value={(group.total / (summary?.totalIncome || 1)) * 100} className="h-2" />
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            )}
+
+            {incomeList && incomeList.length > 0 && <IncomeDuplicatePanel incomes={incomeList} />}
+
+            {/* Tabs */}
+            <Tabs defaultValue="income" className="space-y-4">
+              <TabsList>
+                <TabsTrigger value="income">{t('income.incomeTab')}</TabsTrigger>
+                <TabsTrigger value="projects">{t('income.projectsTab')}</TabsTrigger>
+              </TabsList>
 
           <TabsContent value="income">
             {incomeLoading ? (
