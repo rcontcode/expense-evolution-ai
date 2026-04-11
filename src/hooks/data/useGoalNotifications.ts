@@ -18,8 +18,8 @@ const PHOENIX_COLORS = ['#FACC15', '#F59E0B', '#EF4444', '#FB923C', '#FEF08A'];
 const GOLDEN_COLORS = ['#FACC15', '#F59E0B', '#EAB308', '#FEF08A', '#FDE047'];
 
 // Celebrate goal completion with phoenix-themed confetti
-const celebrateGoal = () => {
-  confetti({
+const celebrateGoal = (fire: (opts?: any) => void) => {
+  fire({
     particleCount: 100,
     spread: 70,
     origin: { y: 0.6 },
@@ -28,19 +28,19 @@ const celebrateGoal = () => {
 };
 
 // Achievement celebration with phoenix rebirth effect
-const celebrateAchievement = () => {
+const celebrateAchievement = (fire: (opts?: any) => void) => {
   const duration = 3000;
   const end = Date.now() + duration;
 
   const frame = () => {
-    confetti({
+    fire({
       particleCount: 2,
       angle: 60,
       spread: 55,
       origin: { x: 0 },
       colors: PHOENIX_COLORS
     });
-    confetti({
+    fire({
       particleCount: 2,
       angle: 120,
       spread: 55,
@@ -57,9 +57,9 @@ const celebrateAchievement = () => {
 };
 
 // Golden rebirth celebration for major achievements
-const celebrateRebirth = () => {
+const celebrateRebirth = (fire: (opts?: any) => void) => {
   // First burst - flames
-  confetti({
+  fire({
     particleCount: 60,
     spread: 50,
     origin: { y: 0.7 },
@@ -68,7 +68,7 @@ const celebrateRebirth = () => {
   
   // Second burst - golden rebirth
   setTimeout(() => {
-    confetti({
+    fire({
       particleCount: 150,
       spread: 100,
       origin: { y: 0.5 },
