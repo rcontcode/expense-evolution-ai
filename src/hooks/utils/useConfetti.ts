@@ -7,7 +7,7 @@ import { useUserSettings } from '@/hooks/data/useUserSettings';
  */
 export function useConfetti() {
   const { data: settings } = useUserSettings();
-  const prefs = (settings?.user_preferences as Record<string, unknown>) || {};
+  const prefs = (settings?.preferences as Record<string, unknown>) || {};
   const enabled = prefs.gamification_enabled !== false;
 
   const fire = (options?: confetti.Options) => {
