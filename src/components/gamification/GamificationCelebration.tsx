@@ -151,8 +151,8 @@ const triggerStarburst = (confettiFn: (opts?: any) => void) => {
       setPowerPhrase(phrases[Math.floor(Math.random() * phrases.length)]);
       
       // Trigger multiple celebration effects
-      triggerFireworks();
-      setTimeout(triggerStarburst, 500);
+      triggerFireworks(confetti);
+      setTimeout(() => triggerStarburst(confetti), 500);
       
       // Show power phrase
       setTimeout(() => setShowPowerPhrase(true), 100);
