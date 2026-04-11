@@ -218,7 +218,7 @@ export function useGoalNotifications({ savingsGoals, investmentGoals, userLevel 
           if (previousProgress < milestone && currentProgress >= milestone) {
             if (milestone === 100) {
               // Goal completed! Phoenix rebirth celebration
-              celebrateRebirth();
+              celebrateRebirth(fire);
               playFullCelebration();
               toast.success(
                 `🔥➜✨ ${language === 'es' ? '¡Has renacido!' : 'You have been reborn!'} ${goal.name}`,
@@ -378,6 +378,7 @@ export function useLevelUpNotification(userLevel: any) {
   const { t, language } = useLanguage();
   const { user } = useAuth();
   const { playFullCelebration } = useCelebrationSound();
+  const { fire } = useConfetti();
   const previousLevelRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -386,7 +387,7 @@ export function useLevelUpNotification(userLevel: any) {
     if (previousLevelRef.current !== null && userLevel.level > previousLevelRef.current) {
       // Level up! Phoenix rebirth celebration
       playFullCelebration();
-      celebrateRebirth();
+      celebrateRebirth(fire);
 
       toast.success(
         `🔥➜✨ ${language === 'es' ? '¡Nivel Alcanzado!' : 'Level Up!'}`,
@@ -417,13 +418,14 @@ export function useAchievementNotification() {
   const { user } = useAuth();
   const { language } = useLanguage();
   const { playCelebrationSound } = useCelebrationSound();
+  const { fire } = useConfetti();
 
   const notifyAchievement = useCallback(async (achievementKey: string, achievementName: string) => {
     if (!user) return;
 
     // Phoenix-themed celebration
     playCelebrationSound();
-    celebrateAchievement();
+    celebrateAchievement(fire);
 
     toast.success(
       language === 'es' ? '🔥 ¡Logro desbloqueado!' : '🔥 Achievement unlocked!',
