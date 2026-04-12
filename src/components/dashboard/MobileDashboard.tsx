@@ -42,7 +42,7 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
   const savingsRate = monthlyIncome > 0 ? ((monthlyIncome - monthlyExpenses) / monthlyIncome * 100) : 0;
 
   return (
-    <div className="space-y-3 pb-4">
+    <div className="mobile-compact space-y-2 pb-6">
       <LiveClock />
 
       <DashboardNotificationHub />
@@ -65,8 +65,8 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
 
       {/* Simple conditional render — no AnimatePresence to avoid scroll bounce */}
       {activeView === 'resumen' ? (
-        <div className="space-y-3">
-          <div className="overflow-x-auto -mx-4 px-4" data-section="timeline">
+        <div className="space-y-2">
+          <div className="overflow-x-auto -mx-3 px-3" data-section="timeline">
             <YearTimelineChart
               selectedMonth={selectedMonth}
               onMonthSelect={setSelectedMonth}
