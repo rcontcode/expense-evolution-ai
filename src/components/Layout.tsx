@@ -482,7 +482,7 @@ export const Layout = ({ children }: LayoutProps) => {
   // Mobile Layout
   if (isMobile) {
     return (
-      <div className="flex flex-col min-h-screen bg-background relative">
+      <div className="mobile-app-shell flex flex-col min-h-[100dvh] bg-background relative overflow-x-hidden">
         <ThemeBackground />
         {/* Mobile Header */}
         <header className="sticky top-0 z-50 backdrop-blur-2xl border-b border-border/30 px-4 py-2" style={{ background: 'hsl(var(--background) / 0.98)' }}>
@@ -717,8 +717,8 @@ export const Layout = ({ children }: LayoutProps) => {
           </div>
         </header>
 
-        <main className="flex-1 pb-20">
-          <div>
+        <main className="mobile-app-main flex-1 min-h-0 overflow-x-hidden pb-20">
+          <div className="min-h-full">
             {children}
           </div>
         </main>

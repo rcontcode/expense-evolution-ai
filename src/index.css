@@ -2487,14 +2487,50 @@
 
 /* Mobile density overrides — compact everything for small screens */
 @media (max-width: 639px) {
+  html,
+  body {
+    overflow-x: hidden;
+    overscroll-behavior-y: none;
+  }
+
   .page-container {
     @apply px-3 py-2;
   }
+
   .section-gap {
     @apply space-y-3 !important;
   }
+
   .stats-grid-2x2 {
     @apply gap-1.5;
+  }
+
+  .mobile-compact {
+    @apply space-y-2;
+  }
+
+  .mobile-compact .card {
+    @apply rounded-lg;
+  }
+
+  .mobile-compact .card-content,
+  .mobile-compact [class*='p-4'],
+  .mobile-compact [class*='p-3'] {
+    @apply p-2;
+  }
+
+  .mobile-compact h1 {
+    @apply text-lg;
+  }
+
+  .mobile-compact h2 {
+    @apply text-base;
+  }
+
+  .mobile-compact p,
+  .mobile-compact span,
+  .mobile-compact button {
+    font-size: 0.8125rem;
   }
 }
 
@@ -2518,6 +2554,15 @@
 .mobile-page {
   @apply px-4 py-3;
   padding-bottom: calc(var(--mobile-bottom-nav-height) + 1rem);
+}
+
+.mobile-app-shell {
+  min-height: 100dvh;
+}
+
+.mobile-app-main {
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 @media (min-width: 640px) {

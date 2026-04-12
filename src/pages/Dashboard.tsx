@@ -99,7 +99,7 @@ export default function Dashboard() {
   if (isMobile) {
     return (
       <Layout>
-        <div className="p-4">
+        <div className="page-container section-gap mobile-compact">
           <MobileDashboard onQuickCapture={() => setQuickCaptureOpen(true)} />
         </div>
         <ExportDialog open={exportDialogOpen} onClose={() => setExportDialogOpen(false)} expenses={allExpenses || []} />
