@@ -1,78 +1,156 @@
+# Diagnóstico real: por qué no se solucionó el scroll móvil
 
-# Fix Mobile Scroll Bounce + Reduce Size + Add Tab Navigation Strategy
+Ya revisé el código que controla el layout móvil, el CSS global y las pantallas principales. La causa raíz no es una sola regla aislada: son tres problemas combinados.
 
-## Problems Identified
+## Causa raíz encontrada
 
-1. **Scroll bounce**: The `AnimatePresence` with `exit` animations in `MobileDashboard.tsx` causes layout height collapse during view transitions, snapping scroll to top. The `motion.div` exit animation removes content height momentarily.
+1. **El layout móvil no tiene un contenedor de scroll explícito**
+   - En `Layout.tsx`, el móvil usa:
+     ```text
+     mobile-app-shell: min-height 100dvh
+     main: flex-1 min-h-0 overflow-x-hidden pb-20
+     ```
+   - Pero `main` no tiene `overflow-y-auto` ni una altura fija/limitada del viewport.
+   - Resultado: el navegador intenta hacer scroll en el documento completo mientras hay header sticky y bottom nav fixed. En móvil eso produce el “rebote” y la sensación de que la página se corta o no baja bien.
 
-2. **Everything too big**: Cards, icons, fonts, and spacing are sized for desktop. The `MobileStatsGrid` uses `text-lg` for values, `w-10 h-10` for icons — too large for 390px viewport. Many components have no mobile-specific sizing.
+2. **Hay CSS que intenta matar el rebote en `html/body`, pero lo hace en el nivel incorrecto**
+   - En `index.css` se puso:
+     ```text
+     html, body { overscroll-behavior-y: none; }
+     .mobile-app-main { overscroll-behavior-y: contain; }
+     ```
+   - Eso no basta si el elemento que realmente debe scrollear no es `mobile-app-main`.
+   - La solución correcta es que el shell móvil ocupe exactamente `100dvh`, que `main` sea el único contenedor scrollable y que `body` no compita con ese scroll.
 
-3. **Endless scrolling**: Each page dumps all sections vertically. Users must scroll through 8-12 cards to find what they need. No tab/section navigation exists on most pages.
+3. **Las pestañas no se aplicaron realmente al Dashboard móvil principal**
+   - `MobileTabLayout` sí existe y se usa en Expenses, Income, Banking, Analytics y NetWorth.
+   - Pero en `Dashboard.tsx` / `MobileDashboard.tsx` no se usa `MobileTabLayout`; solo hay dos botones internos `Resumen / Control` y debajo queda demasiado contenido largo dentro de “Resumen”.
+   - Por eso visualmente el Dashboard sigue pareciendo una página larga, no una app móvil con pestañas reales.
 
-## Plan
+4. **La compactación no alcanza porque apunta a clases que no existen o no cubre componentes base**
+   - El CSS usa `.mobile-compact .card-content`, pero `CardContent` no agrega clase `card-content`; usa solo clases Tailwind (`p-6 pt-0`).
+   - También intenta reducir `[class*='p-4']` y `[class*='p-3']`, pero muchas tarjetas grandes vienen de `CardHeader p-6`, `CardContent p-6`, `text-xl`, botones altos y componentes como `MonthDetailPanel`.
+   - Resultado: algunas cosas bajaron, pero muchas siguen con tamaño desktop/tablet.
 
-### 1. Fix scroll bounce in MobileDashboard
-- Remove `AnimatePresence` and `motion.div` wrappers for view switching on mobile — use simple conditional rendering instead (no exit animation = no height collapse)
-- This eliminates the layout shift that causes the snap-back
+## Plan de corrección definitiva
 
-### 2. Reduce mobile sizing globally via CSS
-In `src/index.css`, add a mobile-specific density override (max-width: 639px):
-- Reduce `page-container` padding to `px-3 py-2`
-- Reduce `.stats-grid-2x2` gap to `gap-1.5`
-- Add `.mobile-compact` overrides: smaller card padding (`p-2`), smaller text sizes
-- Reduce `mobile-bottom-nav-height` from 64px to 56px
+### 1. Convertir el layout móvil en un shell nativo con scroll controlado
+Cambiar `Layout.tsx` para que en móvil:
 
-### 3. Compact MobileStatsGrid
-- Reduce icon containers from `w-10 h-10` to `w-8 h-8`, icons from `h-5 w-5` to `h-4 w-4`
-- Reduce value text from `text-lg` to `text-sm font-bold`
-- Reduce card padding from `p-3` to `p-2`
+```text
+html/body/root
+  no scrollean horizontalmente
 
-### 4. Compact MobileDashboard content
-- Reduce `LiveClock`, `DashboardNotificationHub`, `MissionControl`, `DashboardViewTabs` sizes for mobile
-- Make `DashboardViewTabs` smaller: reduce `py-3 px-4` to `py-2 px-3`, text to `text-xs`
+.mobile-app-shell
+  height: 100dvh
+  overflow: hidden
+  display: flex column
 
-### 5. Create `MobileTabLayout` — reusable tabbed section navigator
-A new component that pages can use to organize their content into swipeable/tappable tabs instead of one long scroll:
-- Sticky horizontal pill bar below the page header
-- Each pill = a logical section of the page
-- Only renders the active section's content
-- Used by all major pages: Expenses, Income, Banking, Budget, Analytics, etc.
+header
+  height compacta fija/sticky dentro del shell
 
-### 6. Apply `MobileTabLayout` to key pages (mobile only)
-For each page, wrap the mobile view in tab sections:
+.mobile-app-main
+  flex: 1
+  min-height: 0
+  overflow-y: auto
+  overflow-x: hidden
+  -webkit-overflow-scrolling: touch
+  overscroll-behavior-y: contain
+  padding-bottom suficiente para bottom nav
 
-**Expenses** → Tabs: [Lista | Filtros | Insights | Calendario]
-**Income** → Tabs: [Lista | Resumen]
-**Banking** → Tabs: [Resumen | Transacciones | Herramientas]
-**Budget** → Already has tabs, just make them compact on mobile
-**Analytics** → Tabs: [Gráficos | Predicciones | Simulador]
-**Net Worth** → Tabs: [Resumen | Activos | Deudas]
+bottom nav
+  fixed o sticky inferior, sin bloquear contenido
+```
 
-### 7. Compact PageHeader for mobile
-- Reduce title from `text-2xl` to `text-lg`
-- Hide description on mobile
-- Make breadcrumbs smaller
+Esto elimina la competencia entre scroll de `body` y scroll del contenido.
 
-## Files to Create
-- `src/components/mobile/MobileTabLayout.tsx` — reusable tab navigator
+### 2. Corregir CSS global móvil
+Actualizar `index.css` y `App.css` para:
+- usar `height: 100%` y `100dvh` correctamente en `html/body/#root`;
+- evitar `body` como contenedor principal de scroll en modo app móvil;
+- agregar reglas específicas para `.mobile-app-shell` y `.mobile-app-main`;
+- reducir scrollbar y evitar rebote al final del contenido;
+- añadir padding inferior real considerando bottom nav + safe area.
 
-## Files to Modify (~15 files)
-- `src/index.css` — mobile compact density
-- `src/components/Layout.tsx` — reduce bottom nav height
-- `src/components/dashboard/MobileDashboard.tsx` — remove AnimatePresence, compact spacing
-- `src/components/dashboard/MobileStatsGrid.tsx` — smaller cards
-- `src/components/dashboard/DashboardViewTabs.tsx` — compact on mobile
-- `src/components/dashboard/MobileSectionPills.tsx` — compact
-- `src/components/PageHeader.tsx` — compact mobile
-- `src/pages/Expenses.tsx` — add MobileTabLayout
-- `src/pages/Income.tsx` — add MobileTabLayout
-- `src/pages/Banking.tsx` — add MobileTabLayout
-- `src/pages/Analytics.tsx` — add MobileTabLayout
-- `src/pages/NetWorth.tsx` — add MobileTabLayout
-- `src/pages/Settings.tsx` — add MobileTabLayout
+### 3. Hacer pestañas reales en el Dashboard móvil
+Refactorizar `MobileDashboard.tsx` para usar `MobileTabLayout` con secciones separadas, por ejemplo:
 
-## Technical Notes
-- `MobileTabLayout` only activates on `useIsMobile()` — desktop is unchanged
-- Tab state persisted in URL search params so back button works
-- Sticky tab bar uses `position: sticky; top: 52px` (below mobile header)
-- Each tab lazy-renders its content to keep initial load fast
+```text
+Resumen
+  stats principales + balance mensual compacto
+
+Timeline
+  resumen anual + detalle del mes
+
+Acciones
+  captura, ingresos, gastos, presupuesto, banking
+
+Sistema
+  mission control, notificaciones, perfil, gamificación
+
+Ecosistema
+  widgets de ecosistema / narrative / banking summary
+```
+
+Así el usuario no tiene que bajar y bajar en una sola columna infinita.
+
+### 4. Compactar de verdad los componentes móviles críticos
+Ajustar componentes que hoy siguen grandes:
+- `MobileDashboard.tsx`
+- `DashboardViewTabs.tsx`
+- `MobileStatsGrid.tsx`
+- `YearTimelineChart.tsx`
+- `MonthDetailPanel.tsx`
+- `MissionControl.tsx`
+- `MobileTabLayout.tsx`
+
+Cambios específicos:
+- headers de tarjetas de `p-6` a `p-2/p-3` en móvil;
+- títulos `text-xl` a `text-sm/text-base` en móvil;
+- botones altos a `h-8/h-9`;
+- ocultar textos secundarios largos en móvil;
+- convertir bloques de 1 columna demasiado altos en grids compactos;
+- colapsar secciones pesadas por defecto.
+
+### 5. Corregir `MobileTabLayout` para que sea visible y robusto
+Ajustar `MobileTabLayout` para:
+- sticky correcto bajo el header móvil;
+- menos altura;
+- indicadores claros;
+- persistencia por URL sin romper el scroll;
+- resetear scroll interno al cambiar de pestaña solo dentro de `mobile-app-main`, no en `window`.
+
+### 6. Revisar pantallas sin pestañas móviles
+Actualmente hay páginas que aún no usan `MobileTabLayout`:
+- `Budget.tsx`
+- `Bills.tsx`
+- `Subscriptions.tsx`
+- `Investments.tsx`
+- parte de `Settings.tsx` usa otra estrategia, no `MobileTabLayout`
+
+Aplicaré la misma estrategia de pestañas/compactación donde corresponda para que sea consistente en toda la app.
+
+## Archivos a modificar
+
+- `src/components/Layout.tsx`
+- `src/index.css`
+- `src/App.css`
+- `src/components/mobile/MobileTabLayout.tsx`
+- `src/components/dashboard/MobileDashboard.tsx`
+- `src/components/dashboard/DashboardViewTabs.tsx`
+- `src/components/dashboard/MobileStatsGrid.tsx`
+- `src/components/dashboard/YearTimelineChart.tsx`
+- `src/components/dashboard/MonthDetailPanel.tsx`
+- `src/components/dashboard/MissionControl.tsx`
+- `src/pages/Budget.tsx`
+- `src/pages/Bills.tsx`
+- `src/pages/Subscriptions.tsx`
+- `src/pages/Investments.tsx`
+- `src/pages/Settings.tsx`
+
+## Resultado esperado
+
+- El scroll móvil dejará de rebotar/cortarse porque habrá un único contenedor scrollable.
+- El Dashboard móvil dejará de ser una página larguísima y pasará a secciones por pestañas.
+- La app se verá realmente móvil: menos padding, textos más pequeños, tarjetas más bajas y navegación más clara.
+- Las secciones principales quedarán agrupadas por función para que el usuario no se pierda bajando indefinidamente.

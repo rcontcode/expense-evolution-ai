@@ -333,7 +333,7 @@ export function MissionControl({ compact = false }: MissionControlProps) {
   if (compact && !expanded) {
     return (
       <Card className="cursor-pointer hover:border-primary/50 transition-colors" onClick={() => setExpanded(true)}>
-        <CardContent className="py-3 px-4">
+        <CardContent className="py-2 px-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Rocket className="h-4 w-4 text-primary" />

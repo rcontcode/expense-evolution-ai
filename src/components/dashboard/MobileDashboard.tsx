@@ -1,18 +1,20 @@
 import { useState, useCallback, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Camera, DollarSign, PieChart, Receipt, Building2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useDashboardStats } from '@/hooks/data/useDashboardStats';
 import { DashboardNotificationHub } from '@/components/dashboard/DashboardNotificationHub';
 import { YearTimelineChart } from '@/components/dashboard/YearTimelineChart';
 import { MonthDetailPanel } from '@/components/dashboard/MonthDetailPanel';
 import { MobileStatsGrid } from '@/components/dashboard/MobileStatsGrid';
-import { DashboardViewTabs } from '@/components/dashboard/DashboardViewTabs';
+import { MobileTabLayout, type MobileTab } from '@/components/mobile';
 import { ProgressiveOnboarding } from '@/components/onboarding/ProgressiveOnboarding';
 import { LiveClock } from '@/components/dashboard/LiveClock';
 import { ProfileCompletionNudge } from '@/components/profile/ProfileCompletionNudge';
 import { DashboardGamificationWidget } from '@/components/gamification';
-import { MobileSectionPills } from '@/components/dashboard/MobileSectionPills';
 import { MissionControl } from '@/components/dashboard/MissionControl';
 
 const LazyEcosystemWidgets = lazy(() => import('@/components/ecosystem/EcosystemDashboardWidgets'));
@@ -31,7 +33,6 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
 
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-  const [activeView, setActiveView] = useState<'resumen' | 'control'>('resumen');
 
   const handleAddIncome = useCallback(() => navigate('/income'), [navigate]);
   const handleAddExpense = useCallback(() => navigate('/expenses'), [navigate]);
@@ -41,71 +42,118 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
   const monthlyBalance = monthlyIncome - monthlyExpenses;
   const savingsRate = monthlyIncome > 0 ? ((monthlyIncome - monthlyExpenses) / monthlyIncome * 100) : 0;
 
-  return (
-    <div className="mobile-compact space-y-2 pb-6">
-      <LiveClock />
+  const quickActions = [
+    { icon: Camera, label: language === 'es' ? 'Capturar' : 'Capture', onClick: onQuickCapture ?? (() => navigate('/mobile-capture')), variant: 'default' as const },
+    { icon: Receipt, label: language === 'es' ? '+ Gasto' : '+ Expense', onClick: handleAddExpense, variant: 'outline' as const },
+    { icon: DollarSign, label: language === 'es' ? '+ Ingreso' : '+ Income', onClick: handleAddIncome, variant: 'outline' as const },
+    { icon: PieChart, label: language === 'es' ? 'Budget' : 'Budget', onClick: () => navigate('/budget'), variant: 'outline' as const },
+    { icon: Building2, label: language === 'es' ? 'Banco' : 'Bank', onClick: () => navigate('/banking'), variant: 'outline' as const },
+  ];
 
-      <DashboardNotificationHub />
-
-      <ProgressiveOnboarding />
-
-      <MobileStatsGrid
-        isLoading={isLoading}
-        monthlyIncome={monthlyIncome}
-        monthlyExpenses={monthlyExpenses}
-        monthlyBalance={monthlyBalance}
-        savingsRate={savingsRate}
-      />
-
-      <MissionControl compact />
-
-      <DashboardViewTabs activeTab={activeView} onTabChange={setActiveView} />
-      
-      <MobileSectionPills activeView={activeView} />
-
-      {/* Simple conditional render — no AnimatePresence to avoid scroll bounce */}
-      {activeView === 'resumen' ? (
+  const tabs: MobileTab[] = [
+    {
+      id: 'resumen',
+      label: language === 'es' ? 'Resumen' : 'Summary',
+      emoji: '📊',
+      content: (
         <div className="space-y-2">
-          <div className="overflow-x-auto -mx-3 px-3" data-section="timeline">
-            <YearTimelineChart
-              selectedMonth={selectedMonth}
-              onMonthSelect={setSelectedMonth}
-              selectedYear={selectedYear}
-              onYearChange={setSelectedYear}
-            />
-          </div>
-
+          <MobileStatsGrid
+            isLoading={isLoading}
+            monthlyIncome={monthlyIncome}
+            monthlyExpenses={monthlyExpenses}
+            monthlyBalance={monthlyBalance}
+            savingsRate={savingsRate}
+          />
           <MonthDetailPanel
             year={selectedYear}
             month={selectedMonth}
             onAddIncome={handleAddIncome}
             onAddExpense={handleAddExpense}
+            compact
           />
-
+        </div>
+      ),
+    },
+    {
+      id: 'timeline',
+      label: language === 'es' ? 'Año' : 'Year',
+      emoji: '📅',
+      content: (
+        <div className="space-y-2" data-section="timeline">
+          <YearTimelineChart
+            selectedMonth={selectedMonth}
+            onMonthSelect={setSelectedMonth}
+            selectedYear={selectedYear}
+            onYearChange={setSelectedYear}
+            compact
+          />
+        </div>
+      ),
+    },
+    {
+      id: 'acciones',
+      label: language === 'es' ? 'Acciones' : 'Actions',
+      emoji: '⚡',
+      content: (
+        <div className="space-y-2">
+          <Card>
+            <CardContent className="p-2">
+              <div className="grid grid-cols-2 gap-2">
+                {quickActions.map(({ icon: Icon, label, onClick, variant }) => (
+                  <Button key={label} variant={variant} onClick={onClick} className="h-9 justify-start gap-2 text-xs">
+                    <Icon className="h-3.5 w-3.5" />
+                    <span className="truncate">{label}</span>
+                  </Button>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
           <Suspense fallback={null}>
             <LazyBankingSummaryCard compact />
           </Suspense>
-
-          <Suspense fallback={null}>
-            <LazyFinancialNarrative />
-          </Suspense>
-
-          <div data-section="gamification">
+        </div>
+      ),
+    },
+    {
+      id: 'sistema',
+      label: language === 'es' ? 'Sistema' : 'System',
+      emoji: '🎛️',
+      content: (
+        <div className="space-y-2">
+          <MissionControl compact />
+          <DashboardNotificationHub />
+          <ProgressiveOnboarding />
+          <div data-section="gamification" className="space-y-2">
             <ProfileCompletionNudge />
             <DashboardGamificationWidget compact={true} />
           </div>
-
-          <div data-section="ecosystem">
-            <Suspense fallback={null}>
-              <LazyEcosystemWidgets />
-            </Suspense>
-          </div>
         </div>
-      ) : (
-        <Suspense fallback={<Skeleton className="h-96" />}>
-          <OrganizedDashboard />
-        </Suspense>
-      )}
+      ),
+    },
+    {
+      id: 'ecosistema',
+      label: language === 'es' ? 'Ecosistema' : 'Ecosystem',
+      emoji: '🌐',
+      content: (
+        <div className="space-y-2" data-section="ecosystem">
+          <Suspense fallback={null}>
+            <LazyEcosystemWidgets />
+          </Suspense>
+          <Suspense fallback={null}>
+            <LazyFinancialNarrative />
+          </Suspense>
+          <Suspense fallback={<Skeleton className="h-72" />}>
+            <OrganizedDashboard />
+          </Suspense>
+        </div>
+      ),
+    },
+  ];
+
+  return (
+    <div className="mobile-compact space-y-2">
+      <LiveClock />
+      <MobileTabLayout tabs={tabs} paramKey="dash" defaultTab="resumen" />
     </div>
   );
 }

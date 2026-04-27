@@ -136,6 +136,7 @@ interface MonthDetailPanelProps {
   month: number;
   onAddIncome: () => void;
   onAddExpense: () => void;
+  compact?: boolean;
 }
 
 const CATEGORY_COLORS = [
@@ -154,6 +155,7 @@ export function MonthDetailPanel({
   month,
   onAddIncome,
   onAddExpense,
+  compact = false,
 }: MonthDetailPanelProps) {
   const { language } = useLanguage();
   const { currentCurrency } = useEntity();
@@ -340,8 +342,8 @@ export function MonthDetailPanel({
   }, [profile?.full_name, totals, isPositive, language]);
 
   return (
-    <Card className="border border-border/50 bg-gradient-to-br from-card via-card to-accent/5 backdrop-blur-sm overflow-hidden">
-      <CardHeader className="pb-4">
+    <Card className={cn("border border-border/50 bg-gradient-to-br from-card via-card to-accent/5 backdrop-blur-sm overflow-hidden", compact && "rounded-lg")}>
+      <CardHeader className={cn("pb-4", compact && "p-2 pb-1")}>
         {/* Personalized greeting banner */}
         {personalizedMessage && (
           <div className={cn(
@@ -354,7 +356,7 @@ export function MonthDetailPanel({
           </div>
         )}
         
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className={cn("flex flex-col sm:flex-row sm:items-center sm:justify-between", compact ? "gap-2" : "gap-4")}>
           {/* Month title */}
           <div className="flex items-center gap-3">
             <div className={cn(
@@ -364,10 +366,10 @@ export function MonthDetailPanel({
               <Wallet className={cn("h-5 w-5", isPositive ? "text-success" : "text-destructive")} />
             </div>
             <div>
-              <CardTitle className="text-xl font-bold">
+              <CardTitle className={cn("font-bold", compact ? "text-base" : "text-xl")}>
                 {fullMonthNames[month]} {year}
               </CardTitle>
-              <p className="text-sm text-muted-foreground">
+              <p className={cn("text-muted-foreground", compact ? "text-xs" : "text-sm")}>
                 {language === 'es' ? 'Resumen Financiero' : 'Financial Summary'}
               </p>
             </div>
@@ -377,9 +379,9 @@ export function MonthDetailPanel({
         </div>
       </CardHeader>
       
-      <CardContent className="space-y-4">
+      <CardContent className={cn("space-y-4", compact && "p-2 pt-1 space-y-2")}>
         {/* Balance cards row - More compact */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+        <div className={cn("grid gap-2", compact ? "grid-cols-3" : "grid-cols-1 sm:grid-cols-3")}>
           {/* Income */}
           <div className="p-3 rounded-xl bg-success/5 border border-success/20">
             <div className="flex items-center justify-between mb-1">
@@ -475,6 +477,7 @@ export function MonthDetailPanel({
           </div>
         )}
         
+        {!compact && <>
         {/* Quick Actions - Prominent */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           <Button 
@@ -643,6 +646,7 @@ export function MonthDetailPanel({
             </div>
           </CollapsibleContent>
         </Collapsible>
+        </>}
       </CardContent>
     </Card>
   );
