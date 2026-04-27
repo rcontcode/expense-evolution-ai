@@ -1,4 +1,4 @@
-import { ReactNode, useState, useCallback } from 'react';
+import { ReactNode, useState, useCallback, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -27,6 +27,9 @@ export function MobileTabLayout({ tabs, paramKey = 'mtab', defaultTab, className
 
   const handleTabChange = useCallback((tabId: string) => {
     setActiveTab(tabId);
+    requestAnimationFrame(() => {
+      document.querySelector<HTMLElement>('.mobile-app-main')?.scrollTo({ top: 0, behavior: 'auto' });
+    });
     setSearchParams(prev => {
       const next = new URLSearchParams(prev);
       if (tabId === (defaultTab || tabs[0]?.id)) {
@@ -37,6 +40,12 @@ export function MobileTabLayout({ tabs, paramKey = 'mtab', defaultTab, className
       return next;
     }, { replace: true });
   }, [paramKey, defaultTab, tabs, setSearchParams]);
+
+  useEffect(() => {
+    if (paramValue && tabs.some(t => t.id === paramValue) && paramValue !== activeTab) {
+      setActiveTab(paramValue);
+    }
+  }, [paramValue, tabs, activeTab]);
 
   // Desktop: render all content sequentially
   if (!isMobile) {
@@ -52,16 +61,16 @@ export function MobileTabLayout({ tabs, paramKey = 'mtab', defaultTab, className
   const activeContent = tabs.find(t => t.id === activeTab)?.content;
 
   return (
-    <div className={className}>
+    <div className={cn('mobile-tab-layout', className)}>
       {/* Sticky tab bar */}
-      <div className="sticky top-[52px] z-30 bg-background/95 backdrop-blur-sm border-b border-border/40 -mx-4 px-4 py-1.5">
-        <div className="flex gap-1.5 overflow-x-auto scrollbar-hide" style={{ WebkitOverflowScrolling: 'touch' }}>
+      <div className="sticky top-0 z-30 bg-background/95 backdrop-blur-sm border-b border-border/40 -mx-3 px-3 py-1">
+        <div className="flex gap-1 overflow-x-auto scrollbar-hide" style={{ WebkitOverflowScrolling: 'touch' }}>
           {tabs.map(tab => (
             <button
               key={tab.id}
               onClick={() => handleTabChange(tab.id)}
               className={cn(
-                'flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap shrink-0 transition-colors',
+                'flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[11px] font-semibold whitespace-nowrap shrink-0 transition-colors',
                 activeTab === tab.id
                   ? 'bg-primary text-primary-foreground shadow-sm'
                   : 'bg-muted/60 text-muted-foreground'
@@ -75,7 +84,7 @@ export function MobileTabLayout({ tabs, paramKey = 'mtab', defaultTab, className
       </div>
 
       {/* Active tab content */}
-      <div className="mt-3">
+      <div className="mt-2 mobile-compact">
         {activeContent}
       </div>
     </div>
