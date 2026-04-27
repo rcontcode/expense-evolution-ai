@@ -477,6 +477,7 @@ export function MonthDetailPanel({
           </div>
         )}
         
+        {!compact && <>
         {/* Quick Actions - Prominent */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           <Button 
@@ -645,6 +646,7 @@ export function MonthDetailPanel({
             </div>
           </CollapsibleContent>
         </Collapsible>
+        </>}
       </CardContent>
     </Card>
   );
