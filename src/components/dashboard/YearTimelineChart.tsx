@@ -52,6 +52,7 @@ interface YearTimelineChartProps {
   onMonthSelect: (month: number) => void;
   selectedYear: number;
   onYearChange: (year: number) => void;
+  compact?: boolean;
 }
 
 export function YearTimelineChart({
@@ -59,6 +60,7 @@ export function YearTimelineChart({
   onMonthSelect,
   selectedYear,
   onYearChange,
+  compact = false,
 }: YearTimelineChartProps) {
   const { language } = useLanguage();
   const { currentCurrency } = useEntity();
@@ -288,12 +290,12 @@ export function YearTimelineChart({
   };
 
   return (
-    <Card className="border border-border/50 bg-card/80 backdrop-blur-sm overflow-hidden h-full flex flex-col">
-      <CardHeader className="pb-2">
+    <Card className={cn("border border-border/50 bg-card/80 backdrop-blur-sm overflow-hidden h-full flex flex-col", compact && "rounded-lg")}>
+      <CardHeader className={cn("pb-2", compact && "p-2 pb-1")}>
         <div className="flex items-center justify-between flex-wrap gap-2">
           <div className="flex items-center gap-2">
-            <Calendar className="h-5 w-5 text-primary" />
-            <CardTitle className="text-lg font-semibold">
+            <Calendar className={cn("text-primary", compact ? "h-4 w-4" : "h-5 w-5")} />
+            <CardTitle className={cn("font-semibold", compact ? "text-sm" : "text-lg")}>
               {language === 'es' ? 'Resumen del Año' : 'Year Overview'}
             </CardTitle>
           </div>
@@ -316,7 +318,7 @@ export function YearTimelineChart({
         </div>
       </CardHeader>
       
-      <CardContent className="space-y-3 flex-1 flex flex-col overflow-y-auto">
+      <CardContent className={cn("space-y-3 flex-1 flex flex-col overflow-y-auto", compact && "p-2 pt-1 space-y-2 overflow-visible")}>
         {/* Mobile: Selected Month Info Banner */}
         {isTouchDevice && (
           <div className="sm:hidden p-3 rounded-xl bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border border-primary/20">
@@ -384,7 +386,7 @@ export function YearTimelineChart({
                   isFuture && "opacity-40 cursor-not-allowed"
                 )}
               >
-                <div className="relative w-full h-12 sm:h-16 lg:h-20 flex items-end justify-center gap-0.5">
+                <div className={cn("relative w-full flex items-end justify-center gap-0.5", compact ? "h-10" : "h-12 sm:h-16 lg:h-20")}>
                   <div className="w-1.5 sm:w-2.5 rounded-t transition-all duration-300 bg-gradient-to-t from-success/80 to-success/50"
                     style={{ height: `${Math.max(incomeHeight, 4)}%` }} />
                   <div className="w-1.5 sm:w-2.5 rounded-t transition-all duration-300 bg-gradient-to-t from-destructive/80 to-destructive/50"
