@@ -433,6 +433,16 @@ export const Layout = ({ children }: LayoutProps) => {
     return () => root.classList.remove('stability-mode');
   }, []);
 
+  // Mobile app shell owns vertical scroll. Prevent body/window from competing with it.
+  useEffect(() => {
+    document.body.classList.toggle('app-mobile-scroll-lock', isMobile);
+    document.documentElement.classList.toggle('app-mobile-scroll-lock', isMobile);
+    return () => {
+      document.body.classList.remove('app-mobile-scroll-lock');
+      document.documentElement.classList.remove('app-mobile-scroll-lock');
+    };
+  }, [isMobile]);
+
   // Unified submenu navigation handler with highlight effect (8 seconds)
   const handleSubmenuNavigation = useCallback((path: string) => {
     const hashIndex = path.indexOf('#');
@@ -482,10 +492,10 @@ export const Layout = ({ children }: LayoutProps) => {
   // Mobile Layout
   if (isMobile) {
     return (
-      <div className="mobile-app-shell flex flex-col min-h-[100dvh] bg-background relative overflow-x-hidden">
+      <div className="mobile-app-shell flex flex-col h-[100dvh] bg-background relative overflow-hidden">
         <ThemeBackground />
         {/* Mobile Header */}
-        <header className="sticky top-0 z-50 backdrop-blur-2xl border-b border-border/30 px-4 py-2" style={{ background: 'hsl(var(--background) / 0.98)' }}>
+        <header className="mobile-app-header shrink-0 z-50 backdrop-blur-2xl border-b border-border/30 px-3 py-1.5" style={{ background: 'hsl(var(--background) / 0.98)' }}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <PhoenixLogo variant="mini" />
@@ -717,8 +727,8 @@ export const Layout = ({ children }: LayoutProps) => {
           </div>
         </header>
 
-        <main className="mobile-app-main flex-1 min-h-0 overflow-x-hidden pb-20">
-          <div className="min-h-full">
+        <main className="mobile-app-main flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
+          <div className="min-h-full pb-[calc(var(--mobile-bottom-nav-height)+env(safe-area-inset-bottom,0px)+1rem)]">
             {children}
           </div>
         </main>
