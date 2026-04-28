@@ -34,9 +34,7 @@ export function UiModeToggle({ className, compact = false }: UiModeToggleProps) 
         ? (language === 'es' ? 'Vista minimalista con lo esencial.' : 'Minimal view with the essentials.')
         : (language === 'es' ? 'Acceso completo a todas las funciones.' : 'Full access to every feature.'),
     });
-    // Navigate to the dashboard root — the Dashboard re-mounts via React Query
-    // when uiMode changes, so no full reload is needed.
-    navigate('/', { replace: true });
+    navigate('/dashboard', { replace: true });
   };
 
   const simpleActive = current === 'simple';
@@ -65,7 +63,7 @@ export function UiModeToggle({ className, compact = false }: UiModeToggleProps) 
         className={cn(
           'flex items-center gap-1.5 px-3 py-1 rounded-full font-semibold text-xs transition-all',
           simpleActive
-            ? 'bg-emerald-500 text-white shadow-md scale-[1.02] cursor-default'
+            ? 'bg-emerald-500 text-primary-foreground shadow-md scale-[1.02] cursor-default'
             : 'text-muted-foreground hover:text-foreground hover:bg-background/60 cursor-pointer',
         )}
       >
@@ -87,7 +85,7 @@ export function UiModeToggle({ className, compact = false }: UiModeToggleProps) 
         className={cn(
           'flex items-center gap-1.5 px-3 py-1 rounded-full font-semibold text-xs transition-all',
           advancedActive
-            ? 'bg-violet-500 text-white shadow-md scale-[1.02] cursor-default'
+            ? 'bg-primary text-primary-foreground shadow-md scale-[1.02] cursor-default'
             : 'text-muted-foreground hover:text-foreground hover:bg-background/60 cursor-pointer',
         )}
       >
