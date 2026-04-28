@@ -7,6 +7,10 @@ import script05 from './05-reports-tax-hub-2min.md?raw';
 import script06 from './06-familia-rodriguez-tour-12min.md?raw';
 import script07 from './07-ecolavanderia-pyme-15min.md?raw';
 import script08 from './08-pareja-millennial-4min.md?raw';
+import script09 from './09-contador-independiente-10min.md?raw';
+import script10 from './10-expat-multipais-8min.md?raw';
+import script11 from './11-jubilado-inversiones-7min.md?raw';
+import script12 from './12-emprendedor-digital-9min.md?raw';
 
 export type DemoScriptScenario =
   | 'maria_profesional'
@@ -14,7 +18,11 @@ export type DemoScriptScenario =
   | 'constructora_ca'
   | 'familia_rodriguez'
   | 'ecolavanderia_spa'
-  | 'pareja_millennial';
+  | 'pareja_millennial'
+  | 'contador_independiente'
+  | 'expat_multipais'
+  | 'jubilado_inversiones'
+  | 'emprendedor_digital';
 
 export interface DemoScript {
   id: string;
@@ -42,6 +50,38 @@ export const DEMO_SCRIPTS: DemoScript[] = [
     duration: '15 min',
     scenario: 'ecolavanderia_spa',
     raw: script07,
+  },
+  {
+    id: 'contador-independiente',
+    number: '09',
+    title: 'Contador Independiente — Multi-entidad (CL)',
+    duration: '10 min',
+    scenario: 'contador_independiente',
+    raw: script09,
+  },
+  {
+    id: 'expat-multipais',
+    number: '10',
+    title: 'Expat Multi-País — CL ↔ CA',
+    duration: '8 min',
+    scenario: 'expat_multipais',
+    raw: script10,
+  },
+  {
+    id: 'jubilado-inversiones',
+    number: '11',
+    title: 'Jubilado con Inversiones — RRSP/TFSA (CA)',
+    duration: '7 min',
+    scenario: 'jubilado_inversiones',
+    raw: script11,
+  },
+  {
+    id: 'emprendedor-digital',
+    number: '12',
+    title: 'Emprendedor Digital — SaaS USD/CLP',
+    duration: '9 min',
+    scenario: 'emprendedor_digital',
+    raw: script12,
   },
   // ARQUETIPOS FOCALIZADOS
   {

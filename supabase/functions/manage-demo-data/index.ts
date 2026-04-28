@@ -17,7 +17,11 @@ type Scenario =
   | "constructora_ca"
   | "familia_rodriguez"
   | "ecolavanderia_spa"
-  | "pareja_millennial";
+  | "pareja_millennial"
+  | "contador_independiente"
+  | "expat_multipais"
+  | "jubilado_inversiones"
+  | "emprendedor_digital";
 
 interface ReqBody {
   action: Action;
@@ -558,6 +562,336 @@ function buildScenarioParejaMillennial(userId: string) {
 }
 
 // ======================================================================
+// SCENARIO G: Contador Independiente (CL) — SHOWCASE B2B multi-entidad
+// Andrés Soto + 2 clientes representativos. Devuelve datos de la entidad PRIMARIA
+// (su EIRL contable). Las otras 2 entidades se insertan extra abajo.
+// ======================================================================
+function buildScenarioContadorIndependiente(userId: string) {
+  const expenses: any[] = [];
+  const incomes: any[] = [];
+  const bankTxns: any[] = [];
+
+  // 3 meses de honorarios cobrados a 8 clientes (24 ingresos)
+  const clientes = ["Restaurant La Picada SpA", "Boutique Camila Ltda", "Constructora Aravena", "Estudio Dental Dr Munoz", "Cafeteria Origen", "Importadora Andes", "Almacen Don Luis", "Studio Yoga Flow"];
+  for (let m = 0; m < 3; m++) {
+    for (const c of clientes) {
+      incomes.push({
+        source: c, amount: 180000 + Math.round(Math.random() * 70000),
+        income_type: "client_payment", date: daysAgo(m * 30 + 5),
+        description: `Honorarios contables ${c}`,
+      });
+    }
+  }
+
+  // Gastos operacionales del contador (3 meses)
+  for (let m = 0; m < 3; m++) {
+    expenses.push({ vendor: "Arriendo oficina centro", amount: 380000, category: "vivienda", date: daysAgo(m * 30 + 1), description: "Arriendo oficina compartida" });
+    expenses.push({ vendor: "Defontana Cloud", amount: 89000, category: "suscripciones", date: daysAgo(m * 30 + 3), description: "ERP contable multi-cliente" });
+    expenses.push({ vendor: "Microsoft 365", amount: 12990, category: "suscripciones", date: daysAgo(m * 30 + 4), description: "Office + Teams" });
+    expenses.push({ vendor: "Adobe Acrobat Pro", amount: 18990, category: "suscripciones", date: daysAgo(m * 30 + 5), description: "Firma digital PDFs" });
+    expenses.push({ vendor: "VTR Empresas", amount: 38990, category: "servicios", date: daysAgo(m * 30 + 8), description: "Internet oficina" });
+    expenses.push({ vendor: "Movistar", amount: 22990, category: "servicios", date: daysAgo(m * 30 + 8), description: "Plan movil profesional" });
+    expenses.push({ vendor: "Colegio Contadores", amount: 35000, category: "educacion", date: daysAgo(m * 30 + 12), description: "Cuota colegio profesional" });
+    expenses.push({ vendor: "Capacitacion SII", amount: 65000, category: "educacion", date: daysAgo(m * 30 + 15), description: "Curso reforma tributaria" });
+    expenses.push({ vendor: "Copec", amount: 38000, category: "transporte", date: daysAgo(m * 30 + 18), description: "Bencina visitas clientes" });
+    expenses.push({ vendor: "Notaria Lopez", amount: 28000, category: "servicios", date: daysAgo(m * 30 + 22), description: "Tramites clientes" });
+  }
+
+  for (const e of expenses) {
+    bankTxns.push({
+      transaction_date: e.date, description: e.vendor.toUpperCase() + " - " + e.description.toUpperCase(),
+      amount: -e.amount, transaction_type: "expense", bank_name: "Banco Santander", category: e.category,
+    });
+  }
+  for (const i of incomes) {
+    bankTxns.push({
+      transaction_date: i.date, description: "TRANSF HONORARIOS " + i.source.toUpperCase(),
+      amount: i.amount, transaction_type: "income", bank_name: "Banco Santander", category: "client_payment",
+    });
+  }
+
+  const bills = [
+    { name: "Defontana Cloud", amount: 89000, category: "suscripciones", frequency: "monthly", next_due_date: daysAgo(-25), priority: "high" },
+    { name: "Arriendo oficina", amount: 380000, category: "vivienda", frequency: "monthly", next_due_date: daysAgo(-28), priority: "high" },
+    { name: "Microsoft 365", amount: 12990, category: "suscripciones", frequency: "monthly", next_due_date: daysAgo(-15) },
+    { name: "VTR Empresas", amount: 38990, category: "servicios", frequency: "monthly", next_due_date: daysAgo(-20) },
+    { name: "Adobe Acrobat Pro", amount: 18990, category: "suscripciones", frequency: "monthly", next_due_date: daysAgo(-10) },
+    { name: "Cuota Colegio Contadores", amount: 35000, category: "educacion", frequency: "monthly", next_due_date: daysAgo(-12) },
+  ];
+
+  const tags = clientes.slice(0, 6).map((c, idx) => ({
+    name: c.toLowerCase().split(" ")[0], color: ["#3B82F6", "#10B981", "#F59E0B", "#EC4899", "#8B5CF6", "#06B6D4"][idx],
+  }));
+
+  const fiscalEntity = {
+    name: "Andres Soto Contabilidad EIRL",
+    country: "CL", entity_type: "individual", tax_regime: "pro_pyme",
+    tax_id: "76123456-K", default_currency: "CLP", is_active: true, is_primary: true,
+  };
+
+  return {
+    expenses: expenses.map((e) => ({ ...e, user_id: userId, currency: "CLP", notes: `${DEMO_TAG} ${e.description}`, status: "pending" })),
+    incomes: incomes.map((i) => ({ ...i, user_id: userId, currency: "CLP", notes: `${DEMO_TAG} ${i.description}`, recurrence: "monthly" })),
+    bills: bills.map((b) => ({ ...b, user_id: userId, currency: "CLP", notes: `${DEMO_TAG} bill contador`, status: "active", payment_method_type: "manual_online" })),
+    bankTxns: bankTxns.map((t) => ({ ...t, user_id: userId, description: `${DEMO_TAG} ${t.description}` })),
+    fiscalEntity: { ...fiscalEntity, user_id: userId, notes: `${DEMO_TAG} contador EIRL` },
+    mileage: [],
+    budgets: [],
+    goals: [],
+    liabilities: [],
+    tags: tags.map((t) => ({ ...t, user_id: userId })),
+  };
+}
+
+// ======================================================================
+// SCENARIO H: Expat Multi-País CL ↔ CA — SHOWCASE multi-moneda
+// Valentina, ingeniera chilena en Toronto. Entidad primaria CA self-employed.
+// ======================================================================
+function buildScenarioExpatMultipais(userId: string) {
+  const expenses: any[] = [];
+  const incomes: any[] = [];
+  const bankTxns: any[] = [];
+
+  // Gastos en Toronto (CAD) - 3 meses
+  for (let m = 0; m < 3; m++) {
+    expenses.push({ vendor: "Loblaws", amount: 285, category: "alimentacion", date: daysAgo(m * 30 + 3), description: "Groceries weekly", currency: "CAD" });
+    expenses.push({ vendor: "Loblaws", amount: 245, category: "alimentacion", date: daysAgo(m * 30 + 17), description: "Groceries weekly", currency: "CAD" });
+    expenses.push({ vendor: "TTC Presto", amount: 156, category: "transporte", date: daysAgo(m * 30 + 1), description: "Monthly TTC pass", currency: "CAD" });
+    expenses.push({ vendor: "Toronto Hydro", amount: 112, category: "servicios", date: daysAgo(m * 30 + 12), description: "Electricity bill", currency: "CAD" });
+    expenses.push({ vendor: "Rogers Internet", amount: 89, category: "servicios", date: daysAgo(m * 30 + 8), description: "Home internet", currency: "CAD" });
+    expenses.push({ vendor: "Apartment rent Bay St", amount: 2350, category: "vivienda", date: daysAgo(m * 30 + 1), description: "Monthly rent Toronto", currency: "CAD" });
+    expenses.push({ vendor: "Notion", amount: 10, category: "suscripciones", date: daysAgo(m * 30 + 5), description: "Notion Plus USD billed CAD", currency: "CAD" });
+    expenses.push({ vendor: "Adobe CC", amount: 28, category: "suscripciones", date: daysAgo(m * 30 + 5), description: "Creative Cloud USD billed CAD", currency: "CAD" });
+    expenses.push({ vendor: "Spotify", amount: 14, category: "suscripciones", date: daysAgo(m * 30 + 7), description: "Premium individual", currency: "CAD" });
+    expenses.push({ vendor: "Tim Hortons", amount: 32, category: "alimentacion", date: daysAgo(m * 30 + 10), description: "Coffee weekly", currency: "CAD" });
+    expenses.push({ vendor: "Indigo Books", amount: 56, category: "compras", date: daysAgo(m * 30 + 22), description: "Books", currency: "CAD" });
+  }
+
+  // Mantención departamento en Santiago (CLP) - mismos 3 meses
+  for (let m = 0; m < 3; m++) {
+    expenses.push({ vendor: "Gastos comunes Edif Santiago", amount: 135000, category: "vivienda", date: daysAgo(m * 30 + 4), description: "Gastos comunes depto Santiago", currency: "CLP" });
+    expenses.push({ vendor: "Contribuciones SII", amount: 78000, category: "servicios", date: daysAgo(m * 30 + 14), description: "Contribuciones bienes raices", currency: "CLP" });
+  }
+
+  // Ingresos: contractor CAD + arriendo CLP
+  for (let m = 0; m < 3; m++) {
+    incomes.push({ source: "TechCorp Canada", amount: 7800, income_type: "client_payment", date: daysAgo(m * 30 + 15), description: "Software contractor monthly invoice", currency: "CAD" });
+    incomes.push({ source: "Arrendatario depto Santiago", amount: 720000, income_type: "rental", date: daysAgo(m * 30 + 5), description: "Arriendo mensual depto Santiago", currency: "CLP" });
+  }
+
+  for (const e of expenses) {
+    bankTxns.push({
+      transaction_date: e.date, description: e.vendor.toUpperCase() + " " + e.description.toUpperCase(),
+      amount: -e.amount, transaction_type: "expense",
+      bank_name: e.currency === "CAD" ? "TD Canada Trust" : "Banco de Chile", category: e.category,
+    });
+  }
+  for (const i of incomes) {
+    bankTxns.push({
+      transaction_date: i.date, description: "DEPOSIT " + i.source.toUpperCase(),
+      amount: i.amount, transaction_type: "income",
+      bank_name: i.currency === "CAD" ? "TD Canada Trust" : "Banco de Chile", category: i.income_type,
+    });
+  }
+
+  const mileage = [
+    { date: daysAgo(20), kilometers: 45, route: "Home to client downtown", purpose: "Client meeting downtown TO", start_address: "Bay St", end_address: "King St" },
+    { date: daysAgo(45), kilometers: 38, route: "Home to airport", purpose: "Business travel Pearson", start_address: "Bay St", end_address: "YYZ" },
+    { date: daysAgo(70), kilometers: 22, route: "Co-working trip", purpose: "Co-working space Yorkville", start_address: "Bay St", end_address: "Yorkville" },
+  ];
+
+  const fiscalEntity = {
+    name: "Valentina Nunez - CA Self-Employed",
+    country: "CA", province: "ON",
+    entity_type: "individual", tax_regime: "self_employed",
+    tax_id: "123456789", default_currency: "CAD", is_active: true, is_primary: true,
+  };
+
+  return {
+    expenses: expenses.map((e) => ({ ...e, user_id: userId, notes: `${DEMO_TAG} ${e.description}`, status: "pending" })),
+    incomes: incomes.map((i) => ({ ...i, user_id: userId, notes: `${DEMO_TAG} ${i.description}`, recurrence: "monthly" })),
+    bills: [],
+    bankTxns: bankTxns.map((t) => ({ ...t, user_id: userId, description: `${DEMO_TAG} ${t.description}` })),
+    fiscalEntity: { ...fiscalEntity, user_id: userId, notes: `${DEMO_TAG} expat CA primary` },
+    mileage: mileage.map((m) => ({ ...m, user_id: userId, recurrence: "one_time", purpose: `${DEMO_TAG} ${m.purpose}` })),
+    budgets: [],
+    goals: [],
+    liabilities: [],
+    tags: [],
+  };
+}
+
+// ======================================================================
+// SCENARIO I: Jubilado con Inversiones (CA) — SHOWCASE retirement
+// Robert, 67, Vancouver. CPP/OAS + RRSP withdrawals + dividendos.
+// ======================================================================
+function buildScenarioJubiladoInversiones(userId: string) {
+  const expenses: any[] = [];
+  const incomes: any[] = [];
+  const bankTxns: any[] = [];
+
+  // Gastos de jubilado (3 meses, CAD)
+  for (let m = 0; m < 3; m++) {
+    expenses.push({ vendor: "Save-On-Foods", amount: 320, category: "alimentacion", date: daysAgo(m * 30 + 3), description: "Groceries Vancouver" });
+    expenses.push({ vendor: "Save-On-Foods", amount: 285, category: "alimentacion", date: daysAgo(m * 30 + 17), description: "Groceries biweekly" });
+    expenses.push({ vendor: "BC Hydro", amount: 95, category: "servicios", date: daysAgo(m * 30 + 8), description: "Electricity" });
+    expenses.push({ vendor: "Fortis BC Gas", amount: 78, category: "servicios", date: daysAgo(m * 30 + 8), description: "Natural gas heating" });
+    expenses.push({ vendor: "Telus Internet", amount: 95, category: "servicios", date: daysAgo(m * 30 + 12), description: "Home internet" });
+    expenses.push({ vendor: "Property tax City of Vancouver", amount: 380, category: "servicios", date: daysAgo(m * 30 + 20), description: "Property tax monthly" });
+    expenses.push({ vendor: "Pacific Blue Cross", amount: 145, category: "salud", date: daysAgo(m * 30 + 5), description: "Extended health coverage" });
+    expenses.push({ vendor: "Shoppers Drug Mart", amount: 68, category: "salud", date: daysAgo(m * 30 + 14), description: "Prescriptions monthly" });
+    expenses.push({ vendor: "Petro-Canada", amount: 75, category: "transporte", date: daysAgo(m * 30 + 10), description: "Gas car biweekly" });
+    expenses.push({ vendor: "ICBC Insurance", amount: 142, category: "transporte", date: daysAgo(m * 30 + 1), description: "Auto insurance" });
+    expenses.push({ vendor: "Stanley Park Pavilion", amount: 85, category: "entretenimiento", date: daysAgo(m * 30 + 22), description: "Lunch with friends" });
+    expenses.push({ vendor: "VanDusen Garden", amount: 25, category: "entretenimiento", date: daysAgo(m * 30 + 25), description: "Garden membership" });
+  }
+
+  // Ingresos pensión (mensuales) + retiros RRSP (trimestrales) + dividendos (trimestrales)
+  for (let m = 0; m < 3; m++) {
+    incomes.push({ source: "Service Canada CPP", amount: 1380, income_type: "pension", date: daysAgo(m * 30 + 27), description: "Canada Pension Plan monthly" });
+    incomes.push({ source: "Service Canada OAS", amount: 720, income_type: "pension", date: daysAgo(m * 30 + 27), description: "Old Age Security monthly" });
+  }
+  // RRSP meltdown trimestral
+  incomes.push({ source: "RBC Direct Investing - RRSP", amount: 4500, income_type: "investment", date: daysAgo(15), description: "Planned RRSP withdrawal Q current" });
+  incomes.push({ source: "RBC Direct Investing - RRSP", amount: 4500, income_type: "investment", date: daysAgo(105), description: "Planned RRSP withdrawal Q-1" });
+  // Dividendos (TD, RY, ENB, T, BCE) trimestrales
+  const dividends = [
+    { src: "TD Bank dividend", amt: 580 }, { src: "Royal Bank RY dividend", amt: 645 },
+    { src: "Enbridge ENB dividend", amt: 720 }, { src: "Telus T dividend", amt: 410 },
+    { src: "BCE Inc dividend", amt: 525 },
+  ];
+  for (const d of dividends) {
+    incomes.push({ source: d.src, amount: d.amt, income_type: "investment", date: daysAgo(20), description: "Quarterly dividend payment" });
+    incomes.push({ source: d.src, amount: d.amt, income_type: "investment", date: daysAgo(110), description: "Quarterly dividend payment" });
+  }
+
+  for (const e of expenses) {
+    bankTxns.push({
+      transaction_date: e.date, description: e.vendor.toUpperCase() + " " + e.description.toUpperCase(),
+      amount: -e.amount, transaction_type: "expense", bank_name: "RBC Royal Bank", category: e.category,
+    });
+  }
+  for (const i of incomes) {
+    bankTxns.push({
+      transaction_date: i.date, description: "DEPOSIT " + i.source.toUpperCase(),
+      amount: i.amount, transaction_type: "income", bank_name: "RBC Royal Bank", category: i.income_type,
+    });
+  }
+
+  const goals = [
+    { name: "Travel fund Europe 2027", target_amount: 15000, current_amount: 6800, deadline: daysAgo(-540), priority: 2, color: "#3B82F6" },
+    { name: "Grandkids education trust", target_amount: 50000, current_amount: 22000, deadline: daysAgo(-2920), priority: 1, color: "#10B981" },
+  ];
+
+  const fiscalEntity = {
+    name: "Robert Chen - Retired Individual",
+    country: "CA", province: "BC",
+    entity_type: "individual", tax_regime: "individual",
+    tax_id: "123456789", default_currency: "CAD", is_active: true, is_primary: true,
+  };
+
+  return {
+    expenses: expenses.map((e) => ({ ...e, user_id: userId, currency: "CAD", notes: `${DEMO_TAG} ${e.description}`, status: "pending" })),
+    incomes: incomes.map((i) => ({ ...i, user_id: userId, currency: "CAD", notes: `${DEMO_TAG} ${i.description}`, recurrence: "monthly" })),
+    bills: [],
+    bankTxns: bankTxns.map((t) => ({ ...t, user_id: userId, description: `${DEMO_TAG} ${t.description}` })),
+    fiscalEntity: { ...fiscalEntity, user_id: userId, notes: `${DEMO_TAG} jubilado CA` },
+    mileage: [],
+    budgets: [],
+    goals: goals.map((g) => ({ ...g, user_id: userId, status: "active" })),
+    liabilities: [],
+    tags: [],
+  };
+}
+
+// ======================================================================
+// SCENARIO J: Emprendedor Digital SaaS (CL) — SHOWCASE Stripe + SaaS stack
+// Tomás, fundador SaaS B2B en Concepción. SpA Pro-PyME, MRR USD vía Stripe.
+// ======================================================================
+function buildScenarioEmprendedorDigital(userId: string) {
+  const expenses: any[] = [];
+  const incomes: any[] = [];
+  const bankTxns: any[] = [];
+
+  // Gastos operacionales SaaS (3 meses)
+  for (let m = 0; m < 3; m++) {
+    // Stack internacional USD facturado en CLP via tarjeta
+    expenses.push({ vendor: "AWS", amount: 84500, category: "suscripciones", date: daysAgo(m * 30 + 2), description: "AWS hosting + RDS" });
+    expenses.push({ vendor: "Vercel", amount: 19000, category: "suscripciones", date: daysAgo(m * 30 + 2), description: "Vercel Pro frontend hosting" });
+    expenses.push({ vendor: "Linear", amount: 7600, category: "suscripciones", date: daysAgo(m * 30 + 4), description: "Linear project management" });
+    expenses.push({ vendor: "Notion", amount: 9500, category: "suscripciones", date: daysAgo(m * 30 + 4), description: "Notion team workspace" });
+    expenses.push({ vendor: "Loom", amount: 14250, category: "suscripciones", date: daysAgo(m * 30 + 5), description: "Loom Business video" });
+    expenses.push({ vendor: "Figma", amount: 14250, category: "suscripciones", date: daysAgo(m * 30 + 5), description: "Figma Professional" });
+    expenses.push({ vendor: "GitHub", amount: 3800, category: "suscripciones", date: daysAgo(m * 30 + 6), description: "GitHub Pro + Copilot" });
+    expenses.push({ vendor: "OpenAI API", amount: 38000, category: "suscripciones", date: daysAgo(m * 30 + 8), description: "OpenAI API usage" });
+    expenses.push({ vendor: "PostHog Cloud", amount: 28500, category: "suscripciones", date: daysAgo(m * 30 + 8), description: "Product analytics" });
+    expenses.push({ vendor: "Resend", amount: 19000, category: "suscripciones", date: daysAgo(m * 30 + 9), description: "Transactional email" });
+    expenses.push({ vendor: "Stripe Atlas fees", amount: 4750, category: "servicios", date: daysAgo(m * 30 + 10), description: "Stripe transaction fees" });
+    expenses.push({ vendor: "1Password Business", amount: 7600, category: "suscripciones", date: daysAgo(m * 30 + 11), description: "Password manager" });
+    expenses.push({ vendor: "Cloudflare Pro", amount: 19000, category: "suscripciones", date: daysAgo(m * 30 + 12), description: "CDN + WAF" });
+    expenses.push({ vendor: "Sentry", amount: 24700, category: "suscripciones", date: daysAgo(m * 30 + 14), description: "Error monitoring" });
+    // Operacional local
+    expenses.push({ vendor: "Co-work Concepcion", amount: 195000, category: "vivienda", date: daysAgo(m * 30 + 1), description: "Co-working desk dedicado" });
+    expenses.push({ vendor: "VTR Internet", amount: 32990, category: "servicios", date: daysAgo(m * 30 + 15), description: "Internet hogar 600 megas" });
+    expenses.push({ vendor: "Cafeteria especialidad", amount: 28500, category: "alimentacion", date: daysAgo(m * 30 + 18), description: "Cafe trabajando" });
+  }
+
+  // Ingresos Stripe (MRR ~$4800 USD facturado en CLP)
+  for (let m = 0; m < 3; m++) {
+    incomes.push({ source: "Stripe payout", amount: 4560000, income_type: "client_payment", date: daysAgo(m * 30 + 7), description: "MRR Stripe payout USD~CLP" });
+    // Plan anual ocasional
+    if (m === 1) {
+      incomes.push({ source: "Stripe annual upgrade", amount: 1900000, income_type: "client_payment", date: daysAgo(m * 30 + 20), description: "Cliente upgrade plan anual" });
+    }
+  }
+
+  for (const e of expenses) {
+    bankTxns.push({
+      transaction_date: e.date, description: e.vendor.toUpperCase() + " " + e.description.toUpperCase(),
+      amount: -e.amount, transaction_type: "expense", bank_name: "Banco Estado Empresas", category: e.category,
+    });
+  }
+  for (const i of incomes) {
+    bankTxns.push({
+      transaction_date: i.date, description: "STRIPE PAYOUT " + i.source.toUpperCase(),
+      amount: i.amount, transaction_type: "income", bank_name: "Banco Estado Empresas", category: "client_payment",
+    });
+  }
+
+  const bills = [
+    { name: "AWS hosting", amount: 84500, category: "suscripciones", frequency: "monthly", next_due_date: daysAgo(-28), priority: "high" },
+    { name: "Co-work Concepcion", amount: 195000, category: "vivienda", frequency: "monthly", next_due_date: daysAgo(-29), priority: "high" },
+    { name: "OpenAI API", amount: 38000, category: "suscripciones", frequency: "monthly", next_due_date: daysAgo(-22) },
+    { name: "Vercel Pro", amount: 19000, category: "suscripciones", frequency: "monthly", next_due_date: daysAgo(-28) },
+    { name: "PostHog Cloud", amount: 28500, category: "suscripciones", frequency: "monthly", next_due_date: daysAgo(-22) },
+  ];
+
+  const goals = [
+    { name: "Buffer 12 meses runway", target_amount: 35000000, current_amount: 14200000, deadline: daysAgo(-365), priority: 1, color: "#10B981" },
+    { name: "Contratar primer dev", target_amount: 8000000, current_amount: 3500000, deadline: daysAgo(-180), priority: 2, color: "#3B82F6" },
+  ];
+
+  const fiscalEntity = {
+    name: "InmoFlow SpA",
+    country: "CL", entity_type: "corporation", tax_regime: "pro_pyme",
+    tax_id: "77234567-8", default_currency: "CLP", is_active: true, is_primary: true,
+  };
+
+  return {
+    expenses: expenses.map((e) => ({ ...e, user_id: userId, currency: "CLP", notes: `${DEMO_TAG} ${e.description}`, status: "pending" })),
+    incomes: incomes.map((i) => ({ ...i, user_id: userId, currency: "CLP", notes: `${DEMO_TAG} ${i.description}`, recurrence: "monthly" })),
+    bills: bills.map((b) => ({ ...b, user_id: userId, currency: "CLP", notes: `${DEMO_TAG} bill SaaS`, status: "active", payment_method_type: "auto_debit" })),
+    bankTxns: bankTxns.map((t) => ({ ...t, user_id: userId, description: `${DEMO_TAG} ${t.description}` })),
+    fiscalEntity: { ...fiscalEntity, user_id: userId, notes: `${DEMO_TAG} SaaS founder` },
+    mileage: [],
+    budgets: [],
+    goals: goals.map((g) => ({ ...g, user_id: userId, status: "active" })),
+    liabilities: [],
+    tags: [],
+  };
+}
+
+// ======================================================================
 // RESET / STATUS / SEED
 // ======================================================================
 const RESET_TABLES = [
@@ -641,6 +975,10 @@ async function seedDemo(supabase: any, userId: string, scenario: Scenario) {
     case "familia_rodriguez": data = buildScenarioFamiliaRodriguez(userId); break;
     case "ecolavanderia_spa": data = buildScenarioEcoLavanderia(userId); break;
     case "pareja_millennial": data = buildScenarioParejaMillennial(userId); break;
+    case "contador_independiente": data = buildScenarioContadorIndependiente(userId); break;
+    case "expat_multipais": data = buildScenarioExpatMultipais(userId); break;
+    case "jubilado_inversiones": data = buildScenarioJubiladoInversiones(userId); break;
+    case "emprendedor_digital": data = buildScenarioEmprendedorDigital(userId); break;
     default: throw new Error(`Unknown scenario: ${scenario}`);
   }
 
