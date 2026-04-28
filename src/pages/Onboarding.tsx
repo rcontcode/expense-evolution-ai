@@ -584,7 +584,7 @@ export default function Onboarding() {
             ) : null}
             {step < 3 ? (
               <Button 
-                onClick={() => setStep(step + 1)} 
+                onClick={() => setStep(step === 1 ? 3 : step + 1)} 
                 disabled={step === 1 && (!province || workTypes.length === 0)}
                 className="ml-auto"
               >
