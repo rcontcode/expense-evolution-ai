@@ -106,9 +106,10 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
   // Single contextual tip — financial education, not advice
   const tip = useMemo(() => {
     if (monthlyIncome === 0 && monthlyTotal === 0) {
+      // Empty state already invites action — show generic financial education instead
       return language === 'es'
-        ? 'Empieza registrando tu primer movimiento para ver tu salud financiera.'
-        : 'Start by logging your first movement to see your financial health.';
+        ? 'Registrar tus movimientos durante 30 días seguidos te da una imagen real de tu salud financiera y te ayuda a detectar fugas invisibles.'
+        : 'Logging your activity for 30 days in a row gives you a real picture of your financial health and helps spot hidden leaks.';
     }
     if (!positive) {
       return language === 'es'
