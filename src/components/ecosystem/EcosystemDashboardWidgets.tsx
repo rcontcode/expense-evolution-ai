@@ -4,7 +4,7 @@ import { useFeatureFlags } from '@/hooks/data/useFeatureFlags';
 import { EcosystemContext } from '@/contexts/EcosystemContext';
 import { BundleActiveBadge } from './BundleActiveBadge';
 import { EcosystemNotifications } from './EcosystemNotifications';
-import { EcosystemAICoaching } from './EcosystemAICoaching';
+import { EcosystemSmartCoaching } from './EcosystemSmartCoaching';
 import { EcosystemCoaching } from './EcosystemCoaching';
 import { EcosystemPredictiveAlerts } from './EcosystemPredictiveAlerts';
 import { EcosystemStreaks } from './EcosystemStreaks';
@@ -32,7 +32,7 @@ const EcosystemDashboardWidgets = memo(() => {
     <EcosystemContext.Provider value={{ data, isLoading, isError, refetch }}>
       <BundleActiveBadge variant="full" />
       <EcosystemNotifications />
-      <EcosystemAICoaching />
+      <EcosystemSmartCoaching />
       <EcosystemCoaching />
       <EcosystemPredictiveAlerts />
       <EcosystemStreaks />

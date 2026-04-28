@@ -73,7 +73,7 @@ export const EcosystemCoaching = memo(() => {
           <CardTitle className="text-xs font-bold flex items-center gap-1.5 cursor-pointer" onClick={() => setExpanded(!expanded)}>
             <BrainCircuit className="h-3.5 w-3.5 text-indigo-500" />
             {isEs ? 'Coaching Financiero' : 'Financial Coaching'}
-            <span className="text-[10px] font-normal text-muted-foreground bg-indigo-500/10 px-1.5 py-0.5 rounded-full ml-1">AI</span>
+            <span className="text-[10px] font-normal text-muted-foreground bg-indigo-500/10 px-1.5 py-0.5 rounded-full ml-1">Smart</span>
             {expanded ? <ChevronUp className="h-3 w-3 ml-auto" /> : <ChevronDown className="h-3 w-3 ml-auto" />}
           </CardTitle>
         </CardHeader>

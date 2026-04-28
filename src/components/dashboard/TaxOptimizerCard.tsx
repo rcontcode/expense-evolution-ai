@@ -63,7 +63,7 @@ export const TaxOptimizerCard = memo(function TaxOptimizerCard() {
             </div>
             <div>
               <CardTitle className="text-lg">
-                {isCL ? 'Optimizador de Impuestos IA' : 'AI Tax Optimizer'}
+                {isCL ? 'Optimizador Inteligente de Impuestos' : 'Smart Tax Optimizer'}
               </CardTitle>
               <CardDescription>
                 {isCL 
@@ -198,11 +198,11 @@ export const TaxOptimizerCard = memo(function TaxOptimizerCard() {
               </div>
             )}
 
-            {/* AI Suggestions */}
+            {/* Smart Suggestions */}
             <div className="space-y-2">
               <h4 className="text-sm font-medium flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-primary" />
-                Recomendaciones de IA
+                {isCL ? 'Recomendaciones inteligentes' : 'Smart recommendations'}
               </h4>
               <ScrollArea className="h-[300px] rounded-lg border p-4">
                 <div className="prose prose-sm dark:prose-invert max-w-none">
