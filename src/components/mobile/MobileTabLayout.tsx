@@ -62,9 +62,18 @@ export function MobileTabLayout({ tabs, paramKey = 'mtab', defaultTab, className
 
   return (
     <div className={cn('mobile-tab-layout', className)}>
+      {/* Hide scrollbar across all browsers (scoped to this layout) */}
+      <style>{`.mobile-tab-layout .mtl-scroll::-webkit-scrollbar{display:none!important;height:0!important;width:0!important;background:transparent!important}`}</style>
       {/* Sticky tab bar */}
       <div className="sticky top-0 z-30 bg-background/95 backdrop-blur-sm border-b border-border/40 -mx-3 px-3 py-1">
-        <div className="flex gap-1 overflow-x-auto scrollbar-hide" style={{ WebkitOverflowScrolling: 'touch' }}>
+        <div
+          className="mtl-scroll flex gap-1 overflow-x-auto"
+          style={{
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+            WebkitOverflowScrolling: 'touch',
+          }}
+        >
           {tabs.map(tab => (
             <button
               key={tab.id}
