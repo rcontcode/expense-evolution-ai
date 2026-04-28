@@ -483,7 +483,13 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
                   id="simple-savings-goal"
                   type="number"
                   inputMode="decimal"
-                  placeholder={language === 'es' ? 'Ej: 200' : 'e.g. 200'}
+                  placeholder={
+                    monthlyIncome > 0
+                      ? (language === 'es'
+                          ? `Sugerido: ${Math.round(monthlyIncome * 0.2)}`
+                          : `Suggested: ${Math.round(monthlyIncome * 0.2)}`)
+                      : (language === 'es' ? 'Ej: 200' : 'e.g. 200')
+                  }
                   value={goalInput}
                   onChange={(e) => setGoalInput(e.target.value)}
                   onKeyDown={(e) => {
@@ -495,6 +501,18 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
                   className="h-8 text-sm flex-1"
                   disabled={savingGoal}
                 />
+                {monthlyIncome > 0 && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setGoalInput(String(Math.round(monthlyIncome * 0.2)))}
+                    disabled={savingGoal}
+                    className="h-8 px-2 text-[11px] font-semibold"
+                    title={language === 'es' ? 'Sugerir 20% de tus ingresos' : 'Suggest 20% of income'}
+                  >
+                    20%
+                  </Button>
+                )}
                 <Button
                   size="sm"
                   onClick={saveSavingsGoal}
@@ -505,6 +523,13 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
                   <Check className="h-4 w-4" />
                 </Button>
               </div>
+              {monthlyIncome > 0 && (
+                <p className="text-[10px] text-muted-foreground mt-1">
+                  {language === 'es'
+                    ? `La regla 50/30/20 sugiere ahorrar ~20% (${formatCurrency(monthlyIncome * 0.2)})`
+                    : `The 50/30/20 rule suggests saving ~20% (${formatCurrency(monthlyIncome * 0.2)})`}
+                </p>
+              )}
             </div>
           )}
         </CardContent>
