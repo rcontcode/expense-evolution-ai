@@ -1,74 +1,72 @@
+# Próxima ronda — Pulido final
 
-# Próxima ronda de pulido — Modo Simple + Avanzado
-
-Auditoría rápida del estado actual: Simple ya tiene contexto temporal, top categoría, sparkline, atajos contextuales y switcher. Avanzado ya está zonificado y con QuickActions contextuales. Quedan **8 mejoras concretas** de alto impacto.
+Auditoría: el dashboard (Simple y Avanzado) ya tiene contexto temporal, proyección, voz, NextActionBanner, Momentum y zonificación. Quedan **2 frentes claros** de mejora.
 
 ---
 
-## 1. Limpieza final de "AI / IA" en UI
+## Frente A — Limpieza final de marca "AI/IA"
 
-Aún quedan strings prohibidos por la regla de marca:
+La regla Core es estricta: cero "AI/IA" en UI/marketing. Aún quedan strings visibles para el usuario en páginas clave:
 
-- `EcosystemAICoaching.tsx` → `EcosystemSmartCoaching` + texto "Coach Inteligente del Ecosistema" / "Smart Ecosystem Coach". Renombrar archivo y actualizar imports en `EcosystemSection.tsx` y `EcosystemDashboardWidgets.tsx`.
-- `EcosystemCoaching.tsx` línea 76 → reemplazar badge `AI` por `Smart` o quitarlo.
-- `TaxOptimizerCard.tsx` líneas 66, 201, 205 → "Optimizador Inteligente de Impuestos" / "Smart Tax Optimizer", "Recomendaciones inteligentes".
-- `NegotiationScriptGenerator.tsx` línea 148 → badge `Smart`.
-- `SmartSearchChat.tsx` línea 195 → "Asistente Financiero Inteligente" / "Smart Financial Assistant".
+**Landing pública (impacto alto, lo ven prospectos):**
+- `src/pages/Landing.tsx` líneas 244-318 → reemplazar todas las menciones de "Inteligencia artificial / IA / AI" en subtítulos, taglines y bullets de los planes (EvoFinz Pro, Bundle) por "Mentoría Inteligente / Smart Mentorship", "Análisis Inteligente / Smart Analysis", "Predicciones Inteligentes / Smart Predictions", "Coaching Financiero + Mental Inteligente / Smart Financial + Mental Coaching".
 
-## 2. Modo Simple — meta del mes (S4)
+**Páginas internas:**
+- `src/pages/Tags.tsx` líneas 129-130, 249-250 → "Sugerencias Inteligentes / Smart Suggestions". Cambiar copy de "La IA sugiere…" a "El sistema sugiere…".
+- `src/pages/ChaosInbox.tsx` líneas 680-681, 826 → "el sistema lo clasifica…" y "🧠 Analizando…" (sin "con IA").
+- `src/pages/Reconciliation.tsx` línea 451 → comment "Smart Reconciliation Panel".
+- `src/pages/MobileCapture.tsx` línea 146 → comment "Convert to base64 for smart processing".
+- `src/pages/Status.tsx` línea 18 → "Procesamiento Inteligente / Smart Processing".
+- `src/pages/admin/LeadsManagement.tsx` líneas 55, 65 → como es admin (español), usar "scoring automático e inteligencia" / "Inteligencia Smart". Mantener tono admin ES.
 
-Bajo el balance Hero, añadir línea opcional **"Meta de ahorro: $X / $Y este mes"** con barrita si el usuario tiene `preferences.savings_goal_monthly`. Si no la tiene, mostrar CTA pequeño *"Define una meta de ahorro"* → `/settings?tab=goals`. Da un objetivo concreto, no solo balance.
+**Se mantienen sin cambio (por ser legales/técnicas obligatorias):**
+- `src/pages/Legal.tsx` y `src/pages/Privacy.tsx` — la disclosure legal del uso de modelos de IA es **obligatoria** y debe usar el término técnico correcto. La regla de marca aplica al producto, no a documentos legales que requieren transparencia regulatoria.
 
-## 3. Modo Simple — proyección de fin de mes (S5)
+---
 
-Calcular ritmo diario de gasto = `monthlyTotal / monthProgress.day` y proyectar fin de mes. Mostrar como microcopy debajo del Top Category:
+## Frente B — 6 mejoras UX que faltan
 
-> "A este ritmo terminarás el mes con ~$Z" (verde si positivo, ámbar si déficit proyectado).
+### B1. Modo Simple — Persistencia de meta de ahorro
+La meta mensual hoy se lee de `preferences`, pero falta un **CTA inline** cuando no existe. Añadir en `SimpleDashboard.tsx` un mini-input "¿Cuánto quieres ahorrar este mes?" con botón ✓ que guarde directo (sin navegar a `/settings`). Reduce 2 clics.
 
-Es la pregunta #1 que un usuario "simple" se hace. Pura utilidad, cero jerga.
+### B2. Modo Simple — Reacción a inactividad
+Si `recent.length > 0` pero el último movimiento es >7 días atrás, mostrar microcard ámbar:
+> "Hace X días que no registras. ¿Todo bien? Captura uno rápido →"
 
-## 4. Modo Simple — accesibilidad y resumen por voz (S6)
+### B3. Modo Avanzado — Dashboard Density Toggle
+Añadir botón en header del Dashboard "Compact / Comfortable" que controle spacing entre las 3 zonas (`space-y-3` vs `space-y-6`). Persistir en `preferences.dashboard_density`. Útil para usuarios con muchos widgets.
 
-- `aria-live="polite"` en el balance Hero para que lectores de pantalla anuncien cambios.
-- Botón discreto "🔊 Escuchar resumen" que use `speechSynthesis` para leer: *"Tu balance es X, has gastado Y de tus Z ingresos, día N de M."* Reutiliza voz Phoenix si está disponible (mem://features/audio/phoenix-system).
+### B4. Mobile (390px) — Bottom Quick Actions Bar
+El viewport actual del usuario es **390x843** (móvil). En `MobileDashboard.tsx`, añadir una barra fija inferior (sobre la nav) con 3 botones: 📷 Foto · 🎤 Voz · ✏️ Manual, que abran el `QuickCaptureDialog`. Un tap desde cualquier scroll position.
 
-## 5. Modo Simple — tutorial vacío contextual (S7)
+### B5. UiModeToggle — Eliminar el reload
+Hoy `window.location.href = '/'` causa flash blanco y pierde scroll/estado. Cambiar a `navigate('/', { replace: true })` y forzar re-render con un key en el árbol del Dashboard basado en `uiMode`. Sin reload.
 
-Cuando `recent.length === 0` Y no hay onboarding pendiente, mostrar microcard explicando los 3 chips ya existentes con un texto introductorio:
-
-> "Tres formas de registrar tu primer movimiento — elige la más cómoda. Todo se sincroniza automáticamente."
-
-## 6. Modo Avanzado — NextActionBanner global (A6)
-
-Existe `NextActionBanner.tsx` pero no se usa en `Dashboard.tsx`. Añadirlo en Zona 1 ("Hoy"), encima del NotificationHub, para mostrar **la única siguiente acción priorizada** (factura por pagar más urgente, recibo sin clasificar, etc.). Reduce parálisis de decisión.
-
-## 7. Modo Avanzado — Money Momentum visible (A7)
-
-`MoneyMomentumScore.tsx` está implementado pero huérfano. Añadirlo en Zona 3 ("Tu sistema") junto a Gamification — da un indicador único de salud financiera (0-100) que complementa al narrative.
-
-## 8. Modo Avanzado — Toast de bienvenida al cambiar de modo
-
-`UiModeToggle` ya hace `window.location.href = '/'` después de un toast. El toast es bueno pero el reload pierde el contexto. Cambiar a `navigate('/')` con `window.location.reload()` solo si es necesario, y añadir un mini-tour de 1-paso ("¿Sabías que…?") la primera vez que el usuario llega a Avanzado desde Simple — usando el flag `localStorage['advanced-first-visit']`.
+### B6. Empty states globales — Ilustración consistente
+Páginas como `/banking`, `/budget`, `/bills` cuando están vacías muestran solo texto. Crear un componente `<EmptyStateCard>` reutilizable con ícono grande, título, subtítulo y CTA primario. Usarlo en las 3 páginas. Mejora percepción "esto está vacío pero hay algo que hacer".
 
 ---
 
 ## Detalle técnico
 
-**Archivos a crear:**
-- `src/components/ecosystem/EcosystemSmartCoaching.tsx` (rename de `EcosystemAICoaching.tsx`)
-- `src/components/dashboard/SimpleProjection.tsx` (helper opcional para S3+S5)
-
 **Archivos a modificar:**
-- `src/components/dashboard/SimpleDashboard.tsx` (S4, S5, S6, S7, aria-live)
-- `src/components/dashboard/SimpleOnboardingPath.tsx` (sin cambios mayores)
-- `src/pages/Dashboard.tsx` (A6 NextActionBanner, A7 MoneyMomentum)
-- `src/components/ecosystem/EcosystemSection.tsx`, `EcosystemDashboardWidgets.tsx`, `EcosystemCoaching.tsx` (renombre + badge)
-- `src/components/dashboard/TaxOptimizerCard.tsx`, `NegotiationScriptGenerator.tsx` (textos)
-- `src/components/banking/SmartSearchChat.tsx` (texto)
-- `src/components/layout/UiModeToggle.tsx` (mini-tour primera vez en Avanzado)
+- `src/pages/Landing.tsx`, `Tags.tsx`, `ChaosInbox.tsx`, `Reconciliation.tsx`, `MobileCapture.tsx`, `Status.tsx`, `admin/LeadsManagement.tsx` (Frente A)
+- `src/components/dashboard/SimpleDashboard.tsx` (B1, B2)
+- `src/pages/Dashboard.tsx` (B3)
+- `src/components/dashboard/MobileDashboard.tsx` (B4)
+- `src/components/layout/UiModeToggle.tsx` (B5)
 
-**No se toca:** schema DB, edge functions, archivos preconfigurados.
+**Archivos a crear:**
+- `src/components/ui/EmptyStateCard.tsx` (B6)
 
-**Riesgo:** bajo — todos los cambios son aditivos o de copy. El renombre de `EcosystemAICoaching` requiere cuidado con los 2 imports.
+**Páginas a actualizar para usar EmptyStateCard:**
+- `src/pages/Banking.tsx`, `src/pages/Budget.tsx`, `src/pages/Bills.tsx` (B6)
 
-¿Apruebas los 8 puntos? Si quieres recortar (p.ej. solo 1+2+3+6+7 que son los de mayor impacto inmediato), dime cuáles.
+**Riesgo:** bajo. Todos los cambios son aditivos o reemplazos de copy. No toca DB, edge functions, ni archivos preconfigurados.
+
+**Recomendación de scope:** los 2 frentes juntos son ~10 archivos. Si prefieres, podemos partir en 2 entregas:
+1. **Solo Frente A** (limpieza marca, urgente porque es regla Core).
+2. **Frente A + B1-B4** (alto impacto inmediato, deja B5/B6 para después).
+3. **Todo** (los 2 frentes completos).
+
+¿Cuál prefieres? Si no respondes, ejecuto la opción 3 (todo).
