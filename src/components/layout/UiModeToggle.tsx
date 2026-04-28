@@ -18,7 +18,6 @@ export function UiModeToggle({ className, compact = false }: UiModeToggleProps) 
   const { uiMode, setUiMode } = useDisplayPreferences();
   const { language } = useLanguage();
   const { toast } = useToast();
-  const navigate = useNavigate();
 
   const isSimple = uiMode === 'simple';
 
