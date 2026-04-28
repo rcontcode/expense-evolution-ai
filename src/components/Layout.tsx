@@ -97,52 +97,52 @@ interface LayoutProps {
 // Section color themes for visual grouping with 3D icon styles
 const sectionThemes = {
   daily: {
-    gradient: 'from-amber-500/20 to-orange-500/20',
-    border: 'border-amber-500/30',
+    gradient: 'from-transparent to-transparent',
+    border: 'border-border/40',
     text: 'text-amber-600 dark:text-amber-400',
-    iconWrapper: 'bg-gradient-to-br from-amber-400 via-orange-500 to-red-500 shadow-lg shadow-amber-500/50',
-    iconColor: 'text-white drop-shadow-md',
-    glow: 'shadow-amber-500/20',
+    iconWrapper: 'bg-gradient-to-br from-amber-400 to-orange-500',
+    iconColor: 'text-white',
+    glow: '',
   },
   business: {
-    gradient: 'from-blue-500/20 to-indigo-500/20',
-    border: 'border-blue-500/30',
+    gradient: 'from-transparent to-transparent',
+    border: 'border-border/40',
     text: 'text-blue-600 dark:text-blue-400',
-    iconWrapper: 'bg-gradient-to-br from-cyan-400 via-blue-500 to-indigo-600 shadow-lg shadow-blue-500/50',
-    iconColor: 'text-white drop-shadow-md',
-    glow: 'shadow-blue-500/20',
+    iconWrapper: 'bg-gradient-to-br from-cyan-400 to-blue-600',
+    iconColor: 'text-white',
+    glow: '',
   },
   wealth: {
-    gradient: 'from-emerald-500/20 to-teal-500/20',
-    border: 'border-emerald-500/30',
+    gradient: 'from-transparent to-transparent',
+    border: 'border-border/40',
     text: 'text-emerald-600 dark:text-emerald-400',
-    iconWrapper: 'bg-gradient-to-br from-emerald-400 via-green-500 to-teal-600 shadow-lg shadow-emerald-500/50',
-    iconColor: 'text-white drop-shadow-md',
-    glow: 'shadow-emerald-500/20',
+    iconWrapper: 'bg-gradient-to-br from-emerald-400 to-teal-600',
+    iconColor: 'text-white',
+    glow: '',
   },
   analytics: {
-    gradient: 'from-rose-500/20 to-orange-500/20',
-    border: 'border-rose-500/30',
+    gradient: 'from-transparent to-transparent',
+    border: 'border-border/40',
     text: 'text-rose-600 dark:text-rose-400',
-    iconWrapper: 'bg-gradient-to-br from-rose-400 via-red-500 to-orange-600 shadow-lg shadow-rose-500/50',
-    iconColor: 'text-white drop-shadow-md',
-    glow: 'shadow-rose-500/20',
+    iconWrapper: 'bg-gradient-to-br from-rose-400 to-orange-500',
+    iconColor: 'text-white',
+    glow: '',
   },
   growth: {
-    gradient: 'from-violet-500/20 to-fuchsia-500/20',
-    border: 'border-violet-500/30',
+    gradient: 'from-transparent to-transparent',
+    border: 'border-border/40',
     text: 'text-violet-600 dark:text-violet-400',
-    iconWrapper: 'bg-gradient-to-br from-purple-400 via-violet-500 to-fuchsia-600 shadow-lg shadow-violet-500/50',
-    iconColor: 'text-white drop-shadow-md',
-    glow: 'shadow-violet-500/20',
+    iconWrapper: 'bg-gradient-to-br from-purple-400 to-fuchsia-600',
+    iconColor: 'text-white',
+    glow: '',
   },
   system: {
-    gradient: 'from-sky-500/20 to-indigo-500/20',
-    border: 'border-sky-500/30',
+    gradient: 'from-transparent to-transparent',
+    border: 'border-border/40',
     text: 'text-sky-600 dark:text-sky-400',
-    iconWrapper: 'bg-gradient-to-br from-sky-400 via-blue-500 to-indigo-600 shadow-lg shadow-sky-500/50',
-    iconColor: 'text-white drop-shadow-md',
-    glow: 'shadow-sky-500/20',
+    iconWrapper: 'bg-gradient-to-br from-sky-400 to-indigo-600',
+    iconColor: 'text-white',
+    glow: '',
   },
 };
 
@@ -567,9 +567,9 @@ export const Layout = ({ children }: LayoutProps) => {
               </Button>
 
               <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-              <SheetContent side="right" className="w-[300px] p-0 flex flex-col border-0 shadow-2xl bg-background">
-                {/* Header with status indicators moved here from header */}
-                <div className="px-4 py-3 flex items-center justify-between bg-gradient-to-r from-primary/5 to-transparent">
+              <SheetContent side="right" className="w-[88vw] max-w-[340px] p-0 flex flex-col border-l border-border/50 shadow-2xl bg-background">
+                {/* Header */}
+                <div className="px-4 py-3 flex items-center justify-between border-b border-border/40">
                   <div className="flex items-center gap-2.5">
                     <PhoenixLogo variant="mini" />
                     <span className="font-bold text-base bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">EvoFinz</span>
@@ -588,12 +588,12 @@ export const Layout = ({ children }: LayoutProps) => {
                 </div>
                 
                 {/* Entity Selector */}
-                <div className="px-3 py-2 border-b border-border/20">
+                <div className="px-3 py-2 border-b border-border/30">
                   <MobileMenuEntitySelector onNavigate={() => setMobileMenuOpen(false)} />
                 </div>
                 
                 {/* Theme Toggle */}
-                <div className="px-3 py-2 border-b border-border/20 flex items-center justify-between">
+                <div className="px-3 py-2 border-b border-border/30 flex items-center justify-between">
                   <span className="text-xs font-medium text-muted-foreground">{language === 'es' ? 'Tema' : 'Theme'}</span>
                   <Button variant="ghost" size="sm" className="h-8 gap-1.5 px-2.5" onClick={toggleTheme}>
                     {mode === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
@@ -601,15 +601,15 @@ export const Layout = ({ children }: LayoutProps) => {
                   </Button>
                 </div>
                 
-                {/* Quick Access Grid - 4 columns with vibrant 3D icons */}
-                <div className="px-3 py-2.5 bg-gradient-to-r from-muted/50 via-muted/30 to-muted/50">
+                {/* Quick Access Grid - 5 columns */}
+                <div className="px-3 py-3 border-b border-border/30">
                   <div className="grid grid-cols-5 gap-1.5">
                     {[
-                      { icon: LayoutDashboard, label: language === 'es' ? 'Panel' : 'Home', path: '/dashboard', gradient: 'from-amber-400 via-orange-500 to-red-500', shadow: 'shadow-amber-500/40' },
-                      { icon: Receipt, label: language === 'es' ? 'Gastos' : 'Expenses', path: '/expenses', gradient: 'from-red-400 via-rose-500 to-pink-500', shadow: 'shadow-red-500/40' },
-                      { icon: TrendingUp, label: language === 'es' ? 'Ingresos' : 'Income', path: '/income', gradient: 'from-emerald-400 via-green-500 to-teal-500', shadow: 'shadow-emerald-500/40' },
-                      { icon: CalendarCheck, label: language === 'es' ? 'Pagos' : 'Bills', path: '/bills', gradient: 'from-violet-400 via-purple-500 to-indigo-500', shadow: 'shadow-violet-500/40' },
-                      { icon: Inbox, label: language === 'es' ? 'Inbox' : 'Inbox', path: '/chaos', gradient: 'from-blue-400 via-cyan-500 to-sky-500', shadow: 'shadow-blue-500/40' },
+                      { icon: LayoutDashboard, label: language === 'es' ? 'Panel' : 'Home', path: '/dashboard', gradient: 'from-amber-400 to-orange-500' },
+                      { icon: Receipt, label: language === 'es' ? 'Gastos' : 'Expenses', path: '/expenses', gradient: 'from-rose-400 to-pink-500' },
+                      { icon: TrendingUp, label: language === 'es' ? 'Ingresos' : 'Income', path: '/income', gradient: 'from-emerald-400 to-teal-500' },
+                      { icon: CalendarCheck, label: language === 'es' ? 'Pagos' : 'Bills', path: '/bills', gradient: 'from-violet-400 to-indigo-500' },
+                      { icon: Inbox, label: language === 'es' ? 'Inbox' : 'Inbox', path: '/chaos', gradient: 'from-sky-400 to-cyan-500' },
                     ].map((item) => {
                       const Icon = item.icon;
                       const isActive = location.pathname === item.path;
@@ -618,22 +618,21 @@ export const Layout = ({ children }: LayoutProps) => {
                           key={item.path}
                           onClick={() => { navigate(item.path); setMobileMenuOpen(false); }}
                           className={cn(
-                            "flex flex-col items-center gap-1.5 py-2.5 px-1 rounded-xl transition-all",
+                            "flex flex-col items-center gap-1.5 py-2 px-1 rounded-xl transition-all min-w-0",
                             isActive 
-                              ? "bg-background shadow-lg border border-primary/30 scale-[1.02]" 
-                              : "bg-background/70 hover:bg-background border border-border/40 hover:scale-[1.02]"
+                              ? "bg-muted/60 ring-1 ring-primary/30" 
+                              : "hover:bg-muted/40"
                           )}
                         >
                           <div className={cn(
-                            "w-8 h-8 rounded-lg flex items-center justify-center bg-gradient-to-br shadow-md",
-                            item.gradient,
-                            item.shadow
+                            "w-9 h-9 rounded-xl flex items-center justify-center bg-gradient-to-br shadow-sm",
+                            item.gradient
                           )}>
-                            <Icon className="h-4 w-4 text-white drop-shadow-sm" />
+                            <Icon className="h-[18px] w-[18px] text-white" />
                           </div>
                           <span className={cn(
-                            "text-[10px] font-semibold leading-tight",
-                            isActive ? "text-primary" : "text-foreground"
+                            "text-[10px] font-medium leading-tight truncate w-full text-center",
+                            isActive ? "text-primary" : "text-foreground/80"
                           )}>
                             {item.label}
                           </span>
@@ -643,34 +642,24 @@ export const Layout = ({ children }: LayoutProps) => {
                   </div>
                 </div>
                 
-                {/* All Menu Items - Grouped & Compact with Visual Warmth */}
-                <nav className="flex-1 overflow-y-auto px-3 py-2 space-y-2">
+                {/* All Menu Items - clean grouped sections */}
+                <nav className="flex-1 overflow-y-auto px-2 py-2 space-y-1">
                   {NAV_SECTIONS_VISIBLE.slice(isSimpleMode ? 0 : 1).map((section) => {
                     const theme = sectionThemes[section.themeKey];
                     return (
                       <div 
                         key={section.titleKey}
-                        className={cn(
-                          "rounded-lg p-2 border transition-all",
-                          theme.gradient,
-                          theme.border,
-                          "bg-gradient-to-r backdrop-blur-sm"
-                        )}
+                        className="rounded-xl px-1.5 py-1"
                       >
-                        {/* Section Header with icon accent */}
-                        <div className="flex items-center gap-2 mb-1.5">
-                          <div className={cn(
-                            "w-6 h-6 rounded-lg flex items-center justify-center text-xs",
-                            theme.iconWrapper
-                          )}>
-                            <span className="drop-shadow-sm">{section.emoji}</span>
-                          </div>
-                          <span className={cn("text-xs font-bold uppercase tracking-wider", theme.text)}>
+                        {/* Section Header */}
+                        <div className="flex items-center gap-2 px-2 py-1.5">
+                          <span className={cn("text-[10px] font-bold uppercase tracking-[0.08em]", theme.text)}>
                             {t(section.titleKey).replace(/^[^\s]+\s/, '')}
                           </span>
+                          <div className="flex-1 h-px bg-border/40" />
                         </div>
-                        
-                {/* Items - single column for full text visibility */}
+
+                {/* Items */}
                         <div className="space-y-0.5">
                           {section.items.map((item) => {
                             const Icon = item.icon;
@@ -682,25 +671,25 @@ export const Layout = ({ children }: LayoutProps) => {
                             
                             return (
                               <div key={item.path}>
-                                <div className="flex items-center">
+                                <div className="flex items-center gap-1">
                                   <button
                                     onClick={() => { navigate(item.path); setMobileMenuOpen(false); }}
                                     className={cn(
-                                      "flex items-center gap-2.5 px-2.5 py-2 rounded-lg transition-all text-left group flex-1",
+                                      "flex items-center gap-2.5 px-2 py-2 rounded-lg transition-colors text-left flex-1 min-w-0",
                                       isActive 
-                                        ? cn("bg-background shadow-md border", theme.border)
-                                        : "hover:bg-background/80 bg-background/40"
+                                        ? "bg-muted/70"
+                                        : "hover:bg-muted/50"
                                     )}
                                   >
                                     <div className={cn(
-                                      "w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-transform group-hover:scale-110",
+                                      "w-7 h-7 rounded-lg flex items-center justify-center shrink-0",
                                       theme.iconWrapper
                                     )}>
-                                      <Icon className="h-4 w-4 text-white drop-shadow-sm" />
+                                      <Icon className="h-3.5 w-3.5 text-white" />
                                     </div>
                                     <span className={cn(
-                                      "text-sm font-medium transition-colors flex-1",
-                                      isActive ? theme.text : "text-foreground/80 group-hover:text-foreground"
+                                      "text-sm font-medium truncate",
+                                      isActive ? theme.text : "text-foreground/85"
                                     )}>
                                       {t(item.label)}
                                     </span>
@@ -710,18 +699,18 @@ export const Layout = ({ children }: LayoutProps) => {
                                       type="button"
                                       onClick={(e) => { e.stopPropagation(); toggleSubmenu(item.path); }}
                                       className={cn(
-                                        "p-2.5 rounded-xl transition-all shrink-0 border",
+                                        "h-9 w-9 flex items-center justify-center rounded-lg transition-colors shrink-0",
                                         isSubmenuOpen 
-                                          ? "bg-primary/15 text-primary border-primary/30 shadow-sm" 
-                                          : "text-muted-foreground bg-muted/40 border-border/50 hover:bg-primary/10 hover:text-primary hover:border-primary/30"
+                                          ? "bg-muted text-foreground" 
+                                          : "text-muted-foreground hover:bg-muted/60"
                                       )}
                                     >
-                                      <ChevronDown className={cn("h-5 w-5 transition-transform duration-300", isSubmenuOpen && "rotate-180")} />
+                                      <ChevronDown className={cn("h-4 w-4 transition-transform", isSubmenuOpen && "rotate-180")} />
                                     </button>
                                   )}
                                 </div>
                                 {hasChildren && isSubmenuOpen && (
-                                  <div className={cn("ml-9 mt-0.5 mb-1 space-y-0.5 pl-2 border-l-2", theme.border)}>
+                                  <div className="ml-9 mt-0.5 mb-1 space-y-0.5 pl-2 border-l border-border/50">
                                     {item.children!.map((child: NavChild, ci: number) => (
                                       <button
                                         key={`${child.path}-${ci}`}
@@ -729,9 +718,9 @@ export const Layout = ({ children }: LayoutProps) => {
                                           handleSubmenuNavigation(child.path);
                                           setMobileMenuOpen(false);
                                         }}
-                                        className="flex items-center gap-2 w-full px-2 py-1.5 rounded-md text-xs text-muted-foreground hover:text-foreground hover:bg-background/60 transition-all"
+                                        className="flex items-center gap-2 w-full px-2 py-1.5 rounded-md text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
                                       >
-                                        <span className={cn("w-1.5 h-1.5 rounded-full bg-current opacity-40", theme.text)} />
+                                        <span className={cn("w-1 h-1 rounded-full bg-current opacity-50", theme.text)} />
                                         <span className="truncate">{child.label}</span>
                                       </button>
                                     ))}
