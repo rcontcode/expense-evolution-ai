@@ -365,11 +365,13 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
 function ActionButton({
   icon,
   label,
+  subtitle,
   color,
   onClick,
 }: {
   icon: React.ReactNode;
   label: string;
+  subtitle?: string;
   color: 'rose' | 'emerald' | 'violet';
   onClick: () => void;
 }) {
@@ -380,17 +382,27 @@ function ActionButton({
     violet:
       'border-violet-500/30 bg-violet-500/10 hover:bg-violet-500/20 text-violet-700 dark:text-violet-300',
   };
+  const subtitleColor = {
+    rose: 'text-rose-600/70 dark:text-rose-400/70',
+    emerald: 'text-emerald-600/70 dark:text-emerald-400/70',
+    violet: 'text-violet-600/70 dark:text-violet-400/70',
+  };
   return (
     <button
       type="button"
       onClick={onClick}
       className={cn(
-        'flex flex-col items-center justify-center gap-2 py-5 rounded-xl border-2 font-semibold text-sm transition-all hover:scale-[1.04] active:scale-[0.98] shadow-md',
+        'flex flex-col items-center justify-center gap-1.5 py-4 px-2 rounded-xl border-2 font-semibold text-sm transition-all hover:scale-[1.04] active:scale-[0.98] shadow-md',
         colorMap[color],
       )}
     >
       {icon}
-      <span>{label}</span>
+      <span className="leading-tight">{label}</span>
+      {subtitle && (
+        <span className={cn('text-[10px] font-medium leading-tight text-center', subtitleColor[color])}>
+          {subtitle}
+        </span>
+      )}
     </button>
   );
 }
