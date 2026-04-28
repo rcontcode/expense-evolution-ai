@@ -67,7 +67,7 @@ export function SimpleClients() {
                       <div className="min-w-0">
                         <div className="text-sm font-medium truncate">{c.name}</div>
                         <div className="text-xs text-muted-foreground truncate">
-                          {c.email || c.phone || (language === 'es' ? 'Sin contacto' : 'No contact')}
+                          {(c as any).contact_email || (c as any).contact_phone || (language === 'es' ? 'Sin contacto' : 'No contact')}
                         </div>
                       </div>
                     </div>
