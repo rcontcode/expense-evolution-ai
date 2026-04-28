@@ -227,13 +227,24 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
       {/* Hero balance */}
       <Card
         className={cn(
-          'border-2 shadow-xl transition-all overflow-hidden',
+          'border-2 shadow-xl transition-all overflow-hidden relative',
           positive
             ? 'border-emerald-500/30 bg-gradient-to-br from-emerald-500/5 to-teal-500/5'
             : 'border-rose-500/30 bg-gradient-to-br from-rose-500/5 to-orange-500/5',
         )}
       >
-        <CardContent className="py-7 text-center space-y-3">
+        {/* Listen-to-summary button — accessibility helper */}
+        <button
+          type="button"
+          onClick={speakSummary}
+          aria-label={language === 'es' ? 'Escuchar resumen del mes' : 'Listen to monthly summary'}
+          title={language === 'es' ? 'Escuchar resumen' : 'Listen to summary'}
+          className="absolute top-3 right-3 h-8 w-8 rounded-full bg-background/70 hover:bg-background border border-border flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors shadow-sm z-10"
+        >
+          <Volume2 className="h-3.5 w-3.5" />
+        </button>
+
+        <CardContent className="py-7 text-center space-y-3" aria-live="polite">
           <div className="space-y-1">
             <div className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">
               {language === 'es' ? 'Balance del mes' : 'Monthly balance'}
@@ -334,6 +345,55 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
                 <span className="tabular-nums">{formatCurrency(topCategory.amount)}</span>
                 <span className="text-muted-foreground font-normal tabular-nums"> ({topCategory.pct}%)</span>
               </div>
+            </div>
+          )}
+
+          {/* End-of-month projection — answers "where am I headed?" */}
+          {projection && (
+            <div className="pt-1 px-4 text-left">
+              <div className="text-[11px] text-muted-foreground">
+                {language === 'es' ? 'A este ritmo, terminarás el mes con' : 'At this pace, you will end the month at'}
+              </div>
+              <div className={cn(
+                'text-sm font-bold tabular-nums',
+                projection.positive ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400',
+              )}>
+                {projection.positive ? '+' : ''}{formatCurrency(projection.projectedBalance)}
+                <span className="text-[10px] font-normal text-muted-foreground ml-1">
+                  {language === 'es' ? '(estimado)' : '(estimate)'}
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* Savings goal — concrete target if user has set one */}
+          {savingsGoal ? (
+            <div className="pt-2 px-4 text-left">
+              <div className="flex items-center justify-between text-[11px] mb-1">
+                <span className="inline-flex items-center gap-1 text-muted-foreground">
+                  <Target className="h-3 w-3" />
+                  {language === 'es' ? 'Meta de ahorro' : 'Savings goal'}
+                </span>
+                <span className={cn(
+                  'tabular-nums font-semibold',
+                  savingsGoal.achieved ? 'text-emerald-600 dark:text-emerald-400' : 'text-foreground',
+                )}>
+                  {formatCurrency(savingsGoal.current)} / {formatCurrency(savingsGoal.goal)}
+                  {savingsGoal.achieved && ' 🎉'}
+                </span>
+              </div>
+              <Progress value={savingsGoal.pct} className="h-1.5" />
+            </div>
+          ) : (
+            <div className="pt-1 px-4">
+              <button
+                type="button"
+                onClick={() => navigate('/settings?tab=goals')}
+                className="text-[11px] text-muted-foreground hover:text-primary transition-colors inline-flex items-center gap-1"
+              >
+                <Target className="h-3 w-3" />
+                {language === 'es' ? 'Define una meta de ahorro mensual →' : 'Set a monthly savings goal →'}
+              </button>
             </div>
           )}
         </CardContent>
