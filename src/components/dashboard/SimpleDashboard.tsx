@@ -326,18 +326,27 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
         />
       </div>
 
-      {/* Secondary shortcuts */}
+      {/* Secondary shortcuts — context-aware */}
       <div className="grid grid-cols-2 gap-3">
         <SecondaryShortcut
-          icon={<Wallet className="h-4 w-4" />}
-          label={language === 'es' ? 'Presupuesto' : 'Budget'}
-          onClick={() => navigate('/budget')}
+          icon={<CalendarClock className="h-4 w-4" />}
+          label={language === 'es' ? 'Próximos pagos' : 'Upcoming bills'}
+          badge={upcomingBillsCount > 0 ? String(upcomingBillsCount) : undefined}
+          onClick={() => navigate('/bills')}
         />
-        <SecondaryShortcut
-          icon={<Landmark className="h-4 w-4" />}
-          label={language === 'es' ? 'Banco' : 'Banking'}
-          onClick={() => navigate('/banking')}
-        />
+        {hasBudget ? (
+          <SecondaryShortcut
+            icon={<Wallet className="h-4 w-4" />}
+            label={language === 'es' ? 'Mi presupuesto' : 'My budget'}
+            onClick={() => navigate('/budget')}
+          />
+        ) : (
+          <SecondaryShortcut
+            icon={<Landmark className="h-4 w-4" />}
+            label={language === 'es' ? 'Conectar banco' : 'Connect bank'}
+            onClick={() => navigate('/banking')}
+          />
+        )}
       </div>
 
       {/* Recent activity */}
