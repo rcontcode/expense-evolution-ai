@@ -23,9 +23,11 @@ import { useDashboardStats } from '@/hooks/data/useDashboardStats';
 import { useExpenses } from '@/hooks/data/useExpenses';
 import { useIncome } from '@/hooks/data/useIncome';
 import { useProfile } from '@/hooks/data/useProfile';
+import { useDisplayPreferences } from '@/hooks/data/useDisplayPreferences';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { SimpleOnboardingPath } from './SimpleOnboardingPath';
 import { SimpleSparkline } from './SimpleSparkline';
+import { getDailyTip, type TipContext } from '@/data/simpleFinancialTips';
 import { cn } from '@/lib/utils';
 
 interface SimpleDashboardProps {
