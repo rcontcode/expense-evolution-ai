@@ -1,108 +1,77 @@
-# Demo Studio v2 — Cierre completo de gaps
+# Demo Studio v3 — Catálogo completo de escenarios
 
-Cerramos los 6 gaps detectados para que el Demo Studio quede listo para grabar profesionalmente, incluyendo Chile y Canadá.
+## Alcance aprobado
 
----
+Implementar **6 escenarios** ahora (2 showcase completos + mantener 3 existentes + 1 arquetipo nuevo). En una iteración posterior haremos un análisis profundo de buyer personas reales de EvoFinz para agregar/ajustar más perfiles estratégicos.
 
-## 1. Marcar campos sensibles con `data-pii` (CRÍTICO)
+## Escenarios a implementar en esta fase
 
-El CSS de REC Mode ya existe pero no enmascara nada hoy. Voy a marcar los puntos donde aparece tu identidad real:
+### SHOWCASE COMPLETOS (datos en TODAS las tablas — ideales para tour de venta)
 
-- **Header de usuario** (avatar, nombre, email en dropdown)
-- **Página de Settings/Perfil** (campos de nombre, email, teléfono)
-- **Sidebar/menú móvil** (saludo "Hola, [nombre]")
-- **Badge de email** en facturación/suscripción
-- **Avatares con foto real** → blur
+**1. "Familia Rodríguez" — Padre de familia, Chile (CLP)**
+Pedro (38, ingeniero asalariado) + Carmen (36, profesora media jornada) + 2 hijos.
+- 6 meses: 80+ gastos, 12 ingresos (2 sueldos × 6 meses), 8 bills recurrentes
+- 150+ transacciones bancarias en 2 cuentas (Banco Estado + BCI)
+- 4 presupuestos por categoría (alimentación, educación, salud, transporte)
+- 3 metas de ahorro (vacaciones $800k, fondo emergencia $3M, universidad $15M)
+- 2 deudas activas (hipotecario, automotriz)
+- 6 categorías personalizadas, 8 tags ("hijo1", "hijo2", "compartido", "personal-pedro")
+- Recurrencias detectadas (Netflix, gym, mensualidad colegio)
+- Entidad fiscal CL persona natural
 
-Resultado: al activar REC Mode, tu nombre se reemplaza por "Demo User", el email se difumina, los avatares se borronean. Sin tocar lógica, solo atributos.
+**2. "EcoLavandería SpA" — PYME chilena con empleados (CLP)**
+Sofía (42), dueña con 2 empleados.
+- 6 meses: 100+ gastos B2B, 50+ ingresos (POS, transferencias, Mercado Pago)
+- 200+ transacciones en 3 cuentas (corriente empresa + vista personal + Mercado Pago)
+- 5 bills recurrentes B2B (arriendo local, ERP, internet, agua, luz)
+- 3 presupuestos operacionales, 2 metas (maquinaria $5M, segundo local $20M)
+- 1 deuda CORFO, 12 categorías custom, tags por cliente B2B
+- Mileage tracking (visitas clientes corporativos)
+- Entidad fiscal SpA, régimen Pro-PyME, RUT, giro
 
----
+### ARQUETIPOS FOCALIZADOS
 
-## 2. Validar el seeder contra el schema real (CRÍTICO)
+**3. "Carlos Caos" (mantener)** — duplicados y desorden bancario.
+**4. "María Profesional Joven" (mantener)** — ingresos mixtos sueldo + freelance CL.
+**5. "Lopez Construction Inc." (mantener)** — Canadá B2B, HST/GST, mileage, T2.
+**6. "Pareja Millennial" — NUEVO** — Daniela + Joaquín, sin hijos, ahorrando para casa propia. Muestra tags compartidos, meta conjunta, multi-cuenta.
 
-La edge function inserta en 5 tablas con campos que inventé sin verificar. Riesgo alto de que `seed` falle. Voy a:
+## Plan de ejecución
 
-- Leer el schema real de `expenses`, `income`, `recurring_bills`, `bank_transactions`, `fiscal_entities`
-- Ajustar el payload de cada escenario para que coincida 1:1 (tipos enum, columnas opcionales/requeridas, defaults)
-- Probar `seed` y `reset` con la cuenta admin
-- Confirmar que `status` cuenta correctamente
+### Fase 1 — Validación de schema
+Usar `security--get_table_schema` para confirmar columnas de las tablas nuevas que vamos a poblar: `budgets`, `savings_goals`, `debts`, `categories` (custom), `tags`, `expense_tags`, `bank_accounts`, `recurring_transactions`.
 
----
+### Fase 2 — Edge Function (`supabase/functions/manage-demo-data/index.ts`)
+- Agregar `buildScenarioFamiliaRodriguez(userId)` (showcase completo CL personal).
+- Agregar `buildScenarioEcoLavanderia(userId)` (showcase completo CL PYME).
+- Agregar `buildScenarioParejaMillennial(userId)` (focalizado).
+- Extender `seedDemo()` para insertar en las 8 tablas nuevas.
+- Extender `resetDemo()` con safe cleanup en orden correcto (relaciones → padres).
+- Mantener prefijo `[DEMO]` en notes/description para limpieza segura.
+- Idempotencia: re-cargar borra primero los `[DEMO]` previos del usuario.
 
-## 3. Indicador visual de grabación
+### Fase 3 — UI (`src/pages/admin/DemoStudio.tsx`)
+- Reorganizar selector en 2 secciones: **"Showcase Completo"** (recomendado para grabar) y **"Arquetipos Focalizados"**.
+- Badge "COMPLETO" / "FOCALIZADO" + checklist de tablas/herramientas cubiertas por escenario.
+- Contador estimado de registros antes de cargar.
+- Embed scripts/guiones por escenario con botón "Copiar voiceover ES/EN".
 
-Hoy solo está el FAB rojo. Cuando grabas, es fácil olvidar que está activo. Añado:
+### Fase 4 — Guiones de video integrados
+Markdown copiable por escenario:
+- **Familia Rodríguez**: tour 12 min (dashboard → gastos compartidos → presupuestos → metas → mentor educativo → reportes mes).
+- **EcoLavandería**: tour 15 min (multi-cuenta → mileage → reportes tributarios CL → bills B2B → flujo caja).
+- **Pareja Millennial**: 4 min (tags compartidos + meta conjunta).
+- **Carlos**: 3 min (duplicados).
+- **María**: 3 min (ingresos mixtos).
+- **Lopez Construction**: 5 min (Canadá HST/mileage).
 
-- **Borde rojo sutil de 2px** alrededor del viewport cuando REC Mode está ON (estilo OBS)
-- **Etiqueta "DEMO MODE"** semitransparente arriba-izquierda (no estorba la grabación pero te recuerda)
-- Mejora la consistencia visual del FAB existente
+## Próxima iteración (post-implementación)
 
----
+Después de probar estos 6 escenarios, abriremos un análisis dedicado de buyer personas:
+- Revisar landing actual de EvoFinz (CL + CA), pricing tiers, features destacados.
+- Identificar 2-4 buyer personas faltantes (ej: contador independiente que gestiona varios clientes, expat con ingresos multi-país, jubilado con renta de inversión, etc.).
+- Agregar/refinar escenarios para cubrir esos perfiles estratégicos.
 
-## 4. Guiones embebidos en el panel admin
+## Confirmación
 
-En lugar de tener que abrir el PDF en otra pantalla:
-
-- Embeber los 5 guiones como texto estructurado dentro de `/admin/demo-studio`
-- Botones por guion: **"Ver guion"**, **"Copiar voiceover ES"**, **"Copiar voiceover EN"**
-- Vista plegable con timestamps + acciones de click + notas de edición
-- Útil si grabas en mobile o sin segunda pantalla
-
----
-
-## 5. Escenario C — "Constructora CA" (Canadá B2B)
-
-Solo tienes escenarios Chile/persona natural. Para grabar bien el video de Tax Hub CRA falta:
-
-- Empresa con HST/GST (Ontario 13%)
-- 8 facturas con impuestos canadienses desglosados
-- 5 entradas de mileage tracking (km empresariales)
-- 3 ingresos de clientes
-- 1 entidad fiscal CA con Business Number ficticio
-- Moneda CAD
-
-Útil para: video Reports & Tax Hub (sección Canadá) y demos a leads canadienses.
-
----
-
-## 6. Modo silencioso para gamificación
-
-Streaks, puntos y confetti pueden distraer en videos serios de finanzas. Añado:
-
-- Toggle **"Modo silencioso"** en el panel Demo Studio
-- Cuando está ON + REC Mode activo: oculta badges de XP, suprime notificaciones de logros, desactiva confetti
-- Solo visual, no toca datos ni progreso real
-- Se restaura automáticamente al desactivar REC Mode
-
----
-
-## Detalle técnico
-
-**Archivos nuevos:**
-- (ninguno, todo se integra en archivos existentes)
-
-**Archivos editados (~10):**
-- `supabase/functions/manage-demo-data/index.ts` — ajustar payloads tras leer schema + añadir escenario Canadá
-- `src/pages/admin/DemoStudio.tsx` — selector de 3 escenarios, sección guiones embebidos, toggle modo silencioso
-- `src/components/RecModeFab.tsx` — overlay de borde rojo + etiqueta DEMO MODE
-- `src/index.css` — estilos del overlay + reglas modo silencioso (`.rec-mode.quiet [data-gamification]`)
-- `src/hooks/useRecMode.ts` — añadir estado `quietMode` persistido
-- ~5 componentes con identidad real → añadir `data-pii="..."` (Header, Settings, Sidebar, etc.)
-- ~3 componentes de gamificación → añadir `data-gamification` para que el modo silencioso los pueda ocultar
-
-**Sin migración de DB.** Sin nuevas dependencias. Todo gated por `is_admin`. Cero impacto en usuarios reales.
-
-**Datos de los 5 guiones:** los guiones ya generados en `/mnt/documents/demo-studio/*.md` los leo y los importo como constantes TS dentro del panel admin (no duplicación de mantenimiento si actualizas el PDF, solo regeneras desde la misma fuente).
-
----
-
-## Orden de entrega
-
-1. Validar schema real (item 2) — base para que todo funcione
-2. Marcar `data-pii` (item 1) — desbloquea REC Mode visualmente
-3. Overlay visual REC (item 3)
-4. Escenario Canadá (item 5)
-5. Guiones embebidos (item 4)
-6. Modo silencioso (item 6)
-
-Te aviso al final con el flujo de prueba end-to-end (cargar → activar REC → ver guion → grabar → limpiar).
+¿Apruebo y procedo con la implementación de los 6 escenarios + UI + guiones?

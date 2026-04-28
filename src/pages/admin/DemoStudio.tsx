@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import {
-  Loader2, Database, Trash2, Sparkles, Video, FileText, Copy, ChevronDown, ChevronRight, VolumeX,
+  Loader2, Database, Trash2, Sparkles, Video, FileText, Copy, ChevronDown, ChevronRight, VolumeX, Star,
 } from 'lucide-react';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -15,33 +15,78 @@ import {
 } from '@/components/ui/alert-dialog';
 import { DEMO_SCRIPTS, extractVoiceover, type DemoScriptScenario } from '@/data/demo-scripts';
 
-type Scenario = 'maria_profesional' | 'carlos_caos' | 'constructora_ca';
+type Scenario = DemoScriptScenario;
+type Tier = 'showcase' | 'focused';
 
-const SCENARIOS: Record<Scenario, { title: string; subtitle: string; description: string; useFor: string[] }> = {
+interface ScenarioMeta {
+  title: string;
+  subtitle: string;
+  description: string;
+  tier: Tier;
+  estRecords: string;
+  covers: string[];
+}
+
+const SCENARIOS: Record<Scenario, ScenarioMeta> = {
+  // SHOWCASE COMPLETOS
+  familia_rodriguez: {
+    title: 'Familia Rodríguez (CL)',
+    subtitle: 'Padre de familia, 6 meses completos',
+    description: 'Pedro + Carmen + 2 hijos. 6 meses de gastos (~110), 12 sueldos, 8 bills, 220+ txns bancarias en 2 cuentas, 6 presupuestos, 3 metas, 2 deudas, 8 tags.',
+    tier: 'showcase',
+    estRecords: '~370 registros',
+    covers: ['Dashboard', 'Gastos compartidos', 'Tags', 'Presupuestos', 'Metas', 'Deudas', 'Bills', 'Multi-cuenta', 'Mentor'],
+  },
+  ecolavanderia_spa: {
+    title: 'EcoLavandería SpA (CL)',
+    subtitle: 'PYME chilena con 2 empleados',
+    description: 'Sofía, dueña pyme. 6 meses: ~85 gastos B2B, ~80 ingresos (POS+B2B+Mercado Pago), 5 bills, 3 cuentas, 18 mileage, 3 presupuestos, 2 metas, deuda CORFO, 7 tags por cliente.',
+    tier: 'showcase',
+    estRecords: '~340 registros',
+    covers: ['Multi-cuenta', 'B2B clientes', 'Mileage', 'Reportes SII', 'Bills B2B', 'Flujo caja', 'Entidad SpA'],
+  },
+  // FOCALIZADOS
   maria_profesional: {
-    title: 'A — María Profesional (CL)',
-    subtitle: 'Caso ordenado, persona natural Chile',
-    description: '12 gastos categorizados, 4 ingresos, 3 facturas recurrentes, 20 transacciones bancarias con patrones, entidad fiscal CL/SII.',
-    useFor: ['Tour General', 'Bank Master Truth', 'Reports & Tax Hub'],
+    title: 'María Profesional (CL)',
+    subtitle: 'Persona natural, ingresos mixtos',
+    description: '12 gastos, 4 ingresos (sueldo + freelance), 3 bills, 16 txns bancarias, entidad fiscal CL.',
+    tier: 'focused',
+    estRecords: '~36 registros',
+    covers: ['Tour rápido', 'Bank Master', 'Reports'],
   },
   carlos_caos: {
-    title: 'B — Carlos Caos (CL)',
-    subtitle: 'Caso desordenado, duplicados y recurrentes ocultas',
-    description: '30 transacciones sin clasificar, 3 grupos de duplicados (Unimarc, Uber Eats, Shell), 6 recurrentes ocultas (Amazon, Disney+).',
-    useFor: ['Chaos Inbox', 'Smart Duplicates'],
+    title: 'Carlos Caos (CL)',
+    subtitle: 'Duplicados y desorden bancario',
+    description: '13 transacciones bancarias con 3 grupos de duplicados, 6 gastos duplicados manualmente, recurrentes ocultas.',
+    tier: 'focused',
+    estRecords: '~19 registros',
+    covers: ['Smart Duplicates', 'Chaos Inbox'],
   },
   constructora_ca: {
-    title: 'C — Constructora CA (Canadá)',
-    subtitle: 'Empresa B2B con HST/GST, mileage tracking',
-    description: '8 gastos en CAD, 3 pagos de clientes, 3 facturas (lease, WSIB, software), 5 entradas de mileage, entidad fiscal CA con BN.',
-    useFor: ['Reports & Tax Hub (CRA)', 'Demos para leads canadienses'],
+    title: 'Lopez Construction (CA)',
+    subtitle: 'Empresa B2B Canadá HST/GST',
+    description: '8 gastos CAD, 3 pagos clientes, 3 bills, 5 mileage, entidad fiscal CA con BN.',
+    tier: 'focused',
+    estRecords: '~30 registros',
+    covers: ['Tax Hub CRA', 'Mileage', 'Demo CA'],
+  },
+  pareja_millennial: {
+    title: 'Pareja Millennial (CL)',
+    subtitle: 'Sin hijos, ahorrando casa propia',
+    description: 'Daniela + Joaquín. 12 gastos, 2 sueldos, 2 metas (casa $45M, viaje), 4 tags compartidos.',
+    tier: 'focused',
+    estRecords: '~32 registros',
+    covers: ['Tags pareja', 'Meta conjunta', 'Multi-cuenta'],
   },
 };
 
 const SCENARIO_LABEL: Record<DemoScriptScenario, string> = {
-  maria_profesional: 'A',
-  carlos_caos: 'B',
-  constructora_ca: 'C',
+  familia_rodriguez: 'Familia',
+  ecolavanderia_spa: 'PYME',
+  maria_profesional: 'María',
+  carlos_caos: 'Carlos',
+  constructora_ca: 'Lopez',
+  pareja_millennial: 'Pareja',
 };
 
 export default function DemoStudio() {
@@ -49,7 +94,7 @@ export default function DemoStudio() {
   const { active: recActive, quietMode, setMode: setRecMode, setQuiet } = useRecMode();
   const [status, setStatus] = useState<Record<string, number> | null>(null);
   const [loading, setLoading] = useState<'status' | 'seed' | 'reset' | null>(null);
-  const [selectedScenario, setSelectedScenario] = useState<Scenario>('maria_profesional');
+  const [selectedScenario, setSelectedScenario] = useState<Scenario>('familia_rodriguez');
   const [openScriptId, setOpenScriptId] = useState<string | null>(null);
 
   const callDemoApi = async (action: 'status' | 'seed' | 'reset', scenario?: Scenario) => {
@@ -114,6 +159,43 @@ export default function DemoStudio() {
   };
 
   const totalDemo = status ? Object.values(status).reduce((a, b) => a + Math.max(0, b), 0) : 0;
+
+  const showcaseKeys = (Object.keys(SCENARIOS) as Scenario[]).filter((k) => SCENARIOS[k].tier === 'showcase');
+  const focusedKeys = (Object.keys(SCENARIOS) as Scenario[]).filter((k) => SCENARIOS[k].tier === 'focused');
+
+  const renderScenarioCard = (key: Scenario) => {
+    const s = SCENARIOS[key];
+    const selected = selectedScenario === key;
+    const isShowcase = s.tier === 'showcase';
+    return (
+      <button
+        key={key}
+        onClick={() => setSelectedScenario(key)}
+        className={`text-left rounded-lg border-2 p-4 transition-all ${
+          selected ? 'border-primary bg-primary/5 shadow-md' : 'border-border hover:border-primary/50'
+        }`}
+      >
+        <div className="flex items-start justify-between gap-2 mb-1">
+          <h3 className="font-bold text-sm">{s.title}</h3>
+          {isShowcase ? (
+            <Badge className="text-[9px] bg-amber-500 hover:bg-amber-600 text-white shrink-0">
+              <Star className="h-2.5 w-2.5 mr-0.5" /> COMPLETO
+            </Badge>
+          ) : (
+            <Badge variant="outline" className="text-[9px] shrink-0">FOCALIZADO</Badge>
+          )}
+        </div>
+        <p className="text-xs text-muted-foreground">{s.subtitle}</p>
+        <p className="text-xs mt-2">{s.description}</p>
+        <p className="text-[10px] mt-2 font-mono text-primary">{s.estRecords}</p>
+        <div className="flex flex-wrap gap-1 mt-2">
+          {s.covers.map((u) => (
+            <Badge key={u} variant="secondary" className="text-[10px]">{u}</Badge>
+          ))}
+        </div>
+      </button>
+    );
+  };
 
   return (
     <div className="container mx-auto max-w-5xl p-4 md:p-8 space-y-6">
@@ -192,48 +274,50 @@ export default function DemoStudio() {
       <Card>
         <CardHeader>
           <CardTitle>Cargar escenario de ejemplo</CardTitle>
-          <CardDescription>Cargar reemplaza los datos demo previos (idempotente).</CardDescription>
+          <CardDescription>
+            Cargar reemplaza los datos demo previos (idempotente). Recomendado para grabar tour de venta: <strong>Showcase Completo</strong>.
+          </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid gap-3 md:grid-cols-3">
-            {(Object.keys(SCENARIOS) as Scenario[]).map((key) => {
-              const s = SCENARIOS[key];
-              const selected = selectedScenario === key;
-              return (
-                <button
-                  key={key}
-                  onClick={() => setSelectedScenario(key)}
-                  className={`text-left rounded-lg border-2 p-4 transition-all ${
-                    selected ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
-                  }`}
-                >
-                  <h3 className="font-bold text-sm">{s.title}</h3>
-                  <p className="text-xs text-muted-foreground">{s.subtitle}</p>
-                  <p className="text-xs mt-2">{s.description}</p>
-                  <div className="flex flex-wrap gap-1 mt-3">
-                    {s.useFor.map((u) => (
-                      <Badge key={u} variant="secondary" className="text-[10px]">{u}</Badge>
-                    ))}
-                  </div>
-                </button>
-              );
-            })}
+        <CardContent className="space-y-6">
+          {/* Showcase Section */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <Star className="h-4 w-4 text-amber-500" />
+              <h3 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">
+                Showcase Completo — para grabar tour de venta
+              </h3>
+            </div>
+            <div className="grid gap-3 md:grid-cols-2">
+              {showcaseKeys.map(renderScenarioCard)}
+            </div>
           </div>
 
-          <div className="flex flex-wrap gap-2">
+          {/* Focused Section */}
+          <div className="space-y-3 border-t pt-6">
+            <h3 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">
+              Arquetipos Focalizados — para grabar features puntuales
+            </h3>
+            <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+              {focusedKeys.map(renderScenarioCard)}
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="flex flex-wrap gap-2 border-t pt-4">
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button disabled={loading !== null}>
                   {loading === 'seed' ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Sparkles className="h-4 w-4 mr-2" />}
-                  Cargar escenario seleccionado
+                  Cargar: {SCENARIOS[selectedScenario].title}
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
                   <AlertDialogTitle>¿Cargar {SCENARIOS[selectedScenario].title}?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Esto primero limpiará todos los datos demo previos (registros con prefijo [DEMO]) y luego
-                    insertará los nuevos. Tus datos reales NO se tocan.
+                    Esto primero limpiará todos los datos demo previos (registros con prefijo [DEMO], además de tags, presupuestos y metas) y luego insertará los nuevos. <strong>Tus datos reales NO se tocan.</strong>
+                    <br /><br />
+                    Estimado a insertar: <strong>{SCENARIOS[selectedScenario].estRecords}</strong>
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -254,7 +338,7 @@ export default function DemoStudio() {
                 <AlertDialogHeader>
                   <AlertDialogTitle>¿Eliminar todos los registros [DEMO]?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Borra solo los registros con prefijo [DEMO] de tu cuenta. Tus datos reales se mantienen intactos.
+                    Borra los registros con prefijo [DEMO] de tu cuenta + todas tus tags, presupuestos y metas (asumimos que son demo en cuenta admin). Tus gastos/ingresos reales se mantienen intactos.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -276,7 +360,7 @@ export default function DemoStudio() {
             <FileText className="h-5 w-5" /> Guiones de los videos
           </CardTitle>
           <CardDescription>
-            Los 5 guiones embebidos. Copia el voiceover ES o EN al portapapeles para grabar fácil.
+            Los guiones embebidos. Copia el voiceover ES o EN al portapapeles para grabar fácil.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-2">
@@ -284,8 +368,10 @@ export default function DemoStudio() {
             const open = openScriptId === s.id;
             const voiceES = extractVoiceover(s.raw, 'ES');
             const voiceEN = extractVoiceover(s.raw, 'EN');
+            const meta = SCENARIOS[s.scenario];
+            const isShowcase = meta?.tier === 'showcase';
             return (
-              <div key={s.id} className="border rounded-lg overflow-hidden">
+              <div key={s.id} className={`border rounded-lg overflow-hidden ${isShowcase ? 'border-amber-300/50' : ''}`}>
                 <button
                   onClick={() => setOpenScriptId(open ? null : s.id)}
                   className="w-full flex items-center gap-2 p-3 hover:bg-muted/50 transition-colors"
@@ -293,8 +379,9 @@ export default function DemoStudio() {
                   {open ? <ChevronDown className="h-4 w-4 shrink-0" /> : <ChevronRight className="h-4 w-4 shrink-0" />}
                   <span className="font-mono text-xs text-muted-foreground">#{s.number}</span>
                   <span className="font-semibold text-sm flex-1 text-left">{s.title}</span>
+                  {isShowcase && <Star className="h-3 w-3 text-amber-500" />}
                   <Badge variant="outline" className="text-[10px]">{s.duration}</Badge>
-                  <Badge variant="secondary" className="text-[10px]">Escenario {SCENARIO_LABEL[s.scenario]}</Badge>
+                  <Badge variant="secondary" className="text-[10px]">{SCENARIO_LABEL[s.scenario]}</Badge>
                 </button>
                 {open && (
                   <div className="border-t p-4 space-y-3 bg-muted/20">
@@ -307,6 +394,17 @@ export default function DemoStudio() {
                       </Button>
                       <Button size="sm" variant="ghost" onClick={() => copyToClipboard(s.raw, 'Guion completo copiado')}>
                         <Copy className="h-3 w-3 mr-1" /> Copiar guion completo
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="default"
+                        onClick={() => {
+                          setSelectedScenario(s.scenario);
+                          toast({ title: 'Escenario seleccionado', description: `Listo para cargar "${SCENARIOS[s.scenario]?.title}"` });
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }}
+                      >
+                        <Sparkles className="h-3 w-3 mr-1" /> Usar este escenario
                       </Button>
                     </div>
                     <pre className="text-xs whitespace-pre-wrap font-mono bg-background p-3 rounded border max-h-[400px] overflow-y-auto">
@@ -328,8 +426,9 @@ export default function DemoStudio() {
         <CardContent className="text-sm space-y-1">
           <ol className="list-decimal list-inside space-y-1 text-muted-foreground">
             <li>Activa REC Mode (toggle arriba) y opcionalmente el Modo silencioso.</li>
-            <li>Selecciona el escenario que pide el guion (badge "Escenario A/B/C").</li>
-            <li>Click "Cargar escenario seleccionado".</li>
+            <li>Para tour completo de venta: elige <strong>Familia Rodríguez</strong> o <strong>EcoLavandería SpA</strong>.</li>
+            <li>Para feature puntual: elige el arquetipo focalizado correspondiente.</li>
+            <li>Click "Cargar". Espera ~10 segundos para los showcase (más datos).</li>
             <li>Abre el guion correspondiente, copia el voiceover, graba.</li>
             <li>Al terminar: "Limpiar todos los datos demo" + desactiva REC Mode.</li>
           </ol>
