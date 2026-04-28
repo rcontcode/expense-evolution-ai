@@ -162,9 +162,9 @@ export function SystemStatusStrip() {
   const toggle = (kind: ChipKind) => setOpenChip(prev => (prev === kind ? null : kind));
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       {/* Compact 3-chip header row */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5">
         {chips.map(chip => {
           const s = URGENCY_STYLES[chip.urgency];
           const isOpen = openChip === chip.kind;
@@ -175,29 +175,29 @@ export function SystemStatusStrip() {
               onClick={() => toggle(chip.kind)}
               aria-expanded={isOpen}
               className={cn(
-                'group relative flex items-center gap-2.5 px-3 py-2 rounded-xl border bg-card text-left transition-all',
-                'hover:shadow-md',
+                'group relative flex items-center gap-2 px-2.5 py-1.5 rounded-lg border bg-card text-left transition-all',
+                'hover:shadow-sm',
                 s.ring,
                 chip.urgency === 'critical' && 'ring-1',
-                isOpen && 'shadow-md ring-1 ring-primary/30 border-primary/30',
+                isOpen && 'shadow-sm ring-1 ring-primary/30 border-primary/30',
               )}
             >
-              <div className="relative flex items-center justify-center h-9 w-9 rounded-lg bg-muted/50 shrink-0">
-                <span className="text-lg leading-none">{chip.emoji}</span>
-                <span className={cn('absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full ring-2 ring-card', s.dot)} />
+              <div className="relative flex items-center justify-center h-7 w-7 rounded-md bg-muted/50 shrink-0">
+                <span className="text-sm leading-none">{chip.emoji}</span>
+                <span className={cn('absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full ring-2 ring-card', s.dot)} />
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1.5">
                   <span className="text-xs font-bold text-foreground truncate">{chip.label}</span>
                   {chip.badge !== null && (
-                    <span className={cn('text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none', s.badge)}>
+                    <span className={cn('text-[9.5px] font-bold px-1.5 py-px rounded-full leading-none', s.badge)}>
                       {chip.badge}
                     </span>
                   )}
                 </div>
-                <p className={cn('text-[10.5px] truncate mt-0.5', s.text)}>{chip.sublabel}</p>
+                <p className={cn('text-[10px] truncate leading-tight', s.text)}>{chip.sublabel}</p>
               </div>
-              <ChevronDown className={cn('h-4 w-4 text-muted-foreground shrink-0 transition-transform', isOpen && 'rotate-180')} />
+              <ChevronDown className={cn('h-3.5 w-3.5 text-muted-foreground shrink-0 transition-transform', isOpen && 'rotate-180')} />
             </button>
           );
         })}

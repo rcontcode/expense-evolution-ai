@@ -217,7 +217,7 @@ export default function Dashboard() {
   return (
     <Layout>
       <TooltipProvider delayDuration={200}>
-        <div className={cn('page-container', density === 'compact' ? 'space-y-3' : 'section-gap')}>
+        <div className="page-container space-y-2.5">
 
           {/* Profile Extender Dialog (modal — placement neutral) */}
           <ProfileExtenderDialog
@@ -232,11 +232,12 @@ export default function Dashboard() {
           <SectionHeader
             title={language === 'es' ? 'Hoy' : 'Today'}
             subtitle={language === 'es' ? 'Estado actual' : 'Current state'}
+            compact
           />
 
           {/* Header Snapshot — 1-line state of the day */}
           <Card className="border-primary/15 bg-gradient-to-r from-primary/5 to-transparent">
-            <CardContent className={cn('flex items-center justify-between gap-3 flex-wrap', density === 'compact' ? 'py-2 px-3' : 'py-2.5 px-3.5')}>
+            <CardContent className="flex items-center justify-between gap-2 flex-wrap py-1.5 px-3">
               <LiveClock />
               <div className="flex items-center gap-3 text-xs flex-wrap">
                 <span className="inline-flex items-center gap-1">
@@ -299,7 +300,7 @@ export default function Dashboard() {
 
           {/* Quick Actions — context-aware */}
           <Card className="border-dashed" data-section="quick-actions">
-            <CardContent className="py-3">
+            <CardContent className="py-2 px-3">
               <div className="flex flex-wrap gap-2">
                 <Button
                   onClick={() => navigate('/chaos')}
@@ -474,12 +475,12 @@ export default function Dashboard() {
 }
 
 /** Lightweight zone divider for the advanced dashboard. */
-function SectionHeader({ title, subtitle }: { title: string; subtitle?: string }) {
+function SectionHeader({ title, subtitle, compact }: { title: string; subtitle?: string; compact?: boolean }) {
   return (
-    <div className="flex items-baseline gap-3 pt-2">
-      <h2 className="text-lg font-bold tracking-tight">{title}</h2>
-      {subtitle && <span className="text-xs text-muted-foreground">{subtitle}</span>}
-      <div className="flex-1 border-t border-border/60 ml-2" />
+    <div className={cn('flex items-baseline gap-2', compact ? 'pt-0.5' : 'pt-1.5')}>
+      <h2 className={cn('font-bold tracking-tight', compact ? 'text-sm' : 'text-base')}>{title}</h2>
+      {subtitle && <span className="text-[11px] text-muted-foreground truncate">{subtitle}</span>}
+      <div className="flex-1 border-t border-border/50 ml-1" />
     </div>
   );
 }
