@@ -39,6 +39,9 @@ import { useDashboardDeepLinks } from '@/hooks/utils/useDashboardDeepLinks';
 import { DataInventoryPanel } from '@/components/dashboard/DataInventoryPanel';
 import { SimpleDashboard } from '@/components/dashboard/SimpleDashboard';
 import { UiModeWelcomeDialog } from '@/components/onboarding/UiModeWelcomeDialog';
+import { NextActionBanner } from '@/components/dashboard/NextActionBanner';
+import { MoneyMomentumScore } from '@/components/dashboard/MoneyMomentumScore';
+import { useIncome } from '@/hooks/data/useIncome';
 import { cn } from '@/lib/utils';
 
 // Lazy load only dashboard-specific components
@@ -97,6 +100,7 @@ export default function Dashboard() {
   const { data: allExpenses } = useExpenses();
   const { data: clients } = useClients();
   const { data: bills } = useRecurringBills();
+  const { data: allIncome } = useIncome();
 
   const handleAddIncome = useCallback(() => navigate('/income'), [navigate]);
   const handleAddExpense = useCallback(() => navigate('/expenses'), [navigate]);
@@ -183,6 +187,15 @@ export default function Dashboard() {
           />
 
           <LiveClock />
+
+          {/* Next single most important action — reduces decision paralysis */}
+          <NextActionBanner
+            pendingDocuments={0}
+            incompleteExpenses={(allExpenses ?? []).filter((e: any) => !e?.category || !e?.merchant).length}
+            totalClients={clients?.length ?? 0}
+            totalIncomes={allIncome?.length ?? 0}
+            totalExpenses={allExpenses?.length ?? 0}
+          />
 
           {/* Notification Hub — THE ONLY alert center */}
           <DashboardNotificationHub />
