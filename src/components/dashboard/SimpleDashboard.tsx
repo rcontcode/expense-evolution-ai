@@ -450,3 +450,27 @@ function SecondaryShortcut({
     </button>
   );
 }
+
+function EmptyStateChip({
+  icon,
+  label,
+  hint,
+  onClick,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  hint: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex flex-col items-center justify-center gap-1 py-3 px-2 rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 hover:bg-primary/10 hover:border-primary/50 hover:scale-[1.04] active:scale-[0.98] transition-all"
+    >
+      <span className="text-primary">{icon}</span>
+      <span className="text-xs font-semibold leading-tight">{label}</span>
+      <span className="text-[10px] text-muted-foreground leading-tight">{hint}</span>
+    </button>
+  );
+}
