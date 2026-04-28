@@ -269,13 +269,13 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
   };
 
   return (
-    <div className="space-y-5 max-w-2xl mx-auto pb-8">
+    <div className="space-y-5 w-full max-w-6xl mx-auto pb-8">
       {/* Greeting */}
       <div className="px-1 pt-1">
-        <h1 className="text-2xl font-bold">
+        <h1 className="text-2xl lg:text-4xl font-bold">
           {greeting}, {firstName} 👋
         </h1>
-        <p className="text-sm text-muted-foreground capitalize">{monthLabel}</p>
+        <p className="text-sm lg:text-base text-muted-foreground capitalize">{monthLabel}</p>
       </div>
 
       {/* Inactivity nudge (B2) — only when last entry is more than a week old */}
