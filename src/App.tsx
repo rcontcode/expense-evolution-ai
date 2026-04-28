@@ -15,6 +15,8 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AdminRoute } from "@/components/AdminRoute";
 import { AuthenticatedRedirect } from "@/components/AuthenticatedRedirect";
 import { useLoginMissionListener } from "@/hooks/data/useMissions";
+import { useAutoReminders } from "@/hooks/data/useAutoReminders";
+import { useGlobalReminders } from "@/hooks/utils/useGlobalReminders";
 import { Skeleton } from "@/components/ui/skeleton";
 
 // Lazy loader with retry on failure (handles transient network/build errors)
@@ -74,24 +76,27 @@ const routeImportMap: Record<string, () => Promise<unknown>> = {
   '/tags': () => import("./pages/Tags"),
   '/trash': () => import("./pages/Trash"),
   '/business-profile': () => import("./pages/BusinessProfile"),
+  '/capture': () => import("./pages/MobileCapture"),
+  '/mobile-capture': () => import("./pages/MobileCapture"),
+  '/adventure': () => import("./pages/FinancialAdventure"),
+  '/user-guide': () => import("./pages/UserGuide"),
+  '/beta-feedback': () => import("./pages/BetaFeedback"),
+  '/beta-guide': () => import("./pages/BetaGuide"),
   '/tax-report': () => import("./pages/TaxReportFlow"),
+  '/tax-report-flow': () => import("./pages/TaxReportFlow"),
 };
 
 // Priority order for IdlePreloader — most-likely-next routes first.
 const CORE_PRELOAD_ORDER: string[] = [
   '/dashboard',
   '/expenses',
+  '/budget',
+  '/mobile-capture',
   '/income',
   '/bills',
   '/chaos',
-  '/budget',
   '/banking',
-  '/analytics',
-  '/notifications',
   '/settings',
-  '/net-worth',
-  '/reports',
-  '/files',
 ];
 
 const preloadedRoutes = new Set<string>();
@@ -99,15 +104,21 @@ const preloadedRoutes = new Set<string>();
 /** Preload a route chunk on hover/focus/touchstart. Safe to call multiple times. */
 export function preloadRoute(path: string) {
   if (!path) return;
-  if (preloadedRoutes.has(path)) return;
-  const importer = routeImportMap[path];
+  const routeKey = normalizeRouteForPreload(path);
+  if (preloadedRoutes.has(routeKey)) return;
+  const importer = routeImportMap[routeKey];
   if (importer) {
-    preloadedRoutes.add(path);
+    preloadedRoutes.add(routeKey);
     importer().catch(() => {
       // If preload fails, allow retry next time
-      preloadedRoutes.delete(path);
+      preloadedRoutes.delete(routeKey);
     });
   }
+}
+
+function normalizeRouteForPreload(path: string) {
+  const cleanPath = path.split('#')[0].split('?')[0] || '/';
+  return cleanPath !== '/' && cleanPath.endsWith('/') ? cleanPath.slice(0, -1) : cleanPath;
 }
 
 /** Returns true if the user is on a slow/save-data connection. */
