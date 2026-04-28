@@ -116,6 +116,25 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
     return { day, total, remaining, pct: (day / total) * 100 };
   }, []);
 
+  // Bills due in the next 7 days — drives the "Próximos pagos" shortcut badge
+  const upcomingBillsCount = useMemo(() => {
+    if (!bills) return 0;
+    const now = new Date();
+    const limit = new Date(now);
+    limit.setDate(limit.getDate() + 7);
+    return (bills as any[]).filter((b) => {
+      if (!b?.next_due_date) return false;
+      const d = new Date(b.next_due_date);
+      return d >= new Date(now.getFullYear(), now.getMonth(), now.getDate()) && d <= limit;
+    }).length;
+  }, [bills]);
+
+  // Has the user configured a budget already? Drives the second shortcut choice
+  const hasBudget = useMemo(() => {
+    const prefs = (profile as any)?.preferences;
+    return Boolean(prefs?.budget_mode);
+  }, [profile]);
+
   const monthLabel = useMemo(() => {
     const d = new Date();
     return d.toLocaleDateString(language === 'es' ? 'es' : 'en', { month: 'long', year: 'numeric' });
