@@ -143,13 +143,13 @@ export function CaptureHub() {
           </div>
 
           {/* How it works */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 sm:gap-2">
             {steps.map((step, i) => (
-              <div key={i} className="flex items-start gap-2 p-2 rounded-lg bg-muted/50">
-                <Badge variant="secondary" className="shrink-0 h-5 w-5 p-0 flex items-center justify-center text-[10px] font-bold">
+              <div key={i} className="flex items-start gap-1.5 p-1.5 sm:p-2 rounded-lg bg-muted/50 min-w-0">
+                <Badge variant="secondary" className="shrink-0 h-4 w-4 sm:h-5 sm:w-5 p-0 flex items-center justify-center text-[9px] sm:text-[10px] font-bold">
                   {i + 1}
                 </Badge>
-                <span className="text-xs text-muted-foreground leading-tight">{step.text}</span>
+                <span className="text-[10px] sm:text-[11px] lg:text-xs text-muted-foreground leading-snug break-words min-w-0">{step.text}</span>
               </div>
             ))}
           </div>
