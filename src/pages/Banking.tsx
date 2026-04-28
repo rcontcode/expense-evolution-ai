@@ -36,7 +36,13 @@ export default function Banking() {
             ? 'Importa tus estados de cuenta y obtén insights inteligentes'
             : 'Import your bank statements and get smart insights') : undefined}
         />
-
+        <SimpleModePageBanner
+          pageId="banking"
+          description={{
+            es: 'Conecta o sube tus extractos bancarios y tus gastos se registrarán solos. Aquí ves todos los movimientos detectados.',
+            en: 'Connect or upload your bank statements and expenses log themselves. Here you see every detected movement.',
+          }}
+        />
         {!isMobile && <MentorQuoteBanner context="dashboard" className="mb-2" />}
         
         {!isMobile && (
