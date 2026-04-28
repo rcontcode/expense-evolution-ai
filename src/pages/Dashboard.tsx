@@ -198,7 +198,7 @@ export default function Dashboard() {
   return (
     <Layout>
       <TooltipProvider delayDuration={200}>
-        <div className="page-container section-gap">
+        <div className={cn('page-container', density === 'compact' ? 'space-y-3' : 'section-gap')}>
 
           {/* Profile Extender Dialog (modal — placement neutral) */}
           <ProfileExtenderDialog
@@ -210,10 +210,23 @@ export default function Dashboard() {
           {/* ========================================================== */}
           {/* ZONE 1 — HOY (today): clock, alerts, quick actions          */}
           {/* ========================================================== */}
-          <SectionHeader
-            title={language === 'es' ? 'Hoy' : 'Today'}
-            subtitle={language === 'es' ? 'Lo que pasa ahora mismo' : "What's happening right now"}
-          />
+          <div className="flex items-center justify-between gap-2">
+            <SectionHeader
+              title={language === 'es' ? 'Hoy' : 'Today'}
+              subtitle={language === 'es' ? 'Lo que pasa ahora mismo' : "What's happening right now"}
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={toggleDensity}
+              className="h-7 text-[11px] gap-1 shrink-0"
+              title={language === 'es' ? 'Cambiar densidad de la vista' : 'Change view density'}
+            >
+              {density === 'compact'
+                ? (language === 'es' ? '▭ Cómodo' : '▭ Comfortable')
+                : (language === 'es' ? '▬ Compacto' : '▬ Compact')}
+            </Button>
+          </div>
 
           <LiveClock />
 
