@@ -51,22 +51,26 @@ export function ProfileCard() {
       <CardContent className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="full-name">{es ? 'Nombre completo' : 'Full name'}</Label>
-          <Input
-            id="full-name"
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-            placeholder={es ? 'Tu nombre completo' : 'Your full name'}
-            disabled={isLoading}
-          />
+          <div data-pii="name">
+            <Input
+              id="full-name"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              placeholder={es ? 'Tu nombre completo' : 'Your full name'}
+              disabled={isLoading}
+            />
+          </div>
         </div>
 
         <div className="space-y-2">
           <Label>{es ? 'Correo electrónico' : 'Email'}</Label>
-          <Input
-            value={user?.email ?? ''}
-            disabled
-            className="opacity-60"
-          />
+          <div data-pii="email">
+            <Input
+              value={user?.email ?? ''}
+              disabled
+              className="opacity-60"
+            />
+          </div>
           <p className="text-xs text-muted-foreground">
             {es ? 'El correo no se puede cambiar desde aquí' : 'Email cannot be changed here'}
           </p>
