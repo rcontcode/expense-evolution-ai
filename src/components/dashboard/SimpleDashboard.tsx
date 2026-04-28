@@ -284,10 +284,32 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
             </div>
           </div>
           {recent.length === 0 ? (
-            <div className="text-center py-8 text-sm text-muted-foreground">
-              {language === 'es'
-                ? 'Aún no hay movimientos este mes. Empieza con tu primer gasto o ingreso.'
-                : 'No activity yet this month. Start with your first expense or income.'}
+            <div className="py-6 space-y-3">
+              <p className="text-center text-sm text-muted-foreground">
+                {language === 'es'
+                  ? 'Aún no hay movimientos este mes. Elige cómo empezar:'
+                  : "No activity yet this month. Pick how to start:"}
+              </p>
+              <div className="grid grid-cols-3 gap-2">
+                <EmptyStateChip
+                  icon={<Camera className="h-4 w-4" />}
+                  label={language === 'es' ? 'Foto' : 'Photo'}
+                  hint={language === 'es' ? 'recibo' : 'receipt'}
+                  onClick={() => (onQuickCapture ? onQuickCapture() : navigate('/capture'))}
+                />
+                <EmptyStateChip
+                  icon={<Mic className="h-4 w-4" />}
+                  label={language === 'es' ? 'Voz' : 'Voice'}
+                  hint={language === 'es' ? 'dictado' : 'dictate'}
+                  onClick={() => navigate('/capture?mode=voice')}
+                />
+                <EmptyStateChip
+                  icon={<PenLine className="h-4 w-4" />}
+                  label={language === 'es' ? 'Manual' : 'Manual'}
+                  hint={language === 'es' ? 'formulario' : 'form'}
+                  onClick={() => navigate('/expenses?new=1')}
+                />
+              </div>
             </div>
           ) : (
             <ul className="divide-y divide-border/40">
@@ -352,11 +374,11 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
         </CardContent>
       </Card>
 
-      {/* Footer hint */}
-      <p className="text-center text-xs text-muted-foreground pt-1">
+      {/* Footer hint — informative, not promotional */}
+      <p className="text-center text-xs text-muted-foreground pt-1 px-4 leading-relaxed">
         {language === 'es'
-          ? 'Modo Simple activo · Cambia a Avanzado desde el botón en el header.'
-          : 'Simple Mode active · Switch to Advanced from the header button.'}
+          ? 'Estás en Modo Simple. Cuando necesites impuestos, inversiones, contratos o el ecosistema completo, cambia a Avanzado desde el botón en el header.'
+          : 'You are in Simple Mode. When you need taxes, investments, contracts or the full ecosystem, switch to Advanced from the header button.'}
       </p>
     </div>
   );
