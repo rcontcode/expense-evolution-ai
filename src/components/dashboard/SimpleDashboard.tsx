@@ -227,6 +227,21 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
               language={language}
             />
           )}
+
+          {/* Top category insight — answers "where did my money go?" */}
+          {topCategory && (
+            <div className="pt-1 px-4 text-left">
+              <div className="text-[11px] text-muted-foreground">
+                {language === 'es' ? 'Tu mayor categoría este mes' : 'Your top category this month'}
+              </div>
+              <div className="text-sm font-semibold">
+                <span className="capitalize">{topCategory.category}</span>
+                <span className="text-muted-foreground font-normal"> · </span>
+                <span className="tabular-nums">{formatCurrency(topCategory.amount)}</span>
+                <span className="text-muted-foreground font-normal tabular-nums"> ({topCategory.pct}%)</span>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
