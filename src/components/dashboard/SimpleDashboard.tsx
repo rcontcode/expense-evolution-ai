@@ -42,6 +42,7 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
   const { language } = useLanguage();
   const navigate = useNavigate();
   const { formatCurrency } = useFormatCurrency();
+  const { setUiMode } = useDisplayPreferences();
 
   const { data: stats, isLoading: statsLoading } = useDashboardStats();
   const { data: expenses } = useExpenses();
