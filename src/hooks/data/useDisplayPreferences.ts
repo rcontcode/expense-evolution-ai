@@ -36,16 +36,25 @@ export const openDashboardAfterUiModeChange = () => {
 
 export const useDisplayPreferences = () => {
   const { user } = useAuth();
-  const [preferences, setPreferences] = useState<DisplayPreferences>(DEFAULT_DISPLAY_PREFERENCES);
-  const [isLoading, setIsLoading] = useState(true);
+  // Initialize synchronously from localStorage to avoid first-render flash
+  // (e.g. brief flash of Advanced UI before Simple loads from server)
+  const [preferences, setPreferences] = useState<DisplayPreferences>(() => {
+    const storedMode = getStoredUiMode();
+    return storedMode
+      ? { ...DEFAULT_DISPLAY_PREFERENCES, ui_mode: storedMode }
+      : DEFAULT_DISPLAY_PREFERENCES;
+  });
+  // If we already have a stored UI mode, we can render immediately without waiting for the network
+  const [isLoading, setIsLoading] = useState(() => getStoredUiMode() === null);
   const [isSaving, setIsSaving] = useState(false);
 
   // Refs to avoid stale closures and prevent re-renders
-  const preferencesRef = useRef<DisplayPreferences>(DEFAULT_DISPLAY_PREFERENCES);
+  // Initialize with the same value as `preferences` so a failed save doesn't revert UI mode to 'unset'
+  const preferencesRef = useRef<DisplayPreferences>(preferences);
   const saveTimerRef = useRef<number | null>(null);
   const pendingRef = useRef<DisplayPreferences | null>(null);
   const inflightRef = useRef(false);
-  const lastSavedRef = useRef<DisplayPreferences>(DEFAULT_DISPLAY_PREFERENCES);
+  const lastSavedRef = useRef<DisplayPreferences>(preferences);
   const userIdRef = useRef<string | null>(null);
 
   // Keep refs in sync
