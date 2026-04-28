@@ -1,111 +1,124 @@
-## Plan: 3 mejoras al Modo Simple
+## Auditoría del flujo Modo Simple — mejoras de claridad
 
-### Hallazgo importante (buena noticia)
+### Estado actual (lo que ya funciona bien)
 
-Al revisar el código, **la persistencia del onboarding YA funciona correctamente**. El componente `SimpleOnboardingPath` consulta datos reales:
+- ✅ Welcome dialog al primer login (Simple vs Avanzado, "recomendado para empezar")
+- ✅ Toggle visible siempre en header (1 sola ubicación canónica)
+- ✅ Onboarding path con quick-add (Clientes + Contratos), "qué falta" en fiscal y celebración dismissible
+- ✅ Sparkline de tendencia 6 meses con comparación MoM
+- ✅ 3 acciones primarias + 2 secundarias + chips Gastos/Ingresos
+- ✅ Tip educativo con disclaimer "consulta a profesional"
 
-```ts
-const { data: profile }       = useProfile();
-const { data: clients }       = useClients();
-const { data: contracts }     = useContracts();
-const { data: fiscalEntities } = useFiscalEntities();
-```
+### Problemas de claridad detectados (8)
 
-Si tienes ≥1 cliente, ese paso queda permanentemente check. Si recargas, se mantiene. **No necesita columna `onboarding_progress` en BD** — la fuente de verdad son los datos mismos. Esto es lo correcto.
-
-Lo que sí podemos pulir:
-
----
-
-### 1. Pulir el onboarding (sin tocar BD)
-
-**Problema menor**: el detector `hasFiscal` requiere `country` + (`tax_regime` OR `business_number`) + (entidad fiscal OR `business_name`). Es estricto. Un usuario que solo puso país queda en "no completo" sin saber qué falta.
-
-**Cambios**:
-
-a) **Tooltip / texto secundario** que muestre qué falta exactamente:
-```
-"Datos fiscales — Falta: régimen fiscal"
-```
-
-b) **Quick-add inline también en "Contratos"** (igual que en "Clientes"). Hoy el step de Contratos solo navega; agregaremos botón `+ Agregar` que abra el `ContractDialog` directo.
-
-c) **Mensaje de éxito** cuando completas los 3: una tarjeta verde "¡Listo! Tu cuenta está configurada" con botón para ocultarla permanentemente (vía localStorage `simple_onboarding_dismissed`).
-
-**Archivo**: `src/components/dashboard/SimpleOnboardingPath.tsx`
+1. **Hero balance sin contexto**: aparece "+$1.200" sin explicar qué significa. Un usuario no sabe si es ahorro, ganancia o disponible.
+2. **Income/Expense en hero**: solo iconos + monto sin label "Ingresos" / "Gastos".
+3. **Icono inconsistente**: botón "Ingreso" usa `Plus` (genérico) mientras "Gasto" usa `Receipt` (semántico).
+4. **Acciones primarias sin descripción**: "Gasto/Ingreso/Capturar" no dice qué hace cada uno (¿abre form? ¿lleva a lista?).
+5. **Sparkline ambiguo**: "+15%" en gastos no es obvio que es **malo** para alguien sin alfabetización financiera.
+6. **Footer promocional**: invita a Avanzado sin decir qué ganas — debería ser informativo.
+7. **Empty state seco**: "Aún no hay movimientos" no sugiere las 3 formas de empezar (foto, voz, manual).
+8. **Tip duplicado en empty state**: cuando no hay datos, tip y empty state dicen lo mismo.
 
 ---
 
-### 2. Toggle Simple/Avanzado: ubicación canónica
+### Cambios
 
-**Problema actual**: 4 ubicaciones del toggle:
-1. Header desktop (línea 881 Layout.tsx)
-2. Header mobile compact (línea 552 Layout.tsx) — `hidden xs:inline-flex`
-3. Sidebar mobile sheet (línea 600 Layout.tsx)
-4. Inicio del MobileDashboard (que agregué la última vez)
+#### 1. Hero balance — sublínea explicativa
 
-Son demasiadas. **Decisión**:
+Agregar bajo "Balance del mes":
+```
+Lo que te queda · ingresos − gastos
+```
 
-- ✅ **Mantener**: Header desktop (siempre visible) + Header mobile compact (siempre visible)
-- ❌ **Quitar**: el del MobileDashboard (línea 161) — duplicado con el del header
-- ❌ **Quitar**: el del sidebar sheet — ya no necesario porque el del header mobile siempre es visible
+#### 2. Labels Ingresos/Gastos en hero
 
-Resultado: 1 toggle visible permanente en cada viewport (header). Limpio y predecible.
+Cada cifra del hero llevará su label corto en uppercase:
+```
+↑ INGRESOS  $4.500    ↓ GASTOS  $3.300
+```
 
-**Verificación**: confirmar que `UiModeToggle compact` cabe en mobile a 320px (xs breakpoint).
+#### 3. Barra de gasto con frase completa
 
-**Archivos**:
-- `src/components/dashboard/MobileDashboard.tsx` (eliminar bloque toggle agregado)
-- `src/components/Layout.tsx` (eliminar bloque sidebar lines 595-601, ajustar `hidden xs:inline-flex` → `inline-flex` para garantizar visibilidad incluso a 320px)
+Cambiar `"Gastado · 73%"` por:
+```
+Has gastado 73% de tus ingresos
+```
+
+#### 4. Icono coherente para "Ingreso"
+
+Botón "Ingreso" → `TrendingUp` (en vez de `Plus`). "Gasto" mantiene `Receipt`. "Capturar" mantiene `Camera`.
+
+#### 5. Subtexto en las 3 acciones primarias
+
+Cada `ActionButton` muestra ahora 2 líneas:
+- Gasto · *"Registrar uno nuevo"*
+- Ingreso · *"Sumar al balance"*
+- Capturar · *"Foto de recibo"*
+
+Pequeño (text-[10px]) para no romper el ritmo visual.
+
+#### 6. Sparkline — etiqueta semántica del delta
+
+El chip de variación añade texto contextual:
+- Si subió: `↑ +15% más que el mes pasado` (rosa)
+- Si bajó: `↓ −8% menos que el mes pasado` (verde — ahorraste)
+- Si igual: chip oculto
+
+Y debajo del gráfico, una micro-frase:
+```
+Subir = gastaste más · Bajar = ahorraste
+```
+(Solo se muestra una vez por sesión vía localStorage `simple_sparkline_legend_seen`.)
+
+#### 7. Empty state — 3 caminos para empezar
+
+Reemplazar el texto plano por 3 chips sugeridos:
+```
+[📸 Foto de recibo]  [🎤 Por voz]  [✍️ Manual]
+```
+Cada uno navega a la acción correspondiente. Solo aparece cuando `recent.length === 0`.
+
+#### 8. Footer informativo (no promocional)
+
+Cambiar:
+> "Modo Simple activo · Cambia a Avanzado desde el botón en el header."
+
+Por:
+> "Estás en Modo Simple. Cuando quieras impuestos, inversiones, contratos o ecosistema, cambia a Avanzado en el header."
+
+#### 9. Tip cuando no hay datos
+
+Cuando no hay movimientos, NO mostrar el tip "empieza registrando..." (ya está en el empty state). Mostrar en su lugar un dato de educación financiera genérico:
+```
+"Registrar tus movimientos durante 30 días te da una imagen real de tu salud financiera. — Consulta a un profesional antes de tomar decisiones."
+```
 
 ---
-
-### 3. "Ver todo" en movimientos: arreglar destino
-
-**Problema actual** (`SimpleDashboard.tsx` línea 231):
-```tsx
-<Button onClick={() => navigate('/expenses')}>Ver todo</Button>
-```
-Pero la lista mezcla **gastos + ingresos**. Llevar solo a `/expenses` confunde — el usuario no encuentra los ingresos que vio.
-
-**Cambios**:
-
-a) Crear menú contextual al click de "Ver todo" con 2 opciones:
-   - "Ver gastos" → `/expenses`
-   - "Ver ingresos" → `/income`
-
-   Implementación: `DropdownMenu` de shadcn (ya disponible).
-
-b) Alternativa más simple si prefieres: cambiar el botón único por dos pequeños chips:
-```
-[Gastos →] [Ingresos →]
-```
-
-Voy con la **opción b (chips)** — más visual, un click menos, encaja mejor con la estética "3D candy".
-
-**Archivo**: `src/components/dashboard/SimpleDashboard.tsx` (líneas 227-235)
-
----
-
-### Orden de ejecución
-
-1. Limpiar toggles duplicados (cambio quirúrgico, bajo riesgo)
-2. Arreglar "Ver todo" → chips Gastos/Ingresos
-3. Pulir onboarding: quick-add Contratos + texto "qué falta" + estado completado dismissible
 
 ### Archivos a editar
 
-- `src/components/Layout.tsx` (quitar 1 toggle del sidebar, ajustar visibilidad header mobile)
-- `src/components/dashboard/MobileDashboard.tsx` (quitar bloque toggle duplicado)
-- `src/components/dashboard/SimpleDashboard.tsx` (chips Gastos/Ingresos en lugar de "Ver todo")
-- `src/components/dashboard/SimpleOnboardingPath.tsx` (quick-add Contratos + qué falta + completado dismissible)
+- `src/components/dashboard/SimpleDashboard.tsx` — hero, labels, acciones con subtexto, empty state con 3 chips, footer, tip empty
+- `src/components/dashboard/SimpleSparkline.tsx` — texto semántico del delta + leyenda one-time
 
-### Sin cambios en BD
+### Sin cambios
 
-No se requieren migraciones ni nuevas columnas. La detección por datos reales ya funciona y es la arquitectura correcta.
+- Welcome dialog (ya está claro)
+- UiModeToggle (ya tiene tooltips correctos)
+- Onboarding path (recién pulido)
+- Estructura general / orden de secciones
 
-### Lo que NO hago (por decisión consciente)
+### Lo que NO hago
 
-- **No agrego columna `onboarding_progress`** — los datos reales son la verdad; una columna paralela se desincroniza.
-- **No hago tour guiado** — pediste los 3, no más.
-- **No agrego mini-gráfico de tendencia** — fuera de scope.
+- No agrego tour guiado paso-a-paso (intrusivo, ya hay welcome dialog)
+- No cambio rutas ni navegación
+- No toco el modo Avanzado
+
+### Resultado esperado
+
+Un usuario completamente nuevo abre Simple Mode y entiende **sin leer documentación**:
+- Cuánto le queda este mes y por qué
+- Si está mejor o peor que el mes anterior (y si subir/bajar es bueno)
+- Las 3 formas de empezar a registrar
+- Qué pasos faltan para tener todo configurado
+- Dónde y cuándo cambiar a Avanzado

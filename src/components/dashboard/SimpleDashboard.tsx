@@ -15,6 +15,8 @@ import {
   Landmark,
   Target,
   Sparkles,
+  Mic,
+  PenLine,
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useDashboardStats } from '@/hooks/data/useDashboardStats';
@@ -104,9 +106,10 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
   // Single contextual tip — financial education, not advice
   const tip = useMemo(() => {
     if (monthlyIncome === 0 && monthlyTotal === 0) {
+      // Empty state already invites action — show generic financial education instead
       return language === 'es'
-        ? 'Empieza registrando tu primer movimiento para ver tu salud financiera.'
-        : 'Start by logging your first movement to see your financial health.';
+        ? 'Registrar tus movimientos durante 30 días seguidos te da una imagen real de tu salud financiera y te ayuda a detectar fugas invisibles.'
+        : 'Logging your activity for 30 days in a row gives you a real picture of your financial health and helps spot hidden leaks.';
     }
     if (!positive) {
       return language === 'es'
@@ -146,8 +149,13 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
         )}
       >
         <CardContent className="py-7 text-center space-y-3">
-          <div className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">
-            {language === 'es' ? 'Balance del mes' : 'Monthly balance'}
+          <div className="space-y-1">
+            <div className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">
+              {language === 'es' ? 'Balance del mes' : 'Monthly balance'}
+            </div>
+            <div className="text-[11px] text-muted-foreground">
+              {language === 'es' ? 'Lo que te queda · ingresos − gastos' : "What's left · income − expenses"}
+            </div>
           </div>
           {statsLoading ? (
             <Skeleton className="h-12 w-48 mx-auto" />
@@ -162,23 +170,38 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
               {formatCurrency(balance)}
             </div>
           )}
-          <div className="flex justify-center gap-6 pt-1 text-sm">
-            <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
-              <TrendingUp className="h-4 w-4" />
-              <span className="font-semibold">{formatCurrency(monthlyIncome)}</span>
+          <div className="flex justify-center gap-5 pt-1 text-sm flex-wrap">
+            <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
+                <TrendingUp className="h-4 w-4" />
+                <span className="text-[11px] uppercase font-semibold tracking-wide">
+                  {language === 'es' ? 'Ingresos' : 'Income'}
+                </span>
+              </div>
+              <span className="font-bold tabular-nums text-emerald-700 dark:text-emerald-300">
+                {formatCurrency(monthlyIncome)}
+              </span>
             </div>
-            <div className="flex items-center gap-1.5 text-rose-600 dark:text-rose-400">
-              <TrendingDown className="h-4 w-4" />
-              <span className="font-semibold">{formatCurrency(monthlyTotal)}</span>
+            <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1 text-rose-600 dark:text-rose-400">
+                <TrendingDown className="h-4 w-4" />
+                <span className="text-[11px] uppercase font-semibold tracking-wide">
+                  {language === 'es' ? 'Gastos' : 'Expenses'}
+                </span>
+              </div>
+              <span className="font-bold tabular-nums text-rose-700 dark:text-rose-300">
+                {formatCurrency(monthlyTotal)}
+              </span>
             </div>
           </div>
 
           {/* Spent progress bar — only when there's income */}
           {monthlyIncome > 0 && (
             <div className="pt-2 px-4">
-              <div className="flex items-center justify-between text-xs text-muted-foreground mb-1.5">
-                <span>{language === 'es' ? 'Gastado' : 'Spent'}</span>
-                <span className="font-semibold tabular-nums">{spentPct.toFixed(0)}%</span>
+              <div className="text-xs text-muted-foreground mb-1.5 text-left">
+                {language === 'es'
+                  ? `Has gastado ${spentPct.toFixed(0)}% de tus ingresos`
+                  : `You've spent ${spentPct.toFixed(0)}% of your income`}
               </div>
               <Progress value={spentPct} className="h-2" />
             </div>
@@ -199,18 +222,21 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
         <ActionButton
           icon={<Receipt className="h-6 w-6" />}
           label={language === 'es' ? 'Gasto' : 'Expense'}
+          subtitle={language === 'es' ? 'Registrar uno nuevo' : 'Log a new one'}
           color="rose"
           onClick={() => navigate('/expenses')}
         />
         <ActionButton
-          icon={<Plus className="h-6 w-6" />}
+          icon={<TrendingUp className="h-6 w-6" />}
           label={language === 'es' ? 'Ingreso' : 'Income'}
+          subtitle={language === 'es' ? 'Sumar al balance' : 'Add to balance'}
           color="emerald"
           onClick={() => navigate('/income')}
         />
         <ActionButton
           icon={<Camera className="h-6 w-6" />}
           label={language === 'es' ? 'Capturar' : 'Capture'}
+          subtitle={language === 'es' ? 'Foto de recibo' : 'Receipt photo'}
           color="violet"
           onClick={() => (onQuickCapture ? onQuickCapture() : navigate('/capture'))}
         />
@@ -259,10 +285,32 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
             </div>
           </div>
           {recent.length === 0 ? (
-            <div className="text-center py-8 text-sm text-muted-foreground">
-              {language === 'es'
-                ? 'Aún no hay movimientos este mes. Empieza con tu primer gasto o ingreso.'
-                : 'No activity yet this month. Start with your first expense or income.'}
+            <div className="py-6 space-y-3">
+              <p className="text-center text-sm text-muted-foreground">
+                {language === 'es'
+                  ? 'Aún no hay movimientos este mes. Elige cómo empezar:'
+                  : "No activity yet this month. Pick how to start:"}
+              </p>
+              <div className="grid grid-cols-3 gap-2">
+                <EmptyStateChip
+                  icon={<Camera className="h-4 w-4" />}
+                  label={language === 'es' ? 'Foto' : 'Photo'}
+                  hint={language === 'es' ? 'recibo' : 'receipt'}
+                  onClick={() => (onQuickCapture ? onQuickCapture() : navigate('/capture'))}
+                />
+                <EmptyStateChip
+                  icon={<Mic className="h-4 w-4" />}
+                  label={language === 'es' ? 'Voz' : 'Voice'}
+                  hint={language === 'es' ? 'dictado' : 'dictate'}
+                  onClick={() => navigate('/capture?mode=voice')}
+                />
+                <EmptyStateChip
+                  icon={<PenLine className="h-4 w-4" />}
+                  label={language === 'es' ? 'Manual' : 'Manual'}
+                  hint={language === 'es' ? 'formulario' : 'form'}
+                  onClick={() => navigate('/expenses?new=1')}
+                />
+              </div>
             </div>
           ) : (
             <ul className="divide-y divide-border/40">
@@ -327,11 +375,11 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
         </CardContent>
       </Card>
 
-      {/* Footer hint */}
-      <p className="text-center text-xs text-muted-foreground pt-1">
+      {/* Footer hint — informative, not promotional */}
+      <p className="text-center text-xs text-muted-foreground pt-1 px-4 leading-relaxed">
         {language === 'es'
-          ? 'Modo Simple activo · Cambia a Avanzado desde el botón en el header.'
-          : 'Simple Mode active · Switch to Advanced from the header button.'}
+          ? 'Estás en Modo Simple. Cuando necesites impuestos, inversiones, contratos o el ecosistema completo, cambia a Avanzado desde el botón en el header.'
+          : 'You are in Simple Mode. When you need taxes, investments, contracts or the full ecosystem, switch to Advanced from the header button.'}
       </p>
     </div>
   );
@@ -340,11 +388,13 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
 function ActionButton({
   icon,
   label,
+  subtitle,
   color,
   onClick,
 }: {
   icon: React.ReactNode;
   label: string;
+  subtitle?: string;
   color: 'rose' | 'emerald' | 'violet';
   onClick: () => void;
 }) {
@@ -355,17 +405,27 @@ function ActionButton({
     violet:
       'border-violet-500/30 bg-violet-500/10 hover:bg-violet-500/20 text-violet-700 dark:text-violet-300',
   };
+  const subtitleColor = {
+    rose: 'text-rose-600/70 dark:text-rose-400/70',
+    emerald: 'text-emerald-600/70 dark:text-emerald-400/70',
+    violet: 'text-violet-600/70 dark:text-violet-400/70',
+  };
   return (
     <button
       type="button"
       onClick={onClick}
       className={cn(
-        'flex flex-col items-center justify-center gap-2 py-5 rounded-xl border-2 font-semibold text-sm transition-all hover:scale-[1.04] active:scale-[0.98] shadow-md',
+        'flex flex-col items-center justify-center gap-1.5 py-4 px-2 rounded-xl border-2 font-semibold text-sm transition-all hover:scale-[1.04] active:scale-[0.98] shadow-md',
         colorMap[color],
       )}
     >
       {icon}
-      <span>{label}</span>
+      <span className="leading-tight">{label}</span>
+      {subtitle && (
+        <span className={cn('text-[10px] font-medium leading-tight text-center', subtitleColor[color])}>
+          {subtitle}
+        </span>
+      )}
     </button>
   );
 }
@@ -387,6 +447,30 @@ function SecondaryShortcut({
     >
       <span className="text-primary">{icon}</span>
       <span>{label}</span>
+    </button>
+  );
+}
+
+function EmptyStateChip({
+  icon,
+  label,
+  hint,
+  onClick,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  hint: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex flex-col items-center justify-center gap-1 py-3 px-2 rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 hover:bg-primary/10 hover:border-primary/50 hover:scale-[1.04] active:scale-[0.98] transition-all"
+    >
+      <span className="text-primary">{icon}</span>
+      <span className="text-xs font-semibold leading-tight">{label}</span>
+      <span className="text-[10px] text-muted-foreground leading-tight">{hint}</span>
     </button>
   );
 }

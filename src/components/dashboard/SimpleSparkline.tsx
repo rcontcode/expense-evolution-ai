@@ -1,7 +1,9 @@
-import { useMemo } from 'react';
-import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { TrendingUp, TrendingDown, Minus, X } from 'lucide-react';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { cn } from '@/lib/utils';
+
+const LEGEND_KEY = 'simple_sparkline_legend_seen';
 
 interface MonthlyTrend {
   month: string;
@@ -20,6 +22,18 @@ interface SimpleSparklineProps {
  */
 export function SimpleSparkline({ trends, language }: SimpleSparklineProps) {
   const { formatCurrency } = useFormatCurrency();
+  const [legendDismissed, setLegendDismissed] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return true;
+    return localStorage.getItem(LEGEND_KEY) === '1';
+  });
+
+
+
+
+  const dismissLegend = () => {
+    localStorage.setItem(LEGEND_KEY, '1');
+    setLegendDismissed(true);
+  };
 
   const { path, areaPath, points, max, min, current, previous, deltaPct, trendDir } = useMemo(() => {
     const W = 100;
@@ -73,19 +87,31 @@ export function SimpleSparkline({ trends, language }: SimpleSparklineProps) {
   const isPositiveTrend = trendDir === 'down' || trendDir === 'flat';
   const TrendIcon = trendDir === 'up' ? TrendingUp : trendDir === 'down' ? TrendingDown : Minus;
 
+  const absPct = Math.abs(deltaPct).toFixed(0);
+  const deltaText =
+    trendDir === 'up'
+      ? language === 'es'
+        ? `${absPct}% más que el mes pasado`
+        : `${absPct}% more than last month`
+      : trendDir === 'down'
+        ? language === 'es'
+          ? `${absPct}% menos · ahorraste`
+          : `${absPct}% less · you saved`
+        : '';
+
   return (
-    <div className="pt-3 px-4 space-y-1.5">
-      <div className="flex items-center justify-between text-xs">
+    <div className="pt-3 px-4 space-y-1.5 text-left">
+      <div className="flex items-center justify-between gap-2 text-xs flex-wrap">
         <span className="text-muted-foreground font-medium">
           {language === 'es' ? 'Gastos · últimos 6 meses' : 'Spending · last 6 months'}
         </span>
         {trendDir !== 'flat' && previous > 0 && (
           <span
             className={cn(
-              'inline-flex items-center gap-1 font-semibold tabular-nums px-1.5 py-0.5 rounded-md',
+              'inline-flex items-center gap-1 font-semibold px-2 py-0.5 rounded-md text-[11px]',
               isPositiveTrend
-                ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10'
-                : 'text-rose-600 dark:text-rose-400 bg-rose-500/10',
+                ? 'text-emerald-700 dark:text-emerald-400 bg-emerald-500/10'
+                : 'text-rose-700 dark:text-rose-400 bg-rose-500/10',
             )}
             title={
               language === 'es'
@@ -94,8 +120,7 @@ export function SimpleSparkline({ trends, language }: SimpleSparklineProps) {
             }
           >
             <TrendIcon className="h-3 w-3" />
-            {deltaPct > 0 ? '+' : ''}
-            {deltaPct.toFixed(0)}%
+            <span className="tabular-nums">{deltaText}</span>
           </span>
         )}
       </div>
@@ -151,6 +176,25 @@ export function SimpleSparkline({ trends, language }: SimpleSparklineProps) {
           </span>
         ))}
       </div>
+
+      {/* One-time legend explaining what up/down means */}
+      {!legendDismissed && (
+        <div className="flex items-center justify-between gap-2 mt-2 px-2 py-1.5 rounded-md bg-muted/40 border border-border/40">
+          <span className="text-[10px] text-muted-foreground leading-snug">
+            {language === 'es'
+              ? 'Subir = gastaste más · Bajar = ahorraste'
+              : 'Up = spent more · Down = saved'}
+          </span>
+          <button
+            type="button"
+            onClick={dismissLegend}
+            className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
+            aria-label={language === 'es' ? 'Entendido' : 'Got it'}
+          >
+            <X className="h-3 w-3" />
+          </button>
+        </div>
+      )}
     </div>
   );
 }
