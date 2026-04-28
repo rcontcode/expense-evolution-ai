@@ -166,16 +166,21 @@ export default function Dashboard() {
 
   const isMobile = useIsMobile();
   const [quickCaptureOpen, setQuickCaptureOpen] = useState(false);
+  const [quickCaptureTab, setQuickCaptureTab] = useState<'photo' | 'text'>('photo');
+  const openQuickCapture = useCallback((tab: 'photo' | 'text' = 'photo') => {
+    setQuickCaptureTab(tab);
+    setQuickCaptureOpen(true);
+  }, []);
 
   // SIMPLE MODE — ultra-minimal dashboard for both mobile and desktop
   if (uiMode === 'simple') {
     return (
       <Layout>
         <div className="page-container section-gap">
-          <SimpleDashboard onQuickCapture={() => setQuickCaptureOpen(true)} />
+          <SimpleDashboard onQuickCapture={() => openQuickCapture('photo')} />
         </div>
         <ExportDialog open={exportDialogOpen} onClose={() => setExportDialogOpen(false)} expenses={allExpenses || []} />
-        <QuickCaptureDialog open={quickCaptureOpen} onClose={() => setQuickCaptureOpen(false)} />
+        <QuickCaptureDialog open={quickCaptureOpen} onClose={() => setQuickCaptureOpen(false)} defaultTab={quickCaptureTab} />
         <UiModeWelcomeDialog open={welcomeOpen} onClose={() => setWelcomeOpen(false)} />
       </Layout>
     );
@@ -186,10 +191,10 @@ export default function Dashboard() {
     return (
       <Layout>
         <div className="page-container section-gap mobile-compact">
-          <MobileDashboard onQuickCapture={() => setQuickCaptureOpen(true)} />
+          <MobileDashboard onQuickCapture={(tab) => openQuickCapture(tab ?? 'photo')} />
         </div>
         <ExportDialog open={exportDialogOpen} onClose={() => setExportDialogOpen(false)} expenses={allExpenses || []} />
-        <QuickCaptureDialog open={quickCaptureOpen} onClose={() => setQuickCaptureOpen(false)} />
+        <QuickCaptureDialog open={quickCaptureOpen} onClose={() => setQuickCaptureOpen(false)} defaultTab={quickCaptureTab} />
         <UiModeWelcomeDialog open={welcomeOpen} onClose={() => setWelcomeOpen(false)} />
       </Layout>
     );
