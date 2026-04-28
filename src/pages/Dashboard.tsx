@@ -379,6 +379,11 @@ export default function Dashboard() {
                 transition={{ duration: 0.2 }}
                 className="space-y-6"
               >
+                <SectionHeader
+                  title={language === 'es' ? 'Tu mes' : 'Your month'}
+                  subtitle={language === 'es' ? 'Línea de tiempo, narrativa y movimientos del mes seleccionado' : 'Timeline, narrative and activity for the selected month'}
+                />
+
                 {/* Timeline + Month Detail */}
                 <div id="timeline" className="side-by-side" data-section="timeline" data-highlight="timeline-section">
                   <div data-highlight="timeline-chart" className="flex flex-col">
