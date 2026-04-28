@@ -613,6 +613,7 @@ export const Layout = ({ children }: LayoutProps) => {
                       return (
                         <button
                           key={item.path}
+                          onPointerDown={() => preloadRoute(item.path)}
                           onClick={() => { navigate(item.path); setMobileMenuOpen(false); }}
                           className={cn(
                             "flex flex-col items-center gap-1.5 py-2 px-1 rounded-xl transition-all min-w-0",
@@ -676,6 +677,7 @@ export const Layout = ({ children }: LayoutProps) => {
                                 <div key={item.path}>
                                   <div className="flex items-center gap-1">
                                     <button
+                                      onPointerDown={() => preloadRoute(item.path)}
                                       onClick={() => { navigate(item.path); setMobileMenuOpen(false); }}
                                       className={cn(
                                         "flex items-center gap-2.5 px-2 py-2 rounded-lg transition-colors text-left flex-1 min-w-0",
@@ -775,6 +777,7 @@ export const Layout = ({ children }: LayoutProps) => {
                 return (
                   <button
                     key={`fab-${index}`}
+                    onPointerDown={() => item.path && preloadRoute(item.path)}
                     onClick={() => navigate(item.path!)}
                     className="mobile-bottom-nav-fab"
                   >
@@ -805,6 +808,7 @@ export const Layout = ({ children }: LayoutProps) => {
               return (
                 <button
                   key={item.path}
+                  onPointerDown={() => item.path && preloadRoute(item.path)}
                   onClick={() => navigate(item.path!)}
                   className={cn(
                     "mobile-bottom-nav-item",
@@ -1054,6 +1058,7 @@ export const Layout = ({ children }: LayoutProps) => {
                         }}
                         onMouseEnter={() => preloadRoute(item.path)}
                         onFocus={() => preloadRoute(item.path)}
+                        onPointerDown={() => preloadRoute(item.path)}
                         className={cn(
                           'flex items-center gap-2 flex-1 px-2.5 py-2 rounded-xl text-sm transition-all duration-200',
                           'hover:bg-background/70 hover:shadow-md hover:-translate-y-0.5',
