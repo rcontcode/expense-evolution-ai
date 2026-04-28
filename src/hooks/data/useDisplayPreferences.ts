@@ -9,6 +9,31 @@ import {
   UiMode,
 } from '@/lib/constants/focus-areas';
 
+const DISPLAY_PREFERENCES_EVENT = 'display-preferences:update';
+const UI_MODE_STORAGE_KEY = 'evofinz-ui-mode';
+
+const getStoredUiMode = (): UiMode | null => {
+  if (typeof window === 'undefined') return null;
+  const stored = window.localStorage.getItem(UI_MODE_STORAGE_KEY);
+  return stored === 'simple' || stored === 'advanced' ? stored : null;
+};
+
+export const applyUiModeImmediately = (mode: 'simple' | 'advanced') => {
+  if (typeof window === 'undefined') return;
+  window.localStorage.setItem(UI_MODE_STORAGE_KEY, mode);
+  window.dispatchEvent(new CustomEvent(DISPLAY_PREFERENCES_EVENT, {
+    detail: { ...DEFAULT_DISPLAY_PREFERENCES, ui_mode: mode },
+  }));
+};
+
+export const openDashboardAfterUiModeChange = () => {
+  if (typeof window === 'undefined') return;
+  const url = new URL(window.location.href);
+  url.pathname = '/dashboard';
+  url.hash = '';
+  window.location.assign(url.toString());
+};
+
 export const useDisplayPreferences = () => {
   const { user } = useAuth();
   const [preferences, setPreferences] = useState<DisplayPreferences>(DEFAULT_DISPLAY_PREFERENCES);
@@ -32,12 +57,25 @@ export const useDisplayPreferences = () => {
     userIdRef.current = user?.id ?? null;
   }, [user?.id]);
 
+  useEffect(() => {
+    const syncPreferences = (event: Event) => {
+      const next = (event as CustomEvent<DisplayPreferences>).detail;
+      if (!next) return;
+      preferencesRef.current = next;
+      setPreferences(next);
+    };
+
+    window.addEventListener(DISPLAY_PREFERENCES_EVENT, syncPreferences as EventListener);
+    return () => window.removeEventListener(DISPLAY_PREFERENCES_EVENT, syncPreferences as EventListener);
+  }, []);
+
   // Fetch preferences from database
   useEffect(() => {
     const fetchPreferences = async () => {
       if (!user?.id) {
-        setPreferences(DEFAULT_DISPLAY_PREFERENCES);
-        lastSavedRef.current = DEFAULT_DISPLAY_PREFERENCES;
+        const fallback = { ...DEFAULT_DISPLAY_PREFERENCES, ...(getStoredUiMode() ? { ui_mode: getStoredUiMode()! } : {}) };
+        setPreferences(fallback);
+        lastSavedRef.current = fallback;
         setIsLoading(false);
         return;
       }
@@ -57,12 +95,14 @@ export const useDisplayPreferences = () => {
           const merged = {
             ...DEFAULT_DISPLAY_PREFERENCES,
             ...(data.display_preferences as Partial<DisplayPreferences>),
+            ...(getStoredUiMode() ? { ui_mode: getStoredUiMode()! } : {}),
           };
           setPreferences(merged);
           lastSavedRef.current = merged;
         } else {
-          setPreferences(DEFAULT_DISPLAY_PREFERENCES);
-          lastSavedRef.current = DEFAULT_DISPLAY_PREFERENCES;
+          const fallback = { ...DEFAULT_DISPLAY_PREFERENCES, ...(getStoredUiMode() ? { ui_mode: getStoredUiMode()! } : {}) };
+          setPreferences(fallback);
+          lastSavedRef.current = fallback;
         }
       } catch (error) {
         console.error('Error fetching display preferences:', error);
@@ -121,12 +161,25 @@ export const useDisplayPreferences = () => {
     }
   }, []);
 
-  const savePreferences = useCallback((newPreferences: DisplayPreferences) => {
+  const savePreferences = useCallback((newPreferences: DisplayPreferences, options?: { immediate?: boolean }) => {
+    if (newPreferences.ui_mode === 'simple' || newPreferences.ui_mode === 'advanced') {
+      window.localStorage.setItem(UI_MODE_STORAGE_KEY, newPreferences.ui_mode);
+    }
+
     setPreferences(newPreferences);
+    preferencesRef.current = newPreferences;
     pendingRef.current = newPreferences;
     setIsSaving(true);
 
+    window.dispatchEvent(new CustomEvent(DISPLAY_PREFERENCES_EVENT, { detail: newPreferences }));
+
     if (saveTimerRef.current) window.clearTimeout(saveTimerRef.current);
+
+    if (options?.immediate) {
+      void flushSave();
+      return;
+    }
+
     saveTimerRef.current = window.setTimeout(() => {
       flushSave();
     }, 450);
@@ -138,8 +191,11 @@ export const useDisplayPreferences = () => {
       if (saveTimerRef.current) {
         window.clearTimeout(saveTimerRef.current);
       }
+      if (pendingRef.current) {
+        void flushSave();
+      }
     };
-  }, []);
+  }, [flushSave]);
 
   // Stable callbacks that don't depend on `preferences` state directly
   const setViewMode = useCallback((mode: ViewMode) => {
@@ -186,8 +242,9 @@ export const useDisplayPreferences = () => {
    }, [savePreferences]);
 
    const setUiMode = useCallback((mode: UiMode) => {
+     if (mode === 'simple' || mode === 'advanced') applyUiModeImmediately(mode);
      const newPreferences = { ...preferencesRef.current, ui_mode: mode };
-     savePreferences(newPreferences);
+     savePreferences(newPreferences, { immediate: true });
    }, [savePreferences]);
  
    const setAreaOrder = useCallback((order: FocusAreaId[]) => {

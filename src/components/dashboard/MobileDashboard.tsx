@@ -16,7 +16,8 @@ import { LiveClock } from '@/components/dashboard/LiveClock';
 import { ProfileCompletionNudge } from '@/components/profile/ProfileCompletionNudge';
 import { DashboardGamificationWidget } from '@/components/gamification';
 import { MissionControl } from '@/components/dashboard/MissionControl';
-import { useDisplayPreferences } from '@/hooks/data/useDisplayPreferences';
+import { applyUiModeImmediately, openDashboardAfterUiModeChange, useDisplayPreferences } from '@/hooks/data/useDisplayPreferences';
+import { SimpleSparkline } from './SimpleSparkline';
 
 
 const LazyEcosystemWidgets = lazy(() => import('@/components/ecosystem/EcosystemDashboardWidgets'));
@@ -71,6 +72,13 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
             monthlyBalance={monthlyBalance}
             savingsRate={savingsRate}
           />
+          {(stats?.monthlyTrends?.length ?? 0) >= 2 && (
+            <Card>
+              <CardContent className="p-2">
+                <SimpleSparkline trends={stats!.monthlyTrends} language={language} />
+              </CardContent>
+            </Card>
+          )}
           <Suspense fallback={<Skeleton className="h-40" />}>
             <LazyFinancialNarrative />
           </Suspense>
@@ -172,8 +180,9 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
           size="sm"
           className="text-xs text-muted-foreground hover:text-foreground gap-1.5"
           onClick={() => {
+            applyUiModeImmediately('simple');
             setUiMode('simple');
-            navigate('/', { replace: true });
+            openDashboardAfterUiModeChange();
           }}
         >
           <Sparkles className="h-3.5 w-3.5" />

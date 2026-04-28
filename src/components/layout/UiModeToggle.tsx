@@ -1,6 +1,5 @@
 import { Sparkles, Layers } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { useDisplayPreferences } from '@/hooks/data/useDisplayPreferences';
+import { applyUiModeImmediately, openDashboardAfterUiModeChange, useDisplayPreferences } from '@/hooks/data/useDisplayPreferences';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -18,13 +17,13 @@ export function UiModeToggle({ className, compact = false }: UiModeToggleProps) 
   const { uiMode, setUiMode } = useDisplayPreferences();
   const { language } = useLanguage();
   const { toast } = useToast();
-  const navigate = useNavigate();
 
   // 'unset' is treated as advanced for display purposes
   const current: 'simple' | 'advanced' = uiMode === 'simple' ? 'simple' : 'advanced';
 
   const switchTo = (target: 'simple' | 'advanced') => {
     if (target === current) return; // no-op if already there
+    applyUiModeImmediately(target);
     setUiMode(target);
     toast({
       title: target === 'simple'
@@ -34,9 +33,7 @@ export function UiModeToggle({ className, compact = false }: UiModeToggleProps) 
         ? (language === 'es' ? 'Vista minimalista con lo esencial.' : 'Minimal view with the essentials.')
         : (language === 'es' ? 'Acceso completo a todas las funciones.' : 'Full access to every feature.'),
     });
-    // Navigate to the dashboard root — the Dashboard re-mounts via React Query
-    // when uiMode changes, so no full reload is needed.
-    navigate('/', { replace: true });
+    openDashboardAfterUiModeChange();
   };
 
   const simpleActive = current === 'simple';
@@ -65,7 +62,7 @@ export function UiModeToggle({ className, compact = false }: UiModeToggleProps) 
         className={cn(
           'flex items-center gap-1.5 px-3 py-1 rounded-full font-semibold text-xs transition-all',
           simpleActive
-            ? 'bg-emerald-500 text-white shadow-md scale-[1.02] cursor-default'
+            ? 'bg-emerald-500 text-primary-foreground shadow-md scale-[1.02] cursor-default'
             : 'text-muted-foreground hover:text-foreground hover:bg-background/60 cursor-pointer',
         )}
       >
@@ -87,7 +84,7 @@ export function UiModeToggle({ className, compact = false }: UiModeToggleProps) 
         className={cn(
           'flex items-center gap-1.5 px-3 py-1 rounded-full font-semibold text-xs transition-all',
           advancedActive
-            ? 'bg-violet-500 text-white shadow-md scale-[1.02] cursor-default'
+            ? 'bg-primary text-primary-foreground shadow-md scale-[1.02] cursor-default'
             : 'text-muted-foreground hover:text-foreground hover:bg-background/60 cursor-pointer',
         )}
       >
