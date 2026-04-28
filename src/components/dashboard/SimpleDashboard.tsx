@@ -187,9 +187,9 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
     return { projectedBalance, positive: projectedBalance >= 0 };
   }, [monthlyTotal, monthlyIncome, monthProgress]);
 
-  // Optional savings goal from preferences
+  // Optional savings goal from preferences (stored in display_preferences.savings_goal_monthly)
   const savingsGoal = useMemo(() => {
-    const prefs = (profile as any)?.preferences;
+    const prefs = (profile as any)?.display_preferences ?? (profile as any)?.preferences;
     const goal = Number(prefs?.savings_goal_monthly) || 0;
     if (goal <= 0) return null;
     const current = Math.max(0, balance);
@@ -242,11 +242,11 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
     if (!value || value <= 0 || !user?.id) return;
     setSavingGoal(true);
     try {
-      const currentPrefs = ((profile as any)?.preferences ?? {}) as Record<string, unknown>;
+      const currentPrefs = (((profile as any)?.display_preferences) ?? {}) as Record<string, unknown>;
       const next = { ...currentPrefs, savings_goal_monthly: value };
       const { error } = await supabase
         .from('profiles')
-        .update({ preferences: next as any })
+        .update({ display_preferences: next as any })
         .eq('id', user.id);
       if (error) throw error;
       toast({
