@@ -24,19 +24,19 @@ import { useDisplayPreferences } from '@/hooks/data/useDisplayPreferences';
 import { YearTimelineChart } from '@/components/dashboard/YearTimelineChart';
 import { LiveClock } from '@/components/dashboard/LiveClock';
 import { MonthDetailPanel } from '@/components/dashboard/MonthDetailPanel';
-import { DashboardNotificationHub } from '@/components/dashboard/DashboardNotificationHub';
+import { SystemStatusStrip } from '@/components/dashboard/SystemStatusStrip';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { MobileDashboard } from '@/components/dashboard/MobileDashboard';
 import { QuickCaptureDialog } from '@/components/dialogs/QuickCaptureDialog';
 import { DashboardGamificationWidget } from '@/components/gamification';
-import { MissionControl } from '@/components/dashboard/MissionControl';
+
 import { ProfileCompletionNudge } from '@/components/profile/ProfileCompletionNudge';
 import { ProfileExtenderDialog } from '@/components/profile/ProfileExtenderDialog';
 import { LifeProfileSection } from '@/hooks/data/useLifeProfile';
 import { EcosystemSection } from '@/components/ecosystem/EcosystemSection';
 import { DashboardNavigator } from '@/components/dashboard/DashboardNavigator';
 import { useDashboardDeepLinks } from '@/hooks/utils/useDashboardDeepLinks';
-import { DataInventoryPanel } from '@/components/dashboard/DataInventoryPanel';
+
 import { SimpleDashboard } from '@/components/dashboard/SimpleDashboard';
 import { UiModeWelcomeDialog } from '@/components/onboarding/UiModeWelcomeDialog';
 import { NextActionBanner } from '@/components/dashboard/NextActionBanner';
@@ -347,20 +347,10 @@ export default function Dashboard() {
           </Card>
 
           {/* ========================================================== */}
-          {/* ZONE 2 — TU MES (your month): timeline, narrative, banking  */}
+          {/* SYSTEM STATUS STRIP — compact 3-chip row (Avisos, Datos,    */}
+          {/* Sistema). Each opens a side Sheet with the full panel.      */}
           {/* ========================================================== */}
-          <SectionHeader
-            title={language === 'es' ? 'Tu mes' : 'Your month'}
-            subtitle={language === 'es' ? 'Resumen, narrativa y movimientos' : 'Summary, narrative and movements'}
-          />
-
-          {/* Stacked panels: each takes full width, collapsed by default.
-              Cleaner than a multi-col grid that gets misaligned when one expands. */}
-          <div className="space-y-3">
-            <DashboardNotificationHub />
-            <DataInventoryPanel />
-            <MissionControl />
-          </div>
+          <SystemStatusStrip />
 
           {/* VIEW TABS */}
           <DashboardViewTabs
@@ -389,6 +379,11 @@ export default function Dashboard() {
                 transition={{ duration: 0.2 }}
                 className="space-y-6"
               >
+                <SectionHeader
+                  title={language === 'es' ? 'Tu mes' : 'Your month'}
+                  subtitle={language === 'es' ? 'Línea de tiempo, narrativa y movimientos del mes seleccionado' : 'Timeline, narrative and activity for the selected month'}
+                />
+
                 {/* Timeline + Month Detail */}
                 <div id="timeline" className="side-by-side" data-section="timeline" data-highlight="timeline-section">
                   <div data-highlight="timeline-chart" className="flex flex-col">
