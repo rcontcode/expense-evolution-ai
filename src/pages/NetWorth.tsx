@@ -166,8 +166,8 @@ export default function NetWorth() {
             actions={[
               { icon: Plus, title: { es: 'Agregar Activo', en: 'Add Asset' }, description: { es: 'Inversiones, propiedades', en: 'Investments, properties' }, action: handleAddAsset },
               { icon: Wallet, title: { es: 'Agregar Pasivo', en: 'Add Liability' }, description: { es: 'Deudas, hipotecas', en: 'Debts, mortgages' }, action: handleAddLiability },
-              { icon: TrendingUp, title: { es: 'Ver Proyección', en: 'View Projection' }, description: { es: '6 meses adelante', en: '6 months ahead' }, action: () => {} },
-              { icon: RefreshCw, title: { es: 'Conversiones', en: 'Conversions' }, description: { es: 'Activos no productivos', en: 'Non-productive assets' }, action: () => {} }
+              { icon: TrendingUp, title: { es: 'Ver Proyección', en: 'View Projection' }, description: { es: '6 meses adelante', en: '6 months ahead' }, path: '/analytics' },
+              { icon: RefreshCw, title: { es: 'Inversiones', en: 'Investments' }, description: { es: 'Portafolio completo', en: 'Full portfolio' }, path: '/investments' }
             ]}
           />
         )}

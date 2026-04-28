@@ -158,7 +158,7 @@
          en: `${exceededBudgets.length} budget(s) exceeded`
        },
        color: 'from-red-500 to-rose-500',
-       action: () => {},
+       action: () => document.querySelector('[data-section="budget-list"]')?.scrollIntoView({ behavior: 'smooth' }),
        badge: { es: 'Urgente', en: 'Urgent' },
      });
    }
