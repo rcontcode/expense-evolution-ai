@@ -106,27 +106,37 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
     return d.toLocaleDateString(language === 'es' ? 'es' : 'en', { month: 'long', year: 'numeric' });
   }, [language]);
 
-  // Single contextual tip — financial education, not advice
+  // Top spending category for current month — short, plain-text insight under the sparkline
+  const topCategory = useMemo(() => {
+    if (!expenses || expenses.length === 0 || monthlyTotal <= 0) return null;
+    const now = new Date();
+    const ym = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const totals = new Map<string, number>();
+    (expenses as any[]).forEach((e) => {
+      if (typeof e.date === 'string' && e.date.startsWith(ym)) {
+        const cat = e.category || (language === 'es' ? 'Sin categoría' : 'Uncategorized');
+        totals.set(cat, (totals.get(cat) ?? 0) + (Number(e.amount) || 0));
+      }
+    });
+    if (totals.size === 0) return null;
+    let topCat = '';
+    let topAmt = 0;
+    totals.forEach((v, k) => {
+      if (v > topAmt) { topAmt = v; topCat = k; }
+    });
+    if (topAmt <= 0) return null;
+    const pct = Math.round((topAmt / monthlyTotal) * 100);
+    return { category: topCat, amount: topAmt, pct };
+  }, [expenses, monthlyTotal, language]);
+
+  // Single contextual tip — financial education, rotates daily
   const tip = useMemo(() => {
-    if (monthlyIncome === 0 && monthlyTotal === 0) {
-      // Empty state already invites action — show generic financial education instead
-      return language === 'es'
-        ? 'Registrar tus movimientos durante 30 días seguidos te da una imagen real de tu salud financiera y te ayuda a detectar fugas invisibles.'
-        : 'Logging your activity for 30 days in a row gives you a real picture of your financial health and helps spot hidden leaks.';
-    }
-    if (!positive) {
-      return language === 'es'
-        ? 'Estás gastando más de lo que ingresas este mes. Revisa tus categorías y considera consultar a un profesional.'
-        : "You're spending more than you earn this month. Review your categories and consider consulting a professional.";
-    }
-    if (spentPct > 80) {
-      return language === 'es'
-        ? 'Has usado más del 80% de tus ingresos este mes. Cuida los gastos restantes.'
-        : "You've used more than 80% of your income this month. Watch the remaining expenses.";
-    }
-    return language === 'es'
-      ? 'Vas bien este mes. Mantén el ritmo y revisa tu presupuesto cada semana.'
-      : "You're doing well this month. Keep the pace and review your budget weekly.";
+    let ctx: TipContext;
+    if (monthlyIncome === 0 && monthlyTotal === 0) ctx = 'empty';
+    else if (!positive) ctx = 'deficit';
+    else if (spentPct > 80) ctx = 'high_spend';
+    else ctx = 'healthy';
+    return getDailyTip(ctx, language);
   }, [monthlyIncome, monthlyTotal, positive, spentPct, language]);
 
   return (
