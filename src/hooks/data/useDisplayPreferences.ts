@@ -9,6 +9,8 @@ import {
   UiMode,
 } from '@/lib/constants/focus-areas';
 
+const DISPLAY_PREFERENCES_EVENT = 'display-preferences:update';
+
 export const useDisplayPreferences = () => {
   const { user } = useAuth();
   const [preferences, setPreferences] = useState<DisplayPreferences>(DEFAULT_DISPLAY_PREFERENCES);
@@ -31,6 +33,18 @@ export const useDisplayPreferences = () => {
   useEffect(() => {
     userIdRef.current = user?.id ?? null;
   }, [user?.id]);
+
+  useEffect(() => {
+    const syncPreferences = (event: Event) => {
+      const next = (event as CustomEvent<DisplayPreferences>).detail;
+      if (!next) return;
+      preferencesRef.current = next;
+      setPreferences(next);
+    };
+
+    window.addEventListener(DISPLAY_PREFERENCES_EVENT, syncPreferences as EventListener);
+    return () => window.removeEventListener(DISPLAY_PREFERENCES_EVENT, syncPreferences as EventListener);
+  }, []);
 
   // Fetch preferences from database
   useEffect(() => {
@@ -121,12 +135,21 @@ export const useDisplayPreferences = () => {
     }
   }, []);
 
-  const savePreferences = useCallback((newPreferences: DisplayPreferences) => {
+  const savePreferences = useCallback((newPreferences: DisplayPreferences, options?: { immediate?: boolean }) => {
     setPreferences(newPreferences);
+    preferencesRef.current = newPreferences;
     pendingRef.current = newPreferences;
     setIsSaving(true);
 
+    window.dispatchEvent(new CustomEvent(DISPLAY_PREFERENCES_EVENT, { detail: newPreferences }));
+
     if (saveTimerRef.current) window.clearTimeout(saveTimerRef.current);
+
+    if (options?.immediate) {
+      void flushSave();
+      return;
+    }
+
     saveTimerRef.current = window.setTimeout(() => {
       flushSave();
     }, 450);
@@ -138,8 +161,11 @@ export const useDisplayPreferences = () => {
       if (saveTimerRef.current) {
         window.clearTimeout(saveTimerRef.current);
       }
+      if (pendingRef.current) {
+        void flushSave();
+      }
     };
-  }, []);
+  }, [flushSave]);
 
   // Stable callbacks that don't depend on `preferences` state directly
   const setViewMode = useCallback((mode: ViewMode) => {
@@ -187,7 +213,7 @@ export const useDisplayPreferences = () => {
 
    const setUiMode = useCallback((mode: UiMode) => {
      const newPreferences = { ...preferencesRef.current, ui_mode: mode };
-     savePreferences(newPreferences);
+     savePreferences(newPreferences, { immediate: true });
    }, [savePreferences]);
  
    const setAreaOrder = useCallback((order: FocusAreaId[]) => {
