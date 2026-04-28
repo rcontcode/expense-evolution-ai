@@ -354,9 +354,13 @@ export default function Dashboard() {
             subtitle={language === 'es' ? 'Resumen, narrativa y movimientos' : 'Summary, narrative and movements'}
           />
 
-          {/* Smart grid: 3 columns when all collapsed; any expanded panel takes full width
-              so its details breathe instead of pushing the others into a tall column */}
-          <SmartPanelGrid />
+          {/* Stacked panels: each takes full width, collapsed by default.
+              Cleaner than a multi-col grid that gets misaligned when one expands. */}
+          <div className="space-y-3">
+            <DashboardNotificationHub />
+            <DataInventoryPanel />
+            <MissionControl />
+          </div>
 
           {/* VIEW TABS */}
           <DashboardViewTabs
