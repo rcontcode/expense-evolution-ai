@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils';
 
 interface MissionControlProps {
   compact?: boolean;
+  onExpandedChange?: (expanded: boolean) => void;
 }
 
 const STATUS_BG: Record<CategoryStatus, string> = {
@@ -299,7 +300,7 @@ function FeatureReadinessCard({ feature, language }: { feature: FeatureRequireme
   );
 }
 
-export function MissionControl({ compact = false }: MissionControlProps) {
+export function MissionControl({ compact = false, onExpandedChange }: MissionControlProps) {
   const { language } = useLanguage();
   const l = language === 'es';
   const data = useMissionControl();
@@ -313,6 +314,7 @@ export function MissionControl({ compact = false }: MissionControlProps) {
   const togglePanel = () => {
     const next = !panelOpen;
     setPanelOpen(next);
+    onExpandedChange?.(next);
     localStorage.setItem('mission-control-open', String(next));
   };
 
