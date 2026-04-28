@@ -17,6 +17,7 @@ import { BankTransactionSummary } from '@/components/banking/BankTransactionSumm
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Upload, Search, AlertTriangle, TrendingDown } from 'lucide-react';
 import { PageHeader } from '@/components/PageHeader';
+import { SimpleModePageBanner } from '@/components/dashboard/SimpleModePageBanner';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { BankingInsightsSummary } from '@/components/banking/BankingInsightsSummary';
 import { MobileTabLayout, type MobileTab } from '@/components/mobile';
