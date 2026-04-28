@@ -1,66 +1,81 @@
-# Modo Simple = Toda la app simple
+## Objetivo
 
-## Problemas confirmados
+Pulir el Dashboard Simple en escritorio para que los bloques se vean **homogéneos, ordenados y profesionales**, eliminar la palabra "Conectar" (que sugiere sincronización con APIs) y equilibrar la jerarquía visual.
 
-1. **Dashboard Simple angosto en desktop**
-   `src/components/dashboard/SimpleDashboard.tsx` línea 272 usa `max-w-2xl mx-auto` (~672px). En laptop se ve como una columna móvil pegada al centro, mientras el modo Avanzado aprovecha todo el ancho de `.page-container`.
+---
 
-2. **Modo Simple solo aplica al Dashboard**
-   El check `if (uiMode === 'simple')` solo existe en `src/pages/Dashboard.tsx`. Cuando el usuario en Modo Simple toca "Ver gastos", "Bancos", "Clientes", "Cuentas", "Reportes", etc., aterriza en la versión Avanzada completa (tablas, filtros, pestañas, jerga). Solo unas pocas páginas (`Budget`, `Banking`) muestran un banner chiquito al tope, pero el contenido sigue siendo el complejo. Eso rompe la promesa "Modo Simple".
+## Cambios
 
-## Lo que voy a hacer
+### 1. Renombrar "Conectar banco"
 
-### Parte 1 — Ancho del Dashboard Simple (rápido)
+En `src/components/dashboard/SimpleDashboard.tsx` (línea ~582) y donde aparezca en el shell simple:
 
-En `SimpleDashboard.tsx`:
-- Quitar `max-w-2xl` y usar un layout responsive: una sola columna centrada angosta en móvil, dos columnas en laptop (acciones + saldo arriba a todo lo ancho, lista reciente + tip abajo en grid `lg:grid-cols-2`).
-- Aprovechar el `.page-container` ya aplicado por `Dashboard.tsx` para igualar el ancho del modo Avanzado.
-- Escalar tipografías de los números clave (`text-3xl lg:text-5xl`) para que se vea bien en pantalla grande.
+- ES: `"Conectar banco"` → **`"Subir extracto"`**
+- EN: `"Connect bank"` → **`"Upload statement"`**
 
-### Parte 2 — Vistas Simples para las páginas principales
+Razón: la app no se sincroniza vía API; el usuario importa un CSV/foto. El verbo "Subir/Upload" es honesto y directo.
 
-Crear un componente envoltorio `SimplePageGate` que, en cada página clave, decida qué renderizar según `uiMode`:
+Revisar también `SimpleBanking.tsx` y cualquier copy similar en `src/components/simple/` por consistencia (el botón principal ya dice "Importar extracto", lo dejamos así).
+
+### 2. Reorganizar la grid del Dashboard Simple
+
+Actualmente, en escritorio (≥lg), el contenedor abre un grid de 2 columnas pero las 3 acciones primarias usan `lg:col-span-2` y los demás bloques caen apilados. Resultado: "Próximos pagos" y "Subir extracto" quedan demasiado anchos, y "Educación financiera" ocupa solo media pantalla mientras "Movimientos recientes" se ve desbalanceado.
+
+Nueva estructura en `lg:` (≥1024px):
 
 ```text
-uiMode === 'simple'  →  <SimpleXxx />     (vista limpia y enfocada)
-uiMode !== 'simple'  →  <vista actual>    (sin tocar)
+┌──────────────────────────────────────────────┐
+│             HERO BALANCE (full width)        │
+└──────────────────────────────────────────────┘
+┌──────────────┬──────────────┬──────────────┐
+│   Gasto      │   Ingreso    │   Capturar   │   ← 3 acciones primarias (full)
+└──────────────┴──────────────┴──────────────┘
+┌──────────────┬──────────────┬──────────────┐
+│ Subir        │ Próximos     │ Mi presup./  │   ← 3 atajos compactos en una sola fila
+│ extracto     │ pagos        │ Capturar voz │
+└──────────────┴──────────────┴──────────────┘
+┌────────────────────────┬────────────────────┐
+│  Movimientos recientes │ Educación          │   ← 2 columnas equilibradas
+│  (col-span-1)          │ financiera         │
+│                        │ (col-span-1, sticky│
+│                        │  top, compacta)    │
+└────────────────────────┴────────────────────┘
 ```
 
-Páginas a las que les daré una vista Simple (las que el Dashboard Simple linkea o que un usuario simple realmente abre):
+Cambios concretos:
 
-- `/expenses` → `SimpleExpenses`: lista cronológica grande con monto + comercio + categoría + un solo botón "Agregar gasto". Sin filtros avanzados, sin pestañas, sin export.
-- `/income` → `SimpleIncome`: lista de ingresos del mes y botón "Agregar ingreso".
-- `/bills` → `SimpleBills`: solo las próximas 5 cuentas por pagar con fecha y botón "Marcar pagado".
-- `/banking` → `SimpleBanking`: saldo total + últimas 10 transacciones. Sin reconciliación, sin reglas, sin patrones.
-- `/clients` → `SimpleClients`: lista de nombres con monto facturado al mes. Botón "Agregar cliente".
-- `/reports` → `SimpleReports`: una tarjeta "Resumen del mes" (ingresos, gastos, saldo) y un botón "Descargar PDF". Sin tabs, sin tax hub.
-- `/settings` → `SimpleSettings`: idioma, moneda, modo (Simple/Avanzado), cerrar sesión. Nada más.
+- Cambiar el wrapper `lg:grid-cols-2` a una estructura más controlada: dejar el hero fuera del grid (ya está), y crear un único `<div className="grid gap-4 lg:grid-cols-2">` que contenga **solo** "Movimientos recientes" + "Educación financiera".
+- Mover los 3 botones primarios y los atajos secundarios **fuera** de ese grid de 2 columnas, a contenedores propios full-width.
+- Convertir los atajos secundarios de `grid-cols-2` a `grid-cols-2 lg:grid-cols-3` para que cada chip sea más compacto y no se vean enormes en escritorio.
+- Reducir altura de `SecondaryShortcut`: `py-3` → `py-2.5`, añadir `max-w` implícito por la grid.
 
-Cada una vuelve a la pantalla principal Simple con un botón "← Volver" arriba y respeta el ancho del `page-container` (no `max-w-2xl`).
+### 3. Compactar "Educación financiera"
 
-Páginas avanzadas (Budget, NetWorth, Investments, Projects, Reconciliation, ChaosInbox, Notifications) no tienen vista Simple — en Modo Simple no se muestran como links desde el Dashboard, y si alguien aterriza ahí por URL directa se sigue mostrando el `SimpleModePageBanner` que ya existe con un "Volver al inicio".
+Actualmente la card es alta porque ocupa media pantalla pero su contenido es solo un párrafo. Cambios:
 
-### Parte 3 — Navegación coherente
+- En el bloque (línea ~707): reducir padding `p-4` → `p-3.5`, `text-sm` del tip → `text-[13px] leading-snug`.
+- Limitar el alto visual: el tip raramente excede 3 líneas; al estar en columna junto a "Movimientos recientes" en lg, las alturas se equilibran naturalmente porque las tarjetas dejarán de estirarse en stack.
+- Mover el disclaimer "Consulta a un profesional" a un `text-[10px]` más sutil (ya lo está, pero confirmar margen pequeño).
 
-- Revisar `SimpleDashboard.tsx`: que todos los `navigate('/...')` apunten solo a páginas con vista Simple (las 7 de arriba).
-- En el `Layout` / sidebar / bottom nav, cuando `uiMode === 'simple'` mostrar solo: Inicio, Gastos, Ingresos, Cuentas por pagar, Bancos, Clientes, Reportes, Ajustes. Esconder el resto.
+### 4. Equilibrar "Movimientos recientes" + "Próximos pagos"
 
-## Archivos que voy a tocar
+- Ya no estarán uno debajo del otro a ancho completo. "Próximos pagos" pasa a ser un **chip compacto** (atajo secundario), no una card grande.
+- "Movimientos recientes" queda como card a ancho de columna (1/2 pantalla en lg), lo que se siente más profesional y deja respirar a "Educación financiera" al lado.
 
-- `src/components/dashboard/SimpleDashboard.tsx` — quitar ancho fijo, layout responsive.
-- `src/pages/Expenses.tsx`, `Income.tsx`, `Bills.tsx`, `Banking.tsx`, `Clients.tsx`, `Reports.tsx`, `Settings.tsx` — agregar el switch por `uiMode`.
-- Nuevos: `src/components/simple/SimpleExpenses.tsx`, `SimpleIncome.tsx`, `SimpleBills.tsx`, `SimpleBanking.tsx`, `SimpleClients.tsx`, `SimpleReports.tsx`, `SimpleSettings.tsx`.
-- `src/components/Layout.tsx` (o el nav que use) — filtrar items en modo Simple.
+### 5. Detalles de pulido visual
 
-## Lo que NO voy a tocar
+- Unificar `gap-3` entre todos los bloques superiores y `gap-4` entre las 2 columnas inferiores, para un ritmo vertical consistente.
+- Asegurar que las cards usen `h-full` dentro del grid de 2 columnas para que terminen a la misma altura visual.
 
-- La lógica del modo Avanzado, sus widgets, hooks, ni datos.
-- Edge functions, base de datos, RLS.
-- El `UiModeWelcomeDialog` (ya funciona).
+---
 
-## Verificación al terminar
+## Archivos a editar
 
-1. Cambiar a Simple → el dashboard ocupa todo el ancho en laptop, no se ve como columna móvil.
-2. Tocar cada botón del Dashboard Simple → la página destino también es Simple (sin tabs, sin filtros, sin jerga).
-3. Cambiar a Avanzado → todo vuelve a la versión completa actual.
-4. Sidebar/nav en Simple solo muestra las 8 entradas listadas.
+- `src/components/dashboard/SimpleDashboard.tsx` — toda la reestructuración del JSX entre líneas 538–726, y el rename del label en línea 582.
+- (Verificar) `src/components/simple/SimplePageShell.tsx` y `SimpleBanking.tsx` por si aparece "Conectar" en algún copy — solo lectura por ahora.
+
+## Fuera de alcance
+
+- No tocar la lógica de datos (hooks, queries).
+- No tocar el modo Avanzado.
+- No tocar mobile (la estructura actual mobile ya es de 1 columna y se ve bien).
