@@ -351,6 +351,8 @@ export const Layout = ({ children }: LayoutProps) => {
   const NAV_SECTIONS = getNavSections(language, isBetaTester);
   const MOBILE_NAV_ITEMS = getMobileNavItems(language);
   const { data: unreadCount = 0 } = useUnreadNotifications();
+  const { uiMode } = useDisplayPreferences();
+  const isSimpleMode = uiMode === 'simple';
   const sidebarNavRef = useRef<HTMLElement>(null);
   const SIDEBAR_SCROLL_KEY = '__sidebar_scroll__';
 
