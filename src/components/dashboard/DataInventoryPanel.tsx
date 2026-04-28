@@ -81,12 +81,21 @@ function useDataInventory() {
   });
 }
 
-export function DataInventoryPanel() {
+interface DataInventoryPanelProps {
+  onExpandedChange?: (expanded: boolean) => void;
+}
+
+export function DataInventoryPanel({ onExpandedChange }: DataInventoryPanelProps = {}) {
   const { language } = useLanguage();
   const { data, isLoading } = useDataInventory();
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   const isEs = language === 'es';
+
+  const handleOpenChange = (next: boolean) => {
+    setOpen(next);
+    onExpandedChange?.(next);
+  };
 
   if (isLoading || !data) return null;
 
@@ -112,7 +121,7 @@ export function DataInventoryPanel() {
 
   return (
     <Card>
-      <Collapsible open={open} onOpenChange={setOpen}>
+      <Collapsible open={open} onOpenChange={handleOpenChange}>
         <CollapsibleTrigger asChild>
           <CardContent className="py-3 cursor-pointer hover:bg-muted/30 transition-colors">
             <div className="flex items-center justify-between">
@@ -139,26 +148,26 @@ export function DataInventoryPanel() {
         </CollapsibleTrigger>
 
         <CollapsibleContent>
-          <CardContent className="pt-0 pb-3">
-            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
+          <CardContent className="pt-0 pb-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3">
               {items.map((item) => {
                 const colors = CATEGORY_COLORS[item.colorKey] || CATEGORY_COLORS.documents;
                 return (
-                  <div key={item.label_en} className="rounded-lg border bg-muted/20 p-2 text-center space-y-1">
-                    <div className={cn('mx-auto w-8 h-8 rounded-full flex items-center justify-center', colors.bg)}>
-                      <item.icon className={cn('h-4 w-4', colors.icon)} />
+                  <div key={item.label_en} className="rounded-xl border bg-muted/20 p-3 text-center space-y-1.5 hover:bg-muted/40 transition-colors">
+                    <div className={cn('mx-auto w-10 h-10 rounded-full flex items-center justify-center', colors.bg)}>
+                      <item.icon className={cn('h-5 w-5', colors.icon)} />
                     </div>
-                    <p className={cn('text-lg font-bold', colors.text)}>{item.count}</p>
-                    <p className="text-[10px] text-muted-foreground leading-tight">{isEs ? item.label_es : item.label_en}</p>
+                    <p className={cn('text-2xl font-bold leading-none', colors.text)}>{item.count}</p>
+                    <p className="text-xs font-medium text-foreground/80 leading-tight">{isEs ? item.label_es : item.label_en}</p>
                     {item.count > 0 ? (
-                      <p className="text-[9px] text-muted-foreground/60">
+                      <p className="text-[10px] text-muted-foreground leading-tight">
                         {formatDate(item.firstDate)} → {formatDate(item.lastDate)}
                       </p>
                     ) : item.link ? (
                       <Button
                         variant="link"
                         size="sm"
-                        className="h-auto p-0 text-[9px] text-primary gap-0.5"
+                        className="h-auto p-0 text-[10px] text-primary gap-0.5"
                         onClick={(e) => { e.stopPropagation(); navigate(item.link!); }}
                       >
                         {isEs ? item.suggestion_es : item.suggestion_en}
@@ -171,14 +180,14 @@ export function DataInventoryPanel() {
             </div>
 
             {/* Completeness bar */}
-            <div className="mt-3 space-y-1">
+            <div className="mt-4 space-y-1">
               <div className="flex justify-between items-center">
-                <span className="text-[10px] text-muted-foreground">
+                <span className="text-xs text-muted-foreground">
                   {isEs ? 'Completitud de datos' : 'Data completeness'}
                 </span>
-                <span className="text-[10px] font-medium">{completeness}%</span>
+                <span className="text-xs font-medium">{completeness}%</span>
               </div>
-              <Progress value={completeness} className="h-1.5" />
+              <Progress value={completeness} className="h-2" />
             </div>
 
             <p className="text-[10px] text-muted-foreground/50 mt-2 text-center">
