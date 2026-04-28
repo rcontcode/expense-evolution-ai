@@ -476,12 +476,17 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
             </div>
           </div>
           {recent.length === 0 ? (
-            <div className="py-6 space-y-3">
-              <p className="text-center text-sm text-muted-foreground">
-                {language === 'es'
-                  ? 'Aún no hay movimientos este mes. Elige cómo empezar:'
-                  : "No activity yet this month. Pick how to start:"}
-              </p>
+            <div className="py-4 space-y-3">
+              <div className="rounded-lg bg-muted/40 border border-dashed border-border p-3 text-center">
+                <p className="text-sm font-semibold text-foreground">
+                  {language === 'es' ? 'Tres formas de registrar tu primer movimiento' : 'Three ways to log your first entry'}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {language === 'es'
+                    ? 'Elige la más cómoda — todo se sincroniza automáticamente.'
+                    : 'Pick whichever is easiest — everything syncs automatically.'}
+                </p>
+              </div>
               <div className="grid grid-cols-3 gap-2">
                 <EmptyStateChip
                   icon={<Camera className="h-4 w-4" />}
