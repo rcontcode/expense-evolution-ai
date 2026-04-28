@@ -300,6 +300,12 @@ function MissionListenerInitializer() {
   return null;
 }
 
+function GlobalBackgroundServices() {
+  useGlobalReminders();
+  useAutoReminders();
+  return null;
+}
+
 /**
  * Mounts after auth providers and triggers background preloading of route
  * chunks during idle time. Eliminates the multi-second wait when a user
@@ -308,7 +314,7 @@ function MissionListenerInitializer() {
 function IdlePreloader() {
   useEffect(() => {
     // Wait a tick so the initial render is not delayed.
-    const t = window.setTimeout(() => preloadCoreRoutes(), 600);
+    const t = window.setTimeout(() => preloadCoreRoutes(), 2500);
     return () => window.clearTimeout(t);
   }, []);
   return null;
