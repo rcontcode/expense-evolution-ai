@@ -86,6 +86,9 @@ import { ContactForm } from '@/components/ContactForm';
 import { SocialLinks } from '@/components/SocialLinks';
 import { ChatAssistant } from '@/components/chat/ChatAssistant';
 import { CountryFlag } from '@/components/ui/country-flag';
+import { UiModeToggle } from '@/components/layout/UiModeToggle';
+import { useDisplayPreferences } from '@/hooks/data/useDisplayPreferences';
+import { isEssentialPath } from '@/lib/constants/focus-areas';
 
 interface LayoutProps {
   children: ReactNode;
