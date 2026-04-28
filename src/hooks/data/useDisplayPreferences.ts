@@ -26,6 +26,14 @@ export const applyUiModeImmediately = (mode: 'simple' | 'advanced') => {
   }));
 };
 
+export const openDashboardAfterUiModeChange = () => {
+  if (typeof window === 'undefined') return;
+  const url = new URL(window.location.href);
+  url.pathname = '/dashboard';
+  url.hash = '';
+  window.location.assign(url.toString());
+};
+
 export const useDisplayPreferences = () => {
   const { user } = useAuth();
   const [preferences, setPreferences] = useState<DisplayPreferences>(DEFAULT_DISPLAY_PREFERENCES);
