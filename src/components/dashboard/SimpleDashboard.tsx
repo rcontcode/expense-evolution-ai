@@ -15,6 +15,8 @@ import {
   Landmark,
   Target,
   Sparkles,
+  Mic,
+  PenLine,
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useDashboardStats } from '@/hooks/data/useDashboardStats';
