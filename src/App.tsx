@@ -436,6 +436,7 @@ const App = () => (
                 <HighlightProvider>
                   <GamificationProvider>
                   <MissionListenerInitializer />
+                  <IdlePreloader />
                   <RouteRenderHeartbeat />
                   <RouteSyncGuard />
                   <LazyErrorBoundary name="Routes" fallback={<PageErrorFallback />}>
