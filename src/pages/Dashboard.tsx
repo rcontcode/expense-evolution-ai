@@ -347,20 +347,10 @@ export default function Dashboard() {
           </Card>
 
           {/* ========================================================== */}
-          {/* ZONE 2 — TU MES (your month): timeline, narrative, banking  */}
+          {/* SYSTEM STATUS STRIP — compact 3-chip row (Avisos, Datos,    */}
+          {/* Sistema). Each opens a side Sheet with the full panel.      */}
           {/* ========================================================== */}
-          <SectionHeader
-            title={language === 'es' ? 'Tu mes' : 'Your month'}
-            subtitle={language === 'es' ? 'Resumen, narrativa y movimientos' : 'Summary, narrative and movements'}
-          />
-
-          {/* Stacked panels: each takes full width, collapsed by default.
-              Cleaner than a multi-col grid that gets misaligned when one expands. */}
-          <div className="space-y-3">
-            <DashboardNotificationHub />
-            <DataInventoryPanel />
-            <MissionControl />
-          </div>
+          <SystemStatusStrip />
 
           {/* VIEW TABS */}
           <DashboardViewTabs
