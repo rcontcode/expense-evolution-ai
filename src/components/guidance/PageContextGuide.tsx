@@ -219,7 +219,7 @@ export function PageContextGuide({
 
             {/* Actions */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-              {actions.map((action, idx) => {
+              {validActions.map((action, idx) => {
                 const Icon = action.icon;
                 return (
                   <button
