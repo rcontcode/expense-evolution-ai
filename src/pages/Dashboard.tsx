@@ -114,8 +114,9 @@ export default function Dashboard() {
 
   const handleAddIncome = useCallback(() => navigate('/income'), [navigate]);
   const handleAddExpense = useCallback(() => navigate('/expenses'), [navigate]);
+  const { formatCurrency } = useFormatCurrency();
 
-  // Context for QuickActions: drives which buttons get highlighted
+  // Context for QuickActions: drives which buttons get highlighted + header snapshot
   const quickActionContext = (() => {
     const now = new Date();
     const ym = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
@@ -123,16 +124,28 @@ export default function Dashboard() {
       typeof e.date === 'string' && e.date.startsWith(ym)
     ).length;
     const limit = new Date(now);
-    limit.setDate(limit.getDate() + 3);
-    const billsDueSoon = (bills ?? []).filter((b: any) => {
+    limit.setDate(limit.getDate() + 7);
+    const billsDueWeek = (bills ?? []).filter((b: any) => {
       if (!b?.next_due_date) return false;
       const d = new Date(b.next_due_date);
       return d >= new Date(now.getFullYear(), now.getMonth(), now.getDate()) && d <= limit;
     }).length;
+    const limit3 = new Date(now);
+    limit3.setDate(limit3.getDate() + 3);
+    const billsDueSoon = (bills ?? []).filter((b: any) => {
+      if (!b?.next_due_date) return false;
+      const d = new Date(b.next_due_date);
+      return d >= new Date(now.getFullYear(), now.getMonth(), now.getDate()) && d <= limit3;
+    }).length;
+    const incompleteExpenses = (allExpenses ?? []).filter((e: any) => !e?.category || !e?.merchant).length;
+    const balance = (stats?.monthlyIncome ?? 0) - (stats?.monthlyTotal ?? 0);
     return {
       noClients: (clients?.length ?? 0) === 0,
       noExpensesThisMonth: expensesThisMonth === 0,
       billsDueSoon,
+      billsDueWeek,
+      incompleteExpenses,
+      balance,
     };
   })();
 
