@@ -41,7 +41,7 @@ export const DashboardViewTabs = memo(({ activeTab, onTabChange }: DashboardView
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3" role="tablist">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2" role="tablist">
       {tabs.map((tab) => {
         const isActive = activeTab === tab.id;
         const Icon = tab.icon;
@@ -54,7 +54,7 @@ export const DashboardViewTabs = memo(({ activeTab, onTabChange }: DashboardView
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             className={cn(
-              'group relative overflow-hidden text-left rounded-2xl border p-4 sm:p-5 transition-all duration-300',
+              'group relative overflow-hidden text-left rounded-xl border px-3 py-2.5 transition-all duration-300',
               isActive
                 ? cn('text-white border-transparent shadow-xl ring-2', tab.activeRing)
                 : 'bg-card border-border/60 hover:border-primary/30 hover:shadow-md text-foreground',
@@ -73,36 +73,33 @@ export const DashboardViewTabs = memo(({ activeTab, onTabChange }: DashboardView
               <div className="absolute -top-8 -right-8 h-32 w-32 rounded-full bg-white/15 blur-2xl pointer-events-none" />
             )}
 
-            <div className="relative z-10 flex items-start gap-3">
+            <div className="relative z-10 flex items-center gap-2.5">
               <div
                 className={cn(
-                  'flex items-center justify-center h-11 w-11 rounded-xl shrink-0 transition-colors',
+                  'flex items-center justify-center h-9 w-9 rounded-lg shrink-0 transition-colors',
                   isActive
                     ? 'bg-white/20 backdrop-blur-sm'
                     : 'bg-gradient-to-br from-primary/10 to-accent/10 group-hover:from-primary/15',
                 )}
               >
-                <span className="text-xl leading-none" aria-hidden>{tab.emoji}</span>
+                <span className="text-base leading-none" aria-hidden>{tab.emoji}</span>
               </div>
 
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <Icon className={cn('h-4 w-4 shrink-0', isActive ? 'text-white/90' : 'text-primary')} />
-                  <h3 className={cn('text-base sm:text-lg font-bold leading-tight', isActive ? 'text-white' : 'text-foreground')}>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <Icon className={cn('h-3.5 w-3.5 shrink-0', isActive ? 'text-white/90' : 'text-primary')} />
+                  <h3 className={cn('text-sm font-bold leading-tight', isActive ? 'text-white' : 'text-foreground')}>
                     {tab.label}
                   </h3>
+                  <span className={cn('text-[11px] truncate', isActive ? 'text-white/85' : 'text-muted-foreground')}>
+                    · {tab.tagline}
+                  </span>
                   {isActive && (
-                    <span className="ml-auto text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-white/25 text-white">
+                    <span className="ml-auto text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-white/25 text-white">
                       {isEs ? 'Activo' : 'Active'}
                     </span>
                   )}
                 </div>
-                <p className={cn('text-xs sm:text-sm font-semibold mt-0.5', isActive ? 'text-white/95' : 'text-primary')}>
-                  {tab.tagline}
-                </p>
-                <p className={cn('text-[11px] sm:text-xs mt-1 leading-snug', isActive ? 'text-white/80' : 'text-muted-foreground')}>
-                  {tab.description}
-                </p>
               </div>
 
               <ChevronRight
