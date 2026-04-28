@@ -114,7 +114,7 @@ const LEVEL_MOTIVATION = {
    }
  
    return (
-     <div className={cn('flex flex-col items-center gap-2', className)}>
+     <div data-gamification="xp" className={cn('flex flex-col items-center gap-2', className)}>
        {/* Progress Ring */}
        <div className={cn('relative', config.container)}>
          {/* Glow effect */}
