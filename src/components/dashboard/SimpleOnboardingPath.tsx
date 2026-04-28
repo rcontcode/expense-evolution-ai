@@ -38,6 +38,12 @@ export function SimpleOnboardingPath() {
 
   useEffect(() => {
     setCompletedDismissed(localStorage.getItem(DISMISS_KEY) === '1');
+    const handler = () => {
+      localStorage.removeItem(DISMISS_KEY);
+      setCompletedDismissed(false);
+    };
+    window.addEventListener('simple-onboarding:reopen', handler);
+    return () => window.removeEventListener('simple-onboarding:reopen', handler);
   }, []);
 
   const { steps, fiscalMissing } = useMemo(() => {
