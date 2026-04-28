@@ -126,8 +126,8 @@ const TAG_ADVANTAGES = [
   },
   {
     icon: Bot,
-    title: { es: 'Sugerencias IA', en: 'AI suggestions' },
-    description: { es: 'La IA sugiere etiquetas automáticamente según el tipo de gasto.', en: 'AI suggests tags automatically based on expense type.' },
+    title: { es: 'Sugerencias inteligentes', en: 'Smart suggestions' },
+    description: { es: 'El sistema sugiere etiquetas automáticamente según el tipo de gasto.', en: 'The system suggests tags automatically based on expense type.' },
     color: 'from-emerald-500 to-teal-600',
     shadowColor: 'shadow-emerald-500/20',
   },
@@ -246,8 +246,8 @@ export default function Tags() {
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {language === 'es' 
-                        ? 'Al crear o editar un gasto, encontrarás el campo "Etiquetas" al final del formulario. También la IA puede sugerirlas automáticamente.'
-                        : 'When creating or editing an expense, you\'ll find the "Tags" field at the bottom of the form. AI can also suggest them automatically.'}
+                        ? 'Al crear o editar un gasto, encontrarás el campo "Etiquetas" al final del formulario. El sistema también puede sugerirlas automáticamente.'
+                        : 'When creating or editing an expense, you\'ll find the "Tags" field at the bottom of the form. The system can also suggest them automatically.'}
                     </p>
                   </div>
                   <div className="space-y-1">

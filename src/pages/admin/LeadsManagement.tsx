@@ -52,7 +52,7 @@ export default function LeadsManagement() {
       <div className="container mx-auto px-4 py-4 space-y-6">
         <PageHeader
           title="Gestión de Leads"
-          description="CRM inteligente con scoring automático e IA"
+          description="CRM inteligente con scoring automático"
         >
           <LeadsExport leads={allLeads} />
         </PageHeader>
@@ -62,7 +62,7 @@ export default function LeadsManagement() {
           <TabsList>
             <TabsTrigger value="intelligence" className="flex items-center gap-1.5">
               <Brain className="h-4 w-4" />
-              Inteligencia IA
+              Inteligencia
             </TabsTrigger>
             <TabsTrigger value="leads" className="flex items-center gap-1.5">
               <BarChart3 className="h-4 w-4" />

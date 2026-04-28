@@ -1,7 +1,8 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
 import {
@@ -20,6 +21,8 @@ import {
   ChevronRight,
   CalendarClock,
   Volume2,
+  Check,
+  Clock,
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useDashboardStats } from '@/hooks/data/useDashboardStats';
@@ -29,6 +32,10 @@ import { useProfile } from '@/hooks/data/useProfile';
 import { useDisplayPreferences } from '@/hooks/data/useDisplayPreferences';
 import { useRecurringBills } from '@/hooks/data/useRecurringBills';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { useQueryClient } from '@tanstack/react-query';
+import { useToast } from '@/hooks/use-toast';
 import { SimpleOnboardingPath } from './SimpleOnboardingPath';
 import { SimpleSparkline } from './SimpleSparkline';
 import { getDailyTip, type TipContext } from '@/data/simpleFinancialTips';
@@ -47,12 +54,19 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
   const navigate = useNavigate();
   const { formatCurrency } = useFormatCurrency();
   const { setUiMode } = useDisplayPreferences();
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const { data: stats, isLoading: statsLoading } = useDashboardStats();
   const { data: expenses } = useExpenses();
   const { data: income } = useIncome();
   const { data: profile } = useProfile();
   const { data: bills } = useRecurringBills();
+
+  // Inline savings-goal input state (B1)
+  const [goalInput, setGoalInput] = useState('');
+  const [savingGoal, setSavingGoal] = useState(false);
 
   const monthlyIncome = stats?.monthlyIncome ?? 0;
   const monthlyTotal = stats?.monthlyTotal ?? 0;
@@ -173,9 +187,9 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
     return { projectedBalance, positive: projectedBalance >= 0 };
   }, [monthlyTotal, monthlyIncome, monthProgress]);
 
-  // Optional savings goal from preferences
+  // Optional savings goal from preferences (stored in display_preferences.savings_goal_monthly)
   const savingsGoal = useMemo(() => {
-    const prefs = (profile as any)?.preferences;
+    const prefs = (profile as any)?.display_preferences ?? (profile as any)?.preferences;
     const goal = Number(prefs?.savings_goal_monthly) || 0;
     if (goal <= 0) return null;
     const current = Math.max(0, balance);
@@ -211,6 +225,49 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
     }
   };
 
+  // Inactivity detector (B2) — days since the last logged movement
+  const daysSinceLastEntry = useMemo(() => {
+    if (recent.length === 0) return null;
+    const lastDateStr = recent[0].date;
+    const last = new Date(lastDateStr);
+    if (isNaN(last.getTime())) return null;
+    const today = new Date();
+    const ms = today.getTime() - last.getTime();
+    return Math.floor(ms / (1000 * 60 * 60 * 24));
+  }, [recent]);
+
+  // Inline-save the savings goal (B1) — one-shot, no navigation needed
+  const saveSavingsGoal = async () => {
+    const value = Number(goalInput.replace(/[^0-9.]/g, ''));
+    if (!value || value <= 0 || !user?.id) return;
+    setSavingGoal(true);
+    try {
+      const currentPrefs = (((profile as any)?.display_preferences) ?? {}) as Record<string, unknown>;
+      const next = { ...currentPrefs, savings_goal_monthly: value };
+      const { error } = await supabase
+        .from('profiles')
+        .update({ display_preferences: next as any })
+        .eq('id', user.id);
+      if (error) throw error;
+      toast({
+        title: language === 'es' ? '🎯 Meta guardada' : '🎯 Goal saved',
+        description: language === 'es'
+          ? `Apuntas a ahorrar ${formatCurrency(value)} este mes.`
+          : `You aim to save ${formatCurrency(value)} this month.`,
+      });
+      setGoalInput('');
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+    } catch (e) {
+      toast({
+        title: language === 'es' ? 'No pudimos guardar' : 'Could not save',
+        description: language === 'es' ? 'Inténtalo de nuevo.' : 'Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setSavingGoal(false);
+    }
+  };
+
   return (
     <div className="space-y-5 max-w-2xl mx-auto pb-8">
       {/* Greeting */}
@@ -220,6 +277,34 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
         </h1>
         <p className="text-sm text-muted-foreground capitalize">{monthLabel}</p>
       </div>
+
+      {/* Inactivity nudge (B2) — only when last entry is more than a week old */}
+      {daysSinceLastEntry !== null && daysSinceLastEntry > 7 && (
+        <div className="rounded-xl border-2 border-amber-500/30 bg-amber-500/10 px-3 py-2.5 flex items-center gap-3">
+          <div className="w-9 h-9 rounded-lg bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+            <Clock className="h-4 w-4" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-foreground">
+              {language === 'es'
+                ? `Hace ${daysSinceLastEntry} días que no registras`
+                : `${daysSinceLastEntry} days since your last entry`}
+            </p>
+            <p className="text-[11px] text-muted-foreground">
+              {language === 'es' ? '¿Todo bien? Captura uno rápido.' : 'All good? Log one quickly.'}
+            </p>
+          </div>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-8 text-xs gap-1 border-amber-500/40 hover:bg-amber-500/15 shrink-0"
+            onClick={() => (onQuickCapture ? onQuickCapture() : navigate('/expenses?new=1'))}
+          >
+            {language === 'es' ? 'Capturar' : 'Capture'}
+            <ArrowRight className="h-3 w-3" />
+          </Button>
+        </div>
+      )}
 
       {/* Onboarding path — auto-hides when all steps complete */}
       <SimpleOnboardingPath />
@@ -385,15 +470,41 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
               <Progress value={savingsGoal.pct} className="h-1.5" />
             </div>
           ) : (
-            <div className="pt-1 px-4">
-              <button
-                type="button"
-                onClick={() => navigate('/settings?tab=goals')}
-                className="text-[11px] text-muted-foreground hover:text-primary transition-colors inline-flex items-center gap-1"
+            <div className="pt-2 px-4">
+              <label
+                htmlFor="simple-savings-goal"
+                className="flex items-center gap-1 text-[11px] text-muted-foreground mb-1.5"
               >
                 <Target className="h-3 w-3" />
-                {language === 'es' ? 'Define una meta de ahorro mensual →' : 'Set a monthly savings goal →'}
-              </button>
+                {language === 'es' ? '¿Cuánto quieres ahorrar este mes?' : 'How much do you want to save this month?'}
+              </label>
+              <div className="flex items-center gap-1.5">
+                <Input
+                  id="simple-savings-goal"
+                  type="number"
+                  inputMode="decimal"
+                  placeholder={language === 'es' ? 'Ej: 200' : 'e.g. 200'}
+                  value={goalInput}
+                  onChange={(e) => setGoalInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      saveSavingsGoal();
+                    }
+                  }}
+                  className="h-8 text-sm flex-1"
+                  disabled={savingGoal}
+                />
+                <Button
+                  size="sm"
+                  onClick={saveSavingsGoal}
+                  disabled={!goalInput || savingGoal}
+                  className="h-8 px-2.5 gap-1"
+                  aria-label={language === 'es' ? 'Guardar meta' : 'Save goal'}
+                >
+                  <Check className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           )}
         </CardContent>

@@ -1,4 +1,5 @@
 import { Sparkles, Layers } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useDisplayPreferences } from '@/hooks/data/useDisplayPreferences';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/hooks/use-toast';
@@ -17,6 +18,7 @@ export function UiModeToggle({ className, compact = false }: UiModeToggleProps) 
   const { uiMode, setUiMode } = useDisplayPreferences();
   const { language } = useLanguage();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   // 'unset' is treated as advanced for display purposes
   const current: 'simple' | 'advanced' = uiMode === 'simple' ? 'simple' : 'advanced';
@@ -32,10 +34,9 @@ export function UiModeToggle({ className, compact = false }: UiModeToggleProps) 
         ? (language === 'es' ? 'Vista minimalista con lo esencial.' : 'Minimal view with the essentials.')
         : (language === 'es' ? 'Acceso completo a todas las funciones.' : 'Full access to every feature.'),
     });
-    // Full reload so every component re-mounts in the new mode
-    setTimeout(() => {
-      window.location.href = '/';
-    }, 350);
+    // Navigate to the dashboard root — the Dashboard re-mounts via React Query
+    // when uiMode changes, so no full reload is needed.
+    navigate('/', { replace: true });
   };
 
   const simpleActive = current === 'simple';
