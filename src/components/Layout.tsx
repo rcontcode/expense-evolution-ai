@@ -70,9 +70,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { TOOLTIP_CONTENT } from '@/components/ui/info-tooltip';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
-import { SyncStatusIndicator } from '@/components/SyncStatusIndicator';
-import { AuthStatusIndicator } from '@/components/AuthStatusIndicator';
+import { Sheet, SheetContent, SheetClose } from '@/components/ui/sheet';
 import { useUnreadNotifications } from '@/hooks/data/useUnreadNotifications';
 import { ThemeBackground } from '@/components/ThemeBackground';
 import { PhoenixLogo } from '@/components/ui/phoenix-logo';
@@ -567,24 +565,23 @@ export const Layout = ({ children }: LayoutProps) => {
               </Button>
 
               <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-              <SheetContent side="right" className="w-[88vw] max-w-[340px] p-0 flex flex-col border-0 shadow-2xl bg-background">
+              <SheetContent
+                side="right"
+                hideDefaultClose
+                overlayClassName="bg-transparent"
+                className="w-screen max-w-none p-0 flex flex-col border-0 shadow-none bg-background"
+              >
                 {/* Header */}
                 <div className="px-4 py-3 flex items-center justify-between border-b border-border/30">
                   <div className="flex items-center gap-2.5">
                     <PhoenixLogo variant="mini" />
                     <span className="font-bold text-base bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">EvoFinz</span>
                   </div>
-                  <div className="flex items-center gap-1.5">
-                    <TooltipProvider>
-                      <SyncStatusIndicator />
-                      <AuthStatusIndicator compact />
-                    </TooltipProvider>
-                    <SheetClose asChild>
-                      <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full hover:bg-muted">
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </SheetClose>
-                  </div>
+                  <SheetClose asChild>
+                    <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full hover:bg-muted" aria-label={language === 'es' ? 'Cerrar menú' : 'Close menu'}>
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </SheetClose>
                 </div>
                 
                 {/* Entity Selector */}
