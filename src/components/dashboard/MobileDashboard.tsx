@@ -182,7 +182,7 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
           <Button
             size="sm"
             variant="ghost"
-            onClick={onQuickCapture ?? (() => navigate('/mobile-capture'))}
+            onClick={() => navigate('/mobile-capture')}
             className="flex-1 flex flex-col items-center gap-0.5 h-auto py-1.5 text-[10px] font-semibold"
             aria-label={language === 'es' ? 'Capturar foto' : 'Capture photo'}
           >
@@ -192,7 +192,7 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
           <Button
             size="sm"
             variant="ghost"
-            onClick={onQuickCapture ?? (() => navigate('/mobile-capture'))}
+            onClick={() => openCapture('photo')}
             className="flex-1 flex flex-col items-center gap-0.5 h-auto py-1.5 text-[10px] font-semibold"
             aria-label={language === 'es' ? 'Captura por voz' : 'Voice capture'}
           >
@@ -202,7 +202,7 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
           <Button
             size="sm"
             variant="ghost"
-            onClick={handleAddExpense}
+            onClick={() => openCapture('text')}
             className="flex-1 flex flex-col items-center gap-0.5 h-auto py-1.5 text-[10px] font-semibold"
             aria-label={language === 'es' ? 'Añadir manualmente' : 'Add manually'}
           >
