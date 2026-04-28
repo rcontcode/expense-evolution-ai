@@ -1,7 +1,8 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
 import {
@@ -20,6 +21,8 @@ import {
   ChevronRight,
   CalendarClock,
   Volume2,
+  Check,
+  Clock,
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useDashboardStats } from '@/hooks/data/useDashboardStats';
@@ -29,6 +32,10 @@ import { useProfile } from '@/hooks/data/useProfile';
 import { useDisplayPreferences } from '@/hooks/data/useDisplayPreferences';
 import { useRecurringBills } from '@/hooks/data/useRecurringBills';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { useQueryClient } from '@tanstack/react-query';
+import { useToast } from '@/hooks/use-toast';
 import { SimpleOnboardingPath } from './SimpleOnboardingPath';
 import { SimpleSparkline } from './SimpleSparkline';
 import { getDailyTip, type TipContext } from '@/data/simpleFinancialTips';
@@ -47,12 +54,19 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
   const navigate = useNavigate();
   const { formatCurrency } = useFormatCurrency();
   const { setUiMode } = useDisplayPreferences();
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const { data: stats, isLoading: statsLoading } = useDashboardStats();
   const { data: expenses } = useExpenses();
   const { data: income } = useIncome();
   const { data: profile } = useProfile();
   const { data: bills } = useRecurringBills();
+
+  // Inline savings-goal input state (B1)
+  const [goalInput, setGoalInput] = useState('');
+  const [savingGoal, setSavingGoal] = useState(false);
 
   const monthlyIncome = stats?.monthlyIncome ?? 0;
   const monthlyTotal = stats?.monthlyTotal ?? 0;
