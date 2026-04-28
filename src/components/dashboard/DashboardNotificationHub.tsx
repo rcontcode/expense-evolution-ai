@@ -15,6 +15,7 @@ import {
   AlertTriangle, Receipt, ArrowRight, X,
   Info, Trophy, Flame, Target, Sparkles,
   FileText, CreditCard, Shield, TrendingUp, Users,
+  ClipboardList,
 } from 'lucide-react';
 import {
   DropdownMenu,
