@@ -577,14 +577,14 @@ export default function Onboarding() {
                 {t('onboarding.back')}
               </Button>
             ) : step > 1 ? (
-              <Button variant="outline" onClick={() => setStep(step - 1)}>
+              <Button variant="outline" onClick={() => setStep(step === 3 ? 1 : step - 1)}>
                 <ChevronLeft className="mr-2 h-4 w-4" />
                 {t('onboarding.back')}
               </Button>
             ) : null}
             {step < 3 ? (
               <Button 
-                onClick={() => setStep(step + 1)} 
+                onClick={() => setStep(step === 1 ? 3 : step + 1)} 
                 disabled={step === 1 && (!province || workTypes.length === 0)}
                 className="ml-auto"
               >
