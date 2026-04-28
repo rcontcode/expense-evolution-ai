@@ -221,18 +221,21 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
         <ActionButton
           icon={<Receipt className="h-6 w-6" />}
           label={language === 'es' ? 'Gasto' : 'Expense'}
+          subtitle={language === 'es' ? 'Registrar uno nuevo' : 'Log a new one'}
           color="rose"
           onClick={() => navigate('/expenses')}
         />
         <ActionButton
-          icon={<Plus className="h-6 w-6" />}
+          icon={<TrendingUp className="h-6 w-6" />}
           label={language === 'es' ? 'Ingreso' : 'Income'}
+          subtitle={language === 'es' ? 'Sumar al balance' : 'Add to balance'}
           color="emerald"
           onClick={() => navigate('/income')}
         />
         <ActionButton
           icon={<Camera className="h-6 w-6" />}
           label={language === 'es' ? 'Capturar' : 'Capture'}
+          subtitle={language === 'es' ? 'Foto de recibo' : 'Receipt photo'}
           color="violet"
           onClick={() => (onQuickCapture ? onQuickCapture() : navigate('/capture'))}
         />
