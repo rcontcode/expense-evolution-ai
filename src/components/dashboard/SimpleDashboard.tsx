@@ -269,7 +269,7 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
   };
 
   return (
-    <div className="space-y-5 w-full max-w-6xl mx-auto pb-8">
+    <div className="space-y-5 w-full max-w-6xl mx-auto pb-28 lg:pb-8 overflow-x-hidden">
       {/* Greeting */}
       <div className="px-1 pt-1">
         <h1 className="text-2xl lg:text-4xl font-bold">
