@@ -393,13 +393,13 @@ function buildScenarioEcoLavanderia(userId: string) {
     const baseDay = m * 30;
     // POS diarios (8 al mes muestreo)
     for (let d = 0; d < 8; d++) {
-      incomes.push({ source: "Ventas POS local", amount: 120000 + Math.round(Math.random() * 80000), income_type: "business", date: daysAgo(baseDay + d * 3 + 2), description: `Ventas dia ${d + 1}` });
+      incomes.push({ source: "Ventas POS local", amount: 120000 + Math.round(Math.random() * 80000), income_type: "client_payment", date: daysAgo(baseDay + d * 3 + 2), description: `Ventas dia ${d + 1}` });
     }
     // B2B clientes corporativos
-    incomes.push({ source: "Hotel Boutique Lastarria", amount: 1250000, income_type: "business", date: daysAgo(baseDay + 10), description: "Servicio mensual hotel" });
-    incomes.push({ source: "Restaurante Quinoa", amount: 480000, income_type: "business", date: daysAgo(baseDay + 18), description: "Servicio mensual mantelería" });
+    incomes.push({ source: "Hotel Boutique Lastarria", amount: 1250000, income_type: "client_payment", date: daysAgo(baseDay + 10), description: "Servicio mensual hotel" });
+    incomes.push({ source: "Restaurante Quinoa", amount: 480000, income_type: "client_payment", date: daysAgo(baseDay + 18), description: "Servicio mensual mantelería" });
     // Mercado Pago
-    incomes.push({ source: "Mercado Pago", amount: 285000, income_type: "business", date: daysAgo(baseDay + 25), description: "Liquidacion MP" });
+    incomes.push({ source: "Mercado Pago", amount: 285000, income_type: "client_payment", date: daysAgo(baseDay + 25), description: "Liquidacion MP" });
   }
 
   // Bills B2B
