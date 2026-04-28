@@ -207,13 +207,13 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
     return getDailyTip(ctx, language);
   }, [monthlyIncome, monthlyTotal, positive, spentPct, language]);
 
-  // Spoken summary — accessibility helper
+  // Spoken summary — accessibility helper, uses localized currency
   const speakSummary = () => {
     if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
     const isEs = language === 'es';
     const text = isEs
-      ? `Tu balance del mes es ${balance < 0 ? 'negativo ' : ''}${Math.abs(balance).toFixed(0)}. Has tenido ingresos por ${monthlyIncome.toFixed(0)} y gastos por ${monthlyTotal.toFixed(0)}. Vas en el día ${monthProgress.day} de ${monthProgress.total}.`
-      : `Your monthly balance is ${balance < 0 ? 'negative ' : ''}${Math.abs(balance).toFixed(0)}. You earned ${monthlyIncome.toFixed(0)} and spent ${monthlyTotal.toFixed(0)}. It's day ${monthProgress.day} of ${monthProgress.total}.`;
+      ? `Tu balance del mes es ${balance < 0 ? 'negativo ' : ''}${formatCurrency(Math.abs(balance))}. Has tenido ingresos por ${formatCurrency(monthlyIncome)} y gastos por ${formatCurrency(monthlyTotal)}. Vas en el día ${monthProgress.day} de ${monthProgress.total}.`
+      : `Your monthly balance is ${balance < 0 ? 'negative ' : ''}${formatCurrency(Math.abs(balance))}. You earned ${formatCurrency(monthlyIncome)} and spent ${formatCurrency(monthlyTotal)}. It's day ${monthProgress.day} of ${monthProgress.total}.`;
     try {
       window.speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(text);
