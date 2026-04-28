@@ -148,8 +148,13 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
         )}
       >
         <CardContent className="py-7 text-center space-y-3">
-          <div className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">
-            {language === 'es' ? 'Balance del mes' : 'Monthly balance'}
+          <div className="space-y-1">
+            <div className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">
+              {language === 'es' ? 'Balance del mes' : 'Monthly balance'}
+            </div>
+            <div className="text-[11px] text-muted-foreground">
+              {language === 'es' ? 'Lo que te queda · ingresos − gastos' : "What's left · income − expenses"}
+            </div>
           </div>
           {statsLoading ? (
             <Skeleton className="h-12 w-48 mx-auto" />
@@ -164,23 +169,38 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
               {formatCurrency(balance)}
             </div>
           )}
-          <div className="flex justify-center gap-6 pt-1 text-sm">
-            <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
-              <TrendingUp className="h-4 w-4" />
-              <span className="font-semibold">{formatCurrency(monthlyIncome)}</span>
+          <div className="flex justify-center gap-5 pt-1 text-sm flex-wrap">
+            <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
+                <TrendingUp className="h-4 w-4" />
+                <span className="text-[11px] uppercase font-semibold tracking-wide">
+                  {language === 'es' ? 'Ingresos' : 'Income'}
+                </span>
+              </div>
+              <span className="font-bold tabular-nums text-emerald-700 dark:text-emerald-300">
+                {formatCurrency(monthlyIncome)}
+              </span>
             </div>
-            <div className="flex items-center gap-1.5 text-rose-600 dark:text-rose-400">
-              <TrendingDown className="h-4 w-4" />
-              <span className="font-semibold">{formatCurrency(monthlyTotal)}</span>
+            <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1 text-rose-600 dark:text-rose-400">
+                <TrendingDown className="h-4 w-4" />
+                <span className="text-[11px] uppercase font-semibold tracking-wide">
+                  {language === 'es' ? 'Gastos' : 'Expenses'}
+                </span>
+              </div>
+              <span className="font-bold tabular-nums text-rose-700 dark:text-rose-300">
+                {formatCurrency(monthlyTotal)}
+              </span>
             </div>
           </div>
 
           {/* Spent progress bar — only when there's income */}
           {monthlyIncome > 0 && (
             <div className="pt-2 px-4">
-              <div className="flex items-center justify-between text-xs text-muted-foreground mb-1.5">
-                <span>{language === 'es' ? 'Gastado' : 'Spent'}</span>
-                <span className="font-semibold tabular-nums">{spentPct.toFixed(0)}%</span>
+              <div className="text-xs text-muted-foreground mb-1.5 text-left">
+                {language === 'es'
+                  ? `Has gastado ${spentPct.toFixed(0)}% de tus ingresos`
+                  : `You've spent ${spentPct.toFixed(0)}% of your income`}
               </div>
               <Progress value={spentPct} className="h-2" />
             </div>
