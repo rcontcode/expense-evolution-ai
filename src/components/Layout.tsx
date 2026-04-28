@@ -567,9 +567,9 @@ export const Layout = ({ children }: LayoutProps) => {
               </Button>
 
               <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-              <SheetContent side="right" className="w-[88vw] max-w-[340px] p-0 flex flex-col border-l border-border/50 shadow-2xl bg-background">
+              <SheetContent side="right" className="w-[88vw] max-w-[340px] p-0 flex flex-col border-0 shadow-2xl bg-background">
                 {/* Header */}
-                <div className="px-4 py-3 flex items-center justify-between border-b border-border/40">
+                <div className="px-4 py-3 flex items-center justify-between border-b border-border/30">
                   <div className="flex items-center gap-2.5">
                     <PhoenixLogo variant="mini" />
                     <span className="font-bold text-base bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">EvoFinz</span>
