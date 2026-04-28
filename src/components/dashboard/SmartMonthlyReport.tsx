@@ -151,7 +151,7 @@ Data:
       if (error) throw error;
       setAiInsight(data?.response || data?.text || (l ? 'No se pudo generar el análisis.' : 'Could not generate analysis.'));
     } catch {
-      toast.error(l ? 'Error generando análisis IA' : 'Error generating AI analysis');
+      toast.error(l ? 'Error generando análisis' : 'Error generating analysis');
     } finally {
       setLoadingAI(false);
     }
@@ -288,11 +288,11 @@ Data:
 
               <Separator />
 
-              {/* AI Insights */}
+              {/* Smart Insights */}
               <div>
                 <h4 className="text-sm font-medium mb-2 flex items-center gap-1.5">
                   <Sparkles className="h-4 w-4 text-purple-500" />
-                  {l ? 'Análisis IA Personalizado' : 'Personalized AI Analysis'}
+                  {l ? 'Análisis Personalizado' : 'Personalized Analysis'}
                 </h4>
                 {aiInsight ? (
                   <div className="p-3 rounded-lg bg-purple-500/5 border border-purple-500/20 text-xs whitespace-pre-line">
@@ -307,7 +307,7 @@ Data:
                     className="w-full"
                   >
                     {loadingAI ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Sparkles className="h-4 w-4 mr-2" />}
-                    {l ? 'Generar Análisis IA' : 'Generate AI Analysis'}
+                    {l ? 'Generar Análisis' : 'Generate Analysis'}
                   </Button>
                 )}
               </div>
