@@ -1,156 +1,100 @@
-# Diagnóstico real: por qué no se solucionó el scroll móvil
+# Plan: Modo Simple + Refactor del Modo Avanzado
 
-Ya revisé el código que controla el layout móvil, el CSS global y las pantallas principales. La causa raíz no es una sola regla aislada: son tres problemas combinados.
+Implementar un sistema de dos modos de uso (Simple y Avanzado) para reducir la complejidad percibida de la app, **y** mejorar el modo Avanzado para que tampoco se sienta abrumador.
 
-## Causa raíz encontrada
+---
 
-1. **El layout móvil no tiene un contenedor de scroll explícito**
-   - En `Layout.tsx`, el móvil usa:
-     ```text
-     mobile-app-shell: min-height 100dvh
-     main: flex-1 min-h-0 overflow-x-hidden pb-20
-     ```
-   - Pero `main` no tiene `overflow-y-auto` ni una altura fija/limitada del viewport.
-   - Resultado: el navegador intenta hacer scroll en el documento completo mientras hay header sticky y bottom nav fixed. En móvil eso produce el “rebote” y la sensación de que la página se corta o no baja bien.
+## Parte 1 — Modo Simple (nuevo)
 
-2. **Hay CSS que intenta matar el rebote en `html/body`, pero lo hace en el nivel incorrecto**
-   - En `index.css` se puso:
-     ```text
-     html, body { overscroll-behavior-y: none; }
-     .mobile-app-main { overscroll-behavior-y: contain; }
-     ```
-   - Eso no basta si el elemento que realmente debe scrollear no es `mobile-app-main`.
-   - La solución correcta es que el shell móvil ocupe exactamente `100dvh`, que `main` sea el único contenedor scrollable y que `body` no compita con ese scroll.
+### 1.1 Preferencia del usuario
+Agregar `ui_mode: 'simple' | 'advanced'` a `display_preferences` en `profiles` (ya existe el JSONB, no hay migración de schema). Default: `simple` para usuarios nuevos, `advanced` para usuarios existentes (detectado por presencia previa de `view_mode`).
 
-3. **Las pestañas no se aplicaron realmente al Dashboard móvil principal**
-   - `MobileTabLayout` sí existe y se usa en Expenses, Income, Banking, Analytics y NetWorth.
-   - Pero en `Dashboard.tsx` / `MobileDashboard.tsx` no se usa `MobileTabLayout`; solo hay dos botones internos `Resumen / Control` y debajo queda demasiado contenido largo dentro de “Resumen”.
-   - Por eso visualmente el Dashboard sigue pareciendo una página larga, no una app móvil con pestañas reales.
+Actualizar `useDisplayPreferences.ts` para exponer `uiMode` y `setUiMode`.
 
-4. **La compactación no alcanza porque apunta a clases que no existen o no cubre componentes base**
-   - El CSS usa `.mobile-compact .card-content`, pero `CardContent` no agrega clase `card-content`; usa solo clases Tailwind (`p-6 pt-0`).
-   - También intenta reducir `[class*='p-4']` y `[class*='p-3']`, pero muchas tarjetas grandes vienen de `CardHeader p-6`, `CardContent p-6`, `text-xl`, botones altos y componentes como `MonthDetailPanel`.
-   - Resultado: algunas cosas bajaron, pero muchas siguen con tamaño desktop/tablet.
+### 1.2 Dashboard Simple
+Nuevo componente `src/components/dashboard/SimpleDashboard.tsx` que muestra solo:
+- Balance del mes (ingresos − gastos)
+- Botones grandes: **+ Gasto**, **+ Ingreso**, **📷 Capturar**
+- Lista de últimos 8 movimientos
+- 1 card de alerta del mes (si hay)
 
-## Plan de corrección definitiva
+Sin tabs, sin grids complejos, mucho whitespace, estética actual condensada (mantiene "3D candy").
 
-### 1. Convertir el layout móvil en un shell nativo con scroll controlado
-Cambiar `Layout.tsx` para que en móvil:
+`Dashboard.tsx` renderiza `<SimpleDashboard />` cuando `uiMode === 'simple'`, si no, el dashboard actual.
 
-```text
-html/body/root
-  no scrollean horizontalmente
+### 1.3 Navegación filtrada
+En `Layout.tsx` (sidebar desktop) y `MobileTabLayout` (móvil), filtrar items por modo:
 
-.mobile-app-shell
-  height: 100dvh
-  overflow: hidden
-  display: flex column
+**Esencial (visible en Simple):**
+Dashboard · Gastos · Ingresos · Presupuesto · Banking · Capturar · Configuración
 
-header
-  height compacta fija/sticky dentro del shell
+**Avanzado-only (oculto en Simple, accesible por URL):**
+Clientes · Contratos · Mileage · Mentoría · Inversiones · FIRE · TaxOptimizer · Ecosistema · Gamificación · NetWorth · Bills · Subscriptions · Analytics
 
-.mobile-app-main
-  flex: 1
-  min-height: 0
-  overflow-y: auto
-  overflow-x: hidden
-  -webkit-overflow-scrolling: touch
-  overscroll-behavior-y: contain
-  padding-bottom suficiente para bottom nav
+Las páginas ocultas siguen funcionando por URL directa (no rompe deep-links ni emails). Banner discreto arriba: *"Esta sección es del Modo Avanzado · [Activar Avanzado]"*.
 
-bottom nav
-  fixed o sticky inferior, sin bloquear contenido
-```
+### 1.4 Toggle en header
+Componente `<UiModeToggle />` en el header del Layout (desktop y móvil): switch Simple ⇄ Avanzado siempre visible. Cambio instantáneo, sin recarga.
 
-Esto elimina la competencia entre scroll de `body` y scroll del contenido.
+### 1.5 Diálogo de bienvenida (1 vez)
+Si el usuario nunca eligió modo, mostrar diálogo: *"¿Cómo quieres empezar?"* con dos opciones grandes:
+- **Simple** — Solo lo esencial
+- **Avanzado** — Todas las herramientas
 
-### 2. Corregir CSS global móvil
-Actualizar `index.css` y `App.css` para:
-- usar `height: 100%` y `100dvh` correctamente en `html/body/#root`;
-- evitar `body` como contenedor principal de scroll en modo app móvil;
-- agregar reglas específicas para `.mobile-app-shell` y `.mobile-app-main`;
-- reducir scrollbar y evitar rebote al final del contenido;
-- añadir padding inferior real considerando bottom nav + safe area.
+Se guarda la elección y no vuelve a aparecer.
 
-### 3. Hacer pestañas reales en el Dashboard móvil
-Refactorizar `MobileDashboard.tsx` para usar `MobileTabLayout` con secciones separadas, por ejemplo:
+---
+
+## Parte 2 — Mejoras al Modo Avanzado
+
+Para que Avanzado tampoco se sienta caótico:
+
+### 2.1 Sidebar agrupado por categoría
+Refactorizar el sidebar (~40 items planos hoy) en grupos colapsables:
 
 ```text
-Resumen
-  stats principales + balance mensual compacto
-
-Timeline
-  resumen anual + detalle del mes
-
-Acciones
-  captura, ingresos, gastos, presupuesto, banking
-
-Sistema
-  mission control, notificaciones, perfil, gamificación
-
-Ecosistema
-  widgets de ecosistema / narrative / banking summary
+📊 Diario          Dashboard, Gastos, Ingresos, Capturar, Banking
+💰 Planeación      Presupuesto, Bills, Subscriptions, Ahorro
+📈 Crecimiento     Inversiones, NetWorth, FIRE, Analytics
+💼 Negocio         Clientes, Contratos, Mileage, Proyectos
+🏛️ Impuestos       TaxOptimizer, Reportes fiscales
+🎯 Más             Mentoría, Gamificación, Ecosistema, Beta
+⚙️ Configuración
 ```
 
-Así el usuario no tiene que bajar y bajar en una sola columna infinita.
+Solo "Diario" abierto por defecto. Los demás grupos colapsados. El grupo que contiene la ruta activa se expande automáticamente.
 
-### 4. Compactar de verdad los componentes móviles críticos
-Ajustar componentes que hoy siguen grandes:
-- `MobileDashboard.tsx`
-- `DashboardViewTabs.tsx`
-- `MobileStatsGrid.tsx`
-- `YearTimelineChart.tsx`
-- `MonthDetailPanel.tsx`
-- `MissionControl.tsx`
-- `MobileTabLayout.tsx`
+### 2.2 Default a Vista Organizada
+Cambiar default de `view_mode` de `classic` a `organized` para usuarios nuevos del modo Avanzado. Los existentes mantienen su preferencia.
 
-Cambios específicos:
-- headers de tarjetas de `p-6` a `p-2/p-3` en móvil;
-- títulos `text-xl` a `text-sm/text-base` en móvil;
-- botones altos a `h-8/h-9`;
-- ocultar textos secundarios largos en móvil;
-- convertir bloques de 1 columna demasiado altos en grids compactos;
-- colapsar secciones pesadas por defecto.
+### 2.3 Sección "Más" en Mission Control
+Mover de la vista principal a una sección "Más" colapsada: Gamificación, Ecosistema, Mentoría, FIRE detallado. Solo se ven si el usuario las abre.
 
-### 5. Corregir `MobileTabLayout` para que sea visible y robusto
-Ajustar `MobileTabLayout` para:
-- sticky correcto bajo el header móvil;
-- menos altura;
-- indicadores claros;
-- persistencia por URL sin romper el scroll;
-- resetear scroll interno al cambiar de pestaña solo dentro de `mobile-app-main`, no en `window`.
-
-### 6. Revisar pantallas sin pestañas móviles
-Actualmente hay páginas que aún no usan `MobileTabLayout`:
-- `Budget.tsx`
-- `Bills.tsx`
-- `Subscriptions.tsx`
-- `Investments.tsx`
-- parte de `Settings.tsx` usa otra estrategia, no `MobileTabLayout`
-
-Aplicaré la misma estrategia de pestañas/compactación donde corresponda para que sea consistente en toda la app.
+---
 
 ## Archivos a modificar
 
-- `src/components/Layout.tsx`
-- `src/index.css`
-- `src/App.css`
-- `src/components/mobile/MobileTabLayout.tsx`
-- `src/components/dashboard/MobileDashboard.tsx`
-- `src/components/dashboard/DashboardViewTabs.tsx`
-- `src/components/dashboard/MobileStatsGrid.tsx`
-- `src/components/dashboard/YearTimelineChart.tsx`
-- `src/components/dashboard/MonthDetailPanel.tsx`
-- `src/components/dashboard/MissionControl.tsx`
-- `src/pages/Budget.tsx`
-- `src/pages/Bills.tsx`
-- `src/pages/Subscriptions.tsx`
-- `src/pages/Investments.tsx`
-- `src/pages/Settings.tsx`
+**Nuevos:**
+- `src/components/dashboard/SimpleDashboard.tsx`
+- `src/components/layout/UiModeToggle.tsx`
+- `src/components/onboarding/UiModeWelcomeDialog.tsx`
+- `src/lib/constants/nav-items.ts` (lista central con flag `essential: boolean`)
+
+**Modificados:**
+- `src/lib/constants/focus-areas.ts` — añadir tipo `UiMode` y default
+- `src/hooks/data/useDisplayPreferences.ts` — exponer `uiMode`/`setUiMode`
+- `src/components/Layout.tsx` — filtrar nav por modo, agregar toggle al header, agrupar sidebar
+- `src/components/mobile/MobileTabLayout.tsx` — filtrar tabs por modo
+- `src/pages/Dashboard.tsx` — renderizar SimpleDashboard cuando aplique
+- `src/components/settings/DisplayPreferencesCard.tsx` — añadir control de UiMode
+- Páginas avanzadas (Clientes, Contratos, Mileage, Investments, etc.) — banner "Modo Avanzado"
+
+**Sin tocar:** lógica de negocio, hooks de datos, edge functions, schema de DB.
+
+---
 
 ## Resultado esperado
 
-- El scroll móvil dejará de rebotar/cortarse porque habrá un único contenedor scrollable.
-- El Dashboard móvil dejará de ser una página larguísima y pasará a secciones por pestañas.
-- La app se verá realmente móvil: menos padding, textos más pequeños, tarjetas más bajas y navegación más clara.
-- Las secciones principales quedarán agrupadas por función para que el usuario no se pierda bajando indefinidamente.
+- Usuario nuevo: ve diálogo → elige Simple → dashboard ultra-limpio, 7 items en nav, cero abrumamiento.
+- Usuario que quiere todo: toggle a Avanzado en 1 clic → todas las funciones, pero ahora ordenadas en 6 grupos colapsables en vez de 40 items planos.
+- Cero pérdida de funcionalidad. Cero ruptura de deep-links. Cambio reversible en cualquier momento.
