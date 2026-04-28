@@ -5,11 +5,13 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Upload, Receipt, Users, Download } from 'lucide-react';
+import { Upload, Receipt, Users, Download, Camera, CalendarClock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useDashboardStats } from '@/hooks/data/useDashboardStats';
 import { useExpenses } from '@/hooks/data/useExpenses';
 import { useExpensesRealtime } from '@/hooks/data/useExpensesRealtime';
+import { useClients } from '@/hooks/data/useClients';
+import { useRecurringBills } from '@/hooks/data/useRecurringBills';
 import { ExportDialog } from '@/components/export/ExportDialog';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { usePageVisitTracker } from '@/hooks/data/useMissionAutoTracker';
@@ -37,11 +39,12 @@ import { useDashboardDeepLinks } from '@/hooks/utils/useDashboardDeepLinks';
 import { DataInventoryPanel } from '@/components/dashboard/DataInventoryPanel';
 import { SimpleDashboard } from '@/components/dashboard/SimpleDashboard';
 import { UiModeWelcomeDialog } from '@/components/onboarding/UiModeWelcomeDialog';
+import { cn } from '@/lib/utils';
 
 // Lazy load only dashboard-specific components
 const WorkflowSummaryWidget = lazy(() => import('@/components/dashboard/WorkflowSummaryWidget').then(m => ({ default: m.WorkflowSummaryWidget })));
 const MonthlyBillsWidget = lazy(() => import('@/components/dashboard/MonthlyBillsWidget').then(m => ({ default: m.MonthlyBillsWidget })));
-const ProactiveAlertsWidget = lazy(() => import('@/components/dashboard/ProactiveAlertsWidget').then(m => ({ default: m.ProactiveAlertsWidget })));
+
 const FinancialAutopilot = lazy(() => import('@/components/dashboard/FinancialAutopilot').then(m => ({ default: m.FinancialAutopilot })));
 const LazyBankingSummaryCard = lazy(() => import('@/components/banking/BankingSummaryCard').then(m => ({ default: m.BankingSummaryCard })));
 const FinancialNarrativeCard = lazy(() => import('@/components/dashboard/FinancialNarrativeCard'));
@@ -92,9 +95,32 @@ export default function Dashboard() {
 
   const { data: stats, isLoading } = useDashboardStats();
   const { data: allExpenses } = useExpenses();
+  const { data: clients } = useClients();
+  const { data: bills } = useRecurringBills();
 
   const handleAddIncome = useCallback(() => navigate('/income'), [navigate]);
   const handleAddExpense = useCallback(() => navigate('/expenses'), [navigate]);
+
+  // Context for QuickActions: drives which buttons get highlighted
+  const quickActionContext = (() => {
+    const now = new Date();
+    const ym = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const expensesThisMonth = (allExpenses ?? []).filter((e: any) =>
+      typeof e.date === 'string' && e.date.startsWith(ym)
+    ).length;
+    const limit = new Date(now);
+    limit.setDate(limit.getDate() + 3);
+    const billsDueSoon = (bills ?? []).filter((b: any) => {
+      if (!b?.next_due_date) return false;
+      const d = new Date(b.next_due_date);
+      return d >= new Date(now.getFullYear(), now.getMonth(), now.getDate()) && d <= limit;
+    }).length;
+    return {
+      noClients: (clients?.length ?? 0) === 0,
+      noExpensesThisMonth: expensesThisMonth === 0,
+      billsDueSoon,
+    };
+  })();
 
   // Check if first visit to show guide
   useEffect(() => {
@@ -140,63 +166,107 @@ export default function Dashboard() {
     <Layout>
       <TooltipProvider delayDuration={200}>
         <div className="page-container section-gap">
-          
-          {/* 1. Live Clock */}
-          <LiveClock />
 
-          {/* 2. Notification Hub — THE ONLY alert center */}
-          <DashboardNotificationHub />
-
-          {/* 3. Onboarding (only for new users, auto-hides) */}
-          <ProgressiveOnboarding />
-
-          {/* 4. Profile Extender Dialog */}
+          {/* Profile Extender Dialog (modal — placement neutral) */}
           <ProfileExtenderDialog
             open={profileExtenderOpen}
             onOpenChange={setProfileExtenderOpen}
             section={selectedProfileSection}
           />
-          
-          {/* 5. Interactive Guide (first visit only) */}
+
+          {/* ========================================================== */}
+          {/* ZONE 1 — HOY (today): clock, alerts, quick actions          */}
+          {/* ========================================================== */}
+          <SectionHeader
+            title={language === 'es' ? 'Hoy' : 'Today'}
+            subtitle={language === 'es' ? 'Lo que pasa ahora mismo' : "What's happening right now"}
+          />
+
+          <LiveClock />
+
+          {/* Notification Hub — THE ONLY alert center */}
+          <DashboardNotificationHub />
+
+          {/* Onboarding (only for new users, auto-hides) */}
+          <ProgressiveOnboarding />
+
+          {/* Interactive Guide (first visit only) */}
           {showGuide && (
             <div className="animate-in fade-in slide-in-from-top-4 duration-300">
               <InteractiveWelcome />
             </div>
           )}
 
-          {/* 6. Quick Actions — ALWAYS VISIBLE */}
+          {/* Quick Actions — context-aware */}
           <Card className="border-dashed" data-section="quick-actions">
             <CardContent className="py-3">
               <div className="flex flex-wrap gap-2">
-                <Button onClick={() => navigate('/chaos')} size="sm" className="gap-2">
+                <Button
+                  onClick={() => navigate('/chaos')}
+                  size="sm"
+                  className={cn('gap-2', quickActionContext.noExpensesThisMonth && 'ring-2 ring-primary/40')}
+                >
                   <Upload className="h-4 w-4" /> {t('dashboard.uploadDocument')}
                 </Button>
-                <Button onClick={() => navigate('/expenses')} variant="outline" size="sm" className="gap-2">
+                <Button
+                  onClick={() => navigate('/expenses')}
+                  variant={quickActionContext.noExpensesThisMonth ? 'default' : 'outline'}
+                  size="sm"
+                  className="gap-2"
+                >
                   <Receipt className="h-4 w-4" /> {t('dashboard.addExpense')}
                 </Button>
-                <Button onClick={() => navigate('/clients')} variant="outline" size="sm" className="gap-2">
+                <Button
+                  onClick={() => navigate('/clients')}
+                  variant={quickActionContext.noClients ? 'default' : 'outline'}
+                  size="sm"
+                  className={cn('gap-2', quickActionContext.noClients && 'ring-2 ring-primary/40')}
+                >
                   <Users className="h-4 w-4" /> {t('dashboard.addClient')}
                 </Button>
-                <Button onClick={() => setExportDialogOpen(true)} variant="outline" size="sm" className="gap-2">
-                  <Download className="h-4 w-4" /> {t('export.exportButton')}
-                </Button>
+                {quickActionContext.billsDueSoon > 0 ? (
+                  <Button
+                    onClick={() => navigate('/bills')}
+                    variant="outline"
+                    size="sm"
+                    className="gap-2 border-amber-500/40 text-amber-700 dark:text-amber-300 hover:bg-amber-500/10"
+                  >
+                    <CalendarClock className="h-4 w-4" />
+                    {language === 'es' ? 'Próximos pagos' : 'Upcoming bills'}
+                    <span className="ml-1 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-amber-500 text-white text-[10px] font-bold">
+                      {quickActionContext.billsDueSoon}
+                    </span>
+                  </Button>
+                ) : (
+                  <Button onClick={() => setExportDialogOpen(true)} variant="outline" size="sm" className="gap-2">
+                    <Download className="h-4 w-4" /> {t('export.exportButton')}
+                  </Button>
+                )}
               </div>
             </CardContent>
           </Card>
-          
-          {/* 7. Data Inventory */}
-          <DataInventoryPanel />
 
-          {/* 8. Mission Control */}
-          <MissionControl />
-
-          {/* 9. VIEW TABS — ABOVE the timeline as primary navigation */}
-          <DashboardViewTabs 
-            activeTab={viewMode === 'organized' ? 'control' : 'resumen'} 
-            onTabChange={(tab) => setViewMode(tab === 'control' ? 'organized' : 'classic')} 
+          {/* ========================================================== */}
+          {/* ZONE 2 — TU MES (your month): timeline, narrative, banking  */}
+          {/* ========================================================== */}
+          <SectionHeader
+            title={language === 'es' ? 'Tu mes' : 'Your month'}
+            subtitle={language === 'es' ? 'Resumen, narrativa y movimientos' : 'Summary, narrative and movements'}
           />
 
-          {/* 8. View Content */}
+          {/* Data Inventory */}
+          <DataInventoryPanel />
+
+          {/* Mission Control */}
+          <MissionControl />
+
+          {/* VIEW TABS */}
+          <DashboardViewTabs
+            activeTab={viewMode === 'organized' ? 'control' : 'resumen'}
+            onTabChange={(tab) => setViewMode(tab === 'control' ? 'organized' : 'classic')}
+          />
+
+          {/* View Content */}
           <AnimatePresence mode="wait">
             {viewMode === 'organized' ? (
               <motion.div
@@ -251,6 +321,14 @@ export default function Dashboard() {
                   </Suspense>
                 </div>
 
+                {/* ========================================================== */}
+                {/* ZONE 3 — TU SISTEMA (your system): ecosystem, autopilot   */}
+                {/* ========================================================== */}
+                <SectionHeader
+                  title={language === 'es' ? 'Tu sistema' : 'Your system'}
+                  subtitle={language === 'es' ? 'Ecosistema, automatizaciones y progreso' : 'Ecosystem, automations and progress'}
+                />
+
                 {/* Ecosystem */}
                 <div id="ecosystem" data-section="ecosystem">
                   <EcosystemSection />
@@ -266,14 +344,7 @@ export default function Dashboard() {
                   </Suspense>
                 </div>
 
-                {/* Smart Alerts */}
-                <div id="alerts" data-section="alerts">
-                  <Suspense fallback={null}>
-                    <ProactiveAlertsWidget />
-                  </Suspense>
-                </div>
-
-                {/* AI Financial Autopilot */}
+                {/* Smart Financial Autopilot */}
                 <div id="autopilot" data-section="autopilot">
                   <Suspense fallback={<Skeleton className="h-[200px]" />}>
                     <FinancialAutopilot />
@@ -297,5 +368,16 @@ export default function Dashboard() {
       </TooltipProvider>
       <UiModeWelcomeDialog open={welcomeOpen} onClose={() => setWelcomeOpen(false)} />
     </Layout>
+  );
+}
+
+/** Lightweight zone divider for the advanced dashboard. */
+function SectionHeader({ title, subtitle }: { title: string; subtitle?: string }) {
+  return (
+    <div className="flex items-baseline gap-3 pt-2">
+      <h2 className="text-lg font-bold tracking-tight">{title}</h2>
+      {subtitle && <span className="text-xs text-muted-foreground">{subtitle}</span>}
+      <div className="flex-1 border-t border-border/60 ml-2" />
+    </div>
   );
 }

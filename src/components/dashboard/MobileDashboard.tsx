@@ -1,6 +1,6 @@
 import { useState, useCallback, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Camera, DollarSign, PieChart, Receipt, Building2 } from 'lucide-react';
+import { Camera, DollarSign, PieChart, Receipt, Building2, Sparkles } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -16,6 +16,7 @@ import { LiveClock } from '@/components/dashboard/LiveClock';
 import { ProfileCompletionNudge } from '@/components/profile/ProfileCompletionNudge';
 import { DashboardGamificationWidget } from '@/components/gamification';
 import { MissionControl } from '@/components/dashboard/MissionControl';
+import { useDisplayPreferences } from '@/hooks/data/useDisplayPreferences';
 
 
 const LazyEcosystemWidgets = lazy(() => import('@/components/ecosystem/EcosystemDashboardWidgets'));
@@ -31,6 +32,7 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
   const { language } = useLanguage();
   const navigate = useNavigate();
   const { data: stats, isLoading } = useDashboardStats();
+  const { setUiMode } = useDisplayPreferences();
 
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
@@ -155,6 +157,17 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
     <div className="mobile-compact space-y-2">
       <LiveClock />
       <MobileTabLayout tabs={tabs} paramKey="dash" defaultTab="resumen" />
+      <div className="text-center pt-2 pb-4">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="text-xs text-muted-foreground hover:text-foreground gap-1.5"
+          onClick={() => setUiMode('simple')}
+        >
+          <Sparkles className="h-3.5 w-3.5" />
+          {language === 'es' ? '¿Demasiado? Cambiar a Modo Simple' : 'Too much? Switch to Simple Mode'}
+        </Button>
+      </div>
     </div>
   );
 }

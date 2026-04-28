@@ -95,8 +95,8 @@ export function FinancialAutopilot() {
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-base">
             <Brain className="h-4 w-4 text-primary" />
-            {l ? 'Autopiloto Financiero IA' : 'AI Financial Autopilot'}
-            <Badge variant="secondary" className="text-[9px]">AI</Badge>
+            {l ? 'Autopiloto Financiero Inteligente' : 'Smart Financial Autopilot'}
+            <Badge variant="secondary" className="text-[9px]">{l ? 'Auto' : 'Auto'}</Badge>
           </CardTitle>
           <Button
             variant="outline"
@@ -111,8 +111,8 @@ export function FinancialAutopilot() {
         </div>
         <p className="text-xs text-muted-foreground mt-1">
           {l
-            ? 'IA analiza tus patrones financieros y genera recomendaciones accionables personalizadas'
-            : 'AI analyzes your financial patterns and generates personalized actionable recommendations'}
+            ? 'Analiza tus patrones financieros y genera recomendaciones personalizadas y accionables'
+            : 'Analyzes your financial patterns and generates personalized actionable recommendations'}
         </p>
       </CardHeader>
 

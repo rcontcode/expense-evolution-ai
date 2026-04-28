@@ -17,6 +17,8 @@ import {
   Sparkles,
   Mic,
   PenLine,
+  ChevronRight,
+  CalendarClock,
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useDashboardStats } from '@/hooks/data/useDashboardStats';
@@ -24,6 +26,7 @@ import { useExpenses } from '@/hooks/data/useExpenses';
 import { useIncome } from '@/hooks/data/useIncome';
 import { useProfile } from '@/hooks/data/useProfile';
 import { useDisplayPreferences } from '@/hooks/data/useDisplayPreferences';
+import { useRecurringBills } from '@/hooks/data/useRecurringBills';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { SimpleOnboardingPath } from './SimpleOnboardingPath';
 import { SimpleSparkline } from './SimpleSparkline';
@@ -48,6 +51,7 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
   const { data: expenses } = useExpenses();
   const { data: income } = useIncome();
   const { data: profile } = useProfile();
+  const { data: bills } = useRecurringBills();
 
   const monthlyIncome = stats?.monthlyIncome ?? 0;
   const monthlyTotal = stats?.monthlyTotal ?? 0;
@@ -77,10 +81,11 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
 
   // Combine recent expenses + income, take top 8 by date
   const recent = useMemo(() => {
-    const items: Array<{ id: string; type: 'expense' | 'income'; label: string; amount: number; date: string }> = [];
+    const items: Array<{ id: string; rawId: string; type: 'expense' | 'income'; label: string; amount: number; date: string }> = [];
     (expenses ?? []).slice(0, 20).forEach((e: any) => {
       items.push({
         id: `e-${e.id}`,
+        rawId: String(e.id),
         type: 'expense',
         label: e.merchant || e.category || (language === 'es' ? 'Gasto' : 'Expense'),
         amount: Number(e.amount) || 0,
@@ -90,6 +95,7 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
     (income ?? []).slice(0, 20).forEach((i: any) => {
       items.push({
         id: `i-${i.id}`,
+        rawId: String(i.id),
         type: 'income',
         label: i.source || i.category || (language === 'es' ? 'Ingreso' : 'Income'),
         amount: Number(i.amount) || 0,
@@ -100,6 +106,34 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
       .sort((a, b) => (a.date < b.date ? 1 : -1))
       .slice(0, 8);
   }, [expenses, income, language]);
+
+  // Day-of-month context — helps the user interpret the balance
+  const monthProgress = useMemo(() => {
+    const d = new Date();
+    const total = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+    const day = d.getDate();
+    const remaining = total - day;
+    return { day, total, remaining, pct: (day / total) * 100 };
+  }, []);
+
+  // Bills due in the next 7 days — drives the "Próximos pagos" shortcut badge
+  const upcomingBillsCount = useMemo(() => {
+    if (!bills) return 0;
+    const now = new Date();
+    const limit = new Date(now);
+    limit.setDate(limit.getDate() + 7);
+    return (bills as any[]).filter((b) => {
+      if (!b?.next_due_date) return false;
+      const d = new Date(b.next_due_date);
+      return d >= new Date(now.getFullYear(), now.getMonth(), now.getDate()) && d <= limit;
+    }).length;
+  }, [bills]);
+
+  // Has the user configured a budget already? Drives the second shortcut choice
+  const hasBudget = useMemo(() => {
+    const prefs = (profile as any)?.preferences;
+    return Boolean(prefs?.budget_mode);
+  }, [profile]);
 
   const monthLabel = useMemo(() => {
     const d = new Date();
@@ -208,7 +242,29 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
             </div>
           </div>
 
-          {/* Spent progress bar — only when there's income */}
+          {/* Day-of-month context — frames the balance in time */}
+          <div className="pt-2 px-4">
+            <div className="flex items-center justify-between text-[11px] text-muted-foreground mb-1">
+              <span className="inline-flex items-center gap-1">
+                <CalendarClock className="h-3 w-3" />
+                {language === 'es'
+                  ? `Día ${monthProgress.day} de ${monthProgress.total}`
+                  : `Day ${monthProgress.day} of ${monthProgress.total}`}
+              </span>
+              <span>
+                {language === 'es'
+                  ? `quedan ${monthProgress.remaining} días`
+                  : `${monthProgress.remaining} days left`}
+              </span>
+            </div>
+            <div className="h-1 rounded-full bg-muted overflow-hidden">
+              <div
+                className="h-full bg-foreground/40 rounded-full transition-all"
+                style={{ width: `${monthProgress.pct}%` }}
+              />
+            </div>
+          </div>
+
           {monthlyIncome > 0 && (
             <div className="pt-2 px-4">
               <div className="text-xs text-muted-foreground mb-1.5 text-left">
@@ -270,18 +326,27 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
         />
       </div>
 
-      {/* Secondary shortcuts */}
+      {/* Secondary shortcuts — context-aware */}
       <div className="grid grid-cols-2 gap-3">
         <SecondaryShortcut
-          icon={<Wallet className="h-4 w-4" />}
-          label={language === 'es' ? 'Presupuesto' : 'Budget'}
-          onClick={() => navigate('/budget')}
+          icon={<CalendarClock className="h-4 w-4" />}
+          label={language === 'es' ? 'Próximos pagos' : 'Upcoming bills'}
+          badge={upcomingBillsCount > 0 ? String(upcomingBillsCount) : undefined}
+          onClick={() => navigate('/bills')}
         />
-        <SecondaryShortcut
-          icon={<Landmark className="h-4 w-4" />}
-          label={language === 'es' ? 'Banco' : 'Banking'}
-          onClick={() => navigate('/banking')}
-        />
+        {hasBudget ? (
+          <SecondaryShortcut
+            icon={<Wallet className="h-4 w-4" />}
+            label={language === 'es' ? 'Mi presupuesto' : 'My budget'}
+            onClick={() => navigate('/budget')}
+          />
+        ) : (
+          <SecondaryShortcut
+            icon={<Landmark className="h-4 w-4" />}
+            label={language === 'es' ? 'Conectar banco' : 'Connect bank'}
+            onClick={() => navigate('/banking')}
+          />
+        )}
       </div>
 
       {/* Recent activity */}
@@ -343,39 +408,53 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
           ) : (
             <ul className="divide-y divide-border/40">
               {recent.map((item) => (
-                <li key={item.id} className="flex items-center justify-between py-2.5">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div
-                      className={cn(
-                        'shrink-0 w-9 h-9 rounded-lg flex items-center justify-center',
-                        item.type === 'income'
-                          ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                          : 'bg-rose-500/10 text-rose-600 dark:text-rose-400',
-                      )}
-                    >
-                      {item.type === 'income' ? <TrendingUp className="h-4 w-4" /> : <Receipt className="h-4 w-4" />}
-                    </div>
-                    <div className="min-w-0">
-                      <div className="text-sm font-medium truncate">{item.label}</div>
-                      <div className="text-xs text-muted-foreground">
-                        {new Date(item.date).toLocaleDateString(language === 'es' ? 'es' : 'en', {
-                          day: 'numeric',
-                          month: 'short',
-                        })}
+                <li key={item.id}>
+                  <button
+                    type="button"
+                    onClick={() => navigate(
+                      item.type === 'income'
+                        ? `/income?edit=${item.rawId}`
+                        : `/expenses?edit=${item.rawId}`
+                    )}
+                    className="w-full flex items-center justify-between py-2.5 -mx-1 px-1 rounded-lg hover:bg-muted/40 active:bg-muted/60 transition-colors text-left"
+                    aria-label={language === 'es' ? `Editar ${item.label}` : `Edit ${item.label}`}
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div
+                        className={cn(
+                          'shrink-0 w-9 h-9 rounded-lg flex items-center justify-center',
+                          item.type === 'income'
+                            ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                            : 'bg-rose-500/10 text-rose-600 dark:text-rose-400',
+                        )}
+                      >
+                        {item.type === 'income' ? <TrendingUp className="h-4 w-4" /> : <Receipt className="h-4 w-4" />}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-sm font-medium truncate">{item.label}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {new Date(item.date).toLocaleDateString(language === 'es' ? 'es' : 'en', {
+                            day: 'numeric',
+                            month: 'short',
+                          })}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div
-                    className={cn(
-                      'text-sm font-bold tabular-nums shrink-0 ml-3',
-                      item.type === 'income'
-                        ? 'text-emerald-600 dark:text-emerald-400'
-                        : 'text-foreground',
-                    )}
-                  >
-                    {item.type === 'income' ? '+' : '−'}
-                    {formatCurrency(item.amount)}
-                  </div>
+                    <div className="flex items-center gap-1 shrink-0 ml-3">
+                      <div
+                        className={cn(
+                          'text-sm font-bold tabular-nums',
+                          item.type === 'income'
+                            ? 'text-emerald-600 dark:text-emerald-400'
+                            : 'text-foreground',
+                        )}
+                      >
+                        {item.type === 'income' ? '+' : '−'}
+                        {formatCurrency(item.amount)}
+                      </div>
+                      <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/60" />
+                    </div>
+                  </button>
                 </li>
               ))}
             </ul>
@@ -482,20 +561,27 @@ function ActionButton({
 function SecondaryShortcut({
   icon,
   label,
+  badge,
   onClick,
 }: {
   icon: React.ReactNode;
   label: string;
+  badge?: string;
   onClick: () => void;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="flex items-center justify-center gap-2 py-3 rounded-xl border border-border bg-card hover:bg-muted/60 hover:border-primary/30 transition-all hover:scale-[1.02] active:scale-[0.98] text-sm font-medium text-foreground"
+      className="relative flex items-center justify-center gap-2 py-3 rounded-xl border border-border bg-card hover:bg-muted/60 hover:border-primary/30 transition-all hover:scale-[1.02] active:scale-[0.98] text-sm font-medium text-foreground"
     >
       <span className="text-primary">{icon}</span>
       <span>{label}</span>
+      {badge && (
+        <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center shadow">
+          {badge}
+        </span>
+      )}
     </button>
   );
 }

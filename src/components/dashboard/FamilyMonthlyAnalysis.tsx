@@ -948,7 +948,7 @@ export function FamilyMonthlyAnalysis({ year, month }: FamilyMonthlyAnalysisProp
                 </Badge>
               </CardTitle>
               <p className="text-xs text-muted-foreground">
-                {language === 'es' ? 'IA analiza patrones, tendencias y oportunidades' : 'AI analyzes patterns, trends and opportunities'}
+                {language === 'es' ? 'Análisis inteligente de patrones, tendencias y oportunidades' : 'Smart analysis of patterns, trends and opportunities'}
               </p>
             </div>
           </div>
@@ -1634,7 +1634,7 @@ export function FamilyMonthlyAnalysis({ year, month }: FamilyMonthlyAnalysisProp
             >
               <div className="flex items-center gap-2">
                 <Brain className="h-4 w-4 text-primary" />
-                <span className="text-sm font-medium">{language === 'es' ? 'Análisis de Patrones IA' : 'AI Pattern Analysis'}</span>
+                <span className="text-sm font-medium">{language === 'es' ? 'Patrones Detectados' : 'Detected Patterns'}</span>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1948,7 +1948,7 @@ export function FamilyMonthlyAnalysis({ year, month }: FamilyMonthlyAnalysisProp
                 <Lightbulb className="h-5 w-5 text-primary" />
               </motion.div>
               <span className="font-bold text-sm">
-                {language === 'es' ? '💡 Recomendaciones IA Personalizadas' : '💡 Personalized AI Recommendations'}
+                {language === 'es' ? '💡 Recomendaciones Personalizadas' : '💡 Personalized Recommendations'}
               </span>
             </div>
             {expandedInsights ? (
