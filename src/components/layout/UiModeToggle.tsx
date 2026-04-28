@@ -1,5 +1,4 @@
 import { Sparkles, Layers } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { useDisplayPreferences } from '@/hooks/data/useDisplayPreferences';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/hooks/use-toast';
@@ -11,67 +10,89 @@ interface UiModeToggleProps {
 }
 
 /**
- * Toggle between Simple and Advanced UI modes.
- * Lives in the app header and is always visible.
+ * Segmented control: shows BOTH options side-by-side, the active one is highlighted.
+ * Click the inactive option to switch to it. Crystal clear: "I see I'm here, I can go there."
  */
 export function UiModeToggle({ className, compact = false }: UiModeToggleProps) {
   const { uiMode, setUiMode } = useDisplayPreferences();
   const { language } = useLanguage();
   const { toast } = useToast();
 
-  const isSimple = uiMode === 'simple';
+  // 'unset' is treated as advanced for display purposes
+  const current: 'simple' | 'advanced' = uiMode === 'simple' ? 'simple' : 'advanced';
 
-  const toggle = () => {
-    const next = isSimple ? 'advanced' : 'simple';
-    setUiMode(next);
+  const switchTo = (target: 'simple' | 'advanced') => {
+    if (target === current) return; // no-op if already there
+    setUiMode(target);
     toast({
-      title: next === 'simple'
+      title: target === 'simple'
         ? (language === 'es' ? '✨ Modo Simple activado' : '✨ Simple Mode on')
         : (language === 'es' ? '⚡ Modo Avanzado activado' : '⚡ Advanced Mode on'),
-      description: next === 'simple'
+      description: target === 'simple'
         ? (language === 'es' ? 'Vista minimalista con lo esencial.' : 'Minimal view with the essentials.')
         : (language === 'es' ? 'Acceso completo a todas las funciones.' : 'Full access to every feature.'),
     });
-    // Force full reload to dashboard so EVERY component re-mounts in the new mode.
-    // This guarantees the user sees the difference instantly, no stale state.
+    // Full reload so every component re-mounts in the new mode
     setTimeout(() => {
       window.location.href = '/';
     }, 350);
   };
 
+  const simpleActive = current === 'simple';
+  const advancedActive = current === 'advanced';
+
   return (
-    <Button
-      variant="outline"
-      size={compact ? 'sm' : 'sm'}
-      onClick={toggle}
+    <div
+      role="radiogroup"
+      aria-label={language === 'es' ? 'Selector de modo de interfaz' : 'UI mode selector'}
       className={cn(
-        'gap-1.5 rounded-full border-2 transition-all hover:scale-[1.04]',
-        isSimple
-          ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20'
-          : 'border-violet-500/40 bg-violet-500/10 text-violet-600 dark:text-violet-400 hover:bg-violet-500/20',
+        'inline-flex items-center gap-0.5 p-1 rounded-full border-2 border-border bg-muted/50 shadow-sm',
         className,
       )}
-      title={
-        isSimple
-          ? language === 'es'
-            ? 'Estás en Modo Simple. Click para ver todo.'
-            : "You're in Simple Mode. Click to see everything."
-          : language === 'es'
-            ? 'Estás en Modo Avanzado. Click para simplificar.'
-            : "You're in Advanced Mode. Click to simplify."
-      }
     >
-      {isSimple ? (
-        <>
-          <Sparkles className="h-3.5 w-3.5" />
-          {!compact && <span className="text-xs font-semibold">{language === 'es' ? 'Simple' : 'Simple'}</span>}
-        </>
-      ) : (
-        <>
-          <Layers className="h-3.5 w-3.5" />
-          {!compact && <span className="text-xs font-semibold">{language === 'es' ? 'Avanzado' : 'Advanced'}</span>}
-        </>
-      )}
-    </Button>
+      {/* Simple option */}
+      <button
+        type="button"
+        role="radio"
+        aria-checked={simpleActive}
+        onClick={() => switchTo('simple')}
+        title={
+          simpleActive
+            ? language === 'es' ? 'Estás en Modo Simple' : "You're in Simple Mode"
+            : language === 'es' ? 'Cambiar a Modo Simple' : 'Switch to Simple Mode'
+        }
+        className={cn(
+          'flex items-center gap-1.5 px-3 py-1 rounded-full font-semibold text-xs transition-all',
+          simpleActive
+            ? 'bg-emerald-500 text-white shadow-md scale-[1.02] cursor-default'
+            : 'text-muted-foreground hover:text-foreground hover:bg-background/60 cursor-pointer',
+        )}
+      >
+        <Sparkles className={cn('h-3.5 w-3.5', simpleActive && 'animate-pulse')} />
+        {!compact && <span>{language === 'es' ? 'Simple' : 'Simple'}</span>}
+      </button>
+
+      {/* Advanced option */}
+      <button
+        type="button"
+        role="radio"
+        aria-checked={advancedActive}
+        onClick={() => switchTo('advanced')}
+        title={
+          advancedActive
+            ? language === 'es' ? 'Estás en Modo Avanzado' : "You're in Advanced Mode"
+            : language === 'es' ? 'Cambiar a Modo Avanzado' : 'Switch to Advanced Mode'
+        }
+        className={cn(
+          'flex items-center gap-1.5 px-3 py-1 rounded-full font-semibold text-xs transition-all',
+          advancedActive
+            ? 'bg-violet-500 text-white shadow-md scale-[1.02] cursor-default'
+            : 'text-muted-foreground hover:text-foreground hover:bg-background/60 cursor-pointer',
+        )}
+      >
+        <Layers className="h-3.5 w-3.5" />
+        {!compact && <span>{language === 'es' ? 'Avanzado' : 'Advanced'}</span>}
+      </button>
+    </div>
   );
 }
