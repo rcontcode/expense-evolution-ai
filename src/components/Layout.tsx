@@ -765,8 +765,8 @@ export const Layout = ({ children }: LayoutProps) => {
           </div>
         </header>
 
-        <main className="mobile-app-main flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
-          <div className="min-h-full pb-[calc(var(--mobile-bottom-nav-height)+env(safe-area-inset-bottom,0px)+1rem)]">
+        <main className="mobile-app-main flex-1 min-h-0 w-full max-w-full overflow-y-auto overflow-x-hidden">
+          <div className="min-h-full w-full max-w-full min-w-0 overflow-x-hidden pb-[calc(var(--mobile-bottom-nav-height)+env(safe-area-inset-bottom,0px)+1rem)]">
             {children}
           </div>
         </main>
