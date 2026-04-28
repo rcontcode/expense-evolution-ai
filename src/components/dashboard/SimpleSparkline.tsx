@@ -85,19 +85,31 @@ export function SimpleSparkline({ trends, language }: SimpleSparklineProps) {
   const isPositiveTrend = trendDir === 'down' || trendDir === 'flat';
   const TrendIcon = trendDir === 'up' ? TrendingUp : trendDir === 'down' ? TrendingDown : Minus;
 
+  const absPct = Math.abs(deltaPct).toFixed(0);
+  const deltaText =
+    trendDir === 'up'
+      ? language === 'es'
+        ? `${absPct}% más que el mes pasado`
+        : `${absPct}% more than last month`
+      : trendDir === 'down'
+        ? language === 'es'
+          ? `${absPct}% menos · ahorraste`
+          : `${absPct}% less · you saved`
+        : '';
+
   return (
-    <div className="pt-3 px-4 space-y-1.5">
-      <div className="flex items-center justify-between text-xs">
+    <div className="pt-3 px-4 space-y-1.5 text-left">
+      <div className="flex items-center justify-between gap-2 text-xs flex-wrap">
         <span className="text-muted-foreground font-medium">
           {language === 'es' ? 'Gastos · últimos 6 meses' : 'Spending · last 6 months'}
         </span>
         {trendDir !== 'flat' && previous > 0 && (
           <span
             className={cn(
-              'inline-flex items-center gap-1 font-semibold tabular-nums px-1.5 py-0.5 rounded-md',
+              'inline-flex items-center gap-1 font-semibold px-2 py-0.5 rounded-md text-[11px]',
               isPositiveTrend
-                ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10'
-                : 'text-rose-600 dark:text-rose-400 bg-rose-500/10',
+                ? 'text-emerald-700 dark:text-emerald-400 bg-emerald-500/10'
+                : 'text-rose-700 dark:text-rose-400 bg-rose-500/10',
             )}
             title={
               language === 'es'
@@ -106,8 +118,7 @@ export function SimpleSparkline({ trends, language }: SimpleSparklineProps) {
             }
           >
             <TrendIcon className="h-3 w-3" />
-            {deltaPct > 0 ? '+' : ''}
-            {deltaPct.toFixed(0)}%
+            <span className="tabular-nums">{deltaText}</span>
           </span>
         )}
       </div>
