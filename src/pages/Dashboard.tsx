@@ -367,11 +367,13 @@ export default function Dashboard() {
             subtitle={language === 'es' ? 'Resumen, narrativa y movimientos' : 'Summary, narrative and movements'}
           />
 
-          {/* Data Inventory */}
-          <DataInventoryPanel />
-
-          {/* Mission Control */}
-          <MissionControl />
+          {/* Compact grid: Notification Hub + Data Inventory + Mission Control
+              All collapsed by default, side-by-side on tablet/desktop to save vertical space */}
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 items-start">
+            <DashboardNotificationHub />
+            <DataInventoryPanel />
+            <MissionControl />
+          </div>
 
           {/* VIEW TABS */}
           <DashboardViewTabs
