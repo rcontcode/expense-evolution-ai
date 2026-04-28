@@ -24,19 +24,19 @@ import { useDisplayPreferences } from '@/hooks/data/useDisplayPreferences';
 import { YearTimelineChart } from '@/components/dashboard/YearTimelineChart';
 import { LiveClock } from '@/components/dashboard/LiveClock';
 import { MonthDetailPanel } from '@/components/dashboard/MonthDetailPanel';
-import { DashboardNotificationHub } from '@/components/dashboard/DashboardNotificationHub';
+import { SystemStatusStrip } from '@/components/dashboard/SystemStatusStrip';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { MobileDashboard } from '@/components/dashboard/MobileDashboard';
 import { QuickCaptureDialog } from '@/components/dialogs/QuickCaptureDialog';
 import { DashboardGamificationWidget } from '@/components/gamification';
-import { MissionControl } from '@/components/dashboard/MissionControl';
+
 import { ProfileCompletionNudge } from '@/components/profile/ProfileCompletionNudge';
 import { ProfileExtenderDialog } from '@/components/profile/ProfileExtenderDialog';
 import { LifeProfileSection } from '@/hooks/data/useLifeProfile';
 import { EcosystemSection } from '@/components/ecosystem/EcosystemSection';
 import { DashboardNavigator } from '@/components/dashboard/DashboardNavigator';
 import { useDashboardDeepLinks } from '@/hooks/utils/useDashboardDeepLinks';
-import { DataInventoryPanel } from '@/components/dashboard/DataInventoryPanel';
+
 import { SimpleDashboard } from '@/components/dashboard/SimpleDashboard';
 import { UiModeWelcomeDialog } from '@/components/onboarding/UiModeWelcomeDialog';
 import { NextActionBanner } from '@/components/dashboard/NextActionBanner';
