@@ -105,6 +105,9 @@ export function PageContextGuide({
     }
   };
 
+  // Filter out actions without any handler so we never render dead buttons
+  const validActions = actions.filter(a => typeof a.action === 'function' || !!a.path);
+
   if (dismissed) {
     return (
       <Button
