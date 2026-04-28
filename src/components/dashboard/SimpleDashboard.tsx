@@ -535,10 +535,8 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
         </CardContent>
       </Card>
 
-      {/* From here on, switch to a 2-col layout on laptop so we use horizontal space */}
-      <div className="grid gap-5 lg:grid-cols-2">
-      {/* 3 big primary actions */}
-      <div className="grid grid-cols-3 gap-3 lg:col-span-2">
+      {/* 3 big primary actions — full width */}
+      <div className="grid grid-cols-3 gap-3">
         <ActionButton
           icon={<Receipt className="h-6 w-6" />}
           label={language === 'es' ? 'Gasto' : 'Expense'}
@@ -562,8 +560,13 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
         />
       </div>
 
-      {/* Secondary shortcuts — context-aware */}
-      <div className="grid grid-cols-2 gap-3">
+      {/* Secondary shortcuts — compact row */}
+      <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-3">
+        <SecondaryShortcut
+          icon={<Landmark className="h-4 w-4" />}
+          label={language === 'es' ? 'Subir extracto' : 'Upload statement'}
+          onClick={() => navigate('/banking')}
+        />
         <SecondaryShortcut
           icon={<CalendarClock className="h-4 w-4" />}
           label={language === 'es' ? 'Próximos pagos' : 'Upcoming bills'}
@@ -578,15 +581,17 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
           />
         ) : (
           <SecondaryShortcut
-            icon={<Landmark className="h-4 w-4" />}
-            label={language === 'es' ? 'Conectar banco' : 'Connect bank'}
-            onClick={() => navigate('/banking')}
+            icon={<Target className="h-4 w-4" />}
+            label={language === 'es' ? 'Crear presupuesto' : 'Create budget'}
+            onClick={() => navigate('/budget')}
           />
         )}
       </div>
 
+      {/* Two-column area: Recent activity + Financial education side by side on laptop */}
+      <div className="grid gap-4 lg:grid-cols-2 items-start">
       {/* Recent activity */}
-      <Card>
+      <Card className="h-full">
         <CardContent className="p-4">
           <div className="flex items-center justify-between mb-3 gap-2">
             <h3 className="font-bold text-base">
