@@ -225,6 +225,49 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
     }
   };
 
+  // Inactivity detector (B2) — days since the last logged movement
+  const daysSinceLastEntry = useMemo(() => {
+    if (recent.length === 0) return null;
+    const lastDateStr = recent[0].date;
+    const last = new Date(lastDateStr);
+    if (isNaN(last.getTime())) return null;
+    const today = new Date();
+    const ms = today.getTime() - last.getTime();
+    return Math.floor(ms / (1000 * 60 * 60 * 24));
+  }, [recent]);
+
+  // Inline-save the savings goal (B1) — one-shot, no navigation needed
+  const saveSavingsGoal = async () => {
+    const value = Number(goalInput.replace(/[^0-9.]/g, ''));
+    if (!value || value <= 0 || !user?.id) return;
+    setSavingGoal(true);
+    try {
+      const currentPrefs = ((profile as any)?.preferences ?? {}) as Record<string, unknown>;
+      const next = { ...currentPrefs, savings_goal_monthly: value };
+      const { error } = await supabase
+        .from('profiles')
+        .update({ preferences: next as any })
+        .eq('id', user.id);
+      if (error) throw error;
+      toast({
+        title: language === 'es' ? '🎯 Meta guardada' : '🎯 Goal saved',
+        description: language === 'es'
+          ? `Apuntas a ahorrar ${formatCurrency(value)} este mes.`
+          : `You aim to save ${formatCurrency(value)} this month.`,
+      });
+      setGoalInput('');
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+    } catch (e) {
+      toast({
+        title: language === 'es' ? 'No pudimos guardar' : 'Could not save',
+        description: language === 'es' ? 'Inténtalo de nuevo.' : 'Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setSavingGoal(false);
+    }
+  };
+
   return (
     <div className="space-y-5 max-w-2xl mx-auto pb-8">
       {/* Greeting */}
