@@ -34,8 +34,11 @@ export function UiModeToggle({ className, compact = false }: UiModeToggleProps) 
         ? (language === 'es' ? 'Vista minimalista con lo esencial.' : 'Minimal view with the essentials.')
         : (language === 'es' ? 'Acceso completo a todas las funciones.' : 'Full access to every feature.'),
     });
-    // Send the user to the dashboard so the change is immediately visible
-    navigate('/');
+    // Force full reload to dashboard so EVERY component re-mounts in the new mode.
+    // This guarantees the user sees the difference instantly, no stale state.
+    setTimeout(() => {
+      window.location.href = '/';
+    }, 350);
   };
 
   return (
