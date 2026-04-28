@@ -1,6 +1,6 @@
 import { useState, useCallback, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Camera, DollarSign, PieChart, Receipt, Building2, Sparkles } from 'lucide-react';
+import { Camera, DollarSign, PieChart, Receipt, Building2, Sparkles, Mic, PenLine } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -154,10 +154,10 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
   ];
 
   return (
-    <div className="mobile-compact space-y-2">
+    <div className="mobile-compact space-y-2 pb-20">
       <LiveClock />
       <MobileTabLayout tabs={tabs} paramKey="dash" defaultTab="resumen" />
-      <div className="text-center pt-2 pb-4">
+      <div className="text-center pt-2 pb-2">
         <Button
           variant="ghost"
           size="sm"
@@ -167,6 +167,45 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
           <Sparkles className="h-3.5 w-3.5" />
           {language === 'es' ? '¿Demasiado? Cambiar a Modo Simple' : 'Too much? Switch to Simple Mode'}
         </Button>
+      </div>
+
+      {/* Floating quick-capture bar — fixed above bottom nav, one tap from any scroll position */}
+      <div
+        className="fixed left-0 right-0 z-30 px-3"
+        style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 64px)' }}
+      >
+        <div className="mx-auto max-w-md rounded-2xl border border-border bg-background/95 backdrop-blur-md shadow-[0_8px_24px_-8px_rgba(0,0,0,0.25)] p-1.5 flex items-center justify-around gap-1">
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={onQuickCapture ?? (() => navigate('/mobile-capture'))}
+            className="flex-1 flex flex-col items-center gap-0.5 h-auto py-1.5 text-[10px] font-semibold"
+            aria-label={language === 'es' ? 'Capturar foto' : 'Capture photo'}
+          >
+            <Camera className="h-4 w-4 text-primary" />
+            {language === 'es' ? 'Foto' : 'Photo'}
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={onQuickCapture ?? (() => navigate('/mobile-capture'))}
+            className="flex-1 flex flex-col items-center gap-0.5 h-auto py-1.5 text-[10px] font-semibold"
+            aria-label={language === 'es' ? 'Captura por voz' : 'Voice capture'}
+          >
+            <Mic className="h-4 w-4 text-violet-500" />
+            {language === 'es' ? 'Voz' : 'Voice'}
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={handleAddExpense}
+            className="flex-1 flex flex-col items-center gap-0.5 h-auto py-1.5 text-[10px] font-semibold"
+            aria-label={language === 'es' ? 'Añadir manualmente' : 'Add manually'}
+          >
+            <PenLine className="h-4 w-4 text-emerald-500" />
+            {language === 'es' ? 'Manual' : 'Manual'}
+          </Button>
+        </div>
       </div>
     </div>
   );
