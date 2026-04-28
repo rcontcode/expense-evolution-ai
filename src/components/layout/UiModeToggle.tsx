@@ -1,0 +1,62 @@
+import { Sparkles, Layers } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useDisplayPreferences } from '@/hooks/data/useDisplayPreferences';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { cn } from '@/lib/utils';
+
+interface UiModeToggleProps {
+  className?: string;
+  compact?: boolean;
+}
+
+/**
+ * Toggle between Simple and Advanced UI modes.
+ * Lives in the app header and is always visible.
+ */
+export function UiModeToggle({ className, compact = false }: UiModeToggleProps) {
+  const { uiMode, setUiMode } = useDisplayPreferences();
+  const { language } = useLanguage();
+
+  // 'unset' counts as advanced for the toggle visual (existing users default to advanced)
+  const isSimple = uiMode === 'simple';
+
+  const toggle = () => {
+    setUiMode(isSimple ? 'advanced' : 'simple');
+  };
+
+  return (
+    <Button
+      variant="outline"
+      size={compact ? 'sm' : 'sm'}
+      onClick={toggle}
+      className={cn(
+        'gap-1.5 rounded-full border-2 transition-all hover:scale-[1.04]',
+        isSimple
+          ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20'
+          : 'border-violet-500/40 bg-violet-500/10 text-violet-600 dark:text-violet-400 hover:bg-violet-500/20',
+        className,
+      )}
+      title={
+        isSimple
+          ? language === 'es'
+            ? 'Estás en Modo Simple. Click para ver todo.'
+            : "You're in Simple Mode. Click to see everything."
+          : language === 'es'
+            ? 'Estás en Modo Avanzado. Click para simplificar.'
+            : "You're in Advanced Mode. Click to simplify."
+      }
+    >
+      {isSimple ? (
+        <>
+          <Sparkles className="h-3.5 w-3.5" />
+          {!compact && <span className="text-xs font-semibold">{language === 'es' ? 'Simple' : 'Simple'}</span>}
+        </>
+      ) : (
+        <>
+          <Layers className="h-3.5 w-3.5" />
+          {!compact && <span className="text-xs font-semibold">{language === 'es' ? 'Avanzado' : 'Advanced'}</span>}
+        </>
+      )}
+    </Button>
+  );
+}
