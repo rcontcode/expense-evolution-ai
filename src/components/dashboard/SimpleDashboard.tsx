@@ -278,6 +278,34 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
         <p className="text-sm text-muted-foreground capitalize">{monthLabel}</p>
       </div>
 
+      {/* Inactivity nudge (B2) — only when last entry is more than a week old */}
+      {daysSinceLastEntry !== null && daysSinceLastEntry > 7 && (
+        <div className="rounded-xl border-2 border-amber-500/30 bg-amber-500/10 px-3 py-2.5 flex items-center gap-3">
+          <div className="w-9 h-9 rounded-lg bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+            <Clock className="h-4 w-4" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-foreground">
+              {language === 'es'
+                ? `Hace ${daysSinceLastEntry} días que no registras`
+                : `${daysSinceLastEntry} days since your last entry`}
+            </p>
+            <p className="text-[11px] text-muted-foreground">
+              {language === 'es' ? '¿Todo bien? Captura uno rápido.' : 'All good? Log one quickly.'}
+            </p>
+          </div>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-8 text-xs gap-1 border-amber-500/40 hover:bg-amber-500/15 shrink-0"
+            onClick={() => (onQuickCapture ? onQuickCapture() : navigate('/expenses?new=1'))}
+          >
+            {language === 'es' ? 'Capturar' : 'Capture'}
+            <ArrowRight className="h-3 w-3" />
+          </Button>
+        </div>
+      )}
+
       {/* Onboarding path — auto-hides when all steps complete */}
       <SimpleOnboardingPath />
 
