@@ -49,11 +49,12 @@ export const useDisplayPreferences = () => {
   const [isSaving, setIsSaving] = useState(false);
 
   // Refs to avoid stale closures and prevent re-renders
-  const preferencesRef = useRef<DisplayPreferences>(DEFAULT_DISPLAY_PREFERENCES);
+  // Initialize with the same value as `preferences` so a failed save doesn't revert UI mode to 'unset'
+  const preferencesRef = useRef<DisplayPreferences>(preferences);
   const saveTimerRef = useRef<number | null>(null);
   const pendingRef = useRef<DisplayPreferences | null>(null);
   const inflightRef = useRef(false);
-  const lastSavedRef = useRef<DisplayPreferences>(DEFAULT_DISPLAY_PREFERENCES);
+  const lastSavedRef = useRef<DisplayPreferences>(preferences);
   const userIdRef = useRef<string | null>(null);
 
   // Keep refs in sync
