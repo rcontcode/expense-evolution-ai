@@ -1,5 +1,4 @@
 import { Sparkles, Layers } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import { applyUiModeImmediately, openDashboardAfterUiModeChange, useDisplayPreferences } from '@/hooks/data/useDisplayPreferences';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/hooks/use-toast';
@@ -18,7 +17,6 @@ export function UiModeToggle({ className, compact = false }: UiModeToggleProps) 
   const { uiMode, setUiMode } = useDisplayPreferences();
   const { language } = useLanguage();
   const { toast } = useToast();
-  const navigate = useNavigate();
 
   // 'unset' is treated as advanced for display purposes
   const current: 'simple' | 'advanced' = uiMode === 'simple' ? 'simple' : 'advanced';
