@@ -81,10 +81,27 @@ export const useDisplayPreferences = () => {
   // Fetch preferences from database
   useEffect(() => {
     const fetchPreferences = async () => {
+      const storedMode = getStoredUiMode();
+      // Always preserve the locally-stored ui_mode so we never flash from Simple → Advanced
+      const withStoredMode = (base: Partial<DisplayPreferences>): DisplayPreferences => ({
+        ...DEFAULT_DISPLAY_PREFERENCES,
+        ...base,
+        ...(storedMode ? { ui_mode: storedMode } : {}),
+      });
+
+      // Skip setPreferences if the result is structurally identical (avoids redundant re-renders)
+      const applyIfChanged = (next: DisplayPreferences) => {
+        const prev = preferencesRef.current;
+        if (JSON.stringify(prev) === JSON.stringify(next)) {
+          lastSavedRef.current = next;
+          return;
+        }
+        setPreferences(next);
+        lastSavedRef.current = next;
+      };
+
       if (!user?.id) {
-        const fallback = { ...DEFAULT_DISPLAY_PREFERENCES, ...(getStoredUiMode() ? { ui_mode: getStoredUiMode()! } : {}) };
-        setPreferences(fallback);
-        lastSavedRef.current = fallback;
+        applyIfChanged(withStoredMode({}));
         setIsLoading(false);
         return;
       }
@@ -98,25 +115,15 @@ export const useDisplayPreferences = () => {
 
         if (error) {
           console.error('Error fetching display preferences:', error);
-          setPreferences(DEFAULT_DISPLAY_PREFERENCES);
-          lastSavedRef.current = DEFAULT_DISPLAY_PREFERENCES;
+          applyIfChanged(withStoredMode({}));
         } else if (data?.display_preferences) {
-          const merged = {
-            ...DEFAULT_DISPLAY_PREFERENCES,
-            ...(data.display_preferences as Partial<DisplayPreferences>),
-            ...(getStoredUiMode() ? { ui_mode: getStoredUiMode()! } : {}),
-          };
-          setPreferences(merged);
-          lastSavedRef.current = merged;
+          applyIfChanged(withStoredMode(data.display_preferences as Partial<DisplayPreferences>));
         } else {
-          const fallback = { ...DEFAULT_DISPLAY_PREFERENCES, ...(getStoredUiMode() ? { ui_mode: getStoredUiMode()! } : {}) };
-          setPreferences(fallback);
-          lastSavedRef.current = fallback;
+          applyIfChanged(withStoredMode({}));
         }
       } catch (error) {
         console.error('Error fetching display preferences:', error);
-        setPreferences(DEFAULT_DISPLAY_PREFERENCES);
-        lastSavedRef.current = DEFAULT_DISPLAY_PREFERENCES;
+        applyIfChanged(withStoredMode({}));
       } finally {
         setIsLoading(false);
       }
