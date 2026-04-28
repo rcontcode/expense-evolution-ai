@@ -573,6 +573,14 @@ export const Layout = ({ children }: LayoutProps) => {
                   <MobileMenuEntitySelector onNavigate={() => setMobileMenuOpen(false)} />
                 </div>
                 
+                {/* UI Mode Toggle (Simple/Advanced) */}
+                <div className="px-3 py-2 border-b border-border/20 flex items-center justify-between">
+                  <span className="text-xs font-medium text-muted-foreground">
+                    {language === 'es' ? 'Modo' : 'Mode'}
+                  </span>
+                  <UiModeToggle />
+                </div>
+
                 {/* Theme Toggle */}
                 <div className="px-3 py-2 border-b border-border/20 flex items-center justify-between">
                   <span className="text-xs font-medium text-muted-foreground">{language === 'es' ? 'Tema' : 'Theme'}</span>
