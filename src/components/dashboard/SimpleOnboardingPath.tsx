@@ -29,6 +29,7 @@ export function SimpleOnboardingPath() {
   const { data: clients } = useClients();
   const { data: contracts } = useContracts();
   const { data: fiscalEntities } = useFiscalEntities();
+  const [clientDialogOpen, setClientDialogOpen] = useState(false);
 
   const steps = useMemo(() => {
     const hasFiscal =
