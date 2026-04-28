@@ -81,12 +81,21 @@ function useDataInventory() {
   });
 }
 
-export function DataInventoryPanel() {
+interface DataInventoryPanelProps {
+  onExpandedChange?: (expanded: boolean) => void;
+}
+
+export function DataInventoryPanel({ onExpandedChange }: DataInventoryPanelProps = {}) {
   const { language } = useLanguage();
   const { data, isLoading } = useDataInventory();
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   const isEs = language === 'es';
+
+  const handleOpenChange = (next: boolean) => {
+    setOpen(next);
+    onExpandedChange?.(next);
+  };
 
   if (isLoading || !data) return null;
 
@@ -112,7 +121,7 @@ export function DataInventoryPanel() {
 
   return (
     <Card>
-      <Collapsible open={open} onOpenChange={setOpen}>
+      <Collapsible open={open} onOpenChange={handleOpenChange>
         <CollapsibleTrigger asChild>
           <CardContent className="py-3 cursor-pointer hover:bg-muted/30 transition-colors">
             <div className="flex items-center justify-between">
