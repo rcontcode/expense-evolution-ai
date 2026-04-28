@@ -1,6 +1,6 @@
 import { Sparkles, Layers } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useDisplayPreferences } from '@/hooks/data/useDisplayPreferences';
+import { applyUiModeImmediately, useDisplayPreferences } from '@/hooks/data/useDisplayPreferences';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -25,6 +25,7 @@ export function UiModeToggle({ className, compact = false }: UiModeToggleProps) 
 
   const switchTo = (target: 'simple' | 'advanced') => {
     if (target === current) return; // no-op if already there
+    applyUiModeImmediately(target);
     setUiMode(target);
     toast({
       title: target === 'simple'
