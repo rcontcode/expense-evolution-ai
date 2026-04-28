@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState } from 'react';
 import { TrendingUp, TrendingDown, Minus, X } from 'lucide-react';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { cn } from '@/lib/utils';
@@ -22,11 +22,13 @@ interface SimpleSparklineProps {
  */
 export function SimpleSparkline({ trends, language }: SimpleSparklineProps) {
   const { formatCurrency } = useFormatCurrency();
-  const [legendDismissed, setLegendDismissed] = useState(true);
+  const [legendDismissed, setLegendDismissed] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return true;
+    return localStorage.getItem(LEGEND_KEY) === '1';
+  });
 
-  useEffect(() => {
-    setLegendDismissed(localStorage.getItem(LEGEND_KEY) === '1');
-  }, []);
+
+
 
   const dismissLegend = () => {
     localStorage.setItem(LEGEND_KEY, '1');
