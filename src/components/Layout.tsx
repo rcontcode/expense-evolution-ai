@@ -777,6 +777,7 @@ export const Layout = ({ children }: LayoutProps) => {
                 return (
                   <button
                     key={`fab-${index}`}
+                    onPointerDown={() => item.path && preloadRoute(item.path)}
                     onClick={() => navigate(item.path!)}
                     className="mobile-bottom-nav-fab"
                   >
