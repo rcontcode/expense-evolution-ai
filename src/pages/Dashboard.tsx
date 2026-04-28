@@ -285,8 +285,7 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          {/* Notification Hub — THE ONLY alert center */}
-          <DashboardNotificationHub />
+          {/* Notification Hub — moved into compact grid below alongside Inventory & Mission Control */}
 
           {/* Onboarding — only render when there's likely something to show (new users) */}
           {((allExpenses?.length ?? 0) < 5 || (clients?.length ?? 0) === 0) && (
