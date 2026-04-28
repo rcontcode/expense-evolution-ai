@@ -1,14 +1,15 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Briefcase, Users, FileText, Check, ArrowRight, Rocket } from 'lucide-react';
+import { Briefcase, Users, FileText, Check, ArrowRight, Rocket, Plus } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useProfile } from '@/hooks/data/useProfile';
 import { useClients } from '@/hooks/data/useClients';
 import { useContracts } from '@/hooks/data/useContracts';
 import { useFiscalEntities } from '@/hooks/data/useFiscalEntities';
+import { ClientDialog } from '@/components/dialogs/ClientDialog';
 import { cn } from '@/lib/utils';
 
 /**
@@ -28,6 +29,7 @@ export function SimpleOnboardingPath() {
   const { data: clients } = useClients();
   const { data: contracts } = useContracts();
   const { data: fiscalEntities } = useFiscalEntities();
+  const [clientDialogOpen, setClientDialogOpen] = useState(false);
 
   const steps = useMemo(() => {
     const hasFiscal =
@@ -113,14 +115,13 @@ export function SimpleOnboardingPath() {
         <ul className="space-y-2">
           {steps.map((step, idx) => {
             const Icon = step.icon;
+            const isClientsStep = step.id === 'clients';
             return (
               <li key={step.id}>
-                <button
-                  type="button"
-                  onClick={() => navigate(step.path)}
+                <div
                   className={cn(
-                    'w-full flex items-center gap-3 p-3 rounded-xl border-2 transition-all text-left',
-                    'hover:scale-[1.01] active:scale-[0.99] hover:shadow-md',
+                    'w-full flex items-center gap-3 p-3 rounded-xl border-2 transition-all',
+                    'hover:shadow-md',
                     step.done
                       ? 'border-emerald-500/30 bg-emerald-500/5 hover:bg-emerald-500/10'
                       : 'border-border bg-card hover:border-primary/40 hover:bg-primary/5',
@@ -150,8 +151,12 @@ export function SimpleOnboardingPath() {
                     <Icon className="h-4 w-4" />
                   </div>
 
-                  {/* Text */}
-                  <div className="min-w-0 flex-1">
+                  {/* Text — clickable area to navigate */}
+                  <button
+                    type="button"
+                    onClick={() => navigate(step.path)}
+                    className="min-w-0 flex-1 text-left hover:opacity-80 transition-opacity"
+                  >
                     <div
                       className={cn(
                         'text-sm font-semibold leading-tight',
@@ -163,15 +168,31 @@ export function SimpleOnboardingPath() {
                     <div className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
                       {step.description}
                     </div>
-                  </div>
+                  </button>
 
-                  <ArrowRight
-                    className={cn(
-                      'shrink-0 h-4 w-4 transition-transform',
-                      step.done ? 'text-emerald-500' : 'text-muted-foreground',
-                    )}
-                  />
-                </button>
+                  {/* Quick-add for Clients step (only when not done) */}
+                  {isClientsStep && !step.done && (
+                    <Button
+                      size="sm"
+                      onClick={() => setClientDialogOpen(true)}
+                      className="shrink-0 h-8 gap-1 px-2.5 shadow-sm"
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                      <span className="text-xs font-semibold">
+                        {language === 'es' ? 'Agregar' : 'Add'}
+                      </span>
+                    </Button>
+                  )}
+
+                  {(!isClientsStep || step.done) && (
+                    <ArrowRight
+                      className={cn(
+                        'shrink-0 h-4 w-4 transition-transform',
+                        step.done ? 'text-emerald-500' : 'text-muted-foreground',
+                      )}
+                    />
+                  )}
+                </div>
               </li>
             );
           })}
@@ -180,15 +201,29 @@ export function SimpleOnboardingPath() {
         {/* Primary CTA */}
         {nextStep && (
           <Button
-            onClick={() => navigate(nextStep.path)}
+            onClick={() => {
+              if (nextStep.id === 'clients') {
+                setClientDialogOpen(true);
+              } else {
+                navigate(nextStep.path);
+              }
+            }}
             className="w-full gap-2 font-semibold shadow-md hover:shadow-lg hover:scale-[1.02] transition-all"
             size="lg"
           >
+            {nextStep.id === 'clients' && <Plus className="h-4 w-4" />}
             {language === 'es' ? `Continuar: ${nextStep.label}` : `Continue: ${nextStep.label}`}
-            <ArrowRight className="h-4 w-4" />
+            {nextStep.id !== 'clients' && <ArrowRight className="h-4 w-4" />}
           </Button>
         )}
       </CardContent>
+
+      {/* Inline quick-add client dialog */}
+      <ClientDialog
+        open={clientDialogOpen}
+        onClose={() => setClientDialogOpen(false)}
+        client={null}
+      />
     </Card>
   );
 }
