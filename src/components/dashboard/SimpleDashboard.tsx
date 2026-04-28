@@ -94,10 +94,10 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
     return name || (language === 'es' ? 'amigo' : 'friend');
   }, [profile, language]);
 
-  // Combine recent expenses + income, take top 8 by date
+  // Combine recent expenses + income, sort BEFORE slicing so we never miss the latest
   const recent = useMemo(() => {
     const items: Array<{ id: string; rawId: string; type: 'expense' | 'income'; label: string; amount: number; date: string }> = [];
-    (expenses ?? []).slice(0, 20).forEach((e: any) => {
+    (expenses ?? []).forEach((e: any) => {
       items.push({
         id: `e-${e.id}`,
         rawId: String(e.id),
@@ -107,7 +107,7 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
         date: e.date,
       });
     });
-    (income ?? []).slice(0, 20).forEach((i: any) => {
+    (income ?? []).forEach((i: any) => {
       items.push({
         id: `i-${i.id}`,
         rawId: String(i.id),
