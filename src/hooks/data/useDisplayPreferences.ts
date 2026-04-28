@@ -18,6 +18,14 @@ const getStoredUiMode = (): UiMode | null => {
   return stored === 'simple' || stored === 'advanced' ? stored : null;
 };
 
+export const applyUiModeImmediately = (mode: 'simple' | 'advanced') => {
+  if (typeof window === 'undefined') return;
+  window.localStorage.setItem(UI_MODE_STORAGE_KEY, mode);
+  window.dispatchEvent(new CustomEvent(DISPLAY_PREFERENCES_EVENT, {
+    detail: { ...DEFAULT_DISPLAY_PREFERENCES, ui_mode: mode },
+  }));
+};
+
 export const useDisplayPreferences = () => {
   const { user } = useAuth();
   const [preferences, setPreferences] = useState<DisplayPreferences>(DEFAULT_DISPLAY_PREFERENCES);
@@ -226,6 +234,7 @@ export const useDisplayPreferences = () => {
    }, [savePreferences]);
 
    const setUiMode = useCallback((mode: UiMode) => {
+     if (mode === 'simple' || mode === 'advanced') applyUiModeImmediately(mode);
      const newPreferences = { ...preferencesRef.current, ui_mode: mode };
      savePreferences(newPreferences, { immediate: true });
    }, [savePreferences]);
