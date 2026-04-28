@@ -733,7 +733,10 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
             variant="outline"
             size="sm"
             className="h-8 text-xs font-semibold gap-1.5 border-primary/30 text-primary hover:bg-primary/10"
-            onClick={() => setUiMode('advanced')}
+            onClick={() => {
+              setUiMode('advanced');
+              navigate('/', { replace: true });
+            }}
           >
             <Sparkles className="h-3.5 w-3.5" />
             {language === 'es' ? 'Cambiar a Avanzado' : 'Switch to Advanced'}
