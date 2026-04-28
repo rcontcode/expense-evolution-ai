@@ -659,7 +659,7 @@ export const Layout = ({ children }: LayoutProps) => {
                           <div className="flex-1 h-px bg-border/40" />
                         </div>
 
-                {/* Items - single column for full text visibility */}
+                {/* Items */}
                         <div className="space-y-0.5">
                           {section.items.map((item) => {
                             const Icon = item.icon;
@@ -671,25 +671,25 @@ export const Layout = ({ children }: LayoutProps) => {
                             
                             return (
                               <div key={item.path}>
-                                <div className="flex items-center">
+                                <div className="flex items-center gap-1">
                                   <button
                                     onClick={() => { navigate(item.path); setMobileMenuOpen(false); }}
                                     className={cn(
-                                      "flex items-center gap-2.5 px-2.5 py-2 rounded-lg transition-all text-left group flex-1",
+                                      "flex items-center gap-2.5 px-2 py-2 rounded-lg transition-colors text-left flex-1 min-w-0",
                                       isActive 
-                                        ? cn("bg-background shadow-md border", theme.border)
-                                        : "hover:bg-background/80 bg-background/40"
+                                        ? "bg-muted/70"
+                                        : "hover:bg-muted/50"
                                     )}
                                   >
                                     <div className={cn(
-                                      "w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-transform group-hover:scale-110",
+                                      "w-7 h-7 rounded-lg flex items-center justify-center shrink-0",
                                       theme.iconWrapper
                                     )}>
-                                      <Icon className="h-4 w-4 text-white drop-shadow-sm" />
+                                      <Icon className="h-3.5 w-3.5 text-white" />
                                     </div>
                                     <span className={cn(
-                                      "text-sm font-medium transition-colors flex-1",
-                                      isActive ? theme.text : "text-foreground/80 group-hover:text-foreground"
+                                      "text-sm font-medium truncate",
+                                      isActive ? theme.text : "text-foreground/85"
                                     )}>
                                       {t(item.label)}
                                     </span>
@@ -699,18 +699,18 @@ export const Layout = ({ children }: LayoutProps) => {
                                       type="button"
                                       onClick={(e) => { e.stopPropagation(); toggleSubmenu(item.path); }}
                                       className={cn(
-                                        "p-2.5 rounded-xl transition-all shrink-0 border",
+                                        "h-9 w-9 flex items-center justify-center rounded-lg transition-colors shrink-0",
                                         isSubmenuOpen 
-                                          ? "bg-primary/15 text-primary border-primary/30 shadow-sm" 
-                                          : "text-muted-foreground bg-muted/40 border-border/50 hover:bg-primary/10 hover:text-primary hover:border-primary/30"
+                                          ? "bg-muted text-foreground" 
+                                          : "text-muted-foreground hover:bg-muted/60"
                                       )}
                                     >
-                                      <ChevronDown className={cn("h-5 w-5 transition-transform duration-300", isSubmenuOpen && "rotate-180")} />
+                                      <ChevronDown className={cn("h-4 w-4 transition-transform", isSubmenuOpen && "rotate-180")} />
                                     </button>
                                   )}
                                 </div>
                                 {hasChildren && isSubmenuOpen && (
-                                  <div className={cn("ml-9 mt-0.5 mb-1 space-y-0.5 pl-2 border-l-2", theme.border)}>
+                                  <div className="ml-9 mt-0.5 mb-1 space-y-0.5 pl-2 border-l border-border/50">
                                     {item.children!.map((child: NavChild, ci: number) => (
                                       <button
                                         key={`${child.path}-${ci}`}
@@ -718,9 +718,9 @@ export const Layout = ({ children }: LayoutProps) => {
                                           handleSubmenuNavigation(child.path);
                                           setMobileMenuOpen(false);
                                         }}
-                                        className="flex items-center gap-2 w-full px-2 py-1.5 rounded-md text-xs text-muted-foreground hover:text-foreground hover:bg-background/60 transition-all"
+                                        className="flex items-center gap-2 w-full px-2 py-1.5 rounded-md text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
                                       >
-                                        <span className={cn("w-1.5 h-1.5 rounded-full bg-current opacity-40", theme.text)} />
+                                        <span className={cn("w-1 h-1 rounded-full bg-current opacity-50", theme.text)} />
                                         <span className="truncate">{child.label}</span>
                                       </button>
                                     ))}
