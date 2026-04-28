@@ -677,8 +677,8 @@ export default function ChaosInbox() {
           <PageHeader
             title={language === 'es' ? 'Bandeja del Caos' : 'Chaos Inbox'}
             description={!isMobile ? (language === 'es' 
-              ? 'Sube cualquier documento — la IA lo clasifica y procesa automáticamente'
-              : 'Upload any document — AI classifies and processes it automatically') : undefined}
+              ? 'Sube cualquier documento — el sistema lo clasifica y procesa automáticamente'
+              : 'Upload any document — the system classifies and processes it automatically') : undefined}
           >
             {!isMobile && <InfoTooltip content={TOOLTIP_CONTENT.chaosInbox} />}
             {!isMobile && <ScanSessionHistory />}
@@ -823,7 +823,7 @@ export default function ChaosInbox() {
               <AlertTitle className="text-sm">
                 {uploadProgress.phase === 'received' && (language === 'es' ? `📥 ${uploadProgress.fileName} recibido` : `📥 ${uploadProgress.fileName} received`)}
                 {uploadProgress.phase === 'uploading' && (language === 'es' ? `⬆️ Subiendo ${uploadProgress.fileName}...` : `⬆️ Uploading ${uploadProgress.fileName}...`)}
-                {uploadProgress.phase === 'analyzing' && (language === 'es' ? `🧠 Analizando con IA...` : `🧠 Analyzing with AI...`)}
+                {uploadProgress.phase === 'analyzing' && (language === 'es' ? `🧠 Analizando...` : `🧠 Analyzing...`)}
                 {uploadProgress.phase === 'classified' && (language === 'es' ? `✅ ${uploadProgress.fileName} clasificado` : `✅ ${uploadProgress.fileName} classified`)}
                 {uploadProgress.phase === 'unknown' && (language === 'es' ? `⚠️ ${uploadProgress.fileName} no reconocido` : `⚠️ ${uploadProgress.fileName} not recognized`)}
                 {uploadProgress.phase === 'error' && (language === 'es' ? `❌ Error procesando ${uploadProgress.fileName}` : `❌ Error processing ${uploadProgress.fileName}`)}

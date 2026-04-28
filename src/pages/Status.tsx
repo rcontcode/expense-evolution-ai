@@ -15,7 +15,7 @@ export default function Status() {
     { name: es ? 'Aplicación Web' : 'Web Application', icon: Globe, status: 'operational' },
     { name: es ? 'Base de Datos' : 'Database', icon: Database, status: 'operational' },
     { name: es ? 'Autenticación' : 'Authentication', icon: Shield, status: 'operational' },
-    { name: es ? 'Procesamiento IA' : 'AI Processing', icon: Cpu, status: 'operational' },
+    { name: es ? 'Procesamiento Inteligente' : 'Smart Processing', icon: Cpu, status: 'operational' },
   ];
 
   return (
