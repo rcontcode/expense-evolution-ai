@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Settings2 } from "lucide-react";
 import { Layout } from "@/components/Layout";
 import { PageHeader } from "@/components/PageHeader";
+import { SimpleModePageBanner } from "@/components/dashboard/SimpleModePageBanner";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 function BudgetSkeleton() {
@@ -49,6 +50,13 @@ export default function Budget() {
             title={l ? '💰 Presupuesto' : '💰 Budget'}
             description={!isMobile ? (l ? 'Control integral de tus finanzas' : 'Comprehensive financial control') : undefined}
           />
+            <SimpleModePageBanner
+              pageId="budget"
+              description={{
+                es: 'Define cuánto quieres gastar por categoría. Te avisaremos cuando te acerques al límite.',
+                en: 'Define how much you want to spend per category. We\'ll warn you as you approach the limit.',
+              }}
+            />
           <BudgetSkeleton />
         </div>
       </Layout>
@@ -63,6 +71,13 @@ export default function Budget() {
             title={l ? '💰 Presupuesto' : '💰 Budget'}
             description={!isMobile ? (l ? 'Configura tu modo de presupuesto' : 'Set up your budget mode') : undefined}
           />
+            <SimpleModePageBanner
+              pageId="budget"
+              description={{
+                es: 'Define cuánto quieres gastar por categoría. Te avisaremos cuando te acerques al límite.',
+                en: 'Define how much you want to spend per category. We\'ll warn you as you approach the limit.',
+              }}
+            />
           <BudgetSetupWizard onComplete={() => setShowWizard(false)} />
         </div>
       </Layout>
@@ -78,6 +93,13 @@ export default function Budget() {
             <PageHeader
               title={l ? '💰 Presupuesto' : '💰 Budget'}
               description={!isMobile ? (l ? 'Control integral de tus finanzas familiares' : 'Comprehensive family financial control') : undefined}
+            />
+            <SimpleModePageBanner
+              pageId="budget"
+              description={{
+                es: 'Define cuánto quieres gastar por categoría. Te avisaremos cuando te acerques al límite.',
+                en: 'Define how much you want to spend per category. We\'ll warn you as you approach the limit.',
+              }}
             />
             <FamilyBudgetView budgetMode={budgetMode} onChangeMode={() => setShowWizard(true)} />
           </div>
@@ -96,6 +118,13 @@ export default function Budget() {
               title={l ? '💰 Presupuesto' : '💰 Budget'}
               description={!isMobile ? (l ? 'Vista unificada: hogar + negocio' : 'Unified view: home + business') : undefined}
             />
+            <SimpleModePageBanner
+              pageId="budget"
+              description={{
+                es: 'Define cuánto quieres gastar por categoría. Te avisaremos cuando te acerques al límite.',
+                en: 'Define how much you want to spend per category. We\'ll warn you as you approach the limit.',
+              }}
+            />
             <FamilyBudgetView budgetMode={budgetMode} onChangeMode={() => setShowWizard(true)} />
           </div>
         </BudgetEntityProvider>
@@ -112,6 +141,13 @@ export default function Budget() {
             title={l ? '💰 Presupuesto' : '💰 Budget'}
             description={!isMobile ? (l ? 'Separado por entidad fiscal' : 'Separated by fiscal entity') : undefined}
           />
+            <SimpleModePageBanner
+              pageId="budget"
+              description={{
+                es: 'Define cuánto quieres gastar por categoría. Te avisaremos cuando te acerques al límite.',
+                en: 'Define how much you want to spend per category. We\'ll warn you as you approach the limit.',
+              }}
+            />
           <BudgetEntitySelector
             selectedEntityId={selectedEntityId}
             onSelect={setSelectedEntityId}

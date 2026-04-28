@@ -17,6 +17,7 @@ import { BankTransactionSummary } from '@/components/banking/BankTransactionSumm
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Upload, Search, AlertTriangle, TrendingDown } from 'lucide-react';
 import { PageHeader } from '@/components/PageHeader';
+import { SimpleModePageBanner } from '@/components/dashboard/SimpleModePageBanner';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { BankingInsightsSummary } from '@/components/banking/BankingInsightsSummary';
 import { MobileTabLayout, type MobileTab } from '@/components/mobile';
@@ -35,7 +36,13 @@ export default function Banking() {
             ? 'Importa tus estados de cuenta y obtén insights inteligentes'
             : 'Import your bank statements and get smart insights') : undefined}
         />
-
+        <SimpleModePageBanner
+          pageId="banking"
+          description={{
+            es: 'Conecta o sube tus extractos bancarios y tus gastos se registrarán solos. Aquí ves todos los movimientos detectados.',
+            en: 'Connect or upload your bank statements and expenses log themselves. Here you see every detected movement.',
+          }}
+        />
         {!isMobile && <MentorQuoteBanner context="dashboard" className="mb-2" />}
         
         {!isMobile && (
