@@ -295,6 +295,7 @@ export default function Dashboard() {
           <ExportDialog open={exportDialogOpen} onClose={() => setExportDialogOpen(false)} expenses={allExpenses || []} />
         </div>
       </TooltipProvider>
+      <UiModeWelcomeDialog open={welcomeOpen} onClose={() => setWelcomeOpen(false)} />
     </Layout>
   );
 }
