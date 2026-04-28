@@ -217,7 +217,7 @@ export default function Dashboard() {
   return (
     <Layout>
       <TooltipProvider delayDuration={200}>
-        <div className={cn('page-container', density === 'compact' ? 'space-y-3' : 'section-gap')}>
+        <div className="page-container space-y-2.5">
 
           {/* Profile Extender Dialog (modal — placement neutral) */}
           <ProfileExtenderDialog
@@ -232,6 +232,7 @@ export default function Dashboard() {
           <SectionHeader
             title={language === 'es' ? 'Hoy' : 'Today'}
             subtitle={language === 'es' ? 'Estado actual' : 'Current state'}
+            compact
           />
 
           {/* Header Snapshot — 1-line state of the day */}
