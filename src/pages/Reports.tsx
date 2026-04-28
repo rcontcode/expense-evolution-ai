@@ -145,7 +145,7 @@ interface PreviewData {
   footer?: string[];
 }
 
-export default function Reports() {
+function ReportsAdvanced() {
   const { language } = useLanguage();
   const l = language === 'es';
   const { formatCurrency: fc } = useFormatCurrency();

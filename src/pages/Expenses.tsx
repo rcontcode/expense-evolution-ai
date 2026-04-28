@@ -55,7 +55,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 
-export default function Expenses() {
+function ExpensesAdvanced() {
   const { t, language } = useLanguage();
   const isMobile = useIsMobile();
   const [searchParams] = useSearchParams();

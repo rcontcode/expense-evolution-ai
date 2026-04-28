@@ -72,7 +72,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 
-export default function Income() {
+function IncomeAdvanced() {
   const { t, language } = useLanguage();
   const isMobile = useIsMobile();
   const dateLocale = language === 'es' ? es : enUS;

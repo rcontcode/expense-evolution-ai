@@ -47,7 +47,7 @@ const STATUS_ICONS: Record<ClientStatus, React.ElementType> = {
   active: Zap,
 };
 
-export default function Clients() {
+function ClientsAdvanced() {
   const { t, language } = useLanguage();
   const isMobile = useIsMobile();
   const [dialogOpen, setDialogOpen] = useState(false);
