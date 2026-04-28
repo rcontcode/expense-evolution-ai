@@ -1275,7 +1275,7 @@ export const Layout = ({ children }: LayoutProps) => {
                   </div>
                   {!collapsed && (
                     <div className="flex-1 text-left min-w-0">
-                      <span className="block text-xs font-semibold truncate">{profile?.full_name || t('settings.profileTitle')}</span>
+                      <span className="block text-xs font-semibold truncate" data-pii="name">{profile?.full_name || t('settings.profileTitle')}</span>
                       <span className="flex items-center gap-1 text-[10px] text-muted-foreground truncate">
                         {currentCountry && <CountryFlag code={currentCountry} size="xs" />}
                         {currentCountry === 'CA' ? 'Canada' : currentCountry === 'CL' ? 'Chile' : currentCountry === 'US' ? 'USA' : ''}
