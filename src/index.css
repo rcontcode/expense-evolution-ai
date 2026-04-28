@@ -3030,3 +3030,31 @@
 .stability-mode .highlight-tab-on-arrival {
   animation: highlight-tab-pulse-color 1.1s ease-in-out infinite !important;
 }
+
+/* ================================================================
+   REC MODE — Identity masking for video recordings
+   Toggle via Demo Studio. Apply data-pii attributes to sensitive UI.
+   ================================================================ */
+.rec-mode [data-pii="email"],
+.rec-mode [data-pii="id"] {
+  filter: blur(5px);
+  user-select: none;
+  pointer-events: none;
+}
+.rec-mode [data-pii="name"] {
+  position: relative;
+  color: transparent !important;
+  user-select: none;
+}
+.rec-mode [data-pii="name"]::after {
+  content: "Demo User";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  color: hsl(var(--foreground));
+  font: inherit;
+}
+.rec-mode [data-pii="avatar"] {
+  filter: blur(8px);
+}
