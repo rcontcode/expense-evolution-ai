@@ -42,7 +42,9 @@ function lazyWithRetry<T extends ComponentType<unknown>>(
   });
 }
 
-// Route preload map for hover-based prefetching
+// Route preload map for hover/touch/idle-based prefetching.
+// Keep in sync with the lazy() routes below — every authenticated route
+// should have an entry so preloadRoute() and the IdlePreloader can warm it up.
 const routeImportMap: Record<string, () => Promise<unknown>> = {
   '/dashboard': () => import("./pages/Dashboard"),
   '/income': () => import("./pages/Income"),
@@ -50,6 +52,7 @@ const routeImportMap: Record<string, () => Promise<unknown>> = {
   '/settings': () => import("./pages/Settings"),
   '/budget': () => import("./pages/Budget"),
   '/chaos': () => import("./pages/ChaosInbox"),
+  '/chaos-inbox': () => import("./pages/ChaosInbox"),
   '/clients': () => import("./pages/Clients"),
   '/projects': () => import("./pages/Projects"),
   '/bills': () => import("./pages/Bills"),
@@ -57,12 +60,45 @@ const routeImportMap: Record<string, () => Promise<unknown>> = {
   '/tax-optimizer': () => import("./pages/TaxOptimizer"),
   '/investments': () => import("./pages/Investments"),
   '/subscriptions': () => import("./pages/Subscriptions"),
+  '/banking': () => import("./pages/Banking"),
+  '/net-worth': () => import("./pages/NetWorth"),
+  '/notifications': () => import("./pages/Notifications"),
+  '/mentorship': () => import("./pages/Mentorship"),
+  '/tax-calendar': () => import("./pages/TaxCalendar"),
+  '/files': () => import("./pages/Files"),
+  '/data-health': () => import("./pages/DataHealth"),
+  '/reports': () => import("./pages/Reports"),
+  '/contracts': () => import("./pages/Contracts"),
+  '/mileage': () => import("./pages/Mileage"),
+  '/reconciliation': () => import("./pages/Reconciliation"),
+  '/tags': () => import("./pages/Tags"),
+  '/trash': () => import("./pages/Trash"),
+  '/business-profile': () => import("./pages/BusinessProfile"),
+  '/tax-report': () => import("./pages/TaxReportFlow"),
 };
+
+// Priority order for IdlePreloader — most-likely-next routes first.
+const CORE_PRELOAD_ORDER: string[] = [
+  '/dashboard',
+  '/expenses',
+  '/income',
+  '/bills',
+  '/chaos',
+  '/budget',
+  '/banking',
+  '/analytics',
+  '/notifications',
+  '/settings',
+  '/net-worth',
+  '/reports',
+  '/files',
+];
 
 const preloadedRoutes = new Set<string>();
 
-/** Preload a route chunk on hover/focus. Safe to call multiple times. */
+/** Preload a route chunk on hover/focus/touchstart. Safe to call multiple times. */
 export function preloadRoute(path: string) {
+  if (!path) return;
   if (preloadedRoutes.has(path)) return;
   const importer = routeImportMap[path];
   if (importer) {
@@ -72,6 +108,46 @@ export function preloadRoute(path: string) {
       preloadedRoutes.delete(path);
     });
   }
+}
+
+/** Returns true if the user is on a slow/save-data connection. */
+function shouldSkipBackgroundPreload(): boolean {
+  if (typeof navigator === "undefined") return true;
+  const conn = (navigator as Navigator & {
+    connection?: { saveData?: boolean; effectiveType?: string };
+  }).connection;
+  if (!conn) return false;
+  if (conn.saveData) return true;
+  if (conn.effectiveType === "2g" || conn.effectiveType === "slow-2g") return true;
+  return false;
+}
+
+/**
+ * Sequentially preloads route chunks during browser idle time so that
+ * navigation to a not-yet-visited page feels instant. Staggered to avoid
+ * saturating the network. No-op on slow / Save-Data connections.
+ */
+function preloadCoreRoutes() {
+  if (shouldSkipBackgroundPreload()) return;
+
+  const queue = CORE_PRELOAD_ORDER.filter((p) => !preloadedRoutes.has(p));
+  if (queue.length === 0) return;
+
+  const ric: (cb: () => void, opts?: { timeout: number }) => number =
+    (typeof window !== "undefined" &&
+      (window as unknown as { requestIdleCallback?: typeof requestIdleCallback }).requestIdleCallback) ||
+    ((cb: () => void) => window.setTimeout(cb, 1500) as unknown as number);
+
+  let i = 0;
+  const tick = () => {
+    if (i >= queue.length) return;
+    const path = queue[i++];
+    preloadRoute(path);
+    // Stagger the next chunk so we don't fight critical requests.
+    window.setTimeout(() => ric(tick, { timeout: 2000 }), 150);
+  };
+
+  ric(tick, { timeout: 2000 });
 }
 
 // Lazy load all pages for better initial load performance
