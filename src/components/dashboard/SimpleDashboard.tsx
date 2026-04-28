@@ -535,8 +535,10 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
         </CardContent>
       </Card>
 
+      {/* From here on, switch to a 2-col layout on laptop so we use horizontal space */}
+      <div className="grid gap-5 lg:grid-cols-2">
       {/* 3 big primary actions */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-3 lg:col-span-2">
         <ActionButton
           icon={<Receipt className="h-6 w-6" />}
           label={language === 'es' ? 'Gasto' : 'Expense'}
