@@ -18,12 +18,24 @@ interface UiModeToggleProps {
 export function UiModeToggle({ className, compact = false }: UiModeToggleProps) {
   const { uiMode, setUiMode } = useDisplayPreferences();
   const { language } = useLanguage();
+  const { toast } = useToast();
+  const navigate = useNavigate();
 
-  // 'unset' counts as advanced for the toggle visual (existing users default to advanced)
   const isSimple = uiMode === 'simple';
 
   const toggle = () => {
-    setUiMode(isSimple ? 'advanced' : 'simple');
+    const next = isSimple ? 'advanced' : 'simple';
+    setUiMode(next);
+    toast({
+      title: next === 'simple'
+        ? (language === 'es' ? '✨ Modo Simple activado' : '✨ Simple Mode on')
+        : (language === 'es' ? '⚡ Modo Avanzado activado' : '⚡ Advanced Mode on'),
+      description: next === 'simple'
+        ? (language === 'es' ? 'Vista minimalista con lo esencial.' : 'Minimal view with the essentials.')
+        : (language === 'es' ? 'Acceso completo a todas las funciones.' : 'Full access to every feature.'),
+    });
+    // Send the user to the dashboard so the change is immediately visible
+    navigate('/');
   };
 
   return (
