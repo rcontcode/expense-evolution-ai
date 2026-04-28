@@ -7,6 +7,7 @@ import { PageHeader } from '@/components/PageHeader';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTrashItems, useRestoreItem, usePermanentDelete, useEmptyTrash, TrashItemType } from '@/hooks/data/useTrash';
 import { Trash2, RotateCcw, AlertTriangle, Receipt, DollarSign, Users, FolderKanban, FileText, Car } from 'lucide-react';
+import { EmptyStateCard } from '@/components/ui/EmptyStateCard';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import {
@@ -61,17 +62,13 @@ export default function Trash() {
             </CardContent>
           </Card>
         ) : !items || items.length === 0 ? (
-          <Card className="border-dashed">
-            <CardContent className="flex flex-col items-center justify-center py-16 gap-4">
-              <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
-                <Trash2 className="h-8 w-8 text-muted-foreground" />
-              </div>
-              <div className="text-center">
-                <p className="font-medium">{l ? 'La papelera está vacía' : 'Trash is empty'}</p>
-                <p className="text-sm text-muted-foreground">{l ? 'Los elementos eliminados aparecerán aquí' : 'Deleted items will appear here'}</p>
-              </div>
-            </CardContent>
-          </Card>
+          <EmptyStateCard
+            icon={Trash2}
+            title={l ? 'La papelera está vacía' : 'Trash is empty'}
+            description={l
+              ? 'Los elementos eliminados aparecerán aquí. Tienes 30 días para restaurarlos antes de que se borren para siempre.'
+              : 'Deleted items will appear here. You have 30 days to restore them before they are permanently removed.'}
+          />
         ) : (
           <div className="space-y-2">
             {items.map(item => {
