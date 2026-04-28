@@ -135,6 +135,26 @@ export default function Dashboard() {
     }
   }, [user]);
 
+  // First-time-in-Advanced welcome (shown once after switching from Simple)
+  useEffect(() => {
+    if (!user || prefsLoading || uiMode !== 'advanced') return;
+    const seen = localStorage.getItem('advanced-mode-first-visit');
+    if (seen) return;
+    localStorage.setItem('advanced-mode-first-visit', '1');
+    // Soft delayed toast — non-blocking
+    const id = setTimeout(() => {
+      import('@/hooks/use-toast').then(({ toast }) => {
+        toast({
+          title: language === 'es' ? '⚡ Bienvenido al Modo Avanzado' : '⚡ Welcome to Advanced Mode',
+          description: language === 'es'
+            ? 'Tienes 3 zonas: Hoy, Tu mes y Tu sistema. Cambia a Simple cuando quieras desde el header.'
+            : 'Three zones: Today, Your month and Your system. Switch back to Simple anytime from the header.',
+        });
+      });
+    }, 800);
+    return () => clearTimeout(id);
+  }, [user, prefsLoading, uiMode, language]);
+
   const isMobile = useIsMobile();
   const [quickCaptureOpen, setQuickCaptureOpen] = useState(false);
 
