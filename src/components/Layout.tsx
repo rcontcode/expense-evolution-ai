@@ -86,6 +86,9 @@ import { ContactForm } from '@/components/ContactForm';
 import { SocialLinks } from '@/components/SocialLinks';
 import { ChatAssistant } from '@/components/chat/ChatAssistant';
 import { CountryFlag } from '@/components/ui/country-flag';
+import { UiModeToggle } from '@/components/layout/UiModeToggle';
+import { useDisplayPreferences } from '@/hooks/data/useDisplayPreferences';
+import { isEssentialPath } from '@/lib/constants/focus-areas';
 
 interface LayoutProps {
   children: ReactNode;
@@ -348,6 +351,19 @@ export const Layout = ({ children }: LayoutProps) => {
   const NAV_SECTIONS = getNavSections(language, isBetaTester);
   const MOBILE_NAV_ITEMS = getMobileNavItems(language);
   const { data: unreadCount = 0 } = useUnreadNotifications();
+  const { uiMode } = useDisplayPreferences();
+  const isSimpleMode = uiMode === 'simple';
+
+  // In Simple Mode, filter sidebar items to only essential routes
+  const NAV_SECTIONS_VISIBLE = isSimpleMode
+    ? NAV_SECTIONS
+        .map((section) => ({
+          ...section,
+          items: section.items.filter((it: any) => isEssentialPath(it.path)),
+        }))
+        .filter((section) => section.items.length > 0)
+    : NAV_SECTIONS;
+
   const sidebarNavRef = useRef<HTMLElement>(null);
   const SIDEBAR_SCROLL_KEY = '__sidebar_scroll__';
 
@@ -513,6 +529,9 @@ export const Layout = ({ children }: LayoutProps) => {
                 <Search className="h-4.5 w-4.5" />
               </Button>
               
+              {/* UI Mode Toggle - Mobile (compact) */}
+              <UiModeToggle compact className="hidden xs:inline-flex" />
+
               {/* Notification Bell - Mobile */}
               <Button 
                 variant="ghost" 
@@ -554,6 +573,14 @@ export const Layout = ({ children }: LayoutProps) => {
                   <MobileMenuEntitySelector onNavigate={() => setMobileMenuOpen(false)} />
                 </div>
                 
+                {/* UI Mode Toggle (Simple/Advanced) */}
+                <div className="px-3 py-2 border-b border-border/20 flex items-center justify-between">
+                  <span className="text-xs font-medium text-muted-foreground">
+                    {language === 'es' ? 'Modo' : 'Mode'}
+                  </span>
+                  <UiModeToggle />
+                </div>
+
                 {/* Theme Toggle */}
                 <div className="px-3 py-2 border-b border-border/20 flex items-center justify-between">
                   <span className="text-xs font-medium text-muted-foreground">{language === 'es' ? 'Tema' : 'Theme'}</span>
@@ -607,7 +634,7 @@ export const Layout = ({ children }: LayoutProps) => {
                 
                 {/* All Menu Items - Grouped & Compact with Visual Warmth */}
                 <nav className="flex-1 overflow-y-auto px-3 py-2 space-y-2">
-                  {NAV_SECTIONS.slice(1).map((section) => {
+                  {NAV_SECTIONS_VISIBLE.slice(isSimpleMode ? 0 : 1).map((section) => {
                     const theme = sectionThemes[section.themeKey];
                     return (
                       <div 
@@ -829,7 +856,12 @@ export const Layout = ({ children }: LayoutProps) => {
             )}
           </div>
 
-          {/* Collapse button */}
+          {/* UI Mode toggle (Simple/Advanced) — desktop sidebar */}
+          {!collapsed && (
+            <div className="px-3 pt-2 flex justify-center">
+              <UiModeToggle />
+            </div>
+          )}
           <button
             onClick={() => { const next = !collapsed; setCollapsed(next); try { localStorage.setItem('sidebar-collapsed', String(next)); } catch {} }}
             className="absolute -right-3 top-20 z-10 flex h-7 w-7 items-center justify-center rounded-full border-2 border-primary/20 bg-card shadow-lg shadow-primary/10 hover:bg-primary hover:text-primary-foreground hover:border-primary hover:shadow-primary/30 transition-all duration-200 hover:scale-110"
@@ -934,7 +966,7 @@ export const Layout = ({ children }: LayoutProps) => {
 
           {/* Navigation */}
           <nav ref={sidebarNavRef} className="flex-1 py-2 px-2 space-y-2 overflow-y-auto scrollbar-thin" data-highlight="sidebar-nav">
-            {NAV_SECTIONS.map((section) => {
+            {NAV_SECTIONS_VISIBLE.map((section) => {
               const theme = sectionThemes[section.themeKey];
               return (
               <div 

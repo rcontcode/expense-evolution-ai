@@ -87,11 +87,14 @@ export const FOCUS_AREAS: Record<FocusAreaId, FocusArea> = {
 
 export const FOCUS_AREA_ORDER: FocusAreaId[] = ['negocio', 'familia', 'diadia', 'crecimiento', 'impuestos'];
 
+export type UiMode = 'simple' | 'advanced' | 'unset';
+
 export const DEFAULT_DISPLAY_PREFERENCES = {
   view_mode: 'classic' as const,
   active_areas: FOCUS_AREA_ORDER,
   collapsed_areas: [] as FocusAreaId[],
-  show_focus_dialog: false
+  show_focus_dialog: false,
+  ui_mode: 'unset' as UiMode,
 };
 
 export type ViewMode = 'classic' | 'organized';
@@ -101,4 +104,31 @@ export interface DisplayPreferences {
   active_areas: FocusAreaId[];
   collapsed_areas: FocusAreaId[];
   show_focus_dialog: boolean;
+  ui_mode?: UiMode;
+}
+
+/**
+ * Routes considered "essential" — visible in Simple mode.
+ * Anything not in this list is hidden from nav in Simple mode but
+ * still accessible by direct URL.
+ */
+export const SIMPLE_MODE_ESSENTIAL_PATHS: string[] = [
+  '/dashboard',
+  '/expenses',
+  '/income',
+  '/budget',
+  '/banking',
+  '/capture',
+  '/mobile-capture',
+  '/chaos',
+  '/settings',
+  '/notifications',
+];
+
+export function isEssentialPath(path: string): boolean {
+  if (!path) return false;
+  // Match by prefix so /budget?tab=savings still counts
+  return SIMPLE_MODE_ESSENTIAL_PATHS.some(
+    (p) => path === p || path.startsWith(p + '?') || path.startsWith(p + '#') || path.startsWith(p + '/'),
+  );
 }

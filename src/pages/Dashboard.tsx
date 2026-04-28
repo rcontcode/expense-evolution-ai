@@ -35,6 +35,8 @@ import { EcosystemSection } from '@/components/ecosystem/EcosystemSection';
 import { DashboardNavigator } from '@/components/dashboard/DashboardNavigator';
 import { useDashboardDeepLinks } from '@/hooks/utils/useDashboardDeepLinks';
 import { DataInventoryPanel } from '@/components/dashboard/DataInventoryPanel';
+import { SimpleDashboard } from '@/components/dashboard/SimpleDashboard';
+import { UiModeWelcomeDialog } from '@/components/onboarding/UiModeWelcomeDialog';
 
 // Lazy load only dashboard-specific components
 const WorkflowSummaryWidget = lazy(() => import('@/components/dashboard/WorkflowSummaryWidget').then(m => ({ default: m.WorkflowSummaryWidget })));
@@ -66,7 +68,18 @@ export default function Dashboard() {
     setProfileExtenderOpen(true);
   }, []);
 
-  const { viewMode, setViewMode, isLoading: prefsLoading } = useDisplayPreferences();
+  const { viewMode, setViewMode, uiMode, setUiMode, isLoading: prefsLoading } = useDisplayPreferences();
+  const [welcomeOpen, setWelcomeOpen] = useState(false);
+
+  // Show welcome dialog once for users who haven't picked a UI mode yet
+  useEffect(() => {
+    if (prefsLoading || !user) return;
+    if (uiMode === 'unset') {
+      // Don't auto-popup on first ever load if user already has data — give them a beat
+      const t = setTimeout(() => setWelcomeOpen(true), 600);
+      return () => clearTimeout(t);
+    }
+  }, [prefsLoading, uiMode, user]);
 
   // Deep-link & Stripe redirect handling (extracted)
   const { deepLinkArea, deepLinkTab, deepLinkKey } = useDashboardDeepLinks(viewMode, setViewMode);
@@ -95,7 +108,21 @@ export default function Dashboard() {
   const isMobile = useIsMobile();
   const [quickCaptureOpen, setQuickCaptureOpen] = useState(false);
 
-  // Mobile-optimized dashboard
+  // SIMPLE MODE — ultra-minimal dashboard for both mobile and desktop
+  if (uiMode === 'simple') {
+    return (
+      <Layout>
+        <div className="page-container section-gap">
+          <SimpleDashboard onQuickCapture={() => setQuickCaptureOpen(true)} />
+        </div>
+        <ExportDialog open={exportDialogOpen} onClose={() => setExportDialogOpen(false)} expenses={allExpenses || []} />
+        <QuickCaptureDialog open={quickCaptureOpen} onClose={() => setQuickCaptureOpen(false)} />
+        <UiModeWelcomeDialog open={welcomeOpen} onClose={() => setWelcomeOpen(false)} />
+      </Layout>
+    );
+  }
+
+  // Mobile-optimized dashboard (Advanced mode)
   if (isMobile) {
     return (
       <Layout>
@@ -104,6 +131,7 @@ export default function Dashboard() {
         </div>
         <ExportDialog open={exportDialogOpen} onClose={() => setExportDialogOpen(false)} expenses={allExpenses || []} />
         <QuickCaptureDialog open={quickCaptureOpen} onClose={() => setQuickCaptureOpen(false)} />
+        <UiModeWelcomeDialog open={welcomeOpen} onClose={() => setWelcomeOpen(false)} />
       </Layout>
     );
   }
@@ -267,6 +295,7 @@ export default function Dashboard() {
           <ExportDialog open={exportDialogOpen} onClose={() => setExportDialogOpen(false)} expenses={allExpenses || []} />
         </div>
       </TooltipProvider>
+      <UiModeWelcomeDialog open={welcomeOpen} onClose={() => setWelcomeOpen(false)} />
     </Layout>
   );
 }
