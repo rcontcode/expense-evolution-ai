@@ -77,10 +77,11 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
 
   // Combine recent expenses + income, take top 8 by date
   const recent = useMemo(() => {
-    const items: Array<{ id: string; type: 'expense' | 'income'; label: string; amount: number; date: string }> = [];
+    const items: Array<{ id: string; rawId: string; type: 'expense' | 'income'; label: string; amount: number; date: string }> = [];
     (expenses ?? []).slice(0, 20).forEach((e: any) => {
       items.push({
         id: `e-${e.id}`,
+        rawId: String(e.id),
         type: 'expense',
         label: e.merchant || e.category || (language === 'es' ? 'Gasto' : 'Expense'),
         amount: Number(e.amount) || 0,
@@ -90,6 +91,7 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
     (income ?? []).slice(0, 20).forEach((i: any) => {
       items.push({
         id: `i-${i.id}`,
+        rawId: String(i.id),
         type: 'income',
         label: i.source || i.category || (language === 'es' ? 'Ingreso' : 'Income'),
         amount: Number(i.amount) || 0,
@@ -100,6 +102,15 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
       .sort((a, b) => (a.date < b.date ? 1 : -1))
       .slice(0, 8);
   }, [expenses, income, language]);
+
+  // Day-of-month context — helps the user interpret the balance
+  const monthProgress = useMemo(() => {
+    const d = new Date();
+    const total = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+    const day = d.getDate();
+    const remaining = total - day;
+    return { day, total, remaining, pct: (day / total) * 100 };
+  }, []);
 
   const monthLabel = useMemo(() => {
     const d = new Date();
