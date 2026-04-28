@@ -29,7 +29,7 @@ import { useDashboardStats } from '@/hooks/data/useDashboardStats';
 import { useExpenses } from '@/hooks/data/useExpenses';
 import { useIncome } from '@/hooks/data/useIncome';
 import { useProfile } from '@/hooks/data/useProfile';
-import { useDisplayPreferences } from '@/hooks/data/useDisplayPreferences';
+import { applyUiModeImmediately, useDisplayPreferences } from '@/hooks/data/useDisplayPreferences';
 import { useRecurringBills } from '@/hooks/data/useRecurringBills';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { useAuth } from '@/contexts/AuthContext';
@@ -734,6 +734,7 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
             size="sm"
             className="h-8 text-xs font-semibold gap-1.5 border-primary/30 text-primary hover:bg-primary/10"
             onClick={() => {
+              applyUiModeImmediately('advanced');
               setUiMode('advanced');
               navigate('/dashboard', { replace: true });
             }}
