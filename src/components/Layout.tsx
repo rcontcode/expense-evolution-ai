@@ -677,6 +677,7 @@ export const Layout = ({ children }: LayoutProps) => {
                                 <div key={item.path}>
                                   <div className="flex items-center gap-1">
                                     <button
+                                      onPointerDown={() => preloadRoute(item.path)}
                                       onClick={() => { navigate(item.path); setMobileMenuOpen(false); }}
                                       className={cn(
                                         "flex items-center gap-2.5 px-2 py-2 rounded-lg transition-colors text-left flex-1 min-w-0",
