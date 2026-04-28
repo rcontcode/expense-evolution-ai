@@ -224,14 +224,30 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
       {/* Recent activity */}
       <Card>
         <CardContent className="p-4">
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between mb-3 gap-2">
             <h3 className="font-bold text-base">
               {language === 'es' ? 'Movimientos recientes' : 'Recent activity'}
             </h3>
-            <Button variant="ghost" size="sm" onClick={() => navigate('/expenses')} className="gap-1 h-7">
-              {language === 'es' ? 'Ver todo' : 'See all'}
-              <ArrowRight className="h-3 w-3" />
-            </Button>
+            <div className="flex items-center gap-1.5 shrink-0">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate('/expenses')}
+                className="gap-1 h-7 px-2.5 text-xs font-semibold border-rose-500/30 text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 hover:border-rose-500/50 hover:scale-[1.04] transition-all"
+              >
+                {language === 'es' ? 'Gastos' : 'Expenses'}
+                <ArrowRight className="h-3 w-3" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate('/income')}
+                className="gap-1 h-7 px-2.5 text-xs font-semibold border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 hover:border-emerald-500/50 hover:scale-[1.04] transition-all"
+              >
+                {language === 'es' ? 'Ingresos' : 'Income'}
+                <ArrowRight className="h-3 w-3" />
+              </Button>
+            </div>
           </div>
           {recent.length === 0 ? (
             <div className="text-center py-8 text-sm text-muted-foreground">
