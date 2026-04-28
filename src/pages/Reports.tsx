@@ -1114,3 +1114,23 @@ async function exportReimbursementExcel(l: boolean, expenses: any[], year: numbe
   a.click();
   URL.revokeObjectURL(url);
 }
+
+import { useDisplayPreferences } from '@/hooks/data/useDisplayPreferences';
+import { useSearchParams as _useSP } from 'react-router-dom';
+import { Layout as _Layout } from '@/components/Layout';
+import { SimpleReports } from '@/components/simple/SimpleReports';
+
+export default function Reports() {
+  const { uiMode } = useDisplayPreferences();
+  const [sp] = _useSP();
+  if (uiMode === 'simple' && sp.get('advanced') !== '1') {
+    return (
+      <_Layout>
+        <div className="page-container section-gap">
+          <SimpleReports />
+        </div>
+      </_Layout>
+    );
+  }
+  return <ReportsAdvanced />;
+}

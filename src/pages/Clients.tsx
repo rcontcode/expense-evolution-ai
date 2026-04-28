@@ -495,3 +495,22 @@ function ClientsAdvanced() {
     </Layout>
   );
 }
+import { useDisplayPreferences } from '@/hooks/data/useDisplayPreferences';
+import { useSearchParams as _useSP } from 'react-router-dom';
+import { Layout as _Layout } from '@/components/Layout';
+import { SimpleClients } from '@/components/simple/SimpleClients';
+
+export default function Clients() {
+  const { uiMode } = useDisplayPreferences();
+  const [sp] = _useSP();
+  if (uiMode === 'simple' && sp.get('advanced') !== '1') {
+    return (
+      <_Layout>
+        <div className="page-container section-gap">
+          <SimpleClients />
+        </div>
+      </_Layout>
+    );
+  }
+  return <ClientsAdvanced />;
+}

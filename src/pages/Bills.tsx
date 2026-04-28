@@ -26,3 +26,22 @@ function BillsAdvanced() {
     </Layout>
   );
 }
+
+import { useDisplayPreferences } from '@/hooks/data/useDisplayPreferences';
+import { useSearchParams as _useSP } from 'react-router-dom';
+import { SimpleBills } from '@/components/simple/SimpleBills';
+
+export default function Bills() {
+  const { uiMode } = useDisplayPreferences();
+  const [sp] = _useSP();
+  if (uiMode === 'simple' && sp.get('advanced') !== '1') {
+    return (
+      <Layout>
+        <div className="page-container section-gap">
+          <SimpleBills />
+        </div>
+      </Layout>
+    );
+  }
+  return <BillsAdvanced />;
+}
