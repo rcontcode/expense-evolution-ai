@@ -77,8 +77,6 @@ import { PhoenixLogo } from '@/components/ui/phoenix-logo';
 import { Link } from 'react-router-dom';
 import { MobileMenuEntitySelector, MobileMenuLanguageSelector } from '@/components/mobile';
 import { EntitySelector } from '@/components/EntitySelector';
-import { useGlobalReminders } from '@/hooks/utils/useGlobalReminders';
-import { useAutoReminders } from '@/hooks/data/useAutoReminders';
 import { useHighlight } from '@/contexts/HighlightContext';
 import { ContactForm } from '@/components/ContactForm';
 import { SocialLinks } from '@/components/SocialLinks';
@@ -434,11 +432,6 @@ export const Layout = ({ children }: LayoutProps) => {
       if (raf2) window.cancelAnimationFrame(raf2);
     };
   }, [location.pathname, collapsed, isMobile]);
-  
-  // Global reminders - works even when chat is closed
-  useGlobalReminders();
-  // Auto-reminders: bills, contracts, tax deadlines, budget alerts
-  useAutoReminders();
   
   // Keyboard shortcut for global search (Cmd/Ctrl + K)
   useEffect(() => {
