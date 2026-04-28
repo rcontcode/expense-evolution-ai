@@ -475,12 +475,12 @@ export default function Dashboard() {
 }
 
 /** Lightweight zone divider for the advanced dashboard. */
-function SectionHeader({ title, subtitle }: { title: string; subtitle?: string }) {
+function SectionHeader({ title, subtitle, compact }: { title: string; subtitle?: string; compact?: boolean }) {
   return (
-    <div className="flex items-baseline gap-3 pt-2">
-      <h2 className="text-lg font-bold tracking-tight">{title}</h2>
-      {subtitle && <span className="text-xs text-muted-foreground">{subtitle}</span>}
-      <div className="flex-1 border-t border-border/60 ml-2" />
+    <div className={cn('flex items-baseline gap-2', compact ? 'pt-0.5' : 'pt-1.5')}>
+      <h2 className={cn('font-bold tracking-tight', compact ? 'text-sm' : 'text-base')}>{title}</h2>
+      {subtitle && <span className="text-[11px] text-muted-foreground truncate">{subtitle}</span>}
+      <div className="flex-1 border-t border-border/50 ml-1" />
     </div>
   );
 }
