@@ -291,31 +291,31 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
           {/* ===== TABBED NAVIGATION ===== */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-3 sm:space-y-5">
             <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-              <TabsList className="w-full grid grid-cols-6 h-auto p-1 gap-1 bg-muted/60 backdrop-blur-sm shadow-lg shadow-black/5 border border-border/50 rounded-xl sm:rounded-2xl sticky top-0 z-20">
-                <TabsTrigger value="overview" className="flex items-center gap-1 py-2 sm:py-3 text-[10px] sm:text-xs font-semibold rounded-lg sm:rounded-xl transition-all duration-300 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg data-[state=active]:shadow-primary/25 hover:bg-muted/80">
-                  <span className="text-base sm:text-xl">📊</span>
-                  <span className="sr-only sm:not-sr-only">{l ? 'Resumen' : 'Overview'}</span>
+              <TabsList className="w-full grid grid-cols-6 h-auto p-1 gap-0.5 sm:gap-1 bg-muted/60 backdrop-blur-sm shadow-lg shadow-black/5 border border-border/50 rounded-xl sm:rounded-2xl sticky top-0 z-20">
+                <TabsTrigger value="overview" className="flex flex-col items-center justify-center gap-0.5 py-1.5 sm:py-2 px-1 font-semibold rounded-lg sm:rounded-xl transition-all duration-300 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg data-[state=active]:shadow-primary/25 hover:bg-muted/80">
+                  <span className="text-lg sm:text-xl leading-none">📊</span>
+                  <span className="text-[9px] sm:text-[11px] leading-tight">{l ? 'Resumen' : 'Overview'}</span>
                 </TabsTrigger>
-                <TabsTrigger value="expenses" className="flex items-center gap-1 py-2 sm:py-3 text-[10px] sm:text-xs font-semibold rounded-lg sm:rounded-xl transition-all duration-300 data-[state=active]:bg-destructive data-[state=active]:text-destructive-foreground data-[state=active]:shadow-lg hover:bg-muted/80">
-                  <span className="text-base sm:text-xl">🛒</span>
-                  <span className="sr-only sm:not-sr-only">{l ? 'Gastos' : 'Expenses'}</span>
+                <TabsTrigger value="expenses" className="flex flex-col items-center justify-center gap-0.5 py-1.5 sm:py-2 px-1 font-semibold rounded-lg sm:rounded-xl transition-all duration-300 data-[state=active]:bg-destructive data-[state=active]:text-destructive-foreground data-[state=active]:shadow-lg hover:bg-muted/80">
+                  <span className="text-lg sm:text-xl leading-none">🛒</span>
+                  <span className="text-[9px] sm:text-[11px] leading-tight">{l ? 'Gastos' : 'Expenses'}</span>
                 </TabsTrigger>
-                <TabsTrigger value="pace" className="flex items-center gap-1 py-2 sm:py-3 text-[10px] sm:text-xs font-semibold rounded-lg sm:rounded-xl transition-all duration-300 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground data-[state=active]:shadow-lg hover:bg-muted/80">
-                  <span className="text-base sm:text-xl">⚡</span>
-                  <span className="sr-only sm:not-sr-only">{l ? 'Ritmo' : 'Pace'}</span>
+                <TabsTrigger value="pace" className="flex flex-col items-center justify-center gap-0.5 py-1.5 sm:py-2 px-1 font-semibold rounded-lg sm:rounded-xl transition-all duration-300 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground data-[state=active]:shadow-lg hover:bg-muted/80">
+                  <span className="text-lg sm:text-xl leading-none">⚡</span>
+                  <span className="text-[9px] sm:text-[11px] leading-tight">{l ? 'Ritmo' : 'Pace'}</span>
                 </TabsTrigger>
-                <TabsTrigger value="payments" className={cn("flex items-center gap-1 py-2 sm:py-3 text-[10px] sm:text-xs font-semibold rounded-lg sm:rounded-xl transition-all duration-300 data-[state=active]:bg-warning data-[state=active]:text-warning-foreground data-[state=active]:shadow-lg hover:bg-muted/80", shouldHighlight('payments') && 'highlight-tab-active')}>
-                  <span className="text-base sm:text-xl">💳</span>
-                  <span className="sr-only sm:not-sr-only">{l ? 'Pagos' : 'Pay'}</span>
-                  {overdueBills.length > 0 && <Badge variant="destructive" className="ml-0.5 text-[10px] px-1.5 py-0 animate-pulse">{overdueBills.length}</Badge>}
+                <TabsTrigger value="payments" className={cn("relative flex flex-col items-center justify-center gap-0.5 py-1.5 sm:py-2 px-1 font-semibold rounded-lg sm:rounded-xl transition-all duration-300 data-[state=active]:bg-warning data-[state=active]:text-warning-foreground data-[state=active]:shadow-lg hover:bg-muted/80", shouldHighlight('payments') && 'highlight-tab-active')}>
+                  <span className="text-lg sm:text-xl leading-none">💳</span>
+                  <span className="text-[9px] sm:text-[11px] leading-tight">{l ? 'Pagos' : 'Pay'}</span>
+                  {overdueBills.length > 0 && <Badge variant="destructive" className="absolute -top-1 -right-1 text-[9px] min-w-[16px] h-4 px-1 py-0 animate-pulse flex items-center justify-center">{overdueBills.length}</Badge>}
                 </TabsTrigger>
-                <TabsTrigger value="goals" className={cn("flex items-center gap-1 py-2 sm:py-3 text-[10px] sm:text-xs font-semibold rounded-lg sm:rounded-xl transition-all duration-300 data-[state=active]:bg-success data-[state=active]:text-success-foreground data-[state=active]:shadow-lg hover:bg-muted/80", shouldHighlight('goals') && 'highlight-tab-active')}>
-                  <span className="text-base sm:text-xl">🎯</span>
-                  <span className="sr-only sm:not-sr-only">{l ? 'Metas' : 'Goals'}</span>
+                <TabsTrigger value="goals" className={cn("flex flex-col items-center justify-center gap-0.5 py-1.5 sm:py-2 px-1 font-semibold rounded-lg sm:rounded-xl transition-all duration-300 data-[state=active]:bg-success data-[state=active]:text-success-foreground data-[state=active]:shadow-lg hover:bg-muted/80", shouldHighlight('goals') && 'highlight-tab-active')}>
+                  <span className="text-lg sm:text-xl leading-none">🎯</span>
+                  <span className="text-[9px] sm:text-[11px] leading-tight">{l ? 'Metas' : 'Goals'}</span>
                 </TabsTrigger>
-                <TabsTrigger value="tools" className={cn("flex items-center gap-1 py-2 sm:py-3 text-[10px] sm:text-xs font-semibold rounded-lg sm:rounded-xl transition-all duration-300 data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground data-[state=active]:shadow-lg hover:bg-muted/80", shouldHighlight('tools') && 'highlight-tab-active')}>
-                  <span className="text-base sm:text-xl">🔧</span>
-                  <span className="sr-only sm:not-sr-only">{l ? 'Herram.' : 'Tools'}</span>
+                <TabsTrigger value="tools" className={cn("flex flex-col items-center justify-center gap-0.5 py-1.5 sm:py-2 px-1 font-semibold rounded-lg sm:rounded-xl transition-all duration-300 data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground data-[state=active]:shadow-lg hover:bg-muted/80", shouldHighlight('tools') && 'highlight-tab-active')}>
+                  <span className="text-lg sm:text-xl leading-none">🔧</span>
+                  <span className="text-[9px] sm:text-[11px] leading-tight">{l ? 'Herram.' : 'Tools'}</span>
                 </TabsTrigger>
               </TabsList>
             </motion.div>
