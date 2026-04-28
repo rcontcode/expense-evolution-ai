@@ -408,39 +408,53 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
           ) : (
             <ul className="divide-y divide-border/40">
               {recent.map((item) => (
-                <li key={item.id} className="flex items-center justify-between py-2.5">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div
-                      className={cn(
-                        'shrink-0 w-9 h-9 rounded-lg flex items-center justify-center',
-                        item.type === 'income'
-                          ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                          : 'bg-rose-500/10 text-rose-600 dark:text-rose-400',
-                      )}
-                    >
-                      {item.type === 'income' ? <TrendingUp className="h-4 w-4" /> : <Receipt className="h-4 w-4" />}
-                    </div>
-                    <div className="min-w-0">
-                      <div className="text-sm font-medium truncate">{item.label}</div>
-                      <div className="text-xs text-muted-foreground">
-                        {new Date(item.date).toLocaleDateString(language === 'es' ? 'es' : 'en', {
-                          day: 'numeric',
-                          month: 'short',
-                        })}
+                <li key={item.id}>
+                  <button
+                    type="button"
+                    onClick={() => navigate(
+                      item.type === 'income'
+                        ? `/income?edit=${item.rawId}`
+                        : `/expenses?edit=${item.rawId}`
+                    )}
+                    className="w-full flex items-center justify-between py-2.5 -mx-1 px-1 rounded-lg hover:bg-muted/40 active:bg-muted/60 transition-colors text-left"
+                    aria-label={language === 'es' ? `Editar ${item.label}` : `Edit ${item.label}`}
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div
+                        className={cn(
+                          'shrink-0 w-9 h-9 rounded-lg flex items-center justify-center',
+                          item.type === 'income'
+                            ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                            : 'bg-rose-500/10 text-rose-600 dark:text-rose-400',
+                        )}
+                      >
+                        {item.type === 'income' ? <TrendingUp className="h-4 w-4" /> : <Receipt className="h-4 w-4" />}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-sm font-medium truncate">{item.label}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {new Date(item.date).toLocaleDateString(language === 'es' ? 'es' : 'en', {
+                            day: 'numeric',
+                            month: 'short',
+                          })}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div
-                    className={cn(
-                      'text-sm font-bold tabular-nums shrink-0 ml-3',
-                      item.type === 'income'
-                        ? 'text-emerald-600 dark:text-emerald-400'
-                        : 'text-foreground',
-                    )}
-                  >
-                    {item.type === 'income' ? '+' : '−'}
-                    {formatCurrency(item.amount)}
-                  </div>
+                    <div className="flex items-center gap-1 shrink-0 ml-3">
+                      <div
+                        className={cn(
+                          'text-sm font-bold tabular-nums',
+                          item.type === 'income'
+                            ? 'text-emerald-600 dark:text-emerald-400'
+                            : 'text-foreground',
+                        )}
+                      >
+                        {item.type === 'income' ? '+' : '−'}
+                        {formatCurrency(item.amount)}
+                      </div>
+                      <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/60" />
+                    </div>
+                  </button>
                 </li>
               ))}
             </ul>
