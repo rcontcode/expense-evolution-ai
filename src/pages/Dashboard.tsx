@@ -229,23 +229,10 @@ export default function Dashboard() {
           {/* ========================================================== */}
           {/* ZONE 1 — HOY (today): snapshot, alerts, quick actions       */}
           {/* ========================================================== */}
-          <div className="flex items-center justify-between gap-2 flex-wrap">
-            <SectionHeader
-              title={language === 'es' ? 'Hoy' : 'Today'}
-              subtitle={language === 'es' ? 'Estado actual' : 'Current state'}
-            />
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={toggleDensity}
-              className="h-7 text-[11px] gap-1 shrink-0"
-              title={language === 'es' ? 'Cambiar densidad de la vista' : 'Change view density'}
-            >
-              {density === 'compact'
-                ? (language === 'es' ? '▭ Cómodo' : '▭ Comfortable')
-                : (language === 'es' ? '▬ Compacto' : '▬ Compact')}
-            </Button>
-          </div>
+          <SectionHeader
+            title={language === 'es' ? 'Hoy' : 'Today'}
+            subtitle={language === 'es' ? 'Estado actual' : 'Current state'}
+          />
 
           {/* Header Snapshot — 1-line state of the day */}
           <Card className="border-primary/15 bg-gradient-to-r from-primary/5 to-transparent">
@@ -369,7 +356,7 @@ export default function Dashboard() {
 
           {/* Compact grid: Notification Hub + Data Inventory + Mission Control
               All collapsed by default, side-by-side on tablet/desktop to save vertical space */}
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 items-start">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 auto-rows-fr [&>*]:h-full">
             <DashboardNotificationHub />
             <DataInventoryPanel />
             <MissionControl />
