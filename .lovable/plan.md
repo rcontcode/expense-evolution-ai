@@ -1,70 +1,51 @@
-# Eliminar el flash "Modo Avanzado → Simple" al cargar páginas
+# Eliminar el microsegundo de flash restante en cambios de modo
 
-## Problema confirmado
+## Causa raíz exacta
 
-Al entrar a cualquier página (Bills, Banking, Budget, Dashboard) en Modo Simple, durante ~300-500ms se ve la versión **Avanzada** y luego salta a la **Simple**. Parece un error visual.
+Después del fix anterior, queda un re-render visible porque `useDisplayPreferences` **sobrescribe el `ui_mode` de localStorage con `'unset'`** en varios caminos del fetch a Supabase:
 
-## Causa raíz
+En `src/hooks/data/useDisplayPreferences.ts`:
 
-1. `useDisplayPreferences` arranca con `ui_mode = 'unset'` (default) y luego **dentro de un `useEffect` asíncrono** consulta Supabase y/o `localStorage`.
-2. En el primer render, las páginas evalúan `if (uiMode === 'simple')`. Como aún es `'unset'`, cae al `return <VersiónAvanzada />`.
-3. Cuando llega el valor real (`'simple'`), React re-renderiza la simple → flash visible.
-4. `Bills.tsx`, `Banking.tsx`, `Budget.tsx` **no usan `isLoading`** del hook, así que no pueden esperar.
-5. Aunque el hook ya guarda `ui_mode` en `localStorage` (clave `evofinz-ui-mode`), no lo usa en la **inicialización síncrona** del `useState` — sólo dentro del `useEffect`.
+- **Línea 101 y 118 (manejo de error)**: `setPreferences(DEFAULT_DISPLAY_PREFERENCES)` — pierde el `ui_mode = 'simple'` de localStorage si Supabase falla o tarda.
+- **Línea 109 (caso éxito)**: aunque hace merge, llama `setPreferences(merged)` siempre, incluso si el resultado es idéntico al estado actual → re-render innecesario y posible flash.
+- **Toda la rama del fetch**: corre dentro de `useEffect` con `[user?.id]`. Cuando `AuthContext` aún está cargando, `user.id` cambia de `undefined` → valor real → dispara el fetch → `setPreferences` → otro render. Si en ese intermedio se pierde el `ui_mode`, hay flash.
 
 ## Solución
 
-### 1. Inicialización síncrona desde `localStorage` (`src/hooks/data/useDisplayPreferences.ts`)
+### Cambios en `src/hooks/data/useDisplayPreferences.ts` (`fetchPreferences`)
 
-Cambiar el `useState` inicial para leer `localStorage` antes del primer render, evitando el `'unset'` transitorio:
+1. **Helper `withStoredMode(base)`** que SIEMPRE preserva el `ui_mode` de localStorage por encima de cualquier dato del servidor o defaults:
+   ```ts
+   const withStoredMode = (base) => ({
+     ...DEFAULT_DISPLAY_PREFERENCES,
+     ...base,
+     ...(storedMode ? { ui_mode: storedMode } : {}),
+   });
+   ```
 
-```ts
-const [preferences, setPreferences] = useState<DisplayPreferences>(() => {
-  const storedMode = getStoredUiMode();
-  return storedMode
-    ? { ...DEFAULT_DISPLAY_PREFERENCES, ui_mode: storedMode }
-    : DEFAULT_DISPLAY_PREFERENCES;
-});
-```
+2. **Helper `applyIfChanged(next)`** que evita `setPreferences` cuando el resultado es estructuralmente idéntico al estado actual:
+   ```ts
+   const applyIfChanged = (next) => {
+     const prev = preferencesRef.current;
+     if (JSON.stringify(prev) === JSON.stringify(next)) {
+       lastSavedRef.current = next;
+       return;
+     }
+     setPreferences(next);
+     lastSavedRef.current = next;
+   };
+   ```
 
-Esto garantiza que en cualquier visita posterior (donde ya elegimos modo Simple), el primer render tenga `uiMode = 'simple'` desde el inicio.
+3. **Reemplazar las 4 ramas** (`!user.id`, `error`, `data`, `else`, `catch`) para que TODAS usen `applyIfChanged(withStoredMode(...))`. Así en ningún caso se "rompe" el `ui_mode` ya correcto.
 
-### 2. Marcar `isLoading = false` cuando ya hay valor de `localStorage`
+### Resultado
 
-Si tenemos un `ui_mode` en localStorage, no necesitamos esperar a Supabase para decidir qué versión renderizar. La consulta a Supabase puede seguir en background y rehidratar el resto de preferencias sin causar flash, porque `ui_mode` ya está correcto.
+- En visitas recurrentes (caso 99%): el primer render ya tiene `uiMode='simple'` (gracias al fix anterior). Cuando llega Supabase, `applyIfChanged` detecta que el `ui_mode` no cambió y **no dispara re-render** → cero flash.
+- Si Supabase falla o el usuario aún no está cargado: el `ui_mode` se mantiene en `'simple'` en lugar de revertir a `'unset'`.
+- Si el servidor tiene un `ui_mode` distinto al de localStorage: localStorage gana, manteniendo consistencia con la UI ya pintada.
 
-```ts
-const [isLoading, setIsLoading] = useState(() => getStoredUiMode() === null);
-```
+## Archivo a modificar
 
-### 3. Defensa en las páginas que ramifican por `uiMode`
+- `src/hooks/data/useDisplayPreferences.ts` — refactor de la función `fetchPreferences` (líneas 81-126).
 
-En `Bills.tsx`, `Banking.tsx`, `Budget.tsx` (y verificar otros), respetar `isLoading` antes de elegir variante. Mientras carga y `uiMode === 'unset'`, mostrar un placeholder ligero (skeleton del Layout) en vez de adivinar:
-
-```tsx
-const { uiMode, isLoading } = useDisplayPreferences();
-if (isLoading && uiMode === 'unset') {
-  return <Layout><div className="page-container" /></Layout>;
-}
-if (uiMode === 'simple' && sp.get('advanced') !== '1') return <SimpleBills/>;
-return <BillsAdvanced/>;
-```
-
-Con el cambio (1), esta rama de espera solo se activará en la **primera visita absoluta** del usuario (cuando aún no hay valor en localStorage), que es cuando sí tiene sentido esperar al servidor.
-
-### 4. Verificar `Dashboard.tsx`
-
-`Dashboard.tsx` ya usa `prefsLoading`, así que solo se beneficia del cambio (1) — ya no necesita esperar en visitas recurrentes.
-
-## Archivos a modificar
-
-- `src/hooks/data/useDisplayPreferences.ts` — inicialización síncrona desde localStorage + `isLoading` inicial condicional.
-- `src/pages/Bills.tsx` — respetar `isLoading` antes de elegir variante.
-- `src/pages/Banking.tsx` — mismo patrón.
-- `src/pages/Budget.tsx` — mismo patrón.
-- (Revisar) `src/components/dashboard/DashboardNavigator.tsx` y otros lugares que ramifican por `uiMode` sin chequear `isLoading`.
-
-## Resultado esperado
-
-- En visitas posteriores (caso 99%): el primer render ya muestra la versión Simple correctamente. Sin flash.
-- En la primera visita absoluta: muestra un contenedor vacío durante ~300ms en vez del flash de la versión equivocada.
+No se tocan páginas, componentes ni el resto del hook.
