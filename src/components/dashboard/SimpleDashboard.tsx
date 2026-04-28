@@ -722,6 +722,8 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
           </div>
         </CardContent>
       </Card>
+      </div>
+      {/* /lg 2-col wrapper */}
 
       {/* Footer — interactive, lets the user switch mode or reopen the setup guide */}
       <div className="space-y-2 pt-1 px-2">
