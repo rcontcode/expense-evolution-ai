@@ -42,6 +42,7 @@ import { UiModeWelcomeDialog } from '@/components/onboarding/UiModeWelcomeDialog
 import { NextActionBanner } from '@/components/dashboard/NextActionBanner';
 import { MoneyMomentumScore } from '@/components/dashboard/MoneyMomentumScore';
 import { useIncome } from '@/hooks/data/useIncome';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { cn } from '@/lib/utils';
 
 // Lazy load only dashboard-specific components
