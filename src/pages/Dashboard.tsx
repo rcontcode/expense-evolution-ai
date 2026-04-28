@@ -364,6 +364,11 @@ export default function Dashboard() {
                   </Suspense>
                 </div>
 
+                {/* Money Momentum — single 0-100 health score */}
+                <div id="momentum" data-section="momentum">
+                  <MoneyMomentumScore />
+                </div>
+
                 {/* Gamification */}
                 <div id="gamification" data-section="gamification">
                   <ProfileCompletionNudge onStartSection={handleStartProfileSection} />
