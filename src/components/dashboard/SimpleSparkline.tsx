@@ -1,7 +1,9 @@
-import { useMemo } from 'react';
-import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { useMemo, useState, useEffect } from 'react';
+import { TrendingUp, TrendingDown, Minus, X } from 'lucide-react';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { cn } from '@/lib/utils';
+
+const LEGEND_KEY = 'simple_sparkline_legend_seen';
 
 interface MonthlyTrend {
   month: string;
