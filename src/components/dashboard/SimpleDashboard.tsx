@@ -23,6 +23,7 @@ import { useIncome } from '@/hooks/data/useIncome';
 import { useProfile } from '@/hooks/data/useProfile';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { SimpleOnboardingPath } from './SimpleOnboardingPath';
+import { SimpleSparkline } from './SimpleSparkline';
 import { cn } from '@/lib/utils';
 
 interface SimpleDashboardProps {
@@ -181,6 +182,14 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
               </div>
               <Progress value={spentPct} className="h-2" />
             </div>
+          )}
+
+          {/* Mini-trend sparkline — last 6 months of spending */}
+          {(stats?.monthlyTrends?.length ?? 0) >= 2 && (
+            <SimpleSparkline
+              trends={stats!.monthlyTrends}
+              language={language}
+            />
           )}
         </CardContent>
       </Card>
