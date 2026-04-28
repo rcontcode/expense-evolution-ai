@@ -39,6 +39,7 @@ import { useDashboardDeepLinks } from '@/hooks/utils/useDashboardDeepLinks';
 import { DataInventoryPanel } from '@/components/dashboard/DataInventoryPanel';
 import { SimpleDashboard } from '@/components/dashboard/SimpleDashboard';
 import { UiModeWelcomeDialog } from '@/components/onboarding/UiModeWelcomeDialog';
+import { cn } from '@/lib/utils';
 
 // Lazy load only dashboard-specific components
 const WorkflowSummaryWidget = lazy(() => import('@/components/dashboard/WorkflowSummaryWidget').then(m => ({ default: m.WorkflowSummaryWidget })));
