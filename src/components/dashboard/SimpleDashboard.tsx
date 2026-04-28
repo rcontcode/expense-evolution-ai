@@ -26,6 +26,7 @@ import { useExpenses } from '@/hooks/data/useExpenses';
 import { useIncome } from '@/hooks/data/useIncome';
 import { useProfile } from '@/hooks/data/useProfile';
 import { useDisplayPreferences } from '@/hooks/data/useDisplayPreferences';
+import { useRecurringBills } from '@/hooks/data/useRecurringBills';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { SimpleOnboardingPath } from './SimpleOnboardingPath';
 import { SimpleSparkline } from './SimpleSparkline';
@@ -50,6 +51,7 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
   const { data: expenses } = useExpenses();
   const { data: income } = useIncome();
   const { data: profile } = useProfile();
+  const { data: bills } = useRecurringBills();
 
   const monthlyIncome = stats?.monthlyIncome ?? 0;
   const monthlyTotal = stats?.monthlyTotal ?? 0;
