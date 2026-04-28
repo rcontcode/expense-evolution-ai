@@ -71,6 +71,9 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
             monthlyBalance={monthlyBalance}
             savingsRate={savingsRate}
           />
+          <Suspense fallback={<Skeleton className="h-40" />}>
+            <LazyFinancialNarrative />
+          </Suspense>
           <MonthDetailPanel
             year={selectedYear}
             month={selectedMonth}
@@ -78,6 +81,8 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
             onAddExpense={handleAddExpense}
             compact
           />
+          <DashboardNotificationHub />
+          <ProfileCompletionNudge />
         </div>
       ),
     },
