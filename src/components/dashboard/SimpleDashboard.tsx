@@ -593,11 +593,11 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
       {/* Recent activity */}
       <Card className="h-full">
         <CardContent className="p-4">
-          <div className="flex items-center justify-between mb-3 gap-2">
+          <div className="flex flex-col gap-2 mb-3 sm:flex-row sm:items-center sm:justify-between">
             <h3 className="font-bold text-base">
               {language === 'es' ? 'Movimientos recientes' : 'Recent activity'}
             </h3>
-            <div className="flex items-center gap-1.5 shrink-0">
+            <div className="flex items-center gap-1.5 flex-wrap">
               <Button
                 variant="outline"
                 size="sm"
