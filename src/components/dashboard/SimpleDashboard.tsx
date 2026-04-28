@@ -470,15 +470,41 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
               <Progress value={savingsGoal.pct} className="h-1.5" />
             </div>
           ) : (
-            <div className="pt-1 px-4">
-              <button
-                type="button"
-                onClick={() => navigate('/settings?tab=goals')}
-                className="text-[11px] text-muted-foreground hover:text-primary transition-colors inline-flex items-center gap-1"
+            <div className="pt-2 px-4">
+              <label
+                htmlFor="simple-savings-goal"
+                className="flex items-center gap-1 text-[11px] text-muted-foreground mb-1.5"
               >
                 <Target className="h-3 w-3" />
-                {language === 'es' ? 'Define una meta de ahorro mensual →' : 'Set a monthly savings goal →'}
-              </button>
+                {language === 'es' ? '¿Cuánto quieres ahorrar este mes?' : 'How much do you want to save this month?'}
+              </label>
+              <div className="flex items-center gap-1.5">
+                <Input
+                  id="simple-savings-goal"
+                  type="number"
+                  inputMode="decimal"
+                  placeholder={language === 'es' ? 'Ej: 200' : 'e.g. 200'}
+                  value={goalInput}
+                  onChange={(e) => setGoalInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      saveSavingsGoal();
+                    }
+                  }}
+                  className="h-8 text-sm flex-1"
+                  disabled={savingGoal}
+                />
+                <Button
+                  size="sm"
+                  onClick={saveSavingsGoal}
+                  disabled={!goalInput || savingGoal}
+                  className="h-8 px-2.5 gap-1"
+                  aria-label={language === 'es' ? 'Guardar meta' : 'Save goal'}
+                >
+                  <Check className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           )}
         </CardContent>
