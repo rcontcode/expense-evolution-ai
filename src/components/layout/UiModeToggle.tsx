@@ -1,7 +1,9 @@
 import { Sparkles, Layers } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useDisplayPreferences } from '@/hooks/data/useDisplayPreferences';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
 interface UiModeToggleProps {
