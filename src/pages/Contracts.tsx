@@ -82,9 +82,9 @@ export default function Contracts() {
               {...PAGE_GUIDES.contracts}
               actions={[
                 { icon: Plus, title: { es: 'Subir Contrato', en: 'Upload Contract' }, description: { es: 'PDF o imagen', en: 'PDF or image' }, action: () => setDialogOpen(true) },
-                { icon: Eye, title: { es: 'Ver Términos', en: 'View Terms' }, description: { es: 'Extraídos Smart', en: 'Smart extracted' }, action: () => {} },
+                { icon: Eye, title: { es: 'Ver Términos', en: 'View Terms' }, description: { es: 'Extraídos Smart', en: 'Smart extracted' }, path: '/files' },
                 { icon: Users, title: { es: 'Ver Clientes', en: 'View Clients' }, description: { es: 'Vincular contratos', en: 'Link contracts' }, path: '/clients' },
-                { icon: FileText, title: { es: 'Agregar Notas', en: 'Add Notes' }, description: { es: 'Acuerdos manuales', en: 'Manual agreements' }, action: () => {} }
+                { icon: FileText, title: { es: 'Agregar Notas', en: 'Add Notes' }, description: { es: 'Acuerdos manuales', en: 'Manual agreements' }, action: () => setDialogOpen(true) }
               ]}
             />
           </>

@@ -49,10 +49,10 @@ export default function Banking() {
           <PageContextGuide
             {...PAGE_GUIDES.banking}
             actions={[
-              { icon: Upload, title: { es: 'Importar Estado', en: 'Import Statement' }, description: { es: 'CSV o foto', en: 'CSV or photo' }, action: () => {} },
-              { icon: Search, title: { es: 'Buscar', en: 'Search' }, description: { es: 'En transacciones', en: 'In transactions' }, action: () => {} },
-              { icon: AlertTriangle, title: { es: 'Ver Anomalías', en: 'View Anomalies' }, description: { es: 'Cobros sospechosos', en: 'Suspicious charges' }, action: () => {} },
-              { icon: TrendingDown, title: { es: 'Suscripciones', en: 'Subscriptions' }, description: { es: 'Detectadas', en: 'Detected' }, path: '/dashboard' }
+              { icon: Upload, title: { es: 'Importar Estado', en: 'Import Statement' }, description: { es: 'CSV o foto', en: 'CSV or photo' }, action: () => setImportDialogOpen(true) },
+              { icon: Search, title: { es: 'Buscar', en: 'Search' }, description: { es: 'En transacciones', en: 'In transactions' }, action: () => document.querySelector('[data-section="smart-search"]')?.scrollIntoView({ behavior: 'smooth' }) },
+              { icon: AlertTriangle, title: { es: 'Ver Anomalías', en: 'View Anomalies' }, description: { es: 'Cobros sospechosos', en: 'Suspicious charges' }, action: () => document.querySelector('[data-highlight="bank-analysis-dashboard"]')?.scrollIntoView({ behavior: 'smooth' }) },
+              { icon: TrendingDown, title: { es: 'Suscripciones', en: 'Subscriptions' }, description: { es: 'Detectadas', en: 'Detected' }, path: '/subscriptions' }
             ]}
           />
         )}
@@ -112,7 +112,7 @@ export default function Banking() {
             <BankingInsightsSummary />
             <BankTransactionSummary />
             <BankImportHistory />
-            <SmartSearchChat />
+            <div data-section="smart-search"><SmartSearchChat /></div>
             <div className="grid gap-4 lg:grid-cols-2">
               <SpendingVelocityMonitor />
               <CashFlowRunwayCalculator />

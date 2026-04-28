@@ -105,6 +105,9 @@ export function PageContextGuide({
     }
   };
 
+  // Filter out actions without any handler so we never render dead buttons
+  const validActions = actions.filter(a => typeof a.action === 'function' || !!a.path);
+
   if (dismissed) {
     return (
       <Button
@@ -216,7 +219,7 @@ export function PageContextGuide({
 
             {/* Actions */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-              {actions.map((action, idx) => {
+              {validActions.map((action, idx) => {
                 const Icon = action.icon;
                 return (
                   <button

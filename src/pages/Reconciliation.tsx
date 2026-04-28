@@ -347,9 +347,9 @@ export default function Reconciliation() {
           {...PAGE_GUIDES.reconciliation}
           actions={[
             { icon: Upload, title: { es: 'Importar', en: 'Import' }, description: { es: 'Estado bancario', en: 'Bank statement' }, action: () => setImportDialogOpen(true) },
-            { icon: Link2, title: { es: 'Emparejar', en: 'Match' }, description: { es: 'Transacciones', en: 'Transactions' }, action: () => {} },
+            { icon: Link2, title: { es: 'Emparejar', en: 'Match' }, description: { es: 'Transacciones', en: 'Transactions' }, action: () => setWizardMode(true) },
             { icon: Wand2, title: { es: 'Modo Asistente', en: 'Assistant Mode' }, description: { es: 'Guía paso a paso', en: 'Step by step guide' }, action: () => setWizardMode(true) },
-            { icon: AlertTriangle, title: { es: 'Discrepancias', en: 'Discrepancies' }, description: { es: 'Sin emparejar', en: 'Unmatched' }, action: () => {} }
+            { icon: AlertTriangle, title: { es: 'Discrepancias', en: 'Discrepancies' }, description: { es: 'Sin emparejar', en: 'Unmatched' }, path: '/banking' }
           ]}
         />
 

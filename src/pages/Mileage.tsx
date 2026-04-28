@@ -178,9 +178,9 @@ export default function Mileage() {
               {...PAGE_GUIDES.mileage}
               actions={[
                 { icon: Plus, title: { es: 'Nuevo Viaje', en: 'New Trip' }, description: { es: 'Registrar', en: 'Log trip' }, action: handleCreate },
-                { icon: Car, title: { es: 'Ver Resumen', en: 'View Summary' }, description: { es: 'Deducciones', en: 'Deductions' }, action: () => {} },
-                { icon: DollarSign, title: { es: currentCountry === 'CL' ? 'Cálculo SII' : 'Cálculo CRA', en: currentCountry === 'CL' ? 'SII Calculation' : 'CRA Calculation' }, description: { es: 'Tarifas ' + new Date().getFullYear(), en: new Date().getFullYear() + ' rates' }, path: '/dashboard' },
-                { icon: Download, title: { es: 'Exportar', en: 'Export' }, description: { es: 'Para impuestos', en: 'For taxes' }, path: '/dashboard' }
+                { icon: Car, title: { es: 'Ver Resumen', en: 'View Summary' }, description: { es: 'Deducciones', en: 'Deductions' }, action: () => document.querySelector('[data-section="mileage-summary"]')?.scrollIntoView({ behavior: 'smooth' }) },
+                { icon: DollarSign, title: { es: currentCountry === 'CL' ? 'Cálculo SII' : 'Cálculo CRA', en: currentCountry === 'CL' ? 'SII Calculation' : 'CRA Calculation' }, description: { es: 'Tarifas ' + new Date().getFullYear(), en: new Date().getFullYear() + ' rates' }, path: '/tax-optimizer' },
+                { icon: Download, title: { es: 'Exportar', en: 'Export' }, description: { es: 'Para impuestos', en: 'For taxes' }, path: '/reports' }
               ]}
             />
           )}

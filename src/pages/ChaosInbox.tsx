@@ -838,8 +838,8 @@ export default function ChaosInbox() {
               actions={[
                 { icon: Camera, title: { es: 'Cámara', en: 'Camera' }, description: { es: 'Captura continua', en: 'Continuous capture' }, action: () => setCameraDialogOpen(true) },
                 { icon: Upload, title: { es: 'Subir Archivo', en: 'Upload File' }, description: { es: 'Imagen o PDF', en: 'Image or PDF' }, action: () => fileInputRef.current?.click() },
-                { icon: CheckCircle2, title: { es: 'Revisar Pendientes', en: 'Review Pending' }, description: { es: `${pendingDocs.length} recibos`, en: `${pendingDocs.length} receipts` }, action: () => {} },
-                { icon: Edit3, title: { es: 'Correcciones', en: 'Corrections' }, description: { es: `${needsCorrectionDocs.length} pendientes`, en: `${needsCorrectionDocs.length} pending` }, action: () => {} }
+                { icon: CheckCircle2, title: { es: 'Revisar Pendientes', en: 'Review Pending' }, description: { es: `${pendingDocs.length} recibos`, en: `${pendingDocs.length} receipts` }, action: () => document.querySelector('[data-section="pending-docs"]')?.scrollIntoView({ behavior: 'smooth' }) },
+                { icon: Edit3, title: { es: 'Correcciones', en: 'Corrections' }, description: { es: `${needsCorrectionDocs.length} pendientes`, en: `${needsCorrectionDocs.length} pending` }, action: () => document.querySelector('[data-section="needs-correction"]')?.scrollIntoView({ behavior: 'smooth' }) }
               ]}
             />
           )}
