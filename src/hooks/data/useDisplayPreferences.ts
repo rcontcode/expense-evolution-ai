@@ -5,7 +5,8 @@ import {
   DisplayPreferences, 
   DEFAULT_DISPLAY_PREFERENCES, 
   FocusAreaId, 
-  ViewMode 
+  ViewMode,
+  UiMode,
 } from '@/lib/constants/focus-areas';
 
 export const useDisplayPreferences = () => {
@@ -181,6 +182,11 @@ export const useDisplayPreferences = () => {
 
  const setShowFocusDialog = useCallback((show: boolean) => {
      const newPreferences = { ...preferencesRef.current, show_focus_dialog: show };
+     savePreferences(newPreferences);
+   }, [savePreferences]);
+
+   const setUiMode = useCallback((mode: UiMode) => {
+     const newPreferences = { ...preferencesRef.current, ui_mode: mode };
      savePreferences(newPreferences);
    }, [savePreferences]);
  
