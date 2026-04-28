@@ -132,6 +132,9 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
         <p className="text-sm text-muted-foreground capitalize">{monthLabel}</p>
       </div>
 
+      {/* Onboarding path — auto-hides when all steps complete */}
+      <SimpleOnboardingPath />
+
       {/* Hero balance */}
       <Card
         className={cn(
