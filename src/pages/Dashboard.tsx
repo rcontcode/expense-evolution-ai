@@ -64,6 +64,15 @@ export default function Dashboard() {
   // UI state
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
   const [showGuide, setShowGuide] = useState(false);
+  const [density, setDensity] = useState<'compact' | 'comfortable'>(() => {
+    if (typeof window === 'undefined') return 'comfortable';
+    return (localStorage.getItem('dashboard-density') as 'compact' | 'comfortable') || 'comfortable';
+  });
+  const toggleDensity = () => {
+    const next = density === 'compact' ? 'comfortable' : 'compact';
+    setDensity(next);
+    try { localStorage.setItem('dashboard-density', next); } catch { /* noop */ }
+  };
   
   // Profile extension state
   const [profileExtenderOpen, setProfileExtenderOpen] = useState(false);
