@@ -1,24 +1,70 @@
-## Fixes móviles del Dashboard Simple
+# Eliminar el flash "Modo Avanzado → Simple" al cargar páginas
 
-Dos bugs visibles en la captura:
+## Problema confirmado
 
-### 1. Botones "Gastos / Ingresos" se cortan a la derecha (header de "Movimientos recientes")
+Al entrar a cualquier página (Bills, Banking, Budget, Dashboard) en Modo Simple, durante ~300-500ms se ve la versión **Avanzada** y luego salta a la **Simple**. Parece un error visual.
 
-En `src/components/dashboard/SimpleDashboard.tsx` líneas 596–620, el header pone el título y dos botones en una sola fila (`flex justify-between`). En pantallas estrechas (≈375px) los botones se desbordan.
+## Causa raíz
 
-**Fix**: hacer que el header se apile en móvil (`flex-col sm:flex-row sm:items-center`) y que los botones queden en su propia fila debajo del título. Resultado: nada se corta y queda más legible.
+1. `useDisplayPreferences` arranca con `ui_mode = 'unset'` (default) y luego **dentro de un `useEffect` asíncrono** consulta Supabase y/o `localStorage`.
+2. En el primer render, las páginas evalúan `if (uiMode === 'simple')`. Como aún es `'unset'`, cae al `return <VersiónAvanzada />`.
+3. Cuando llega el valor real (`'simple'`), React re-renderiza la simple → flash visible.
+4. `Bills.tsx`, `Banking.tsx`, `Budget.tsx` **no usan `isLoading`** del hook, así que no pueden esperar.
+5. Aunque el hook ya guarda `ui_mode` en `localStorage` (clave `evofinz-ui-mode`), no lo usa en la **inicialización síncrona** del `useState` — sólo dentro del `useEffect`.
 
-### 2. Footer ("Cambiar a Avanzado", "Ver guía…") se solapa con la barra de navegación inferior
+## Solución
 
-El contenedor raíz (línea 272) usa `pb-8` (32px), insuficiente para librar la `MobileBottomNav` (≈64px + safe-area).
+### 1. Inicialización síncrona desde `localStorage` (`src/hooks/data/useDisplayPreferences.ts`)
 
-**Fix**: aumentar a `pb-28 lg:pb-8` (112px en móvil, 32px en desktop) y añadir `overflow-x-hidden` al wrapper para prevenir cualquier scroll horizontal residual.
+Cambiar el `useState` inicial para leer `localStorage` antes del primer render, evitando el `'unset'` transitorio:
 
-## Archivo a editar
+```ts
+const [preferences, setPreferences] = useState<DisplayPreferences>(() => {
+  const storedMode = getStoredUiMode();
+  return storedMode
+    ? { ...DEFAULT_DISPLAY_PREFERENCES, ui_mode: storedMode }
+    : DEFAULT_DISPLAY_PREFERENCES;
+});
+```
 
-- `src/components/dashboard/SimpleDashboard.tsx` (2 líneas: wrapper raíz línea 272, y header de "Movimientos recientes" líneas 596–620).
+Esto garantiza que en cualquier visita posterior (donde ya elegimos modo Simple), el primer render tenga `uiMode = 'simple'` desde el inicio.
 
-## Fuera de alcance
+### 2. Marcar `isLoading = false` cuando ya hay valor de `localStorage`
 
-- No tocar lógica de datos.
-- No tocar desktop (queda igual).
+Si tenemos un `ui_mode` en localStorage, no necesitamos esperar a Supabase para decidir qué versión renderizar. La consulta a Supabase puede seguir en background y rehidratar el resto de preferencias sin causar flash, porque `ui_mode` ya está correcto.
+
+```ts
+const [isLoading, setIsLoading] = useState(() => getStoredUiMode() === null);
+```
+
+### 3. Defensa en las páginas que ramifican por `uiMode`
+
+En `Bills.tsx`, `Banking.tsx`, `Budget.tsx` (y verificar otros), respetar `isLoading` antes de elegir variante. Mientras carga y `uiMode === 'unset'`, mostrar un placeholder ligero (skeleton del Layout) en vez de adivinar:
+
+```tsx
+const { uiMode, isLoading } = useDisplayPreferences();
+if (isLoading && uiMode === 'unset') {
+  return <Layout><div className="page-container" /></Layout>;
+}
+if (uiMode === 'simple' && sp.get('advanced') !== '1') return <SimpleBills/>;
+return <BillsAdvanced/>;
+```
+
+Con el cambio (1), esta rama de espera solo se activará en la **primera visita absoluta** del usuario (cuando aún no hay valor en localStorage), que es cuando sí tiene sentido esperar al servidor.
+
+### 4. Verificar `Dashboard.tsx`
+
+`Dashboard.tsx` ya usa `prefsLoading`, así que solo se beneficia del cambio (1) — ya no necesita esperar en visitas recurrentes.
+
+## Archivos a modificar
+
+- `src/hooks/data/useDisplayPreferences.ts` — inicialización síncrona desde localStorage + `isLoading` inicial condicional.
+- `src/pages/Bills.tsx` — respetar `isLoading` antes de elegir variante.
+- `src/pages/Banking.tsx` — mismo patrón.
+- `src/pages/Budget.tsx` — mismo patrón.
+- (Revisar) `src/components/dashboard/DashboardNavigator.tsx` y otros lugares que ramifican por `uiMode` sin chequear `isLoading`.
+
+## Resultado esperado
+
+- En visitas posteriores (caso 99%): el primer render ya muestra la versión Simple correctamente. Sin flash.
+- En la primera visita absoluta: muestra un contenedor vacío durante ~300ms en vez del flash de la versión equivocada.
