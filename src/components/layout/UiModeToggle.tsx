@@ -1,6 +1,6 @@
 import { Sparkles, Layers } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { applyUiModeImmediately, useDisplayPreferences } from '@/hooks/data/useDisplayPreferences';
+import { applyUiModeImmediately, openDashboardAfterUiModeChange, useDisplayPreferences } from '@/hooks/data/useDisplayPreferences';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -35,7 +35,7 @@ export function UiModeToggle({ className, compact = false }: UiModeToggleProps) 
         ? (language === 'es' ? 'Vista minimalista con lo esencial.' : 'Minimal view with the essentials.')
         : (language === 'es' ? 'Acceso completo a todas las funciones.' : 'Full access to every feature.'),
     });
-    navigate('/dashboard', { replace: true });
+    openDashboardAfterUiModeChange();
   };
 
   const simpleActive = current === 'simple';
