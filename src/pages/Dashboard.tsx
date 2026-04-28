@@ -237,7 +237,7 @@ export default function Dashboard() {
 
           {/* Header Snapshot — 1-line state of the day */}
           <Card className="border-primary/15 bg-gradient-to-r from-primary/5 to-transparent">
-            <CardContent className={cn('flex items-center justify-between gap-3 flex-wrap', density === 'compact' ? 'py-2 px-3' : 'py-2.5 px-3.5')}>
+            <CardContent className="flex items-center justify-between gap-2 flex-wrap py-1.5 px-3">
               <LiveClock />
               <div className="flex items-center gap-3 text-xs flex-wrap">
                 <span className="inline-flex items-center gap-1">
@@ -300,7 +300,7 @@ export default function Dashboard() {
 
           {/* Quick Actions — context-aware */}
           <Card className="border-dashed" data-section="quick-actions">
-            <CardContent className="py-3">
+            <CardContent className="py-2 px-3">
               <div className="flex flex-wrap gap-2">
                 <Button
                   onClick={() => navigate('/chaos')}
