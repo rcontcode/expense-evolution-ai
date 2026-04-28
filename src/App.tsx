@@ -351,9 +351,9 @@ const App = () => (
                   <LazyErrorBoundary name="Routes" fallback={<PageErrorFallback />}>
                     <Suspense fallback={<PageLoader />}>
                       <Routes>
-                        <Route path="/" element={<AuthenticatedRedirect><FinancialQuiz /></AuthenticatedRedirect>} />
+                        <Route path="/" element={<AuthenticatedRedirect><Landing /></AuthenticatedRedirect>} />
                         <Route path="/quiz" element={<FinancialQuiz />} />
-                        <Route path="/landing" element={<Landing />} />
+                        <Route path="/landing" element={<Navigate to="/" replace />} />
                         <Route path="/legal" element={<Legal />} />
                         <Route path="/privacy" element={<Privacy />} />
                         <Route path="/terms" element={<Terms />} />
