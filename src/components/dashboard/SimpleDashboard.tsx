@@ -547,20 +547,27 @@ function ActionButton({
 function SecondaryShortcut({
   icon,
   label,
+  badge,
   onClick,
 }: {
   icon: React.ReactNode;
   label: string;
+  badge?: string;
   onClick: () => void;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="flex items-center justify-center gap-2 py-3 rounded-xl border border-border bg-card hover:bg-muted/60 hover:border-primary/30 transition-all hover:scale-[1.02] active:scale-[0.98] text-sm font-medium text-foreground"
+      className="relative flex items-center justify-center gap-2 py-3 rounded-xl border border-border bg-card hover:bg-muted/60 hover:border-primary/30 transition-all hover:scale-[1.02] active:scale-[0.98] text-sm font-medium text-foreground"
     >
       <span className="text-primary">{icon}</span>
       <span>{label}</span>
+      {badge && (
+        <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center shadow">
+          {badge}
+        </span>
+      )}
     </button>
   );
 }
