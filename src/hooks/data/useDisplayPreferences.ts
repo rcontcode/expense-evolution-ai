@@ -213,6 +213,7 @@ export const useDisplayPreferences = () => {
      collapsedAreas: preferences.collapsed_areas,
      showFocusDialog: preferences.show_focus_dialog,
      areaOrder: (preferences as any).area_order as FocusAreaId[] | undefined,
+     uiMode: (preferences.ui_mode ?? 'unset') as UiMode,
      setViewMode,
      toggleArea,
      toggleCollapsed,
@@ -221,7 +222,8 @@ export const useDisplayPreferences = () => {
      setAreaOrder,
      isAreaActive,
      isAreaCollapsed,
-     setShowFocusDialog
+     setShowFocusDialog,
+     setUiMode,
    }), [
      preferences,
      isLoading,
@@ -234,6 +236,7 @@ export const useDisplayPreferences = () => {
      setAreaOrder,
      isAreaActive,
      isAreaCollapsed,
-     setShowFocusDialog
+     setShowFocusDialog,
+     setUiMode,
    ]);
 };
