@@ -201,12 +201,19 @@ export function SimpleOnboardingPath() {
         {/* Primary CTA */}
         {nextStep && (
           <Button
-            onClick={() => navigate(nextStep.path)}
+            onClick={() => {
+              if (nextStep.id === 'clients') {
+                setClientDialogOpen(true);
+              } else {
+                navigate(nextStep.path);
+              }
+            }}
             className="w-full gap-2 font-semibold shadow-md hover:shadow-lg hover:scale-[1.02] transition-all"
             size="lg"
           >
+            {nextStep.id === 'clients' && <Plus className="h-4 w-4" />}
             {language === 'es' ? `Continuar: ${nextStep.label}` : `Continue: ${nextStep.label}`}
-            <ArrowRight className="h-4 w-4" />
+            {nextStep.id !== 'clients' && <ArrowRight className="h-4 w-4" />}
           </Button>
         )}
       </CardContent>
