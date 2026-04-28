@@ -354,6 +354,25 @@ export const Layout = ({ children }: LayoutProps) => {
   const { uiMode } = useDisplayPreferences();
   const isSimpleMode = uiMode === 'simple';
 
+  // Collapsible sidebar sections (Advanced mode) — persist in localStorage
+  const SIDEBAR_SECTIONS_KEY = 'sidebar-collapsed-sections';
+  const DEFAULT_COLLAPSED_SECTIONS = ['layout.growth', 'layout.system'];
+  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>(() => {
+    try {
+      const stored = localStorage.getItem(SIDEBAR_SECTIONS_KEY);
+      if (stored) return JSON.parse(stored);
+    } catch {}
+    // Default: collapse secondary sections to reduce visual noise on first load
+    return DEFAULT_COLLAPSED_SECTIONS.reduce((acc, k) => ({ ...acc, [k]: true }), {});
+  });
+  const toggleSection = useCallback((titleKey: string) => {
+    setCollapsedSections((prev) => {
+      const next = { ...prev, [titleKey]: !prev[titleKey] };
+      try { localStorage.setItem(SIDEBAR_SECTIONS_KEY, JSON.stringify(next)); } catch {}
+      return next;
+    });
+  }, []);
+
   // In Simple Mode, filter sidebar items to only essential routes
   const NAV_SECTIONS_VISIBLE = isSimpleMode
     ? NAV_SECTIONS
@@ -997,15 +1016,25 @@ export const Layout = ({ children }: LayoutProps) => {
                     </TooltipContent>
                   </Tooltip>
                 ) : (
-                  <h3 className={cn(
-                    "px-2 mb-1.5 text-xs font-bold flex items-center gap-2",
-                    theme.text
-                  )}>
+                  <button
+                    type="button"
+                    onClick={() => toggleSection(section.titleKey)}
+                    className={cn(
+                      "w-full px-2 mb-1.5 text-xs font-bold flex items-center gap-2 rounded-md hover:bg-background/40 transition-colors py-0.5",
+                      theme.text
+                    )}
+                    title={collapsedSections[section.titleKey] ? (language === 'es' ? 'Expandir sección' : 'Expand section') : (language === 'es' ? 'Colapsar sección' : 'Collapse section')}
+                  >
                     <span className="text-sm drop-shadow-sm">{section.emoji}</span>
                     <span className="uppercase tracking-widest text-[10px] font-extrabold">{t(section.titleKey).replace(/^[^\s]+\s/, '')}</span>
-                    {!collapsed && <span className="flex-1 h-px bg-current opacity-15 ml-1" />}
-                  </h3>
+                    <span className="flex-1 h-px bg-current opacity-15 ml-1" />
+                    <ChevronDown className={cn(
+                      "h-3.5 w-3.5 opacity-60 transition-transform duration-200",
+                      collapsedSections[section.titleKey] && "-rotate-90"
+                    )} />
+                  </button>
                 )}
+                {(collapsed || !collapsedSections[section.titleKey]) && (
                 <div className="space-y-0.5">
                   {section.items.map((item) => {
                     const Icon = item.icon;
@@ -1214,6 +1243,7 @@ export const Layout = ({ children }: LayoutProps) => {
                     );
                   })}
                 </div>
+                )}
               </div>
               );
             })}
