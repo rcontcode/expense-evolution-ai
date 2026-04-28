@@ -613,6 +613,7 @@ export const Layout = ({ children }: LayoutProps) => {
                       return (
                         <button
                           key={item.path}
+                          onPointerDown={() => preloadRoute(item.path)}
                           onClick={() => { navigate(item.path); setMobileMenuOpen(false); }}
                           className={cn(
                             "flex flex-col items-center gap-1.5 py-2 px-1 rounded-xl transition-all min-w-0",
