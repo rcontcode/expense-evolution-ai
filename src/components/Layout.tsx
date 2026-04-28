@@ -529,6 +529,9 @@ export const Layout = ({ children }: LayoutProps) => {
                 <Search className="h-4.5 w-4.5" />
               </Button>
               
+              {/* UI Mode Toggle - Mobile (compact) */}
+              <UiModeToggle compact className="hidden xs:inline-flex" />
+
               {/* Notification Bell - Mobile */}
               <Button 
                 variant="ghost" 
