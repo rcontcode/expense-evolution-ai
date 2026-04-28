@@ -17,6 +17,8 @@ import {
   Sparkles,
   Mic,
   PenLine,
+  ChevronRight,
+  CalendarClock,
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useDashboardStats } from '@/hooks/data/useDashboardStats';
