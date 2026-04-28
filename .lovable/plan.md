@@ -1,72 +1,87 @@
-# Próxima ronda — Pulido final
+# Auditoría honesta del Dashboard
 
-Auditoría: el dashboard (Simple y Avanzado) ya tiene contexto temporal, proyección, voz, NextActionBanner, Momentum y zonificación. Quedan **2 frentes claros** de mejora.
+## ¿Qué está bien hoy?
 
----
+- **Datos fluyen correctamente.** `useDashboardStats` calcula `monthlyIncome`, `monthlyTotal`, `monthlyTrends` y `savingsRate` con fuente única; `useExpensesRealtime` mantiene sync; los hooks centralizados (`useInvalidateRelated`) garantizan refresco cruzado tras voz/foto/manual/banco.
+- **Modo Simple** cumple lo que promete: balance, contexto temporal, proyección, sparkline, top categoría, meta inline, nudge de inactividad, voz, recientes, tip diario.
+- **Marca limpia.** Solo quedan menciones de "AI" en `console.error` (no visibles al usuario).
+- **Mobile** tiene barra flotante 3-tap (Foto/Voz/Manual) sobre la nav.
 
-## Frente A — Limpieza final de marca "AI/IA"
+## ¿Qué NO está bien? (problemas reales)
 
-La regla Core es estricta: cero "AI/IA" en UI/marketing. Aún quedan strings visibles para el usuario en páginas clave:
+### 1. Modo Avanzado: el botón "Manual" del bar mobile no abre el QuickCapture
+En `MobileDashboard.tsx` líneas 198-207, el botón "Manual" hace `handleAddExpense` (`navigate('/expenses')`), no abre el diálogo. **Foto y Voz hacen exactamente lo mismo** (`onQuickCapture`). El bar promete 3 modos y entrega 1.5.
 
-**Landing pública (impacto alto, lo ven prospectos):**
-- `src/pages/Landing.tsx` líneas 244-318 → reemplazar todas las menciones de "Inteligencia artificial / IA / AI" en subtítulos, taglines y bullets de los planes (EvoFinz Pro, Bundle) por "Mentoría Inteligente / Smart Mentorship", "Análisis Inteligente / Smart Analysis", "Predicciones Inteligentes / Smart Predictions", "Coaching Financiero + Mental Inteligente / Smart Financial + Mental Coaching".
+### 2. Avanzado tiene 4 centros de información compitiendo
+En `Dashboard.tsx` 230-313 conviven, uno tras otro: `LiveClock` → `NextActionBanner` → `DashboardNotificationHub` → `ProgressiveOnboarding` → `InteractiveWelcome` → `Quick Actions Card` → `DataInventoryPanel` → `MissionControl`. Son **8 bloques antes de ver el timeline**. Memory dice "Notification Hub es el ÚNICO centro de alertas" pero `NextActionBanner` también es un centro de acción única. Hay duplicación de propósito.
 
-**Páginas internas:**
-- `src/pages/Tags.tsx` líneas 129-130, 249-250 → "Sugerencias Inteligentes / Smart Suggestions". Cambiar copy de "La IA sugiere…" a "El sistema sugiere…".
-- `src/pages/ChaosInbox.tsx` líneas 680-681, 826 → "el sistema lo clasifica…" y "🧠 Analizando…" (sin "con IA").
-- `src/pages/Reconciliation.tsx` línea 451 → comment "Smart Reconciliation Panel".
-- `src/pages/MobileCapture.tsx` línea 146 → comment "Convert to base64 for smart processing".
-- `src/pages/Status.tsx` línea 18 → "Procesamiento Inteligente / Smart Processing".
-- `src/pages/admin/LeadsManagement.tsx` líneas 55, 65 → como es admin (español), usar "scoring automático e inteligencia" / "Inteligencia Smart". Mantener tono admin ES.
+### 3. `DataInventoryPanel` + `MissionControl` se solapan
+Ambos miden "qué tienes/qué te falta". `MissionControl` ya cubre readiness por feature; `DataInventoryPanel` repite el conteo desde otro ángulo. El usuario ve dos tarjetas que dicen casi lo mismo.
 
-**Se mantienen sin cambio (por ser legales/técnicas obligatorias):**
-- `src/pages/Legal.tsx` y `src/pages/Privacy.tsx` — la disclosure legal del uso de modelos de IA es **obligatoria** y debe usar el término técnico correcto. La regla de marca aplica al producto, no a documentos legales que requieren transparencia regulatoria.
+### 4. El Density Toggle controla solo el `space-y` del wrapper externo
+Líneas 67-75 + 201: solo afecta el gap del contenedor principal. Los componentes internos (cards, paddings) no responden. Resultado: prácticamente imperceptible.
 
----
+### 5. El header del dashboard avanzado no tiene "qué hacer ahora"
+Hay `LiveClock` (decorativo) pero no un resumen de 1 línea: "Tienes X gastos sin categoría · Y bills esta semana · balance Z". El usuario tiene que escanear 3 widgets para entender el estado.
 
-## Frente B — 6 mejoras UX que faltan
+### 6. Modo Simple: la meta inline pide número desnudo sin contexto
+Línea 486: placeholder "Ej: 200" sin sugerir un % razonable del ingreso. Un usuario con $3000 de ingreso no sabe si poner $200 o $800. Falta heurística (ej: 20% del ingreso = $600 sugerido).
 
-### B1. Modo Simple — Persistencia de meta de ahorro
-La meta mensual hoy se lee de `preferences`, pero falta un **CTA inline** cuando no existe. Añadir en `SimpleDashboard.tsx` un mini-input "¿Cuánto quieres ahorrar este mes?" con botón ✓ que guarde directo (sin navegar a `/settings`). Reduce 2 clics.
+### 7. `recent` en SimpleDashboard solo mira los primeros 20 expenses+income
+Línea 100/110: `slice(0, 20)` antes de ordenar. Si los hooks devuelven en orden no-cronológico, el "más reciente" puede no aparecer. Bug latente cuando hay muchos datos.
 
-### B2. Modo Simple — Reacción a inactividad
-Si `recent.length > 0` pero el último movimiento es >7 días atrás, mostrar microcard ámbar:
-> "Hace X días que no registras. ¿Todo bien? Captura uno rápido →"
-
-### B3. Modo Avanzado — Dashboard Density Toggle
-Añadir botón en header del Dashboard "Compact / Comfortable" que controle spacing entre las 3 zonas (`space-y-3` vs `space-y-6`). Persistir en `preferences.dashboard_density`. Útil para usuarios con muchos widgets.
-
-### B4. Mobile (390px) — Bottom Quick Actions Bar
-El viewport actual del usuario es **390x843** (móvil). En `MobileDashboard.tsx`, añadir una barra fija inferior (sobre la nav) con 3 botones: 📷 Foto · 🎤 Voz · ✏️ Manual, que abran el `QuickCaptureDialog`. Un tap desde cualquier scroll position.
-
-### B5. UiModeToggle — Eliminar el reload
-Hoy `window.location.href = '/'` causa flash blanco y pierde scroll/estado. Cambiar a `navigate('/', { replace: true })` y forzar re-render con un key en el árbol del Dashboard basado en `uiMode`. Sin reload.
-
-### B6. Empty states globales — Ilustración consistente
-Páginas como `/banking`, `/budget`, `/bills` cuando están vacías muestran solo texto. Crear un componente `<EmptyStateCard>` reutilizable con ícono grande, título, subtítulo y CTA primario. Usarlo en las 3 páginas. Mejora percepción "esto está vacío pero hay algo que hacer".
+### 8. SimpleDashboard no usa `useFormatCurrency` consistentemente en speakSummary
+Línea 215: usa `.toFixed(0)` en vez del formateador localizado. La voz dice "3000" en vez de "tres mil pesos" / formato local.
 
 ---
 
-## Detalle técnico
+## Plan de mejoras
 
-**Archivos a modificar:**
-- `src/pages/Landing.tsx`, `Tags.tsx`, `ChaosInbox.tsx`, `Reconciliation.tsx`, `MobileCapture.tsx`, `Status.tsx`, `admin/LeadsManagement.tsx` (Frente A)
-- `src/components/dashboard/SimpleDashboard.tsx` (B1, B2)
-- `src/pages/Dashboard.tsx` (B3)
-- `src/components/dashboard/MobileDashboard.tsx` (B4)
-- `src/components/layout/UiModeToggle.tsx` (B5)
+### A. Arreglar regresiones funcionales (alta prioridad)
+- **A1.** En `MobileDashboard.tsx`: separar handlers reales para Foto / Voz / Manual. Foto → `/mobile-capture`, Voz → abrir `QuickCaptureDialog` con tab voz, Manual → abrir `QuickCaptureDialog` con tab manual. Pasar prop `initialMode` al diálogo.
+- **A2.** En `SimpleDashboard.tsx` líneas 98-123: ordenar **antes** de cortar. `items.sort(...).slice(0, 8)` y aumentar la fuente a 50 expenses + 50 income para no perder los más recientes.
 
-**Archivos a crear:**
-- `src/components/ui/EmptyStateCard.tsx` (B6)
+### B. Reducir ruido en Modo Avanzado (alta prioridad)
+- **B1.** Fusionar `DataInventoryPanel` + `MissionControl` en una sola tarjeta colapsable "Tu sistema" con dos pestañas internas (Inventario / Misiones). Ahorra 1 zona vertical entera.
+- **B2.** Mover `ProgressiveOnboarding` + `InteractiveWelcome` a renderizado condicional **solo si onboarding incompleto**. Hoy se montan siempre y deciden internamente; ocupan espacio mental aunque no rendericen contenido.
+- **B3.** Convertir `NextActionBanner` en una **chip dentro del header** ("Próxima acción: ...") en vez de tarjeta full-width. Reduce de 8 a 5 bloques antes del timeline.
 
-**Páginas a actualizar para usar EmptyStateCard:**
-- `src/pages/Banking.tsx`, `src/pages/Budget.tsx`, `src/pages/Bills.tsx` (B6)
+### C. Header de avanzado con valor real
+- **C1.** Crear un mini-resumen de 1 línea sobre `LiveClock`: "Hoy: 5 gastos sin clasificar · 2 pagos esta semana · balance +$1,240". Datos ya disponibles en `stats`, `allExpenses`, `bills`. Permite escanear el estado en 1 segundo.
+- **C2.** Hacer que el toggle **Compact/Comfortable** afecte también el padding de las cards internas (pasar `density` por contexto a `MissionControl`, `DataInventoryPanel`, `Quick Actions Card`). Hoy es un placebo.
 
-**Riesgo:** bajo. Todos los cambios son aditivos o reemplazos de copy. No toca DB, edge functions, ni archivos preconfigurados.
+### D. Modo Simple — pulido fino
+- **D1.** En la meta inline, sugerir 20% del ingreso del mes como placeholder dinámico: `Ej: ${formatCurrency(monthlyIncome * 0.2)}`. Si no hay ingreso, dejar "Ej: 200".
+- **D2.** Añadir botón "Sugerir 20%" al lado del input para autollenar.
+- **D3.** Usar `formatCurrency` en `speakSummary` y reemplazar números crudos por `useCountryText` para una voz natural.
 
-**Recomendación de scope:** los 2 frentes juntos son ~10 archivos. Si prefieres, podemos partir en 2 entregas:
-1. **Solo Frente A** (limpieza marca, urgente porque es regla Core).
-2. **Frente A + B1-B4** (alto impacto inmediato, deja B5/B6 para después).
-3. **Todo** (los 2 frentes completos).
+### E. Limpieza final de marca
+- **E1.** Cambiar los 2 `console.error('AI processing failed:', ...)` en `ChaosInbox.tsx` a `'Smart processing failed:'`. Aunque sea consola, mantiene coherencia para developers/QA.
 
-¿Cuál prefieres? Si no respondes, ejecuto la opción 3 (todo).
+---
+
+## Archivos a modificar
+
+```text
+src/components/dashboard/MobileDashboard.tsx     (A1)
+src/components/dashboard/SimpleDashboard.tsx     (A2, D1, D2, D3)
+src/pages/Dashboard.tsx                          (B1, B2, B3, C1, C2)
+src/components/dashboard/DataInventoryPanel.tsx  (B1 — wrap en tabs)
+src/components/dashboard/MissionControl.tsx      (B1 — accept density prop)
+src/components/dashboard/NextActionBanner.tsx    (B3 — variante chip)
+src/components/dashboard/LiveClock.tsx           (C1 — slot para resumen)
+src/components/dialogs/QuickCaptureDialog.tsx    (A1 — initialMode prop)
+src/pages/ChaosInbox.tsx                         (E1)
+```
+
+## Riesgo
+
+Bajo. Sin cambios de DB, sin edge functions, sin tocar archivos preconfigurados. Todo es reorganización de UI + handlers + un par de prop drillings cortos.
+
+## Resultado esperado
+
+- Modo Avanzado pasa de 8 bloques pre-timeline a 5, con un resumen de estado real en el header.
+- Botones del bar mobile cumplen su promesa (3 modos distintos).
+- Modo Simple guía la meta de ahorro con una sugerencia inteligente.
+- Density toggle realmente cambia la densidad.
+- Recientes siempre muestra los más recientes (no los primeros 20).
