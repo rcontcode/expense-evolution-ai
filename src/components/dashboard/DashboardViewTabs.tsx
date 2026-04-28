@@ -104,7 +104,7 @@ export const DashboardViewTabs = memo(({ activeTab, onTabChange }: DashboardView
 
               <ChevronRight
                 className={cn(
-                  'h-4 w-4 shrink-0 mt-1 transition-transform',
+                  'h-3.5 w-3.5 shrink-0 transition-transform',
                   isActive ? 'text-white/70 translate-x-0.5' : 'text-muted-foreground group-hover:translate-x-0.5',
                 )}
               />
