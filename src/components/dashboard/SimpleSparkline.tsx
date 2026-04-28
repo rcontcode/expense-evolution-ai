@@ -174,6 +174,25 @@ export function SimpleSparkline({ trends, language }: SimpleSparklineProps) {
           </span>
         ))}
       </div>
+
+      {/* One-time legend explaining what up/down means */}
+      {!legendDismissed && (
+        <div className="flex items-center justify-between gap-2 mt-2 px-2 py-1.5 rounded-md bg-muted/40 border border-border/40">
+          <span className="text-[10px] text-muted-foreground leading-snug">
+            {language === 'es'
+              ? 'Subir = gastaste más · Bajar = ahorraste'
+              : 'Up = spent more · Down = saved'}
+          </span>
+          <button
+            type="button"
+            onClick={dismissLegend}
+            className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
+            aria-label={language === 'es' ? 'Entendido' : 'Got it'}
+          >
+            <X className="h-3 w-3" />
+          </button>
+        </div>
+      )}
     </div>
   );
 }
