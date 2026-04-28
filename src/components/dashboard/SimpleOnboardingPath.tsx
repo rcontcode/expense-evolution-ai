@@ -210,6 +210,13 @@ export function SimpleOnboardingPath() {
           </Button>
         )}
       </CardContent>
+
+      {/* Inline quick-add client dialog */}
+      <ClientDialog
+        open={clientDialogOpen}
+        onClose={() => setClientDialogOpen(false)}
+        client={null}
+      />
     </Card>
   );
 }
