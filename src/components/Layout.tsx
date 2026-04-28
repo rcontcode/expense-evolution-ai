@@ -567,9 +567,9 @@ export const Layout = ({ children }: LayoutProps) => {
               </Button>
 
               <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-              <SheetContent side="right" className="w-[300px] p-0 flex flex-col border-0 shadow-2xl bg-background">
-                {/* Header with status indicators moved here from header */}
-                <div className="px-4 py-3 flex items-center justify-between bg-gradient-to-r from-primary/5 to-transparent">
+              <SheetContent side="right" className="w-[88vw] max-w-[340px] p-0 flex flex-col border-l border-border/50 shadow-2xl bg-background">
+                {/* Header */}
+                <div className="px-4 py-3 flex items-center justify-between border-b border-border/40">
                   <div className="flex items-center gap-2.5">
                     <PhoenixLogo variant="mini" />
                     <span className="font-bold text-base bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">EvoFinz</span>
@@ -588,12 +588,12 @@ export const Layout = ({ children }: LayoutProps) => {
                 </div>
                 
                 {/* Entity Selector */}
-                <div className="px-3 py-2 border-b border-border/20">
+                <div className="px-3 py-2 border-b border-border/30">
                   <MobileMenuEntitySelector onNavigate={() => setMobileMenuOpen(false)} />
                 </div>
                 
                 {/* Theme Toggle */}
-                <div className="px-3 py-2 border-b border-border/20 flex items-center justify-between">
+                <div className="px-3 py-2 border-b border-border/30 flex items-center justify-between">
                   <span className="text-xs font-medium text-muted-foreground">{language === 'es' ? 'Tema' : 'Theme'}</span>
                   <Button variant="ghost" size="sm" className="h-8 gap-1.5 px-2.5" onClick={toggleTheme}>
                     {mode === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
@@ -601,15 +601,15 @@ export const Layout = ({ children }: LayoutProps) => {
                   </Button>
                 </div>
                 
-                {/* Quick Access Grid - 4 columns with vibrant 3D icons */}
-                <div className="px-3 py-2.5 bg-gradient-to-r from-muted/50 via-muted/30 to-muted/50">
+                {/* Quick Access Grid - 5 columns */}
+                <div className="px-3 py-3 border-b border-border/30">
                   <div className="grid grid-cols-5 gap-1.5">
                     {[
-                      { icon: LayoutDashboard, label: language === 'es' ? 'Panel' : 'Home', path: '/dashboard', gradient: 'from-amber-400 via-orange-500 to-red-500', shadow: 'shadow-amber-500/40' },
-                      { icon: Receipt, label: language === 'es' ? 'Gastos' : 'Expenses', path: '/expenses', gradient: 'from-red-400 via-rose-500 to-pink-500', shadow: 'shadow-red-500/40' },
-                      { icon: TrendingUp, label: language === 'es' ? 'Ingresos' : 'Income', path: '/income', gradient: 'from-emerald-400 via-green-500 to-teal-500', shadow: 'shadow-emerald-500/40' },
-                      { icon: CalendarCheck, label: language === 'es' ? 'Pagos' : 'Bills', path: '/bills', gradient: 'from-violet-400 via-purple-500 to-indigo-500', shadow: 'shadow-violet-500/40' },
-                      { icon: Inbox, label: language === 'es' ? 'Inbox' : 'Inbox', path: '/chaos', gradient: 'from-blue-400 via-cyan-500 to-sky-500', shadow: 'shadow-blue-500/40' },
+                      { icon: LayoutDashboard, label: language === 'es' ? 'Panel' : 'Home', path: '/dashboard', gradient: 'from-amber-400 to-orange-500' },
+                      { icon: Receipt, label: language === 'es' ? 'Gastos' : 'Expenses', path: '/expenses', gradient: 'from-rose-400 to-pink-500' },
+                      { icon: TrendingUp, label: language === 'es' ? 'Ingresos' : 'Income', path: '/income', gradient: 'from-emerald-400 to-teal-500' },
+                      { icon: CalendarCheck, label: language === 'es' ? 'Pagos' : 'Bills', path: '/bills', gradient: 'from-violet-400 to-indigo-500' },
+                      { icon: Inbox, label: language === 'es' ? 'Inbox' : 'Inbox', path: '/chaos', gradient: 'from-sky-400 to-cyan-500' },
                     ].map((item) => {
                       const Icon = item.icon;
                       const isActive = location.pathname === item.path;
@@ -618,22 +618,21 @@ export const Layout = ({ children }: LayoutProps) => {
                           key={item.path}
                           onClick={() => { navigate(item.path); setMobileMenuOpen(false); }}
                           className={cn(
-                            "flex flex-col items-center gap-1.5 py-2.5 px-1 rounded-xl transition-all",
+                            "flex flex-col items-center gap-1.5 py-2 px-1 rounded-xl transition-all min-w-0",
                             isActive 
-                              ? "bg-background shadow-lg border border-primary/30 scale-[1.02]" 
-                              : "bg-background/70 hover:bg-background border border-border/40 hover:scale-[1.02]"
+                              ? "bg-muted/60 ring-1 ring-primary/30" 
+                              : "hover:bg-muted/40"
                           )}
                         >
                           <div className={cn(
-                            "w-8 h-8 rounded-lg flex items-center justify-center bg-gradient-to-br shadow-md",
-                            item.gradient,
-                            item.shadow
+                            "w-9 h-9 rounded-xl flex items-center justify-center bg-gradient-to-br shadow-sm",
+                            item.gradient
                           )}>
-                            <Icon className="h-4 w-4 text-white drop-shadow-sm" />
+                            <Icon className="h-[18px] w-[18px] text-white" />
                           </div>
                           <span className={cn(
-                            "text-[10px] font-semibold leading-tight",
-                            isActive ? "text-primary" : "text-foreground"
+                            "text-[10px] font-medium leading-tight truncate w-full text-center",
+                            isActive ? "text-primary" : "text-foreground/80"
                           )}>
                             {item.label}
                           </span>
@@ -643,33 +642,23 @@ export const Layout = ({ children }: LayoutProps) => {
                   </div>
                 </div>
                 
-                {/* All Menu Items - Grouped & Compact with Visual Warmth */}
-                <nav className="flex-1 overflow-y-auto px-3 py-2 space-y-2">
+                {/* All Menu Items - clean grouped sections */}
+                <nav className="flex-1 overflow-y-auto px-2 py-2 space-y-1">
                   {NAV_SECTIONS_VISIBLE.slice(isSimpleMode ? 0 : 1).map((section) => {
                     const theme = sectionThemes[section.themeKey];
                     return (
                       <div 
                         key={section.titleKey}
-                        className={cn(
-                          "rounded-lg p-2 border transition-all",
-                          theme.gradient,
-                          theme.border,
-                          "bg-gradient-to-r backdrop-blur-sm"
-                        )}
+                        className="rounded-xl px-1.5 py-1"
                       >
-                        {/* Section Header with icon accent */}
-                        <div className="flex items-center gap-2 mb-1.5">
-                          <div className={cn(
-                            "w-6 h-6 rounded-lg flex items-center justify-center text-xs",
-                            theme.iconWrapper
-                          )}>
-                            <span className="drop-shadow-sm">{section.emoji}</span>
-                          </div>
-                          <span className={cn("text-xs font-bold uppercase tracking-wider", theme.text)}>
+                        {/* Section Header */}
+                        <div className="flex items-center gap-2 px-2 py-1.5">
+                          <span className={cn("text-[10px] font-bold uppercase tracking-[0.08em]", theme.text)}>
                             {t(section.titleKey).replace(/^[^\s]+\s/, '')}
                           </span>
+                          <div className="flex-1 h-px bg-border/40" />
                         </div>
-                        
+
                 {/* Items - single column for full text visibility */}
                         <div className="space-y-0.5">
                           {section.items.map((item) => {
