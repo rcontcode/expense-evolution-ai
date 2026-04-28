@@ -354,13 +354,9 @@ export default function Dashboard() {
             subtitle={language === 'es' ? 'Resumen, narrativa y movimientos' : 'Summary, narrative and movements'}
           />
 
-          {/* Compact grid: Notification Hub + Data Inventory + Mission Control
-              All collapsed by default, side-by-side on tablet/desktop to save vertical space */}
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 auto-rows-fr [&>*]:h-full">
-            <DashboardNotificationHub />
-            <DataInventoryPanel />
-            <MissionControl />
-          </div>
+          {/* Smart grid: 3 columns when all collapsed; any expanded panel takes full width
+              so its details breathe instead of pushing the others into a tall column */}
+          <SmartPanelGrid />
 
           {/* VIEW TABS */}
           <DashboardViewTabs
