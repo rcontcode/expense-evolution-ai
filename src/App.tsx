@@ -289,6 +289,20 @@ function MissionListenerInitializer() {
   return null;
 }
 
+/**
+ * Mounts after auth providers and triggers background preloading of route
+ * chunks during idle time. Eliminates the multi-second wait when a user
+ * navigates to a not-yet-visited page (the chunk is already in memory).
+ */
+function IdlePreloader() {
+  useEffect(() => {
+    // Wait a tick so the initial render is not delayed.
+    const t = window.setTimeout(() => preloadCoreRoutes(), 600);
+    return () => window.clearTimeout(t);
+  }, []);
+  return null;
+}
+
 // Simple Suspense wrapper — Settings exit is handled by useSafeNavigation
 // using controlled navigation to bypass React Router v7's transition blocking.
 
