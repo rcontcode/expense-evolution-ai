@@ -567,9 +567,9 @@ export const Layout = ({ children }: LayoutProps) => {
               </Button>
 
               <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-              <SheetContent side="right" className="w-[88vw] max-w-[340px] p-0 flex flex-col border-l border-border/50 shadow-2xl bg-background">
+              <SheetContent side="right" className="w-[88vw] max-w-[340px] p-0 flex flex-col border-0 shadow-2xl bg-background">
                 {/* Header */}
-                <div className="px-4 py-3 flex items-center justify-between border-b border-border/40">
+                <div className="px-4 py-3 flex items-center justify-between border-b border-border/30">
                   <div className="flex items-center gap-2.5">
                     <PhoenixLogo variant="mini" />
                     <span className="font-bold text-base bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">EvoFinz</span>
@@ -642,94 +642,101 @@ export const Layout = ({ children }: LayoutProps) => {
                   </div>
                 </div>
                 
-                {/* All Menu Items - clean grouped sections */}
-                <nav className="flex-1 overflow-y-auto px-2 py-2 space-y-1">
+                {/* All Menu Items - clean collapsible sections */}
+                <nav className="flex-1 overflow-y-auto px-2 py-3 space-y-2">
                   {NAV_SECTIONS_VISIBLE.slice(isSimpleMode ? 0 : 1).map((section) => {
                     const theme = sectionThemes[section.themeKey];
+                    const sectionKey = `mobile-section-${section.titleKey}`;
+                    const isOpen = collapsedSections[sectionKey] !== true; // default open
+                    const sectionLabel = t(section.titleKey).replace(/^[^\s]+\s/, '');
                     return (
-                      <div 
-                        key={section.titleKey}
-                        className="rounded-xl px-1.5 py-1"
-                      >
-                        {/* Section Header */}
-                        <div className="flex items-center gap-2 px-2 py-1.5">
-                          <span className={cn("text-[10px] font-bold uppercase tracking-[0.08em]", theme.text)}>
-                            {t(section.titleKey).replace(/^[^\s]+\s/, '')}
+                      <div key={section.titleKey} className="rounded-xl bg-muted/20">
+                        {/* Section Header — collapsible trigger */}
+                        <button
+                          type="button"
+                          onClick={() => setCollapsedSections((prev) => ({ ...prev, [sectionKey]: !prev[sectionKey] }))}
+                          className="w-full flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-muted/40 transition-colors"
+                        >
+                          <span className={cn("text-[10px] font-bold uppercase tracking-[0.1em]", theme.text)}>
+                            {sectionLabel}
                           </span>
-                          <div className="flex-1 h-px bg-border/40" />
-                        </div>
+                          <div className="flex-1 h-px bg-border/30" />
+                          <ChevronDown className={cn("h-3.5 w-3.5 text-muted-foreground transition-transform duration-200", !isOpen && "-rotate-90")} />
+                        </button>
 
-                {/* Items */}
-                        <div className="space-y-0.5">
-                          {section.items.map((item) => {
-                            const Icon = item.icon;
-                            const isActive = item.path.includes('?')
-                              ? location.pathname + location.search === item.path
-                              : location.pathname === item.path;
-                            const hasChildren = 'children' in item && item.children && item.children.length > 0;
-                            const isSubmenuOpen = hasChildren && expandedSubmenus[item.path];
-                            
-                            return (
-                              <div key={item.path}>
-                                <div className="flex items-center gap-1">
-                                  <button
-                                    onClick={() => { navigate(item.path); setMobileMenuOpen(false); }}
-                                    className={cn(
-                                      "flex items-center gap-2.5 px-2 py-2 rounded-lg transition-colors text-left flex-1 min-w-0",
-                                      isActive 
-                                        ? "bg-muted/70"
-                                        : "hover:bg-muted/50"
-                                    )}
-                                  >
-                                    <div className={cn(
-                                      "w-7 h-7 rounded-lg flex items-center justify-center shrink-0",
-                                      theme.iconWrapper
-                                    )}>
-                                      <Icon className="h-3.5 w-3.5 text-white" />
-                                    </div>
-                                    <span className={cn(
-                                      "text-sm font-medium truncate",
-                                      isActive ? theme.text : "text-foreground/85"
-                                    )}>
-                                      {t(item.label)}
-                                    </span>
-                                  </button>
-                                  {hasChildren && (
+                        {/* Items */}
+                        {isOpen && (
+                          <div className="px-1.5 pb-2 pt-0.5 space-y-0.5">
+                            {section.items.map((item) => {
+                              const Icon = item.icon;
+                              const isActive = item.path.includes('?')
+                                ? location.pathname + location.search === item.path
+                                : location.pathname === item.path;
+                              const hasChildren = 'children' in item && item.children && item.children.length > 0;
+                              const isSubmenuOpen = hasChildren && expandedSubmenus[item.path];
+
+                              return (
+                                <div key={item.path}>
+                                  <div className="flex items-center gap-1">
                                     <button
-                                      type="button"
-                                      onClick={(e) => { e.stopPropagation(); toggleSubmenu(item.path); }}
+                                      onClick={() => { navigate(item.path); setMobileMenuOpen(false); }}
                                       className={cn(
-                                        "h-9 w-9 flex items-center justify-center rounded-lg transition-colors shrink-0",
-                                        isSubmenuOpen 
-                                          ? "bg-muted text-foreground" 
-                                          : "text-muted-foreground hover:bg-muted/60"
+                                        "flex items-center gap-2.5 px-2 py-2 rounded-lg transition-colors text-left flex-1 min-w-0",
+                                        isActive
+                                          ? "bg-background shadow-sm"
+                                          : "hover:bg-background/60"
                                       )}
                                     >
-                                      <ChevronDown className={cn("h-4 w-4 transition-transform", isSubmenuOpen && "rotate-180")} />
+                                      <div className={cn(
+                                        "w-7 h-7 rounded-lg flex items-center justify-center shrink-0",
+                                        theme.iconWrapper
+                                      )}>
+                                        <Icon className="h-3.5 w-3.5 text-white" />
+                                      </div>
+                                      <span className={cn(
+                                        "text-sm font-medium truncate",
+                                        isActive ? theme.text : "text-foreground/85"
+                                      )}>
+                                        {t(item.label)}
+                                      </span>
                                     </button>
+                                    {hasChildren && (
+                                      <button
+                                        type="button"
+                                        onClick={(e) => { e.stopPropagation(); toggleSubmenu(item.path); }}
+                                        className={cn(
+                                          "h-8 w-8 flex items-center justify-center rounded-lg transition-colors shrink-0",
+                                          isSubmenuOpen
+                                            ? "bg-background text-foreground"
+                                            : "text-muted-foreground hover:bg-background/60"
+                                        )}
+                                      >
+                                        <ChevronDown className={cn("h-4 w-4 transition-transform", isSubmenuOpen && "rotate-180")} />
+                                      </button>
+                                    )}
+                                  </div>
+                                  {hasChildren && isSubmenuOpen && (
+                                    <div className="ml-9 mt-0.5 mb-1 space-y-0.5 pl-3">
+                                      {item.children!.map((child: NavChild, ci: number) => (
+                                        <button
+                                          key={`${child.path}-${ci}`}
+                                          onClick={() => {
+                                            handleSubmenuNavigation(child.path);
+                                            setMobileMenuOpen(false);
+                                          }}
+                                          className="flex items-center gap-2 w-full px-2 py-1.5 rounded-md text-xs text-muted-foreground hover:text-foreground hover:bg-background/60 transition-colors"
+                                        >
+                                          <span className={cn("w-1 h-1 rounded-full bg-current opacity-50", theme.text)} />
+                                          <span className="truncate">{child.label}</span>
+                                        </button>
+                                      ))}
+                                    </div>
                                   )}
                                 </div>
-                                {hasChildren && isSubmenuOpen && (
-                                  <div className="ml-9 mt-0.5 mb-1 space-y-0.5 pl-2 border-l border-border/50">
-                                    {item.children!.map((child: NavChild, ci: number) => (
-                                      <button
-                                        key={`${child.path}-${ci}`}
-                                        onClick={() => {
-                                          handleSubmenuNavigation(child.path);
-                                          setMobileMenuOpen(false);
-                                        }}
-                                        className="flex items-center gap-2 w-full px-2 py-1.5 rounded-md text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
-                                      >
-                                        <span className={cn("w-1 h-1 rounded-full bg-current opacity-50", theme.text)} />
-                                        <span className="truncate">{child.label}</span>
-                                      </button>
-                                    ))}
-                                  </div>
-                                )}
-                              </div>
-                            );
-                          })}
-                        </div>
+                              );
+                            })}
+                          </div>
+                        )}
                       </div>
                     );
                   })}
