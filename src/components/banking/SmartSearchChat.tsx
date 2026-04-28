@@ -192,7 +192,7 @@ export function SmartSearchChat() {
             >
               <Sparkles className="h-5 w-5 text-primary" />
             </motion.div>
-            {l ? 'Asistente Financiero IA' : 'AI Financial Assistant'}
+            {l ? 'Asistente Financiero Inteligente' : 'Smart Financial Assistant'}
           </CardTitle>
           <div className="flex items-center gap-1">
             {messages.length > 0 && (

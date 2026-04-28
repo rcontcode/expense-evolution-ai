@@ -145,7 +145,7 @@ Be direct, practical and brief. Max 200 words.`,
           <div>
             <CardTitle className="text-base flex items-center gap-2">
               {l ? '🎯 Negociador de Facturas' : '🎯 Bill Negotiator'}
-              <Badge variant="secondary" className="text-xs">AI</Badge>
+              <Badge variant="secondary" className="text-xs">Smart</Badge>
             </CardTitle>
             <p className="text-xs text-muted-foreground mt-0.5">
               {l

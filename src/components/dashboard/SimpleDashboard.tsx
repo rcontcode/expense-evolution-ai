@@ -19,6 +19,7 @@ import {
   PenLine,
   ChevronRight,
   CalendarClock,
+  Volume2,
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useDashboardStats } from '@/hooks/data/useDashboardStats';
@@ -163,6 +164,25 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
     return { category: topCat, amount: topAmt, pct };
   }, [expenses, monthlyTotal, language]);
 
+  // End-of-month projection — answers "if I keep going at this pace, how will I finish?"
+  const projection = useMemo(() => {
+    if (monthProgress.day < 3 || monthlyTotal <= 0) return null; // need a few days of data
+    const dailyRate = monthlyTotal / monthProgress.day;
+    const projectedSpend = dailyRate * monthProgress.total;
+    const projectedBalance = monthlyIncome - projectedSpend;
+    return { projectedBalance, positive: projectedBalance >= 0 };
+  }, [monthlyTotal, monthlyIncome, monthProgress]);
+
+  // Optional savings goal from preferences
+  const savingsGoal = useMemo(() => {
+    const prefs = (profile as any)?.preferences;
+    const goal = Number(prefs?.savings_goal_monthly) || 0;
+    if (goal <= 0) return null;
+    const current = Math.max(0, balance);
+    const pct = Math.min(100, (current / goal) * 100);
+    return { goal, current, pct, achieved: current >= goal };
+  }, [profile, balance]);
+
   // Single contextual tip — financial education, rotates daily
   const tip = useMemo(() => {
     let ctx: TipContext;
@@ -172,6 +192,24 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
     else ctx = 'healthy';
     return getDailyTip(ctx, language);
   }, [monthlyIncome, monthlyTotal, positive, spentPct, language]);
+
+  // Spoken summary — accessibility helper
+  const speakSummary = () => {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+    const isEs = language === 'es';
+    const text = isEs
+      ? `Tu balance del mes es ${balance < 0 ? 'negativo ' : ''}${Math.abs(balance).toFixed(0)}. Has tenido ingresos por ${monthlyIncome.toFixed(0)} y gastos por ${monthlyTotal.toFixed(0)}. Vas en el día ${monthProgress.day} de ${monthProgress.total}.`
+      : `Your monthly balance is ${balance < 0 ? 'negative ' : ''}${Math.abs(balance).toFixed(0)}. You earned ${monthlyIncome.toFixed(0)} and spent ${monthlyTotal.toFixed(0)}. It's day ${monthProgress.day} of ${monthProgress.total}.`;
+    try {
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = isEs ? 'es-ES' : 'en-US';
+      u.rate = 1.05;
+      window.speechSynthesis.speak(u);
+    } catch {
+      // graceful no-op
+    }
+  };
 
   return (
     <div className="space-y-5 max-w-2xl mx-auto pb-8">
@@ -189,13 +227,24 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
       {/* Hero balance */}
       <Card
         className={cn(
-          'border-2 shadow-xl transition-all overflow-hidden',
+          'border-2 shadow-xl transition-all overflow-hidden relative',
           positive
             ? 'border-emerald-500/30 bg-gradient-to-br from-emerald-500/5 to-teal-500/5'
             : 'border-rose-500/30 bg-gradient-to-br from-rose-500/5 to-orange-500/5',
         )}
       >
-        <CardContent className="py-7 text-center space-y-3">
+        {/* Listen-to-summary button — accessibility helper */}
+        <button
+          type="button"
+          onClick={speakSummary}
+          aria-label={language === 'es' ? 'Escuchar resumen del mes' : 'Listen to monthly summary'}
+          title={language === 'es' ? 'Escuchar resumen' : 'Listen to summary'}
+          className="absolute top-3 right-3 h-8 w-8 rounded-full bg-background/70 hover:bg-background border border-border flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors shadow-sm z-10"
+        >
+          <Volume2 className="h-3.5 w-3.5" />
+        </button>
+
+        <CardContent className="py-7 text-center space-y-3" aria-live="polite">
           <div className="space-y-1">
             <div className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">
               {language === 'es' ? 'Balance del mes' : 'Monthly balance'}
@@ -298,6 +347,55 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
               </div>
             </div>
           )}
+
+          {/* End-of-month projection — answers "where am I headed?" */}
+          {projection && (
+            <div className="pt-1 px-4 text-left">
+              <div className="text-[11px] text-muted-foreground">
+                {language === 'es' ? 'A este ritmo, terminarás el mes con' : 'At this pace, you will end the month at'}
+              </div>
+              <div className={cn(
+                'text-sm font-bold tabular-nums',
+                projection.positive ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400',
+              )}>
+                {projection.positive ? '+' : ''}{formatCurrency(projection.projectedBalance)}
+                <span className="text-[10px] font-normal text-muted-foreground ml-1">
+                  {language === 'es' ? '(estimado)' : '(estimate)'}
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* Savings goal — concrete target if user has set one */}
+          {savingsGoal ? (
+            <div className="pt-2 px-4 text-left">
+              <div className="flex items-center justify-between text-[11px] mb-1">
+                <span className="inline-flex items-center gap-1 text-muted-foreground">
+                  <Target className="h-3 w-3" />
+                  {language === 'es' ? 'Meta de ahorro' : 'Savings goal'}
+                </span>
+                <span className={cn(
+                  'tabular-nums font-semibold',
+                  savingsGoal.achieved ? 'text-emerald-600 dark:text-emerald-400' : 'text-foreground',
+                )}>
+                  {formatCurrency(savingsGoal.current)} / {formatCurrency(savingsGoal.goal)}
+                  {savingsGoal.achieved && ' 🎉'}
+                </span>
+              </div>
+              <Progress value={savingsGoal.pct} className="h-1.5" />
+            </div>
+          ) : (
+            <div className="pt-1 px-4">
+              <button
+                type="button"
+                onClick={() => navigate('/settings?tab=goals')}
+                className="text-[11px] text-muted-foreground hover:text-primary transition-colors inline-flex items-center gap-1"
+              >
+                <Target className="h-3 w-3" />
+                {language === 'es' ? 'Define una meta de ahorro mensual →' : 'Set a monthly savings goal →'}
+              </button>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -378,12 +476,17 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
             </div>
           </div>
           {recent.length === 0 ? (
-            <div className="py-6 space-y-3">
-              <p className="text-center text-sm text-muted-foreground">
-                {language === 'es'
-                  ? 'Aún no hay movimientos este mes. Elige cómo empezar:'
-                  : "No activity yet this month. Pick how to start:"}
-              </p>
+            <div className="py-4 space-y-3">
+              <div className="rounded-lg bg-muted/40 border border-dashed border-border p-3 text-center">
+                <p className="text-sm font-semibold text-foreground">
+                  {language === 'es' ? 'Tres formas de registrar tu primer movimiento' : 'Three ways to log your first entry'}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {language === 'es'
+                    ? 'Elige la más cómoda — todo se sincroniza automáticamente.'
+                    : 'Pick whichever is easiest — everything syncs automatically.'}
+                </p>
+              </div>
               <div className="grid grid-cols-3 gap-2">
                 <EmptyStateChip
                   icon={<Camera className="h-4 w-4" />}

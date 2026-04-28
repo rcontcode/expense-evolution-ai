@@ -1,108 +1,74 @@
-# Mejoras pendientes — Modo Simple y Modo Avanzado
 
-Auditoría de los dos dashboards y los flujos que los rodean. Ordenado por impacto real para el usuario.
+# Próxima ronda de pulido — Modo Simple + Avanzado
 
----
-
-## SIMPLE — 3 huecos restantes
-
-### S1. El balance es del **mes en curso**, pero no se entiende cuál día estamos
-El usuario ve "Balance del mes" en `+1.200` pero no sabe si es día 3 (gran margen) o día 28 (peligroso). Una línea pequeña con **"Día 17 de 30"** + barra de avance del mes le da contexto inmediato sin saturar.
-
-**Cambio:** dentro del hero card, añadir línea pequeña debajo del balance: *"Día 17 de 30 · quedan 13 días"*.
+Auditoría rápida del estado actual: Simple ya tiene contexto temporal, top categoría, sparkline, atajos contextuales y switcher. Avanzado ya está zonificado y con QuickActions contextuales. Quedan **8 mejoras concretas** de alto impacto.
 
 ---
 
-### S2. Acciones recientes no son accionables
-Hoy "Movimientos recientes" lista los últimos 8, pero **no se puede tap-to-edit**. Si el usuario ve un gasto mal categorizado, no tiene forma de arreglarlo desde aquí.
+## 1. Limpieza final de "AI / IA" en UI
 
-**Cambio:** cada `<li>` se vuelve `<button>` que navega a `/expenses?edit=<id>` o `/income?edit=<id>` con un chevron a la derecha indicando interactividad.
+Aún quedan strings prohibidos por la regla de marca:
 
----
+- `EcosystemAICoaching.tsx` → `EcosystemSmartCoaching` + texto "Coach Inteligente del Ecosistema" / "Smart Ecosystem Coach". Renombrar archivo y actualizar imports en `EcosystemSection.tsx` y `EcosystemDashboardWidgets.tsx`.
+- `EcosystemCoaching.tsx` línea 76 → reemplazar badge `AI` por `Smart` o quitarlo.
+- `TaxOptimizerCard.tsx` líneas 66, 201, 205 → "Optimizador Inteligente de Impuestos" / "Smart Tax Optimizer", "Recomendaciones inteligentes".
+- `NegotiationScriptGenerator.tsx` línea 148 → badge `Smart`.
+- `SmartSearchChat.tsx` línea 195 → "Asistente Financiero Inteligente" / "Smart Financial Assistant".
 
-### S3. Los "atajos secundarios" (Presupuesto/Banco) están desperdiciados
-Para un usuario Simple, lo más útil debajo de las acciones primarias **no es** Presupuesto/Banco, sino:
-- **Bills (Cuentas por pagar)** — qué viene esta semana
-- **Capturar foto rápido** — ya está, pero como atajo persistente
+## 2. Modo Simple — meta del mes (S4)
 
-**Cambio:** reemplazar atajos secundarios por:
-- **Próximos pagos** (`/bills`) — con badge del número de bills vencen en 7 días
-- **Mi presupuesto** — solo si ya configuró uno; si no, mostrar **"Conectar banco"** que es más valioso
+Bajo el balance Hero, añadir línea opcional **"Meta de ahorro: $X / $Y este mes"** con barrita si el usuario tiene `preferences.savings_goal_monthly`. Si no la tiene, mostrar CTA pequeño *"Define una meta de ahorro"* → `/settings?tab=goals`. Da un objetivo concreto, no solo balance.
 
----
+## 3. Modo Simple — proyección de fin de mes (S5)
 
-## AVANZADO — 5 huecos reales
+Calcular ritmo diario de gasto = `monthlyTotal / monthProgress.day` y proyectar fin de mes. Mostrar como microcopy debajo del Top Category:
 
-### A1. Hay "AI" visible en UI — viola política de marca
-El proyecto tiene regla **"No AI Branding"** pero estos componentes lo muestran al usuario:
+> "A este ritmo terminarás el mes con ~$Z" (verde si positivo, ámbar si déficit proyectado).
 
-| Archivo | Texto |
-|---|---|
-| `FinancialAutopilot.tsx` L98 | *"Autopiloto Financiero IA"* / *"AI Financial Autopilot"* |
-| `FinancialAutopilot.tsx` L115 | *"AI analyzes your financial patterns…"* |
-| `SmartMonthlyReport.tsx` L154,295 | *"Análisis IA Personalizado"* |
-| `FamilyMonthlyAnalysis.tsx` L951,1637,1951 | *"IA analiza patrones"*, *"Análisis de Patrones IA"*, *"💡 Recomendaciones IA"* |
-| `Dashboard.tsx` L276 (comment) | `{/* AI Financial Autopilot */}` |
+Es la pregunta #1 que un usuario "simple" se hace. Pura utilidad, cero jerga.
 
-**Cambio:** sustituir por *"Autopiloto Financiero Inteligente"*, *"Análisis Inteligente"*, *"Patrones detectados"*, *"Recomendaciones personalizadas"* (admin queda igual — la regla aplica a UI de usuario).
+## 4. Modo Simple — accesibilidad y resumen por voz (S6)
 
----
+- `aria-live="polite"` en el balance Hero para que lectores de pantalla anuncien cambios.
+- Botón discreto "🔊 Escuchar resumen" que use `speechSynthesis` para leer: *"Tu balance es X, has gastado Y de tus Z ingresos, día N de M."* Reutiliza voz Phoenix si está disponible (mem://features/audio/phoenix-system).
 
-### A2. Dashboard Avanzado en escritorio = **muro de widgets** sin jerarquía
-El return en `Dashboard.tsx` carga 9 secciones seguidas (LiveClock, NotificationHub, Onboarding, QuickActions, DataInventory, MissionControl, Tabs, Timeline+Detail, Banking, Narrative, Ecosystem, Workflows+Bills, Alerts, Autopilot, Gamification). Es cansado de escanear.
+## 5. Modo Simple — tutorial vacío contextual (S7)
 
-**Cambio:** agrupar en **3 zonas con cabeceras semánticas claras** (sin tocar la lógica):
-1. **"Hoy"** — LiveClock + NotificationHub + QuickActions
-2. **"Tu mes"** — Tabs + Timeline + MonthDetail + Narrative + Banking
-3. **"Tu sistema"** — Ecosystem + Workflows + Bills + Alerts + Autopilot + Gamification
+Cuando `recent.length === 0` Y no hay onboarding pendiente, mostrar microcard explicando los 3 chips ya existentes con un texto introductorio:
 
-Cabeceras tipo `<h2 class="section-title">` con `<hr>` sutil. No es reorganizar, es **etiquetar** lo que ya existe.
+> "Tres formas de registrar tu primer movimiento — elige la más cómoda. Todo se sincroniza automáticamente."
 
----
+## 6. Modo Avanzado — NextActionBanner global (A6)
 
-### A3. **MobileDashboard avanzado no tiene el botón "cambiar a Simple"**
-Igual que el problema que arreglamos en Simple para móvil: el toggle vive en sidebar de escritorio. Un usuario avanzado en móvil que se siente abrumado **no tiene forma fácil de bajarse a Simple**.
+Existe `NextActionBanner.tsx` pero no se usa en `Dashboard.tsx`. Añadirlo en Zona 1 ("Hoy"), encima del NotificationHub, para mostrar **la única siguiente acción priorizada** (factura por pagar más urgente, recibo sin clasificar, etc.). Reduce parálisis de decisión.
 
-**Cambio:** añadir botón en el footer del `MobileDashboard.tsx` *"¿Demasiado? Cambiar a Modo Simple"* que llame `setUiMode('simple')`.
+## 7. Modo Avanzado — Money Momentum visible (A7)
+
+`MoneyMomentumScore.tsx` está implementado pero huérfano. Añadirlo en Zona 3 ("Tu sistema") junto a Gamification — da un indicador único de salud financiera (0-100) que complementa al narrative.
+
+## 8. Modo Avanzado — Toast de bienvenida al cambiar de modo
+
+`UiModeToggle` ya hace `window.location.href = '/'` después de un toast. El toast es bueno pero el reload pierde el contexto. Cambiar a `navigate('/')` con `window.location.reload()` solo si es necesario, y añadir un mini-tour de 1-paso ("¿Sabías que…?") la primera vez que el usuario llega a Avanzado desde Simple — usando el flag `localStorage['advanced-first-visit']`.
 
 ---
 
-### A4. `QuickActions` del avanzado es genérico — no refleja contexto
-Los 4 botones (Upload, Expense, Client, Export) son los mismos siempre, aunque el usuario ya tenga 0 clientes (¿por qué export?) o 500 gastos (¿por qué tan visible "addExpense"?).
+## Detalle técnico
 
-**Cambio mínimo y seguro:**
-- Si **no hay** clientes → mostrar "Agregar cliente" con highlight `border-primary`
-- Si **hay** ≥1 bill venciendo en 3 días → reemplazar "Exportar" por "Pagar próximas cuentas" (`/bills`)
-- Si **no hay** ningún gasto este mes → highlight el botón de Capturar
+**Archivos a crear:**
+- `src/components/ecosystem/EcosystemSmartCoaching.tsx` (rename de `EcosystemAICoaching.tsx`)
+- `src/components/dashboard/SimpleProjection.tsx` (helper opcional para S3+S5)
 
-Sin reescribir el bloque, solo lógica de prioridad.
+**Archivos a modificar:**
+- `src/components/dashboard/SimpleDashboard.tsx` (S4, S5, S6, S7, aria-live)
+- `src/components/dashboard/SimpleOnboardingPath.tsx` (sin cambios mayores)
+- `src/pages/Dashboard.tsx` (A6 NextActionBanner, A7 MoneyMomentum)
+- `src/components/ecosystem/EcosystemSection.tsx`, `EcosystemDashboardWidgets.tsx`, `EcosystemCoaching.tsx` (renombre + badge)
+- `src/components/dashboard/TaxOptimizerCard.tsx`, `NegotiationScriptGenerator.tsx` (textos)
+- `src/components/banking/SmartSearchChat.tsx` (texto)
+- `src/components/layout/UiModeToggle.tsx` (mini-tour primera vez en Avanzado)
 
----
+**No se toca:** schema DB, edge functions, archivos preconfigurados.
 
-### A5. `DashboardNotificationHub` vs `ProactiveAlertsWidget` — duplicación
-Ambos viven en el dashboard avanzado y muestran "alertas". El usuario no sabe a cuál hacer caso. La memoria del proyecto dice **"NotificationHub es THE ONLY alert center"** pero `ProactiveAlertsWidget` sigue montado en línea 271-273.
+**Riesgo:** bajo — todos los cambios son aditivos o de copy. El renombre de `EcosystemAICoaching` requiere cuidado con los 2 imports.
 
-**Cambio:** mover el contenido de `ProactiveAlertsWidget` a una pestaña dentro de `DashboardNotificationHub` (o eliminarlo si está duplicado). Necesito leer ambos primero antes de decidir cuál absorbe a cuál.
-
----
-
-## Archivos a tocar
-
-| Tarea | Archivos |
-|---|---|
-| S1 día del mes | `src/components/dashboard/SimpleDashboard.tsx` |
-| S2 click en recientes | `src/components/dashboard/SimpleDashboard.tsx` |
-| S3 atajos relevantes | `src/components/dashboard/SimpleDashboard.tsx` |
-| A1 limpieza "AI" | `FinancialAutopilot.tsx`, `SmartMonthlyReport.tsx`, `FamilyMonthlyAnalysis.tsx`, `Dashboard.tsx` |
-| A2 zonas semánticas | `src/pages/Dashboard.tsx` (solo wrappers + h2) |
-| A3 toggle a Simple en móvil | `src/components/dashboard/MobileDashboard.tsx` |
-| A4 QuickActions contextuales | `src/pages/Dashboard.tsx` |
-| A5 dedupe alertas | leer ambos antes; probable consolidación en `DashboardNotificationHub.tsx` |
-
-## Notas
-
-- Todo ES/EN siguiendo `language === 'es'` — sin "AI" en UI usuario.
-- A2 y A4 son los de mayor impacto; A1 cierra una deuda con la política de marca.
-- **No** toco lógica de datos — solo presentación + 1 navegación nueva en S2.
-
-¿Apruebas los 8 cambios? Si quieres priorizar solo algunos (p.ej. arrancar con A1+A2+A3 y dejar S1-S3 para después), dime cuáles.
+¿Apruebas los 8 puntos? Si quieres recortar (p.ej. solo 1+2+3+6+7 que son los de mayor impacto inmediato), dime cuáles.

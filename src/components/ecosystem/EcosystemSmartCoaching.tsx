@@ -10,17 +10,17 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { EcosystemErrorFallback } from './EcosystemErrorFallback';
 
-interface AIInsight {
+interface SmartInsight {
   emoji: string;
   title: string;
   advice: string;
 }
 
 /**
- * AI-powered coaching using backend edge function + Gemini model.
- * Falls back to rule-based insights if AI is unavailable.
+ * Smart coaching using backend edge function.
+ * Falls back to rule-based insights when the backend is unavailable.
  */
-export const EcosystemAICoaching = memo(() => {
+export const EcosystemSmartCoaching = memo(() => {
   const { language } = useLanguage();
   const { hasBundleAccess, isEnabled, isLoading: flagsLoading } = useFeatureFlags();
   const { user } = useAuth();
@@ -28,7 +28,7 @@ export const EcosystemAICoaching = memo(() => {
 
   const { data, isLoading, isError, refetch, isFetching } = useQuery({
     queryKey: ['ecosystem-ai-coaching', user?.id, language],
-    queryFn: async (): Promise<{ insights: AIInsight[]; source: string }> => {
+    queryFn: async (): Promise<{ insights: SmartInsight[]; source: string }> => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return { insights: [], source: 'none' };
 
@@ -68,7 +68,7 @@ export const EcosystemAICoaching = memo(() => {
         <CardHeader className="pb-1 pt-3 px-4 flex flex-row items-center justify-between">
           <CardTitle className="text-xs font-bold flex items-center gap-1.5">
             <BrainCircuit className="h-3.5 w-3.5 text-indigo-500" />
-            {isEs ? 'Coach IA del Ecosistema' : 'Ecosystem AI Coach'}
+            {isEs ? 'Coach Inteligente del Ecosistema' : 'Smart Ecosystem Coach'}
             <span className="text-[9px] font-normal bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 px-1.5 py-0.5 rounded-full">
               {data.source === 'ai' ? 'Gemini' : 'Smart'}
             </span>
@@ -99,4 +99,4 @@ export const EcosystemAICoaching = memo(() => {
   );
 });
 
-EcosystemAICoaching.displayName = 'EcosystemAICoaching';
+EcosystemSmartCoaching.displayName = 'EcosystemSmartCoaching';

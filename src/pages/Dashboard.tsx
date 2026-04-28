@@ -39,6 +39,9 @@ import { useDashboardDeepLinks } from '@/hooks/utils/useDashboardDeepLinks';
 import { DataInventoryPanel } from '@/components/dashboard/DataInventoryPanel';
 import { SimpleDashboard } from '@/components/dashboard/SimpleDashboard';
 import { UiModeWelcomeDialog } from '@/components/onboarding/UiModeWelcomeDialog';
+import { NextActionBanner } from '@/components/dashboard/NextActionBanner';
+import { MoneyMomentumScore } from '@/components/dashboard/MoneyMomentumScore';
+import { useIncome } from '@/hooks/data/useIncome';
 import { cn } from '@/lib/utils';
 
 // Lazy load only dashboard-specific components
@@ -97,6 +100,7 @@ export default function Dashboard() {
   const { data: allExpenses } = useExpenses();
   const { data: clients } = useClients();
   const { data: bills } = useRecurringBills();
+  const { data: allIncome } = useIncome();
 
   const handleAddIncome = useCallback(() => navigate('/income'), [navigate]);
   const handleAddExpense = useCallback(() => navigate('/expenses'), [navigate]);
@@ -130,6 +134,26 @@ export default function Dashboard() {
       localStorage.setItem('dashboard-timeline-guide-seen', 'true');
     }
   }, [user]);
+
+  // First-time-in-Advanced welcome (shown once after switching from Simple)
+  useEffect(() => {
+    if (!user || prefsLoading || uiMode !== 'advanced') return;
+    const seen = localStorage.getItem('advanced-mode-first-visit');
+    if (seen) return;
+    localStorage.setItem('advanced-mode-first-visit', '1');
+    // Soft delayed toast — non-blocking
+    const id = setTimeout(() => {
+      import('@/hooks/use-toast').then(({ toast }) => {
+        toast({
+          title: language === 'es' ? '⚡ Bienvenido al Modo Avanzado' : '⚡ Welcome to Advanced Mode',
+          description: language === 'es'
+            ? 'Tienes 3 zonas: Hoy, Tu mes y Tu sistema. Cambia a Simple cuando quieras desde el header.'
+            : 'Three zones: Today, Your month and Your system. Switch back to Simple anytime from the header.',
+        });
+      });
+    }, 800);
+    return () => clearTimeout(id);
+  }, [user, prefsLoading, uiMode, language]);
 
   const isMobile = useIsMobile();
   const [quickCaptureOpen, setQuickCaptureOpen] = useState(false);
@@ -183,6 +207,15 @@ export default function Dashboard() {
           />
 
           <LiveClock />
+
+          {/* Next single most important action — reduces decision paralysis */}
+          <NextActionBanner
+            pendingDocuments={0}
+            incompleteExpenses={(allExpenses ?? []).filter((e: any) => !e?.category || !e?.merchant).length}
+            totalClients={clients?.length ?? 0}
+            totalIncomes={allIncome?.length ?? 0}
+            totalExpenses={allExpenses?.length ?? 0}
+          />
 
           {/* Notification Hub — THE ONLY alert center */}
           <DashboardNotificationHub />
@@ -349,6 +382,11 @@ export default function Dashboard() {
                   <Suspense fallback={<Skeleton className="h-[200px]" />}>
                     <FinancialAutopilot />
                   </Suspense>
+                </div>
+
+                {/* Money Momentum — single 0-100 health score */}
+                <div id="momentum" data-section="momentum">
+                  <MoneyMomentumScore />
                 </div>
 
                 {/* Gamification */}

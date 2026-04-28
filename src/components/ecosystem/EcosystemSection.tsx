@@ -8,7 +8,7 @@ import { useEcosystemDashboard } from '@/hooks/data/useEcosystemDashboard';
 import { EcosystemContext } from '@/contexts/EcosystemContext';
 import { BundleActiveBadge } from './BundleActiveBadge';
 import { EcosystemNotifications } from './EcosystemNotifications';
-import { EcosystemAICoaching } from './EcosystemAICoaching';
+import { EcosystemSmartCoaching } from './EcosystemSmartCoaching';
 import { EcosystemCoaching } from './EcosystemCoaching';
 import { EcosystemPredictiveAlerts } from './EcosystemPredictiveAlerts';
 import { EcosystemStreaks } from './EcosystemStreaks';
@@ -63,7 +63,7 @@ export const EcosystemSection = memo(() => {
             <EcoAppSwitcher currentApp="evofinz" />
             <BundleActiveBadge variant="full" />
             <EcosystemNotifications />
-            <EcosystemAICoaching />
+            <EcosystemSmartCoaching />
             <EcosystemCoaching />
             <EcosystemPredictiveAlerts />
             <EcosystemStreaks />
