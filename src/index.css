@@ -2537,6 +2537,27 @@
   }
 }
 
+@media (max-width: 1023px) {
+  html,
+  body,
+  #root {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  .mobile-app-shell,
+  .mobile-app-main,
+  .mobile-app-main > div,
+  .page-container {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: hidden;
+    box-sizing: border-box;
+  }
+}
+
 @media (min-width: 640px) {
   :root {
     --mobile-page-padding: 1.5rem;
