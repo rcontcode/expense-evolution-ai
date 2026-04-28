@@ -1,109 +1,108 @@
-# Demo Studio: Seeder + REC Mode + Guiones
+# Demo Studio v2 — Cierre completo de gaps
 
-Construir una herramienta interna de admin para cargar/limpiar datos de ejemplo con un click, ocultar tu identidad real durante grabaciones, y tener los guiones listos cuando vayas a grabar.
+Cerramos los 6 gaps detectados para que el Demo Studio quede listo para grabar profesionalmente, incluyendo Chile y Canadá.
 
-## Qué se entrega
+---
 
-### 1. Edge Function `manage-demo-data`
-Una sola función con 3 acciones:
-- **`seed`**: inserta los datos del escenario elegido en TU usuario (admin), prefijando todo con `[DEMO]` en `notes` o campos equivalentes.
-- **`reset`**: borra todos los registros que matcheen `[DEMO]%` de tus tablas (expenses, incomes, bills, bank_transactions, contracts, notes, tags relacionados).
-- **`status`**: cuenta cuántos registros demo tienes activos por tabla.
+## 1. Marcar campos sensibles con `data-pii` (CRÍTICO)
 
-Validaciones:
-- Solo ejecutable por usuarios con rol `admin` (usa `has_role`).
-- Usa `service_role` internamente para evitar problemas de RLS, pero siempre filtra por el `user_id` del admin que llama.
-- Respeta el patrón `Deno.serve` nativo (regla de memoria).
+El CSS de REC Mode ya existe pero no enmascara nada hoy. Voy a marcar los puntos donde aparece tu identidad real:
 
-### 2. Escenarios embebidos (2)
-JSON dentro de la edge function, dinámicos por fecha (todos relativos a `now()`):
+- **Header de usuario** (avatar, nombre, email en dropdown)
+- **Página de Settings/Perfil** (campos de nombre, email, teléfono)
+- **Sidebar/menú móvil** (saludo "Hola, [nombre]")
+- **Badge de email** en facturación/suscripción
+- **Avatares con foto real** → blur
 
-**Escenario A — "María Profesional" (caso ordenado)**
-- 3 cuentas bancarias (corriente, ahorro, tarjeta crédito)
-- 45 transacciones bancarias últimos 60 días
-- 12 gastos categorizados (arriendo, supermercado, gasolina, suscripciones)
-- 4 ingresos (sueldo x2, freelance x2)
-- 3 facturas recurrentes detectadas (Netflix, Spotify, Gym)
-- 2 contratos analizados (arriendo, seguro auto)
-- 1 entidad fiscal (Chile, SII)
+Resultado: al activar REC Mode, tu nombre se reemplaza por "Demo User", el email se difumina, los avatares se borronean. Sin tocar lógica, solo atributos.
 
-**Escenario B — "Carlos Caos" (caso Chaos Inbox)**
-- 30 transacciones bancarias sin clasificar
-- 8 gastos duplicados (3 grupos de duplicados detectables)
-- 5 notas de voz pendientes de procesar
-- 2 recibos OCR sin asociar
-- Transacciones recurrentes ocultas (mismo monto/comercio cada mes para que el detector las encuentre en vivo)
+---
 
-### 3. Panel admin `/admin/demo-studio`
-Página simple en español (regla: admin UI es ES estricto):
-- Card con estado actual (cuántos registros demo activos)
-- Selector de escenario (A o B)
-- Botón "Cargar escenario" (con confirmación)
-- Botón "Limpiar todo demo" (con confirmación destructiva)
-- Toggle "REC Mode" persistente (guarda en localStorage)
-- Link a la documentación de uso
+## 2. Validar el seeder contra el schema real (CRÍTICO)
 
-Acceso: solo visible si `is_admin = true`. Ruta protegida.
+La edge function inserta en 5 tablas con campos que inventé sin verificar. Riesgo alto de que `seed` falle. Voy a:
 
-### 4. REC Mode
-Implementación ligera sin tocar componentes existentes:
-- Hook `useRecMode()` que lee localStorage + emite evento.
-- Componente `<RecModeOverlay />` montado en `App.tsx` que aplica clase global `rec-mode` al `<body>`.
-- CSS global en `index.css`:
-  - `.rec-mode [data-pii="email"] { filter: blur(6px); }`
-  - `.rec-mode [data-pii="name"]::after { content: "Demo User"; }` (o reemplazo via JS)
-  - `.rec-mode [data-pii="id"] { filter: blur(4px); }`
-- Floating button (FAB) bottom-right SOLO visible para admins, toggle ON/OFF con indicador rojo "● REC".
-- Marcar campos sensibles existentes con `data-pii="..."` en: header de usuario, perfil, settings. (Cambios mínimos, ~5 archivos).
+- Leer el schema real de `expenses`, `income`, `recurring_bills`, `bank_transactions`, `fiscal_entities`
+- Ajustar el payload de cada escenario para que coincida 1:1 (tipos enum, columnas opcionales/requeridas, defaults)
+- Probar `seed` y `reset` con la cuenta admin
+- Confirmar que `status` cuenta correctamente
 
-### 5. Documentación `/mnt/documents/demo-studio/`
-- `README.md`: cómo usar el Demo Studio paso a paso (cargar, grabar, limpiar).
-- `pre-recording-checklist.md`: checklist antes de cada grabación (REC Mode ON, escenario cargado, navegador en modo limpio, resolución, etc.).
-- **5 guiones** (uno por video) en archivos separados:
-  1. `01-tour-general-90s.md`
-  2. `02-chaos-inbox-2min.md`
-  3. `03-bank-master-truth-90s.md`
-  4. `04-voice-capture-60s.md`
-  5. `05-reports-tax-hub-2min.md`
-  
-  Cada guion incluye: timestamps acumulados, voiceover ES + EN, acciones de click exactas, escenario requerido (A o B), notas de edición visual.
+---
 
-- `EvoFinz-Guiones-Videos-v1.pdf`: compilado profesional de los 5 guiones.
+## 3. Indicador visual de grabación
 
-## Cómo lo vas a usar (flujo)
+Hoy solo está el FAB rojo. Cuando grabas, es fácil olvidar que está activo. Añado:
 
-1. Vas a `/admin/demo-studio`.
-2. Eliges escenario (A para tour ordenado, B para chaos inbox/duplicados).
-3. Click "Cargar escenario" → espera confirmación (~5s).
-4. Activas REC Mode con el FAB rojo.
-5. Grabas siguiendo el guion correspondiente desde `/mnt/documents/demo-studio/`.
-6. Al terminar: click "Limpiar todo demo" → tu cuenta vuelve al estado original.
+- **Borde rojo sutil de 2px** alrededor del viewport cuando REC Mode está ON (estilo OBS)
+- **Etiqueta "DEMO MODE"** semitransparente arriba-izquierda (no estorba la grabación pero te recuerda)
+- Mejora la consistencia visual del FAB existente
 
-## Detalles técnicos
+---
 
-**Sin migración de DB**: usamos convención `notes LIKE '[DEMO]%'` para identificar registros. Cero cambios al schema. Si en el futuro quieres limpiar manual desde DB: `DELETE FROM expenses WHERE user_id = '...' AND notes LIKE '[DEMO]%'` (y equivalente por tabla).
+## 4. Guiones embebidos en el panel admin
 
-**Fechas dinámicas**: el seeder calcula fechas relativas a `now()` para que cada vez que cargues el escenario las transacciones se vean "frescas" (últimos 60 días).
+En lugar de tener que abrir el PDF en otra pantalla:
 
-**Idempotencia**: el botón seed primero hace un reset interno antes de insertar, para evitar acumulación si lo presionas dos veces.
+- Embeber los 5 guiones como texto estructurado dentro de `/admin/demo-studio`
+- Botones por guion: **"Ver guion"**, **"Copiar voiceover ES"**, **"Copiar voiceover EN"**
+- Vista plegable con timestamps + acciones de click + notas de edición
+- Útil si grabas en mobile o sin segunda pantalla
 
-**Tablas afectadas por seeder/reset** (a confirmar al implementar):
-`expenses`, `incomes`, `bills`, `bank_accounts`, `bank_transactions`, `contracts`, `notes`, `categories` (solo si se crean nuevas con prefijo `[DEMO]`), `fiscal_entities`.
+---
 
-**REC Mode no toca datos**: solo es CSS + atributos `data-pii`. Tus datos reales nunca se modifican; solo se enmascaran visualmente.
+## 5. Escenario C — "Constructora CA" (Canadá B2B)
 
-**Costo estimado**: ~1 edge function nueva, ~3 archivos nuevos en frontend (`/admin/demo-studio/page.tsx`, hook, FAB), ~5 archivos editados para añadir `data-pii`, generación de PDFs y .md de guiones. Mucho más barato que el alcance "Completo" original.
+Solo tienes escenarios Chile/persona natural. Para grabar bien el video de Tax Hub CRA falta:
 
-## Lo que NO se hace (intencional)
-- No se crean tablas nuevas en DB.
-- No se tocan los componentes de captura, listas, ni dashboards existentes (más allá de añadir `data-pii` a 5 campos de identidad).
-- No se embebe el visor de guiones dentro de la app (los lees desde `/mnt/documents/`).
-- No se generan vídeos automáticos ni música de fondo.
+- Empresa con HST/GST (Ontario 13%)
+- 8 facturas con impuestos canadienses desglosados
+- 5 entradas de mileage tracking (km empresariales)
+- 3 ingresos de clientes
+- 1 entidad fiscal CA con Business Number ficticio
+- Moneda CAD
 
-## Próximo paso después de aprobar
-Entro a build mode y entrego en este orden:
-1. Edge function + escenarios.
-2. Página admin + hook REC Mode + FAB.
-3. `data-pii` en campos sensibles.
-4. Documentación + 5 guiones + PDF en `/mnt/documents/demo-studio/`.
-5. Te explico cómo probarlo end-to-end en un mensaje final.
+Útil para: video Reports & Tax Hub (sección Canadá) y demos a leads canadienses.
+
+---
+
+## 6. Modo silencioso para gamificación
+
+Streaks, puntos y confetti pueden distraer en videos serios de finanzas. Añado:
+
+- Toggle **"Modo silencioso"** en el panel Demo Studio
+- Cuando está ON + REC Mode activo: oculta badges de XP, suprime notificaciones de logros, desactiva confetti
+- Solo visual, no toca datos ni progreso real
+- Se restaura automáticamente al desactivar REC Mode
+
+---
+
+## Detalle técnico
+
+**Archivos nuevos:**
+- (ninguno, todo se integra en archivos existentes)
+
+**Archivos editados (~10):**
+- `supabase/functions/manage-demo-data/index.ts` — ajustar payloads tras leer schema + añadir escenario Canadá
+- `src/pages/admin/DemoStudio.tsx` — selector de 3 escenarios, sección guiones embebidos, toggle modo silencioso
+- `src/components/RecModeFab.tsx` — overlay de borde rojo + etiqueta DEMO MODE
+- `src/index.css` — estilos del overlay + reglas modo silencioso (`.rec-mode.quiet [data-gamification]`)
+- `src/hooks/useRecMode.ts` — añadir estado `quietMode` persistido
+- ~5 componentes con identidad real → añadir `data-pii="..."` (Header, Settings, Sidebar, etc.)
+- ~3 componentes de gamificación → añadir `data-gamification` para que el modo silencioso los pueda ocultar
+
+**Sin migración de DB.** Sin nuevas dependencias. Todo gated por `is_admin`. Cero impacto en usuarios reales.
+
+**Datos de los 5 guiones:** los guiones ya generados en `/mnt/documents/demo-studio/*.md` los leo y los importo como constantes TS dentro del panel admin (no duplicación de mantenimiento si actualizas el PDF, solo regeneras desde la misma fuente).
+
+---
+
+## Orden de entrega
+
+1. Validar schema real (item 2) — base para que todo funcione
+2. Marcar `data-pii` (item 1) — desbloquea REC Mode visualmente
+3. Overlay visual REC (item 3)
+4. Escenario Canadá (item 5)
+5. Guiones embebidos (item 4)
+6. Modo silencioso (item 6)
+
+Te aviso al final con el flujo de prueba end-to-end (cargar → activar REC → ver guion → grabar → limpiar).
