@@ -36,8 +36,16 @@ export const openDashboardAfterUiModeChange = () => {
 
 export const useDisplayPreferences = () => {
   const { user } = useAuth();
-  const [preferences, setPreferences] = useState<DisplayPreferences>(DEFAULT_DISPLAY_PREFERENCES);
-  const [isLoading, setIsLoading] = useState(true);
+  // Initialize synchronously from localStorage to avoid first-render flash
+  // (e.g. brief flash of Advanced UI before Simple loads from server)
+  const [preferences, setPreferences] = useState<DisplayPreferences>(() => {
+    const storedMode = getStoredUiMode();
+    return storedMode
+      ? { ...DEFAULT_DISPLAY_PREFERENCES, ui_mode: storedMode }
+      : DEFAULT_DISPLAY_PREFERENCES;
+  });
+  // If we already have a stored UI mode, we can render immediately without waiting for the network
+  const [isLoading, setIsLoading] = useState(() => getStoredUiMode() === null);
   const [isSaving, setIsSaving] = useState(false);
 
   // Refs to avoid stale closures and prevent re-renders
