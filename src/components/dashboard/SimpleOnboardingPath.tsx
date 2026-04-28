@@ -1,14 +1,15 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Briefcase, Users, FileText, Check, ArrowRight, Rocket } from 'lucide-react';
+import { Briefcase, Users, FileText, Check, ArrowRight, Rocket, Plus } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useProfile } from '@/hooks/data/useProfile';
 import { useClients } from '@/hooks/data/useClients';
 import { useContracts } from '@/hooks/data/useContracts';
 import { useFiscalEntities } from '@/hooks/data/useFiscalEntities';
+import { ClientDialog } from '@/components/dialogs/ClientDialog';
 import { cn } from '@/lib/utils';
 
 /**
