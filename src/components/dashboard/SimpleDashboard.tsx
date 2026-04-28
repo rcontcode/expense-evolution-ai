@@ -330,7 +330,7 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
                   icon={<Mic className="h-4 w-4" />}
                   label={language === 'es' ? 'Voz' : 'Voice'}
                   hint={language === 'es' ? 'dictado' : 'dictate'}
-                  onClick={() => navigate('/capture?mode=voice')}
+                  onClick={() => (onQuickCapture ? onQuickCapture() : navigate('/expenses?new=1'))}
                 />
                 <EmptyStateChip
                   icon={<PenLine className="h-4 w-4" />}
