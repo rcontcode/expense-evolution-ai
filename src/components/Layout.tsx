@@ -353,6 +353,17 @@ export const Layout = ({ children }: LayoutProps) => {
   const { data: unreadCount = 0 } = useUnreadNotifications();
   const { uiMode } = useDisplayPreferences();
   const isSimpleMode = uiMode === 'simple';
+
+  // In Simple Mode, filter sidebar items to only essential routes
+  const NAV_SECTIONS_VISIBLE = isSimpleMode
+    ? NAV_SECTIONS
+        .map((section) => ({
+          ...section,
+          items: section.items.filter((it: any) => isEssentialPath(it.path)),
+        }))
+        .filter((section) => section.items.length > 0)
+    : NAV_SECTIONS;
+
   const sidebarNavRef = useRef<HTMLElement>(null);
   const SIDEBAR_SCROLL_KEY = '__sidebar_scroll__';
 
