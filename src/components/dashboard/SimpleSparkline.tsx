@@ -22,6 +22,16 @@ interface SimpleSparklineProps {
  */
 export function SimpleSparkline({ trends, language }: SimpleSparklineProps) {
   const { formatCurrency } = useFormatCurrency();
+  const [legendDismissed, setLegendDismissed] = useState(true);
+
+  useEffect(() => {
+    setLegendDismissed(localStorage.getItem(LEGEND_KEY) === '1');
+  }, []);
+
+  const dismissLegend = () => {
+    localStorage.setItem(LEGEND_KEY, '1');
+    setLegendDismissed(true);
+  };
 
   const { path, areaPath, points, max, min, current, previous, deltaPct, trendDir } = useMemo(() => {
     const W = 100;
