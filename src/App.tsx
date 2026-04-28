@@ -453,6 +453,7 @@ const App = () => (
                 <HighlightProvider>
                   <GamificationProvider>
                   <MissionListenerInitializer />
+                  <GlobalBackgroundServices />
                   <IdlePreloader />
                   <RouteRenderHeartbeat />
                   <RouteSyncGuard />
