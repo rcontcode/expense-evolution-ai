@@ -16,7 +16,7 @@ import { LiveClock } from '@/components/dashboard/LiveClock';
 import { ProfileCompletionNudge } from '@/components/profile/ProfileCompletionNudge';
 import { DashboardGamificationWidget } from '@/components/gamification';
 import { MissionControl } from '@/components/dashboard/MissionControl';
-import { useDisplayPreferences } from '@/hooks/data/useDisplayPreferences';
+import { applyUiModeImmediately, useDisplayPreferences } from '@/hooks/data/useDisplayPreferences';
 import { SimpleSparkline } from './SimpleSparkline';
 
 
@@ -180,6 +180,7 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
           size="sm"
           className="text-xs text-muted-foreground hover:text-foreground gap-1.5"
           onClick={() => {
+            applyUiModeImmediately('simple');
             setUiMode('simple');
             navigate('/dashboard', { replace: true });
           }}
