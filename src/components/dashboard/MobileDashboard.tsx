@@ -16,6 +16,7 @@ import { LiveClock } from '@/components/dashboard/LiveClock';
 import { ProfileCompletionNudge } from '@/components/profile/ProfileCompletionNudge';
 import { DashboardGamificationWidget } from '@/components/gamification';
 import { MissionControl } from '@/components/dashboard/MissionControl';
+import { UiModeToggle } from '@/components/layout/UiModeToggle';
 
 const LazyEcosystemWidgets = lazy(() => import('@/components/ecosystem/EcosystemDashboardWidgets'));
 const LazyBankingSummaryCard = lazy(() => import('@/components/banking/BankingSummaryCard').then(m => ({ default: m.BankingSummaryCard })));
@@ -152,6 +153,13 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
 
   return (
     <div className="mobile-compact space-y-2">
+      {/* Vista actual: toggle prominente y siempre visible */}
+      <div className="flex items-center justify-between gap-2 px-1 py-1">
+        <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">
+          {language === 'es' ? 'Vista' : 'View'}
+        </span>
+        <UiModeToggle />
+      </div>
       <LiveClock />
       <MobileTabLayout tabs={tabs} paramKey="dash" defaultTab="resumen" />
     </div>

@@ -1,100 +1,75 @@
-# Plan: Modo Simple + Refactor del Modo Avanzado
+## Mejoras al Dashboard Mobile
 
-Implementar un sistema de dos modos de uso (Simple y Avanzado) para reducir la complejidad percibida de la app, **y** mejorar el modo Avanzado para que tampoco se sienta abrumador.
+### Problemas detectados en tu screenshot
 
----
-
-## Parte 1 — Modo Simple (nuevo)
-
-### 1.1 Preferencia del usuario
-Agregar `ui_mode: 'simple' | 'advanced'` a `display_preferences` en `profiles` (ya existe el JSONB, no hay migración de schema). Default: `simple` para usuarios nuevos, `advanced` para usuarios existentes (detectado por presencia previa de `view_mode`).
-
-Actualizar `useDisplayPreferences.ts` para exponer `uiMode` y `setUiMode`.
-
-### 1.2 Dashboard Simple
-Nuevo componente `src/components/dashboard/SimpleDashboard.tsx` que muestra solo:
-- Balance del mes (ingresos − gastos)
-- Botones grandes: **+ Gasto**, **+ Ingreso**, **📷 Capturar**
-- Lista de últimos 8 movimientos
-- 1 card de alerta del mes (si hay)
-
-Sin tabs, sin grids complejos, mucho whitespace, estética actual condensada (mantiene "3D candy").
-
-`Dashboard.tsx` renderiza `<SimpleDashboard />` cuando `uiMode === 'simple'`, si no, el dashboard actual.
-
-### 1.3 Navegación filtrada
-En `Layout.tsx` (sidebar desktop) y `MobileTabLayout` (móvil), filtrar items por modo:
-
-**Esencial (visible en Simple):**
-Dashboard · Gastos · Ingresos · Presupuesto · Banking · Capturar · Configuración
-
-**Avanzado-only (oculto en Simple, accesible por URL):**
-Clientes · Contratos · Mileage · Mentoría · Inversiones · FIRE · TaxOptimizer · Ecosistema · Gamificación · NetWorth · Bills · Subscriptions · Analytics
-
-Las páginas ocultas siguen funcionando por URL directa (no rompe deep-links ni emails). Banner discreto arriba: *"Esta sección es del Modo Avanzado · [Activar Avanzado]"*.
-
-### 1.4 Toggle en header
-Componente `<UiModeToggle />` en el header del Layout (desktop y móvil): switch Simple ⇄ Avanzado siempre visible. Cambio instantáneo, sin recarga.
-
-### 1.5 Diálogo de bienvenida (1 vez)
-Si el usuario nunca eligió modo, mostrar diálogo: *"¿Cómo quieres empezar?"* con dos opciones grandes:
-- **Simple** — Solo lo esencial
-- **Avanzado** — Todas las herramientas
-
-Se guarda la elección y no vuelve a aparecer.
+1. **Barra horizontal visible** debajo de los tabs Resumen/Año/Acciones/Sistema — el `scrollbar-hide` de Tailwind no se aplica en algunos browsers.
+2. **Sigues en Modo Avanzado** (BD confirma `ui_mode = "advanced"`) — por eso ves los tabs en vez del SimpleDashboard limpio.
+3. **El toggle Simple/Avanzado solo está en el menú lateral** — no se ve directo en mobile, hay que abrir el sheet.
 
 ---
 
-## Parte 2 — Mejoras al Modo Avanzado
+### Cambios propuestos
 
-Para que Avanzado tampoco se sienta caótico:
+#### 1. Eliminar barra de scroll horizontal (real, no parche)
 
-### 2.1 Sidebar agrupado por categoría
-Refactorizar el sidebar (~40 items planos hoy) en grupos colapsables:
+`src/components/mobile/MobileTabLayout.tsx` — Reemplazar el div con `overflow-x-auto` por estilos inline que garantizan ocultar la scrollbar en TODOS los browsers (Chrome, Safari, Firefox, IE):
 
-```text
-📊 Diario          Dashboard, Gastos, Ingresos, Capturar, Banking
-💰 Planeación      Presupuesto, Bills, Subscriptions, Ahorro
-📈 Crecimiento     Inversiones, NetWorth, FIRE, Analytics
-💼 Negocio         Clientes, Contratos, Mileage, Proyectos
-🏛️ Impuestos       TaxOptimizer, Reportes fiscales
-🎯 Más             Mentoría, Gamificación, Ecosistema, Beta
-⚙️ Configuración
+```tsx
+style={{
+  scrollbarWidth: 'none',       // Firefox
+  msOverflowStyle: 'none',       // IE/Edge legacy
+  WebkitOverflowScrolling: 'touch',
+}}
+```
++ tag `<style>` inline con `::-webkit-scrollbar { display: none !important; }` con scope al `.mobile-tab-layout`.
+
+#### 2. Toggle Simple/Avanzado prominente en MobileDashboard
+
+`src/components/dashboard/MobileDashboard.tsx` — Insertar un mini-banner arriba de todo (antes de `<LiveClock />`) que muestre:
+
+```
+┌──────────────────────────────────────┐
+│  Vista actual:  [Simple] [Avanzado] │
+└──────────────────────────────────────┘
 ```
 
-Solo "Diario" abierto por defecto. Los demás grupos colapsados. El grupo que contiene la ruta activa se expande automáticamente.
+Usa el `<UiModeToggle />` ya existente (segmented control). Pequeño pero siempre visible.
 
-### 2.2 Default a Vista Organizada
-Cambiar default de `view_mode` de `classic` a `organized` para usuarios nuevos del modo Avanzado. Los existentes mantienen su preferencia.
+#### 3. Forzar tu cuenta a Modo Simple
 
-### 2.3 Sección "Más" en Mission Control
-Mover de la vista principal a una sección "Más" colapsada: Gamificación, Ecosistema, Mentoría, FIRE detallado. Solo se ven si el usuario las abre.
+Update directo a tu perfil (`Rudy`) en BD: `ui_mode = "simple"`. Así al recargar verás el SimpleDashboard inmediatamente y podrás comparar.
 
 ---
 
-## Archivos a modificar
+### Sobre tu pregunta del gráfico mes/año en Simple
 
-**Nuevos:**
-- `src/components/dashboard/SimpleDashboard.tsx`
-- `src/components/layout/UiModeToggle.tsx`
-- `src/components/onboarding/UiModeWelcomeDialog.tsx`
-- `src/lib/constants/nav-items.ts` (lista central con flag `essential: boolean`)
+**No, el gráfico mes/año NO va en Simple Mode.**
 
-**Modificados:**
-- `src/lib/constants/focus-areas.ts` — añadir tipo `UiMode` y default
-- `src/hooks/data/useDisplayPreferences.ts` — exponer `uiMode`/`setUiMode`
-- `src/components/Layout.tsx` — filtrar nav por modo, agregar toggle al header, agrupar sidebar
-- `src/components/mobile/MobileTabLayout.tsx` — filtrar tabs por modo
-- `src/pages/Dashboard.tsx` — renderizar SimpleDashboard cuando aplique
-- `src/components/settings/DisplayPreferencesCard.tsx` — añadir control de UiMode
-- Páginas avanzadas (Clientes, Contratos, Mileage, Investments, etc.) — banner "Modo Avanzado"
+Simple Mode = ultra-minimalista. Su propósito es:
+- Saludo
+- Onboarding pendiente
+- Balance del mes (solo número grande + barra de progreso)
+- 3 acciones grandes (Gasto / Ingreso / Capturar)
+- 2 atajos (Presupuesto / Banco)
+- 8 movimientos recientes
+- 1 tip de educación financiera
 
-**Sin tocar:** lógica de negocio, hooks de datos, edge functions, schema de DB.
+El gráfico anual (timeline de 12 meses) es **valor de Modo Avanzado**. Si lo agregamos a Simple, deja de ser simple.
+
+Si quieres que el usuario en Simple **vea tendencia**, podemos agregar una **mini-barra horizontal de 6 meses** (no full chart) — pero solo si lo pides explícito.
 
 ---
 
-## Resultado esperado
+### Archivos a modificar
 
-- Usuario nuevo: ve diálogo → elige Simple → dashboard ultra-limpio, 7 items en nav, cero abrumamiento.
-- Usuario que quiere todo: toggle a Avanzado en 1 clic → todas las funciones, pero ahora ordenadas en 6 grupos colapsables en vez de 40 items planos.
-- Cero pérdida de funcionalidad. Cero ruptura de deep-links. Cambio reversible en cualquier momento.
+- `src/components/mobile/MobileTabLayout.tsx` — fix scrollbar
+- `src/components/dashboard/MobileDashboard.tsx` — agregar toggle visible arriba
+- BD: update `profiles.display_preferences.ui_mode = 'simple'` para tu user
+
+---
+
+### Resultado esperado
+
+- Sin barra horizontal feo en ningún tab.
+- Toggle Simple/Avanzado visible siempre al abrir el dashboard mobile.
+- Tu cuenta en Simple, podrás comparar al instante.
