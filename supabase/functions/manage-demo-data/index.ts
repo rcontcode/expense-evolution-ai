@@ -975,6 +975,10 @@ async function seedDemo(supabase: any, userId: string, scenario: Scenario) {
     case "familia_rodriguez": data = buildScenarioFamiliaRodriguez(userId); break;
     case "ecolavanderia_spa": data = buildScenarioEcoLavanderia(userId); break;
     case "pareja_millennial": data = buildScenarioParejaMillennial(userId); break;
+    case "contador_independiente": data = buildScenarioContadorIndependiente(userId); break;
+    case "expat_multipais": data = buildScenarioExpatMultipais(userId); break;
+    case "jubilado_inversiones": data = buildScenarioJubiladoInversiones(userId); break;
+    case "emprendedor_digital": data = buildScenarioEmprendedorDigital(userId); break;
     default: throw new Error(`Unknown scenario: ${scenario}`);
   }
 
