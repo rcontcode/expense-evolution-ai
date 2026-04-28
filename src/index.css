@@ -3058,3 +3058,14 @@
 .rec-mode [data-pii="avatar"] {
   filter: blur(8px);
 }
+
+/* Quiet mode: hide gamification noise during recording */
+.rec-mode.quiet-mode [data-gamification],
+.rec-mode.quiet-mode [data-gamification="celebration"],
+.rec-mode.quiet-mode [data-gamification="streak"],
+.rec-mode.quiet-mode [data-gamification="xp"],
+.rec-mode.quiet-mode [data-gamification="confetti"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+}
