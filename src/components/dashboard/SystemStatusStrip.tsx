@@ -1,15 +1,16 @@
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { AnimatePresence, motion } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { useNudgeSystem } from '@/hooks/utils/useNudgeSystem';
 import { useRecurringBills } from '@/hooks/data/useRecurringBills';
 import { useDataHealthCheck } from '@/hooks/data/useDataHealthCheck';
 import { useMissionControl } from '@/hooks/utils/useMissionControl';
 import { cn } from '@/lib/utils';
 import { isPast } from 'date-fns';
+import { ChevronDown } from 'lucide-react';
 import { DashboardNotificationHub } from './DashboardNotificationHub';
 import { DataInventoryPanel } from './DataInventoryPanel';
 import { MissionControl } from './MissionControl';
@@ -50,7 +51,7 @@ export function SystemStatusStrip() {
   const isEs = language === 'es';
   const [openChip, setOpenChip] = useState<ChipKind | null>(null);
 
-  // ── Avisos: count of unread notifications + critical/warning alerts ──
+  // ── Avisos ──
   const { pendingDocuments, incompleteExpenses, expenseMissingReceipt, expensePendingClassification, expenseNoCategory } = useNudgeSystem();
   const { data: bills = [] } = useRecurringBills();
   const { data: healthData } = useDataHealthCheck();
@@ -72,7 +73,6 @@ export function SystemStatusStrip() {
 
   const overdueBills = bills.filter(b => b.status === 'active' && b.next_due_date && isPast(new Date(b.next_due_date))).length;
   const dataHealthIssues = (healthData?.totalIssues || 0) + expenseMissingReceipt + expensePendingClassification + expenseNoCategory;
-
   const avisosCount = notifications.length + pendingDocuments + incompleteExpenses + overdueBills + (dataHealthIssues > 0 ? 1 : 0);
   const avisosUrgency: Urgency = useMemo(() => {
     if (overdueBills > 0 || incompleteExpenses > 0 || dataHealthIssues > 0) return 'critical';
@@ -81,7 +81,7 @@ export function SystemStatusStrip() {
     return 'info';
   }, [overdueBills, incompleteExpenses, dataHealthIssues, pendingDocuments, notifications.length, avisosCount]);
 
-  // ── Datos: count of populated categories / total ──
+  // ── Datos ──
   const { data: inv } = useQuery({
     queryKey: ['data-inventory-strip', user?.id],
     queryFn: async () => {
@@ -98,7 +98,6 @@ export function SystemStatusStrip() {
     enabled: !!user?.id,
     staleTime: 60_000,
   });
-
   const datosUrgency: Urgency = useMemo(() => {
     if (!inv) return 'info';
     if (inv.populated <= 2) return 'warning';
@@ -106,13 +105,12 @@ export function SystemStatusStrip() {
     return 'info';
   }, [inv]);
 
-  // ── Sistema: Mission Control readiness ──
+  // ── Sistema ──
   const mc = useMissionControl();
   const blockedFeatures = mc.featureReadiness?.filter(f => f.readiness === 'blocked').length ?? 0;
   const partialFeatures = mc.featureReadiness?.filter(f => f.readiness === 'partial').length ?? 0;
   const readyFeatures = mc.featureReadiness?.filter(f => f.readiness === 'ready').length ?? 0;
   const totalFeatures = mc.featureReadiness?.length ?? 0;
-
   const sistemaUrgency: Urgency = useMemo(() => {
     if (mc.isLoading) return 'info';
     if (blockedFeatures > 0 || mc.urgentTotal > 0) return 'critical';
@@ -161,23 +159,28 @@ export function SystemStatusStrip() {
     },
   ];
 
+  const toggle = (kind: ChipKind) => setOpenChip(prev => (prev === kind ? null : kind));
+
   return (
-    <>
+    <div className="space-y-3">
+      {/* Compact 3-chip header row */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
         {chips.map(chip => {
           const s = URGENCY_STYLES[chip.urgency];
+          const isOpen = openChip === chip.kind;
           return (
             <button
               key={chip.kind}
               type="button"
-              onClick={() => setOpenChip(chip.kind)}
+              onClick={() => toggle(chip.kind)}
+              aria-expanded={isOpen}
               className={cn(
                 'group relative flex items-center gap-2.5 px-3 py-2 rounded-xl border bg-card text-left transition-all',
-                'hover:shadow-md hover:-translate-y-0.5',
+                'hover:shadow-md',
                 s.ring,
                 chip.urgency === 'critical' && 'ring-1',
+                isOpen && 'shadow-md ring-1 ring-primary/30 border-primary/30',
               )}
-              aria-label={`${chip.label} — ${chip.sublabel}`}
             >
               <div className="relative flex items-center justify-center h-9 w-9 rounded-lg bg-muted/50 shrink-0">
                 <span className="text-lg leading-none">{chip.emoji}</span>
@@ -194,78 +197,31 @@ export function SystemStatusStrip() {
                 </div>
                 <p className={cn('text-[10.5px] truncate mt-0.5', s.text)}>{chip.sublabel}</p>
               </div>
-              <span className="text-muted-foreground/60 text-xs shrink-0 group-hover:translate-x-0.5 transition-transform">›</span>
+              <ChevronDown className={cn('h-4 w-4 text-muted-foreground shrink-0 transition-transform', isOpen && 'rotate-180')} />
             </button>
           );
         })}
       </div>
 
-      {/* Sheets — render the full existing panels inside */}
-      <Sheet open={openChip === 'avisos'} onOpenChange={(o) => !o && setOpenChip(null)}>
-        <SheetContent side="right" className="w-full sm:max-w-2xl overflow-y-auto">
-          <SheetHeader className="mb-4">
-            <SheetTitle>📋 {isEs ? 'Centro de Avisos' : 'Notification Center'}</SheetTitle>
-            <SheetDescription>
-              {isEs ? 'Recordatorios, alertas y notificaciones que requieren tu atención.' : 'Reminders, alerts and notifications that need your attention.'}
-            </SheetDescription>
-          </SheetHeader>
-          <ForceExpanded>
-            <DashboardNotificationHub />
-          </ForceExpanded>
-        </SheetContent>
-      </Sheet>
-
-      <Sheet open={openChip === 'datos'} onOpenChange={(o) => !o && setOpenChip(null)}>
-        <SheetContent side="right" className="w-full sm:max-w-2xl overflow-y-auto">
-          <SheetHeader className="mb-4">
-            <SheetTitle>🗂️ {isEs ? 'Mi Inventario de Datos' : 'My Data Inventory'}</SheetTitle>
-            <SheetDescription>
-              {isEs ? 'Todo lo que tu sistema sabe sobre ti, organizado por categoría.' : 'Everything your system knows about you, organized by category.'}
-            </SheetDescription>
-          </SheetHeader>
-          <ForceExpanded>
-            <DataInventoryPanel />
-          </ForceExpanded>
-        </SheetContent>
-      </Sheet>
-
-      <Sheet open={openChip === 'sistema'} onOpenChange={(o) => !o && setOpenChip(null)}>
-        <SheetContent side="right" className="w-full sm:max-w-2xl overflow-y-auto">
-          <SheetHeader className="mb-4">
-            <SheetTitle>🚀 {isEs ? 'Mission Control' : 'Mission Control'}</SheetTitle>
-            <SheetDescription>
-              {isEs ? 'Estado de tus funciones, qué está activo y qué te falta para desbloquear más.' : 'Status of your features — what is active and what you need to unlock more.'}
-            </SheetDescription>
-          </SheetHeader>
-          <ForceExpanded>
-            <MissionControl />
-          </ForceExpanded>
-        </SheetContent>
-      </Sheet>
-    </>
-  );
-}
-
-/** Wrapper that auto-clicks the first collapsible trigger so panels open by default inside Sheet. */
-function ForceExpanded({ children }: { children: React.ReactNode }) {
-  return (
-    <div
-      ref={(el) => {
-        if (!el) return;
-        // Open all immediate collapsible triggers so users see content right away in the Sheet
-        requestAnimationFrame(() => {
-          const triggers = el.querySelectorAll<HTMLElement>('[aria-expanded="false"]');
-          triggers.forEach(t => {
-            // Only auto-open the top-level panel header (first one), not nested rows
-            if (t.closest('[data-section]') || t.tagName === 'BUTTON') {
-              const isTopLevel = !t.parentElement?.closest('[aria-expanded]');
-              if (isTopLevel) t.click();
-            }
-          });
-        });
-      }}
-    >
-      {children}
+      {/* Inline expanded panel — full width below the chips */}
+      <AnimatePresence initial={false}>
+        {openChip && (
+          <motion.div
+            key={openChip}
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.22 }}
+            className="overflow-hidden"
+          >
+            <div className="pt-1">
+              {openChip === 'avisos' && <DashboardNotificationHub />}
+              {openChip === 'datos' && <DataInventoryPanel />}
+              {openChip === 'sistema' && <MissionControl />}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
