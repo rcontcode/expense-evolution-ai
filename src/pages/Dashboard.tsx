@@ -190,7 +190,7 @@ export default function Dashboard() {
   if (uiMode === 'simple') {
     return (
       <Layout>
-        <div className={cn('page-container section-gap', isMobile && 'mobile-compact')}>
+        <div className={cn('page-container section-gap w-full max-w-full min-w-0 overflow-x-hidden', isMobile && 'mobile-compact')}>
           <SimpleDashboard onQuickCapture={() => openQuickCapture('photo')} />
         </div>
         <ExportDialog open={exportDialogOpen} onClose={() => setExportDialogOpen(false)} expenses={allExpenses || []} />

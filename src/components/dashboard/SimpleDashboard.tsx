@@ -269,7 +269,7 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
   };
 
   return (
-    <div className="space-y-5 w-full max-w-6xl mx-auto pb-28 lg:pb-8 overflow-x-hidden">
+    <div className="space-y-5 w-full max-w-full lg:max-w-6xl mx-auto pb-28 lg:pb-8 overflow-x-hidden min-w-0">
       {/* Greeting */}
       <div className="px-1 pt-1">
         <h1 className="text-2xl lg:text-4xl font-bold">
@@ -589,10 +589,10 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
       </div>
 
       {/* Two-column area: Recent activity + Financial education side by side on laptop */}
-      <div className="grid gap-4 lg:grid-cols-2 items-start">
+      <div className="grid gap-4 lg:grid-cols-2 items-start min-w-0">
       {/* Recent activity */}
-      <Card className="h-full">
-        <CardContent className="p-4">
+      <Card className="h-full min-w-0 overflow-hidden">
+        <CardContent className="p-4 min-w-0">
           <div className="flex flex-col gap-2 mb-3 sm:flex-row sm:items-center sm:justify-between">
             <h3 className="font-bold text-base">
               {language === 'es' ? 'Movimientos recientes' : 'Recent activity'}
@@ -652,7 +652,7 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
               </div>
             </div>
           ) : (
-            <ul className="divide-y divide-border/40">
+            <ul className="divide-y divide-border/40 w-full min-w-0 overflow-hidden">
               {recent.map((item) => (
                 <li key={item.id}>
                   <button
@@ -662,10 +662,10 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
                         ? `/income?edit=${item.rawId}`
                         : `/expenses?edit=${item.rawId}`
                     )}
-                    className="w-full flex items-center justify-between py-2.5 -mx-1 px-1 rounded-lg hover:bg-muted/40 active:bg-muted/60 transition-colors text-left"
+                    className="w-full max-w-full min-w-0 flex items-center justify-between gap-2 py-2.5 px-1 rounded-lg hover:bg-muted/40 active:bg-muted/60 transition-colors text-left overflow-hidden"
                     aria-label={language === 'es' ? `Editar ${item.label}` : `Edit ${item.label}`}
                   >
-                    <div className="flex items-center gap-3 min-w-0">
+                    <div className="flex flex-1 items-center gap-2.5 sm:gap-3 min-w-0 overflow-hidden">
                       <div
                         className={cn(
                           'shrink-0 w-9 h-9 rounded-lg flex items-center justify-center',
@@ -676,7 +676,7 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
                       >
                         {item.type === 'income' ? <TrendingUp className="h-4 w-4" /> : <Receipt className="h-4 w-4" />}
                       </div>
-                      <div className="min-w-0">
+                      <div className="min-w-0 flex-1 overflow-hidden">
                         <div className="text-sm font-medium truncate">{item.label}</div>
                         <div className="text-xs text-muted-foreground">
                           {new Date(item.date).toLocaleDateString(language === 'es' ? 'es' : 'en', {
@@ -686,10 +686,10 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-1 shrink-0 ml-3">
+                    <div className="flex items-center justify-end gap-1 shrink-0 max-w-[38%] sm:max-w-[34%] min-w-0">
                       <div
                         className={cn(
-                          'text-sm font-bold tabular-nums',
+                          'truncate text-right text-xs sm:text-sm font-bold tabular-nums min-w-0',
                           item.type === 'income'
                             ? 'text-emerald-600 dark:text-emerald-400'
                             : 'text-foreground',
@@ -698,7 +698,7 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
                         {item.type === 'income' ? '+' : '−'}
                         {formatCurrency(item.amount)}
                       </div>
-                      <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/60" />
+                      <ChevronRight className="hidden sm:block h-3.5 w-3.5 shrink-0 text-muted-foreground/60" />
                     </div>
                   </button>
                 </li>
