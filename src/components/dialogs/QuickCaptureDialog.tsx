@@ -84,8 +84,8 @@ export function QuickCaptureDialog({ open, onClose, defaultTab = 'photo' }: Quic
                   </div>
                   <p className="text-[11px] text-muted-foreground">
                     {l 
-                      ? '→ La IA detecta el tipo y crea el registro directamente' 
-                      : '→ AI detects the type and creates the record directly'}
+                      ? '→ El sistema detecta el tipo y crea el registro directamente' 
+                      : '→ The system detects the type and creates the record directly'}
                   </p>
                 </div>
                 <SmartTextInput onSuccess={onClose} onCancel={onClose} />
