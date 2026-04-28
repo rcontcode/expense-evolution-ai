@@ -182,6 +182,14 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
               <Progress value={spentPct} className="h-2" />
             </div>
           )}
+
+          {/* Mini-trend sparkline — last 6 months of spending */}
+          {(stats?.monthlyTrends?.length ?? 0) >= 2 && (
+            <SimpleSparkline
+              trends={stats!.monthlyTrends}
+              language={language}
+            />
+          )}
         </CardContent>
       </Card>
 
