@@ -367,78 +367,147 @@ export function DashboardNotificationHub() {
   const visibleNotifications = expanded ? notifications : notifications.slice(0, 2);
   const visibleAlerts = expanded ? smartAlerts : smartAlerts.slice(0, 3);
 
+  // ── Urgency level for collapsed indicator ──
+  // critical (red): overdue bills, data health issues, incomplete expenses
+  // warning (amber): upcoming bills, at-risk goals, pending documents
+  // info (blue): everything else (onboarding, no income, completeness prompt)
+  const urgencyLevel: 'critical' | 'warning' | 'info' = (() => {
+    const ids = smartAlerts.map(a => a.id);
+    if (ids.some(id => id === 'overdue_bills' || id === 'data_health' || id === 'incomplete_expenses')) return 'critical';
+    if (ids.some(id => id === 'upcoming_bills' || id.startsWith('goal_risk_') || id === 'pending_docs')) return 'warning';
+    return 'info';
+  })();
+
+  const urgencyStyles = {
+    critical: {
+      ring: 'ring-2 ring-red-500/40',
+      border: 'border-red-500/30',
+      badge: 'bg-red-500 text-white shadow-red-500/40',
+      dot: 'bg-red-500',
+      label: l ? 'Requiere tu atención' : 'Needs your attention',
+      labelColor: 'text-red-600 dark:text-red-400',
+      pulse: true,
+    },
+    warning: {
+      ring: 'ring-2 ring-amber-500/30',
+      border: 'border-amber-500/25',
+      badge: 'bg-amber-500 text-white shadow-amber-500/40',
+      dot: 'bg-amber-500',
+      label: l ? 'Recomendamos revisar' : 'Recommended to review',
+      labelColor: 'text-amber-600 dark:text-amber-400',
+      pulse: false,
+    },
+    info: {
+      ring: '',
+      border: 'border-primary/20',
+      badge: 'bg-primary text-primary-foreground shadow-primary/30',
+      dot: 'bg-primary',
+      label: l ? 'Pendientes informativos' : 'Informational items',
+      labelColor: 'text-muted-foreground',
+      pulse: false,
+    },
+  }[urgencyLevel];
+
   return (
     <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}
-      className="rounded-2xl border border-primary/20 bg-gradient-to-br from-card via-card/95 to-muted/30 shadow-lg shadow-primary/5 overflow-hidden">
+      className={cn(
+        "rounded-2xl border bg-gradient-to-br from-card via-card/95 to-muted/30 shadow-lg shadow-primary/5 overflow-hidden",
+        urgencyStyles.border
+      )}>
       
-      {/* Header */}
-      <div className="flex items-center justify-between px-5 py-3.5 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border-b border-primary/10">
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <div className="flex items-center justify-center h-9 w-9 rounded-xl bg-primary/15">
-              <Bell className="h-5 w-5 text-primary" />
+      {/* Header — clickable to toggle */}
+      <button
+        type="button"
+        onClick={() => setExpanded(prev => !prev)}
+        aria-expanded={expanded}
+        className="w-full flex items-center justify-between px-5 py-3.5 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border-b border-primary/10 hover:bg-primary/5 transition-colors text-left"
+      >
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="relative shrink-0">
+            <div className={cn(
+              "flex items-center justify-center h-9 w-9 rounded-xl bg-primary/15",
+              urgencyLevel === 'critical' && 'bg-red-500/15',
+              urgencyLevel === 'warning' && 'bg-amber-500/15',
+            )}>
+              <ClipboardList className={cn(
+                "h-5 w-5 text-primary",
+                urgencyLevel === 'critical' && 'text-red-500',
+                urgencyLevel === 'warning' && 'text-amber-500',
+              )} />
             </div>
             {totalItems > 0 && (
-              <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }}
-                className="absolute -top-1.5 -right-1.5 inline-flex items-center justify-center h-5 min-w-5 px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold shadow-lg shadow-destructive/30">
+              <motion.span
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                className={cn(
+                  "absolute -top-1.5 -right-1.5 inline-flex items-center justify-center h-5 min-w-5 px-1 rounded-full text-[10px] font-bold shadow-lg",
+                  urgencyStyles.badge,
+                  urgencyStyles.pulse && 'animate-pulse'
+                )}
+              >
                 {totalItems}
               </motion.span>
             )}
           </div>
-          <div>
-            <h3 className="text-sm font-bold text-foreground flex items-center gap-1.5">
-              🔔 {l ? 'Centro de Avisos' : 'Notification Center'}
+          <div className="min-w-0">
+            <h3 className="text-sm font-bold text-foreground flex items-center gap-1.5 truncate">
+              📋 {l ? 'Centro de Avisos' : 'Notification Center'}
+              {totalItems > 0 && (
+                <span className={cn("inline-block h-2 w-2 rounded-full shrink-0", urgencyStyles.dot, urgencyStyles.pulse && 'animate-pulse')} />
+              )}
             </h3>
-            <p className="text-[11px] text-muted-foreground">
-              {l ? 'Mantén todo actualizado para mejores resultados' : 'Keep everything updated for better results'}
+            <p className={cn("text-[11px] truncate", urgencyStyles.labelColor)}>
+              {totalItems > 0
+                ? `${urgencyStyles.label} · ${totalItems} ${l ? 'pendiente' + (totalItems > 1 ? 's' : '') : 'item' + (totalItems > 1 ? 's' : '')}`
+                : (l ? 'Resumen de tu estado financiero' : 'Your financial status summary')}
             </p>
           </div>
         </div>
-        {!expanded && (smartAlerts.length + notifications.length) > 3 && (
-          <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5 border-primary/20 hover:bg-primary/10"
-            onClick={() => setExpanded(true)}>
-            {l ? `Ver todo (${totalItems})` : `View all (${totalItems})`}
-            <ChevronDown className="h-3.5 w-3.5" />
-          </Button>
+        <div className="flex items-center gap-1 shrink-0 text-muted-foreground">
+          <span className="text-[11px] hidden sm:inline">
+            {expanded ? (l ? 'Ocultar' : 'Hide') : (l ? 'Ver' : 'View')}
+          </span>
+          {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+        </div>
+      </button>
+
+      <AnimatePresence initial={false}>
+        {expanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            className="overflow-hidden"
+          >
+            <div className="divide-y divide-border/20">
+              {/* Data completeness prompt */}
+              {shouldShowPrompt && (
+                <CompletenessPrompt l={l} looksIncomplete={looksIncomplete} expenseCount={expenseCount}
+                  confirmUpToDate={confirmUpToDate} snoozeUntil={snoozeUntil} tools={tools} />
+              )}
+
+              {/* Smart Alerts */}
+              <AnimatePresence>
+                {smartAlerts.map((alert, i) => (
+                  <SmartAlertRow key={alert.id} alert={alert} index={i} l={l}
+                    onAction={() => navigate(alert.actionUrl)}
+                    onDismiss={() => handleDismiss(alert.id)} />
+                ))}
+              </AnimatePresence>
+
+              {/* DB Notifications */}
+              <AnimatePresence>
+                {notifications.map((n, i) => (
+                  <NotificationRow key={n.id} notification={n} index={i} l={l}
+                    onAction={() => { markRead.mutate(n.id); if (n.action_url) navigate(n.action_url); }}
+                    onDismiss={() => markRead.mutate(n.id)} />
+                ))}
+              </AnimatePresence>
+            </div>
+          </motion.div>
         )}
-      </div>
-
-      <div className="divide-y divide-border/20">
-        {/* Data completeness prompt */}
-        {shouldShowPrompt && (
-          <CompletenessPrompt l={l} looksIncomplete={looksIncomplete} expenseCount={expenseCount}
-            confirmUpToDate={confirmUpToDate} snoozeUntil={snoozeUntil} tools={tools} />
-        )}
-
-        {/* Smart Alerts */}
-        <AnimatePresence>
-          {visibleAlerts.map((alert, i) => (
-            <SmartAlertRow key={alert.id} alert={alert} index={i} l={l}
-              onAction={() => navigate(alert.actionUrl)}
-              onDismiss={() => handleDismiss(alert.id)} />
-          ))}
-        </AnimatePresence>
-
-        {/* DB Notifications */}
-        <AnimatePresence>
-          {visibleNotifications.map((n, i) => (
-            <NotificationRow key={n.id} notification={n} index={i} l={l}
-              onAction={() => { markRead.mutate(n.id); if (n.action_url) navigate(n.action_url); }}
-              onDismiss={() => markRead.mutate(n.id)} />
-          ))}
-        </AnimatePresence>
-      </div>
-
-      {/* Show more / less */}
-      {(smartAlerts.length + notifications.length) > 3 && (
-        <button onClick={() => setExpanded(!expanded)}
-          className="w-full flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/20 transition-all border-t border-border/30">
-          {expanded
-            ? (l ? 'Mostrar menos' : 'Show less')
-            : (l ? `📬 Ver ${(smartAlerts.length + notifications.length) - 3} más` : `📬 Show ${(smartAlerts.length + notifications.length) - 3} more`)}
-          {expanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
-        </button>
-      )}
+      </AnimatePresence>
     </motion.div>
   );
 }
