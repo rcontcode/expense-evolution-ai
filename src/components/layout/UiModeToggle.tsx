@@ -1,5 +1,4 @@
 import { Sparkles, Layers } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useDisplayPreferences } from '@/hooks/data/useDisplayPreferences';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -19,7 +18,6 @@ export function UiModeToggle({ className, compact = false }: UiModeToggleProps) 
   const { uiMode, setUiMode } = useDisplayPreferences();
   const { language } = useLanguage();
   const { toast } = useToast();
-  const navigate = useNavigate();
 
   const isSimple = uiMode === 'simple';
 
@@ -34,8 +32,11 @@ export function UiModeToggle({ className, compact = false }: UiModeToggleProps) 
         ? (language === 'es' ? 'Vista minimalista con lo esencial.' : 'Minimal view with the essentials.')
         : (language === 'es' ? 'Acceso completo a todas las funciones.' : 'Full access to every feature.'),
     });
-    // Send the user to the dashboard so the change is immediately visible
-    navigate('/');
+    // Force full reload to dashboard so EVERY component re-mounts in the new mode.
+    // This guarantees the user sees the difference instantly, no stale state.
+    setTimeout(() => {
+      window.location.href = '/';
+    }, 350);
   };
 
   return (
