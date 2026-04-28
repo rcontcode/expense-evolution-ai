@@ -71,6 +71,9 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
             monthlyBalance={monthlyBalance}
             savingsRate={savingsRate}
           />
+          <Suspense fallback={<Skeleton className="h-40" />}>
+            <LazyFinancialNarrative />
+          </Suspense>
           <MonthDetailPanel
             year={selectedYear}
             month={selectedMonth}
@@ -78,6 +81,8 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
             onAddExpense={handleAddExpense}
             compact
           />
+          <DashboardNotificationHub />
+          <ProfileCompletionNudge />
         </div>
       ),
     },
@@ -166,7 +171,10 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
           variant="ghost"
           size="sm"
           className="text-xs text-muted-foreground hover:text-foreground gap-1.5"
-          onClick={() => setUiMode('simple')}
+          onClick={() => {
+            setUiMode('simple');
+            navigate('/', { replace: true });
+          }}
         >
           <Sparkles className="h-3.5 w-3.5" />
           {language === 'es' ? '¿Demasiado? Cambiar a Modo Simple' : 'Too much? Switch to Simple Mode'}
