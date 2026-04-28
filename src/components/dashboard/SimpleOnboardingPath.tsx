@@ -1,16 +1,19 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Briefcase, Users, FileText, Check, ArrowRight, Rocket, Plus } from 'lucide-react';
+import { Briefcase, Users, FileText, Check, ArrowRight, Rocket, Plus, X, PartyPopper } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useProfile } from '@/hooks/data/useProfile';
 import { useClients } from '@/hooks/data/useClients';
 import { useContracts } from '@/hooks/data/useContracts';
 import { useFiscalEntities } from '@/hooks/data/useFiscalEntities';
 import { ClientDialog } from '@/components/dialogs/ClientDialog';
+import { ContractDialog } from '@/components/dialogs/ContractDialog';
 import { cn } from '@/lib/utils';
+
+const DISMISS_KEY = 'simple_onboarding_completed_dismissed';
 
 /**
  * Short, guided onboarding path shown inside the SimpleDashboard.
@@ -19,7 +22,7 @@ import { cn } from '@/lib/utils';
  *   2. Clientes
  *   3. Contratos
  *
- * Auto-hides when all three are complete.
+ * Shows a celebration card once complete (dismissible).
  */
 export function SimpleOnboardingPath() {
   const { language } = useLanguage();
@@ -30,51 +33,72 @@ export function SimpleOnboardingPath() {
   const { data: contracts } = useContracts();
   const { data: fiscalEntities } = useFiscalEntities();
   const [clientDialogOpen, setClientDialogOpen] = useState(false);
+  const [contractDialogOpen, setContractDialogOpen] = useState(false);
+  const [completedDismissed, setCompletedDismissed] = useState(false);
 
-  const steps = useMemo(() => {
-    const hasFiscal =
-      Boolean((profile as any)?.country) &&
-      Boolean((profile as any)?.tax_regime || (profile as any)?.business_number) &&
-      ((fiscalEntities?.length ?? 0) > 0 || Boolean((profile as any)?.business_name));
+  useEffect(() => {
+    setCompletedDismissed(localStorage.getItem(DISMISS_KEY) === '1');
+  }, []);
+
+  const { steps, fiscalMissing } = useMemo(() => {
+    const p = profile as any;
+    const hasCountry = Boolean(p?.country);
+    const hasRegime = Boolean(p?.tax_regime || p?.business_number);
+    const hasBusiness = (fiscalEntities?.length ?? 0) > 0 || Boolean(p?.business_name);
+    const hasFiscal = hasCountry && hasRegime && hasBusiness;
+
+    const missing: string[] = [];
+    if (!hasCountry) missing.push(language === 'es' ? 'país' : 'country');
+    if (!hasRegime) missing.push(language === 'es' ? 'régimen fiscal' : 'tax regime');
+    if (!hasBusiness) missing.push(language === 'es' ? 'datos del negocio' : 'business info');
 
     const hasClients = (clients?.length ?? 0) > 0;
     const hasContracts = (contracts?.length ?? 0) > 0;
 
-    return [
-      {
-        id: 'fiscal',
-        label: language === 'es' ? 'Datos fiscales' : 'Tax info',
-        description:
-          language === 'es'
-            ? 'País, régimen y datos del negocio.'
-            : 'Country, regime and business info.',
-        icon: Briefcase,
-        done: hasFiscal,
-        path: '/settings?tab=fiscal',
-      },
-      {
-        id: 'clients',
-        label: language === 'es' ? 'Clientes' : 'Clients',
-        description:
-          language === 'es'
-            ? 'Agrega al menos un cliente para facturar.'
-            : 'Add at least one client to invoice.',
-        icon: Users,
-        done: hasClients,
-        path: '/clients',
-      },
-      {
-        id: 'contracts',
-        label: language === 'es' ? 'Contratos' : 'Contracts',
-        description:
-          language === 'es'
-            ? 'Registra un contrato o servicio recurrente.'
-            : 'Register a contract or recurring service.',
-        icon: FileText,
-        done: hasContracts,
-        path: '/contracts',
-      },
-    ];
+    const baseDesc = (done: boolean, doneText: string, pending: string) =>
+      done ? doneText : pending;
+
+    return {
+      fiscalMissing: missing,
+      steps: [
+        {
+          id: 'fiscal',
+          label: language === 'es' ? 'Datos fiscales' : 'Tax info',
+          description: hasFiscal
+            ? (language === 'es' ? 'Completo' : 'Complete')
+            : missing.length > 0
+              ? (language === 'es' ? `Falta: ${missing.join(', ')}` : `Missing: ${missing.join(', ')}`)
+              : (language === 'es' ? 'País, régimen y datos del negocio.' : 'Country, regime and business info.'),
+          icon: Briefcase,
+          done: hasFiscal,
+          path: '/settings?tab=fiscal',
+        },
+        {
+          id: 'clients',
+          label: language === 'es' ? 'Clientes' : 'Clients',
+          description: baseDesc(
+            hasClients,
+            language === 'es' ? `${clients?.length ?? 0} cliente(s)` : `${clients?.length ?? 0} client(s)`,
+            language === 'es' ? 'Agrega al menos un cliente para facturar.' : 'Add at least one client to invoice.',
+          ),
+          icon: Users,
+          done: hasClients,
+          path: '/clients',
+        },
+        {
+          id: 'contracts',
+          label: language === 'es' ? 'Contratos' : 'Contracts',
+          description: baseDesc(
+            hasContracts,
+            language === 'es' ? `${contracts?.length ?? 0} contrato(s)` : `${contracts?.length ?? 0} contract(s)`,
+            language === 'es' ? 'Registra un contrato o servicio recurrente.' : 'Register a contract or recurring service.',
+          ),
+          icon: FileText,
+          done: hasContracts,
+          path: '/contracts',
+        },
+      ],
+    };
   }, [profile, clients, contracts, fiscalEntities, language]);
 
   const completedCount = steps.filter((s) => s.done).length;
@@ -82,11 +106,53 @@ export function SimpleOnboardingPath() {
   const percent = (completedCount / total) * 100;
   const allDone = completedCount === total;
 
-  // Hide entirely once everything is done
-  if (allDone) return null;
+  const dismissCompleted = () => {
+    localStorage.setItem(DISMISS_KEY, '1');
+    setCompletedDismissed(true);
+  };
+
+  // Hide entirely once completed celebration has been dismissed
+  if (allDone && completedDismissed) return null;
+
+  // Celebration card when fully completed
+  if (allDone) {
+    return (
+      <Card className="border-2 border-emerald-500/40 bg-gradient-to-br from-emerald-500/10 via-emerald-500/5 to-transparent shadow-md overflow-hidden">
+        <CardContent className="p-4 flex items-center gap-3">
+          <div className="shrink-0 w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+            <PartyPopper className="h-6 w-6" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <h3 className="font-bold text-base leading-tight">
+              {language === 'es' ? '¡Tu cuenta está configurada!' : 'Your account is set up!'}
+            </h3>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {language === 'es'
+                ? 'Datos fiscales, clientes y contratos listos. Todo en marcha.'
+                : 'Tax info, clients and contracts ready. All set.'}
+            </p>
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={dismissCompleted}
+            className="shrink-0 h-8 w-8 rounded-full hover:bg-emerald-500/10"
+            aria-label={language === 'es' ? 'Ocultar' : 'Dismiss'}
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
 
   // Find next pending step for the primary CTA
   const nextStep = steps.find((s) => !s.done);
+
+  const openQuickAddFor = (id: string) => {
+    if (id === 'clients') setClientDialogOpen(true);
+    else if (id === 'contracts') setContractDialogOpen(true);
+  };
 
   return (
     <Card className="border-2 border-primary/30 bg-gradient-to-br from-primary/5 via-violet-500/5 to-transparent shadow-md overflow-hidden">
@@ -115,7 +181,7 @@ export function SimpleOnboardingPath() {
         <ul className="space-y-2">
           {steps.map((step, idx) => {
             const Icon = step.icon;
-            const isClientsStep = step.id === 'clients';
+            const supportsQuickAdd = step.id === 'clients' || step.id === 'contracts';
             return (
               <li key={step.id}>
                 <div
@@ -165,16 +231,23 @@ export function SimpleOnboardingPath() {
                     >
                       {step.label}
                     </div>
-                    <div className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
+                    <div
+                      className={cn(
+                        'text-xs mt-0.5 line-clamp-1',
+                        !step.done && step.id === 'fiscal' && fiscalMissing.length > 0
+                          ? 'text-amber-600 dark:text-amber-400 font-medium'
+                          : 'text-muted-foreground',
+                      )}
+                    >
                       {step.description}
                     </div>
                   </button>
 
-                  {/* Quick-add for Clients step (only when not done) */}
-                  {isClientsStep && !step.done && (
+                  {/* Quick-add for Clients & Contracts steps (only when not done) */}
+                  {supportsQuickAdd && !step.done && (
                     <Button
                       size="sm"
-                      onClick={() => setClientDialogOpen(true)}
+                      onClick={() => openQuickAddFor(step.id)}
                       className="shrink-0 h-8 gap-1 px-2.5 shadow-sm"
                     >
                       <Plus className="h-3.5 w-3.5" />
@@ -184,7 +257,7 @@ export function SimpleOnboardingPath() {
                     </Button>
                   )}
 
-                  {(!isClientsStep || step.done) && (
+                  {(!supportsQuickAdd || step.done) && (
                     <ArrowRight
                       className={cn(
                         'shrink-0 h-4 w-4 transition-transform',
@@ -202,8 +275,8 @@ export function SimpleOnboardingPath() {
         {nextStep && (
           <Button
             onClick={() => {
-              if (nextStep.id === 'clients') {
-                setClientDialogOpen(true);
+              if (nextStep.id === 'clients' || nextStep.id === 'contracts') {
+                openQuickAddFor(nextStep.id);
               } else {
                 navigate(nextStep.path);
               }
@@ -211,18 +284,22 @@ export function SimpleOnboardingPath() {
             className="w-full gap-2 font-semibold shadow-md hover:shadow-lg hover:scale-[1.02] transition-all"
             size="lg"
           >
-            {nextStep.id === 'clients' && <Plus className="h-4 w-4" />}
+            {(nextStep.id === 'clients' || nextStep.id === 'contracts') && <Plus className="h-4 w-4" />}
             {language === 'es' ? `Continuar: ${nextStep.label}` : `Continue: ${nextStep.label}`}
-            {nextStep.id !== 'clients' && <ArrowRight className="h-4 w-4" />}
+            {nextStep.id !== 'clients' && nextStep.id !== 'contracts' && <ArrowRight className="h-4 w-4" />}
           </Button>
         )}
       </CardContent>
 
-      {/* Inline quick-add client dialog */}
+      {/* Inline quick-add dialogs */}
       <ClientDialog
         open={clientDialogOpen}
         onClose={() => setClientDialogOpen(false)}
         client={null}
+      />
+      <ContractDialog
+        open={contractDialogOpen}
+        onOpenChange={setContractDialogOpen}
       />
     </Card>
   );

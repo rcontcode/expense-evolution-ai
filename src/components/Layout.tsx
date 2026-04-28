@@ -548,8 +548,8 @@ export const Layout = ({ children }: LayoutProps) => {
                 <Search className="h-4.5 w-4.5" />
               </Button>
               
-              {/* UI Mode Toggle - Mobile (compact) */}
-              <UiModeToggle compact className="hidden xs:inline-flex" />
+              {/* UI Mode Toggle - Mobile (compact, always visible) */}
+              <UiModeToggle compact />
 
               {/* Notification Bell - Mobile */}
               <Button 
@@ -592,14 +592,6 @@ export const Layout = ({ children }: LayoutProps) => {
                   <MobileMenuEntitySelector onNavigate={() => setMobileMenuOpen(false)} />
                 </div>
                 
-                {/* UI Mode Toggle (Simple/Advanced) */}
-                <div className="px-3 py-2 border-b border-border/20 flex items-center justify-between">
-                  <span className="text-xs font-medium text-muted-foreground">
-                    {language === 'es' ? 'Modo' : 'Mode'}
-                  </span>
-                  <UiModeToggle />
-                </div>
-
                 {/* Theme Toggle */}
                 <div className="px-3 py-2 border-b border-border/20 flex items-center justify-between">
                   <span className="text-xs font-medium text-muted-foreground">{language === 'es' ? 'Tema' : 'Theme'}</span>
