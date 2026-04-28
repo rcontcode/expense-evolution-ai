@@ -1,77 +1,66 @@
-# Demo Studio v3 — Catálogo completo de escenarios
+# Modo Simple = Toda la app simple
 
-## Alcance aprobado
+## Problemas confirmados
 
-Implementar **6 escenarios** ahora (2 showcase completos + mantener 3 existentes + 1 arquetipo nuevo). En una iteración posterior haremos un análisis profundo de buyer personas reales de EvoFinz para agregar/ajustar más perfiles estratégicos.
+1. **Dashboard Simple angosto en desktop**
+   `src/components/dashboard/SimpleDashboard.tsx` línea 272 usa `max-w-2xl mx-auto` (~672px). En laptop se ve como una columna móvil pegada al centro, mientras el modo Avanzado aprovecha todo el ancho de `.page-container`.
 
-## Escenarios a implementar en esta fase
+2. **Modo Simple solo aplica al Dashboard**
+   El check `if (uiMode === 'simple')` solo existe en `src/pages/Dashboard.tsx`. Cuando el usuario en Modo Simple toca "Ver gastos", "Bancos", "Clientes", "Cuentas", "Reportes", etc., aterriza en la versión Avanzada completa (tablas, filtros, pestañas, jerga). Solo unas pocas páginas (`Budget`, `Banking`) muestran un banner chiquito al tope, pero el contenido sigue siendo el complejo. Eso rompe la promesa "Modo Simple".
 
-### SHOWCASE COMPLETOS (datos en TODAS las tablas — ideales para tour de venta)
+## Lo que voy a hacer
 
-**1. "Familia Rodríguez" — Padre de familia, Chile (CLP)**
-Pedro (38, ingeniero asalariado) + Carmen (36, profesora media jornada) + 2 hijos.
-- 6 meses: 80+ gastos, 12 ingresos (2 sueldos × 6 meses), 8 bills recurrentes
-- 150+ transacciones bancarias en 2 cuentas (Banco Estado + BCI)
-- 4 presupuestos por categoría (alimentación, educación, salud, transporte)
-- 3 metas de ahorro (vacaciones $800k, fondo emergencia $3M, universidad $15M)
-- 2 deudas activas (hipotecario, automotriz)
-- 6 categorías personalizadas, 8 tags ("hijo1", "hijo2", "compartido", "personal-pedro")
-- Recurrencias detectadas (Netflix, gym, mensualidad colegio)
-- Entidad fiscal CL persona natural
+### Parte 1 — Ancho del Dashboard Simple (rápido)
 
-**2. "EcoLavandería SpA" — PYME chilena con empleados (CLP)**
-Sofía (42), dueña con 2 empleados.
-- 6 meses: 100+ gastos B2B, 50+ ingresos (POS, transferencias, Mercado Pago)
-- 200+ transacciones en 3 cuentas (corriente empresa + vista personal + Mercado Pago)
-- 5 bills recurrentes B2B (arriendo local, ERP, internet, agua, luz)
-- 3 presupuestos operacionales, 2 metas (maquinaria $5M, segundo local $20M)
-- 1 deuda CORFO, 12 categorías custom, tags por cliente B2B
-- Mileage tracking (visitas clientes corporativos)
-- Entidad fiscal SpA, régimen Pro-PyME, RUT, giro
+En `SimpleDashboard.tsx`:
+- Quitar `max-w-2xl` y usar un layout responsive: una sola columna centrada angosta en móvil, dos columnas en laptop (acciones + saldo arriba a todo lo ancho, lista reciente + tip abajo en grid `lg:grid-cols-2`).
+- Aprovechar el `.page-container` ya aplicado por `Dashboard.tsx` para igualar el ancho del modo Avanzado.
+- Escalar tipografías de los números clave (`text-3xl lg:text-5xl`) para que se vea bien en pantalla grande.
 
-### ARQUETIPOS FOCALIZADOS
+### Parte 2 — Vistas Simples para las páginas principales
 
-**3. "Carlos Caos" (mantener)** — duplicados y desorden bancario.
-**4. "María Profesional Joven" (mantener)** — ingresos mixtos sueldo + freelance CL.
-**5. "Lopez Construction Inc." (mantener)** — Canadá B2B, HST/GST, mileage, T2.
-**6. "Pareja Millennial" — NUEVO** — Daniela + Joaquín, sin hijos, ahorrando para casa propia. Muestra tags compartidos, meta conjunta, multi-cuenta.
+Crear un componente envoltorio `SimplePageGate` que, en cada página clave, decida qué renderizar según `uiMode`:
 
-## Plan de ejecución
+```text
+uiMode === 'simple'  →  <SimpleXxx />     (vista limpia y enfocada)
+uiMode !== 'simple'  →  <vista actual>    (sin tocar)
+```
 
-### Fase 1 — Validación de schema
-Usar `security--get_table_schema` para confirmar columnas de las tablas nuevas que vamos a poblar: `budgets`, `savings_goals`, `debts`, `categories` (custom), `tags`, `expense_tags`, `bank_accounts`, `recurring_transactions`.
+Páginas a las que les daré una vista Simple (las que el Dashboard Simple linkea o que un usuario simple realmente abre):
 
-### Fase 2 — Edge Function (`supabase/functions/manage-demo-data/index.ts`)
-- Agregar `buildScenarioFamiliaRodriguez(userId)` (showcase completo CL personal).
-- Agregar `buildScenarioEcoLavanderia(userId)` (showcase completo CL PYME).
-- Agregar `buildScenarioParejaMillennial(userId)` (focalizado).
-- Extender `seedDemo()` para insertar en las 8 tablas nuevas.
-- Extender `resetDemo()` con safe cleanup en orden correcto (relaciones → padres).
-- Mantener prefijo `[DEMO]` en notes/description para limpieza segura.
-- Idempotencia: re-cargar borra primero los `[DEMO]` previos del usuario.
+- `/expenses` → `SimpleExpenses`: lista cronológica grande con monto + comercio + categoría + un solo botón "Agregar gasto". Sin filtros avanzados, sin pestañas, sin export.
+- `/income` → `SimpleIncome`: lista de ingresos del mes y botón "Agregar ingreso".
+- `/bills` → `SimpleBills`: solo las próximas 5 cuentas por pagar con fecha y botón "Marcar pagado".
+- `/banking` → `SimpleBanking`: saldo total + últimas 10 transacciones. Sin reconciliación, sin reglas, sin patrones.
+- `/clients` → `SimpleClients`: lista de nombres con monto facturado al mes. Botón "Agregar cliente".
+- `/reports` → `SimpleReports`: una tarjeta "Resumen del mes" (ingresos, gastos, saldo) y un botón "Descargar PDF". Sin tabs, sin tax hub.
+- `/settings` → `SimpleSettings`: idioma, moneda, modo (Simple/Avanzado), cerrar sesión. Nada más.
 
-### Fase 3 — UI (`src/pages/admin/DemoStudio.tsx`)
-- Reorganizar selector en 2 secciones: **"Showcase Completo"** (recomendado para grabar) y **"Arquetipos Focalizados"**.
-- Badge "COMPLETO" / "FOCALIZADO" + checklist de tablas/herramientas cubiertas por escenario.
-- Contador estimado de registros antes de cargar.
-- Embed scripts/guiones por escenario con botón "Copiar voiceover ES/EN".
+Cada una vuelve a la pantalla principal Simple con un botón "← Volver" arriba y respeta el ancho del `page-container` (no `max-w-2xl`).
 
-### Fase 4 — Guiones de video integrados
-Markdown copiable por escenario:
-- **Familia Rodríguez**: tour 12 min (dashboard → gastos compartidos → presupuestos → metas → mentor educativo → reportes mes).
-- **EcoLavandería**: tour 15 min (multi-cuenta → mileage → reportes tributarios CL → bills B2B → flujo caja).
-- **Pareja Millennial**: 4 min (tags compartidos + meta conjunta).
-- **Carlos**: 3 min (duplicados).
-- **María**: 3 min (ingresos mixtos).
-- **Lopez Construction**: 5 min (Canadá HST/mileage).
+Páginas avanzadas (Budget, NetWorth, Investments, Projects, Reconciliation, ChaosInbox, Notifications) no tienen vista Simple — en Modo Simple no se muestran como links desde el Dashboard, y si alguien aterriza ahí por URL directa se sigue mostrando el `SimpleModePageBanner` que ya existe con un "Volver al inicio".
 
-## Próxima iteración (post-implementación)
+### Parte 3 — Navegación coherente
 
-Después de probar estos 6 escenarios, abriremos un análisis dedicado de buyer personas:
-- Revisar landing actual de EvoFinz (CL + CA), pricing tiers, features destacados.
-- Identificar 2-4 buyer personas faltantes (ej: contador independiente que gestiona varios clientes, expat con ingresos multi-país, jubilado con renta de inversión, etc.).
-- Agregar/refinar escenarios para cubrir esos perfiles estratégicos.
+- Revisar `SimpleDashboard.tsx`: que todos los `navigate('/...')` apunten solo a páginas con vista Simple (las 7 de arriba).
+- En el `Layout` / sidebar / bottom nav, cuando `uiMode === 'simple'` mostrar solo: Inicio, Gastos, Ingresos, Cuentas por pagar, Bancos, Clientes, Reportes, Ajustes. Esconder el resto.
 
-## Confirmación
+## Archivos que voy a tocar
 
-¿Apruebo y procedo con la implementación de los 6 escenarios + UI + guiones?
+- `src/components/dashboard/SimpleDashboard.tsx` — quitar ancho fijo, layout responsive.
+- `src/pages/Expenses.tsx`, `Income.tsx`, `Bills.tsx`, `Banking.tsx`, `Clients.tsx`, `Reports.tsx`, `Settings.tsx` — agregar el switch por `uiMode`.
+- Nuevos: `src/components/simple/SimpleExpenses.tsx`, `SimpleIncome.tsx`, `SimpleBills.tsx`, `SimpleBanking.tsx`, `SimpleClients.tsx`, `SimpleReports.tsx`, `SimpleSettings.tsx`.
+- `src/components/Layout.tsx` (o el nav que use) — filtrar items en modo Simple.
+
+## Lo que NO voy a tocar
+
+- La lógica del modo Avanzado, sus widgets, hooks, ni datos.
+- Edge functions, base de datos, RLS.
+- El `UiModeWelcomeDialog` (ya funciona).
+
+## Verificación al terminar
+
+1. Cambiar a Simple → el dashboard ocupa todo el ancho en laptop, no se ve como columna móvil.
+2. Tocar cada botón del Dashboard Simple → la página destino también es Simple (sin tabs, sin filtros, sin jerga).
+3. Cambiar a Avanzado → todo vuelve a la versión completa actual.
+4. Sidebar/nav en Simple solo muestra las 8 entradas listadas.
