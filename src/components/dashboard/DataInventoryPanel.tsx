@@ -121,7 +121,7 @@ export function DataInventoryPanel({ onExpandedChange }: DataInventoryPanelProps
 
   return (
     <Card>
-      <Collapsible open={open} onOpenChange={handleOpenChange>
+      <Collapsible open={open} onOpenChange={handleOpenChange}>
         <CollapsibleTrigger asChild>
           <CardContent className="py-3 cursor-pointer hover:bg-muted/30 transition-colors">
             <div className="flex items-center justify-between">
