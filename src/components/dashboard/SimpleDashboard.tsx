@@ -94,10 +94,10 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
     return name || (language === 'es' ? 'amigo' : 'friend');
   }, [profile, language]);
 
-  // Combine recent expenses + income, take top 8 by date
+  // Combine recent expenses + income, sort BEFORE slicing so we never miss the latest
   const recent = useMemo(() => {
     const items: Array<{ id: string; rawId: string; type: 'expense' | 'income'; label: string; amount: number; date: string }> = [];
-    (expenses ?? []).slice(0, 20).forEach((e: any) => {
+    (expenses ?? []).forEach((e: any) => {
       items.push({
         id: `e-${e.id}`,
         rawId: String(e.id),
@@ -107,7 +107,7 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
         date: e.date,
       });
     });
-    (income ?? []).slice(0, 20).forEach((i: any) => {
+    (income ?? []).forEach((i: any) => {
       items.push({
         id: `i-${i.id}`,
         rawId: String(i.id),
@@ -207,13 +207,13 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
     return getDailyTip(ctx, language);
   }, [monthlyIncome, monthlyTotal, positive, spentPct, language]);
 
-  // Spoken summary — accessibility helper
+  // Spoken summary — accessibility helper, uses localized currency
   const speakSummary = () => {
     if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
     const isEs = language === 'es';
     const text = isEs
-      ? `Tu balance del mes es ${balance < 0 ? 'negativo ' : ''}${Math.abs(balance).toFixed(0)}. Has tenido ingresos por ${monthlyIncome.toFixed(0)} y gastos por ${monthlyTotal.toFixed(0)}. Vas en el día ${monthProgress.day} de ${monthProgress.total}.`
-      : `Your monthly balance is ${balance < 0 ? 'negative ' : ''}${Math.abs(balance).toFixed(0)}. You earned ${monthlyIncome.toFixed(0)} and spent ${monthlyTotal.toFixed(0)}. It's day ${monthProgress.day} of ${monthProgress.total}.`;
+      ? `Tu balance del mes es ${balance < 0 ? 'negativo ' : ''}${formatCurrency(Math.abs(balance))}. Has tenido ingresos por ${formatCurrency(monthlyIncome)} y gastos por ${formatCurrency(monthlyTotal)}. Vas en el día ${monthProgress.day} de ${monthProgress.total}.`
+      : `Your monthly balance is ${balance < 0 ? 'negative ' : ''}${formatCurrency(Math.abs(balance))}. You earned ${formatCurrency(monthlyIncome)} and spent ${formatCurrency(monthlyTotal)}. It's day ${monthProgress.day} of ${monthProgress.total}.`;
     try {
       window.speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(text);
@@ -483,7 +483,13 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
                   id="simple-savings-goal"
                   type="number"
                   inputMode="decimal"
-                  placeholder={language === 'es' ? 'Ej: 200' : 'e.g. 200'}
+                  placeholder={
+                    monthlyIncome > 0
+                      ? (language === 'es'
+                          ? `Sugerido: ${Math.round(monthlyIncome * 0.2)}`
+                          : `Suggested: ${Math.round(monthlyIncome * 0.2)}`)
+                      : (language === 'es' ? 'Ej: 200' : 'e.g. 200')
+                  }
                   value={goalInput}
                   onChange={(e) => setGoalInput(e.target.value)}
                   onKeyDown={(e) => {
@@ -495,6 +501,18 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
                   className="h-8 text-sm flex-1"
                   disabled={savingGoal}
                 />
+                {monthlyIncome > 0 && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setGoalInput(String(Math.round(monthlyIncome * 0.2)))}
+                    disabled={savingGoal}
+                    className="h-8 px-2 text-[11px] font-semibold"
+                    title={language === 'es' ? 'Sugerir 20% de tus ingresos' : 'Suggest 20% of income'}
+                  >
+                    20%
+                  </Button>
+                )}
                 <Button
                   size="sm"
                   onClick={saveSavingsGoal}
@@ -505,6 +523,13 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
                   <Check className="h-4 w-4" />
                 </Button>
               </div>
+              {monthlyIncome > 0 && (
+                <p className="text-[10px] text-muted-foreground mt-1">
+                  {language === 'es'
+                    ? `La regla 50/30/20 sugiere ahorrar ~20% (${formatCurrency(monthlyIncome * 0.2)})`
+                    : `The 50/30/20 rule suggests saving ~20% (${formatCurrency(monthlyIncome * 0.2)})`}
+                </p>
+              )}
             </div>
           )}
         </CardContent>

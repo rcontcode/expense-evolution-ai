@@ -42,6 +42,7 @@ import { UiModeWelcomeDialog } from '@/components/onboarding/UiModeWelcomeDialog
 import { NextActionBanner } from '@/components/dashboard/NextActionBanner';
 import { MoneyMomentumScore } from '@/components/dashboard/MoneyMomentumScore';
 import { useIncome } from '@/hooks/data/useIncome';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { cn } from '@/lib/utils';
 
 // Lazy load only dashboard-specific components
@@ -113,8 +114,9 @@ export default function Dashboard() {
 
   const handleAddIncome = useCallback(() => navigate('/income'), [navigate]);
   const handleAddExpense = useCallback(() => navigate('/expenses'), [navigate]);
+  const { formatCurrency } = useFormatCurrency();
 
-  // Context for QuickActions: drives which buttons get highlighted
+  // Context for QuickActions: drives which buttons get highlighted + header snapshot
   const quickActionContext = (() => {
     const now = new Date();
     const ym = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
@@ -122,16 +124,28 @@ export default function Dashboard() {
       typeof e.date === 'string' && e.date.startsWith(ym)
     ).length;
     const limit = new Date(now);
-    limit.setDate(limit.getDate() + 3);
-    const billsDueSoon = (bills ?? []).filter((b: any) => {
+    limit.setDate(limit.getDate() + 7);
+    const billsDueWeek = (bills ?? []).filter((b: any) => {
       if (!b?.next_due_date) return false;
       const d = new Date(b.next_due_date);
       return d >= new Date(now.getFullYear(), now.getMonth(), now.getDate()) && d <= limit;
     }).length;
+    const limit3 = new Date(now);
+    limit3.setDate(limit3.getDate() + 3);
+    const billsDueSoon = (bills ?? []).filter((b: any) => {
+      if (!b?.next_due_date) return false;
+      const d = new Date(b.next_due_date);
+      return d >= new Date(now.getFullYear(), now.getMonth(), now.getDate()) && d <= limit3;
+    }).length;
+    const incompleteExpenses = (allExpenses ?? []).filter((e: any) => !e?.category || !e?.merchant).length;
+    const balance = (stats?.monthlyIncome ?? 0) - (stats?.monthlyTotal ?? 0);
     return {
       noClients: (clients?.length ?? 0) === 0,
       noExpensesThisMonth: expensesThisMonth === 0,
       billsDueSoon,
+      billsDueWeek,
+      incompleteExpenses,
+      balance,
     };
   })();
 
@@ -166,16 +180,21 @@ export default function Dashboard() {
 
   const isMobile = useIsMobile();
   const [quickCaptureOpen, setQuickCaptureOpen] = useState(false);
+  const [quickCaptureTab, setQuickCaptureTab] = useState<'photo' | 'text'>('photo');
+  const openQuickCapture = useCallback((tab: 'photo' | 'text' = 'photo') => {
+    setQuickCaptureTab(tab);
+    setQuickCaptureOpen(true);
+  }, []);
 
   // SIMPLE MODE — ultra-minimal dashboard for both mobile and desktop
   if (uiMode === 'simple') {
     return (
       <Layout>
         <div className="page-container section-gap">
-          <SimpleDashboard onQuickCapture={() => setQuickCaptureOpen(true)} />
+          <SimpleDashboard onQuickCapture={() => openQuickCapture('photo')} />
         </div>
         <ExportDialog open={exportDialogOpen} onClose={() => setExportDialogOpen(false)} expenses={allExpenses || []} />
-        <QuickCaptureDialog open={quickCaptureOpen} onClose={() => setQuickCaptureOpen(false)} />
+        <QuickCaptureDialog open={quickCaptureOpen} onClose={() => setQuickCaptureOpen(false)} defaultTab={quickCaptureTab} />
         <UiModeWelcomeDialog open={welcomeOpen} onClose={() => setWelcomeOpen(false)} />
       </Layout>
     );
@@ -186,10 +205,10 @@ export default function Dashboard() {
     return (
       <Layout>
         <div className="page-container section-gap mobile-compact">
-          <MobileDashboard onQuickCapture={() => setQuickCaptureOpen(true)} />
+          <MobileDashboard onQuickCapture={(tab) => openQuickCapture(tab ?? 'photo')} />
         </div>
         <ExportDialog open={exportDialogOpen} onClose={() => setExportDialogOpen(false)} expenses={allExpenses || []} />
-        <QuickCaptureDialog open={quickCaptureOpen} onClose={() => setQuickCaptureOpen(false)} />
+        <QuickCaptureDialog open={quickCaptureOpen} onClose={() => setQuickCaptureOpen(false)} defaultTab={quickCaptureTab} />
         <UiModeWelcomeDialog open={welcomeOpen} onClose={() => setWelcomeOpen(false)} />
       </Layout>
     );
@@ -208,12 +227,12 @@ export default function Dashboard() {
           />
 
           {/* ========================================================== */}
-          {/* ZONE 1 — HOY (today): clock, alerts, quick actions          */}
+          {/* ZONE 1 — HOY (today): snapshot, alerts, quick actions       */}
           {/* ========================================================== */}
-          <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center justify-between gap-2 flex-wrap">
             <SectionHeader
               title={language === 'es' ? 'Hoy' : 'Today'}
-              subtitle={language === 'es' ? 'Lo que pasa ahora mismo' : "What's happening right now"}
+              subtitle={language === 'es' ? 'Estado actual' : 'Current state'}
             />
             <Button
               variant="outline"
@@ -228,28 +247,68 @@ export default function Dashboard() {
             </Button>
           </div>
 
-          <LiveClock />
-
-          {/* Next single most important action — reduces decision paralysis */}
-          <NextActionBanner
-            pendingDocuments={0}
-            incompleteExpenses={(allExpenses ?? []).filter((e: any) => !e?.category || !e?.merchant).length}
-            totalClients={clients?.length ?? 0}
-            totalIncomes={allIncome?.length ?? 0}
-            totalExpenses={allExpenses?.length ?? 0}
-          />
+          {/* Header Snapshot — 1-line state of the day */}
+          <Card className="border-primary/15 bg-gradient-to-r from-primary/5 to-transparent">
+            <CardContent className={cn('flex items-center justify-between gap-3 flex-wrap', density === 'compact' ? 'py-2 px-3' : 'py-2.5 px-3.5')}>
+              <LiveClock />
+              <div className="flex items-center gap-3 text-xs flex-wrap">
+                <span className="inline-flex items-center gap-1">
+                  <span className="text-muted-foreground">{language === 'es' ? 'Balance' : 'Balance'}:</span>
+                  <span className={cn(
+                    'font-bold tabular-nums',
+                    quickActionContext.balance >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
+                  )}>
+                    {quickActionContext.balance >= 0 ? '+' : ''}{formatCurrency(quickActionContext.balance)}
+                  </span>
+                </span>
+                {quickActionContext.incompleteExpenses > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => navigate('/expenses?incomplete=true')}
+                    className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-500/10 text-amber-700 dark:text-amber-400 hover:bg-amber-500/20 transition-colors"
+                  >
+                    <span className="font-bold tabular-nums">{quickActionContext.incompleteExpenses}</span>
+                    <span>{language === 'es' ? 'sin clasificar' : 'unclassified'}</span>
+                  </button>
+                )}
+                {quickActionContext.billsDueWeek > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => navigate('/bills')}
+                    className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-blue-500/10 text-blue-700 dark:text-blue-400 hover:bg-blue-500/20 transition-colors"
+                  >
+                    <span className="font-bold tabular-nums">{quickActionContext.billsDueWeek}</span>
+                    <span>{language === 'es' ? 'pagos esta semana' : 'bills this week'}</span>
+                  </button>
+                )}
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Notification Hub — THE ONLY alert center */}
           <DashboardNotificationHub />
 
-          {/* Onboarding (only for new users, auto-hides) */}
-          <ProgressiveOnboarding />
+          {/* Onboarding — only render when there's likely something to show (new users) */}
+          {((allExpenses?.length ?? 0) < 5 || (clients?.length ?? 0) === 0) && (
+            <>
+              <ProgressiveOnboarding />
+              {showGuide && (
+                <div className="animate-in fade-in slide-in-from-top-4 duration-300">
+                  <InteractiveWelcome />
+                </div>
+              )}
+            </>
+          )}
 
-          {/* Interactive Guide (first visit only) */}
-          {showGuide && (
-            <div className="animate-in fade-in slide-in-from-top-4 duration-300">
-              <InteractiveWelcome />
-            </div>
+          {/* Next action — only when there's something actionable beyond the snapshot chips */}
+          {(quickActionContext.noClients || (allIncome?.length ?? 0) === 0) && (
+            <NextActionBanner
+              pendingDocuments={0}
+              incompleteExpenses={0}
+              totalClients={clients?.length ?? 0}
+              totalIncomes={allIncome?.length ?? 0}
+              totalExpenses={allExpenses?.length ?? 0}
+            />
           )}
 
           {/* Quick Actions — context-aware */}

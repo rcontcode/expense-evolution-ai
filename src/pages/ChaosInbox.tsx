@@ -406,7 +406,7 @@ export default function ChaosInbox() {
               );
             }
           } catch (aiErr) {
-            console.error('AI processing failed:', aiErr);
+            console.error('Smart processing failed:', aiErr);
             setUploadProgress({ fileName: file.name, phase: 'error' });
           } finally {
             setProcessing(null);
@@ -617,7 +617,7 @@ export default function ChaosInbox() {
               }
             }
           } catch (aiErr) {
-            console.error('AI processing failed:', aiErr);
+            console.error('Smart processing failed:', aiErr);
           } finally {
             setProcessing(null);
           }

@@ -25,7 +25,7 @@ const LazyFinancialNarrative = lazy(() => import('@/components/dashboard/Financi
 const OrganizedDashboard = lazy(() => import('@/components/focus').then(m => ({ default: m.OrganizedDashboard })));
 
 interface MobileDashboardProps {
-  onQuickCapture?: () => void;
+  onQuickCapture?: (initialTab?: 'photo' | 'text') => void;
 }
 
 export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
@@ -39,6 +39,10 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
 
   const handleAddIncome = useCallback(() => navigate('/income'), [navigate]);
   const handleAddExpense = useCallback(() => navigate('/expenses'), [navigate]);
+  const openCapture = useCallback((tab: 'photo' | 'text' = 'photo') => {
+    if (onQuickCapture) onQuickCapture(tab);
+    else navigate('/mobile-capture');
+  }, [onQuickCapture, navigate]);
 
   const monthlyIncome = stats?.monthlyIncome || 0;
   const monthlyExpenses = stats?.monthlyTotal || 0;
@@ -46,7 +50,7 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
   const savingsRate = monthlyIncome > 0 ? ((monthlyIncome - monthlyExpenses) / monthlyIncome * 100) : 0;
 
   const quickActions = [
-    { icon: Camera, label: language === 'es' ? 'Capturar' : 'Capture', onClick: onQuickCapture ?? (() => navigate('/mobile-capture')), variant: 'default' as const },
+    { icon: Camera, label: language === 'es' ? 'Capturar' : 'Capture', onClick: () => openCapture('photo'), variant: 'default' as const },
     { icon: Receipt, label: language === 'es' ? '+ Gasto' : '+ Expense', onClick: handleAddExpense, variant: 'outline' as const },
     { icon: DollarSign, label: language === 'es' ? '+ Ingreso' : '+ Income', onClick: handleAddIncome, variant: 'outline' as const },
     { icon: PieChart, label: language === 'es' ? 'Budget' : 'Budget', onClick: () => navigate('/budget'), variant: 'outline' as const },
@@ -178,7 +182,7 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
           <Button
             size="sm"
             variant="ghost"
-            onClick={onQuickCapture ?? (() => navigate('/mobile-capture'))}
+            onClick={() => navigate('/mobile-capture')}
             className="flex-1 flex flex-col items-center gap-0.5 h-auto py-1.5 text-[10px] font-semibold"
             aria-label={language === 'es' ? 'Capturar foto' : 'Capture photo'}
           >
@@ -188,7 +192,7 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
           <Button
             size="sm"
             variant="ghost"
-            onClick={onQuickCapture ?? (() => navigate('/mobile-capture'))}
+            onClick={() => openCapture('photo')}
             className="flex-1 flex flex-col items-center gap-0.5 h-auto py-1.5 text-[10px] font-semibold"
             aria-label={language === 'es' ? 'Captura por voz' : 'Voice capture'}
           >
@@ -198,7 +202,7 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
           <Button
             size="sm"
             variant="ghost"
-            onClick={handleAddExpense}
+            onClick={() => openCapture('text')}
             className="flex-1 flex flex-col items-center gap-0.5 h-auto py-1.5 text-[10px] font-semibold"
             aria-label={language === 'es' ? 'Añadir manualmente' : 'Add manually'}
           >
