@@ -354,6 +354,25 @@ export const Layout = ({ children }: LayoutProps) => {
   const { uiMode } = useDisplayPreferences();
   const isSimpleMode = uiMode === 'simple';
 
+  // Collapsible sidebar sections (Advanced mode) — persist in localStorage
+  const SIDEBAR_SECTIONS_KEY = 'sidebar-collapsed-sections';
+  const DEFAULT_COLLAPSED_SECTIONS = ['layout.growth', 'layout.system'];
+  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>(() => {
+    try {
+      const stored = localStorage.getItem(SIDEBAR_SECTIONS_KEY);
+      if (stored) return JSON.parse(stored);
+    } catch {}
+    // Default: collapse secondary sections to reduce visual noise on first load
+    return DEFAULT_COLLAPSED_SECTIONS.reduce((acc, k) => ({ ...acc, [k]: true }), {});
+  });
+  const toggleSection = useCallback((titleKey: string) => {
+    setCollapsedSections((prev) => {
+      const next = { ...prev, [titleKey]: !prev[titleKey] };
+      try { localStorage.setItem(SIDEBAR_SECTIONS_KEY, JSON.stringify(next)); } catch {}
+      return next;
+    });
+  }, []);
+
   // In Simple Mode, filter sidebar items to only essential routes
   const NAV_SECTIONS_VISIBLE = isSimpleMode
     ? NAV_SECTIONS
