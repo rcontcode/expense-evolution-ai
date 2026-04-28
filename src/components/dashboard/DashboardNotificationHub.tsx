@@ -102,13 +102,24 @@ function dismissAlert(id: string) {
 }
 
 // ── Component ─────────────────────────────────────────
-export function DashboardNotificationHub() {
+interface DashboardNotificationHubProps {
+  onExpandedChange?: (expanded: boolean) => void;
+}
+
+export function DashboardNotificationHub({ onExpandedChange }: DashboardNotificationHubProps = {}) {
   const { user } = useAuth();
   const { language } = useLanguage();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const l = language === 'es';
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpandedRaw] = useState(false);
+  const setExpanded = useCallback((next: boolean | ((prev: boolean) => boolean)) => {
+    setExpandedRaw(prev => {
+      const value = typeof next === 'function' ? (next as (p: boolean) => boolean)(prev) : next;
+      onExpandedChange?.(value);
+      return value;
+    });
+  }, [onExpandedChange]);
   const [localDismissed, setLocalDismissed] = useState<Set<string>>(() => {
     const d = getDismissed();
     return new Set(Object.keys(d).filter(k => isDismissed(k)));
