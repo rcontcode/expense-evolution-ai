@@ -10,6 +10,13 @@ import {
 } from '@/lib/constants/focus-areas';
 
 const DISPLAY_PREFERENCES_EVENT = 'display-preferences:update';
+const UI_MODE_STORAGE_KEY = 'evofinz-ui-mode';
+
+const getStoredUiMode = (): UiMode | null => {
+  if (typeof window === 'undefined') return null;
+  const stored = window.localStorage.getItem(UI_MODE_STORAGE_KEY);
+  return stored === 'simple' || stored === 'advanced' ? stored : null;
+};
 
 export const useDisplayPreferences = () => {
   const { user } = useAuth();
@@ -50,8 +57,9 @@ export const useDisplayPreferences = () => {
   useEffect(() => {
     const fetchPreferences = async () => {
       if (!user?.id) {
-        setPreferences(DEFAULT_DISPLAY_PREFERENCES);
-        lastSavedRef.current = DEFAULT_DISPLAY_PREFERENCES;
+        const fallback = { ...DEFAULT_DISPLAY_PREFERENCES, ...(getStoredUiMode() ? { ui_mode: getStoredUiMode()! } : {}) };
+        setPreferences(fallback);
+        lastSavedRef.current = fallback;
         setIsLoading(false);
         return;
       }
@@ -71,12 +79,14 @@ export const useDisplayPreferences = () => {
           const merged = {
             ...DEFAULT_DISPLAY_PREFERENCES,
             ...(data.display_preferences as Partial<DisplayPreferences>),
+            ...(getStoredUiMode() ? { ui_mode: getStoredUiMode()! } : {}),
           };
           setPreferences(merged);
           lastSavedRef.current = merged;
         } else {
-          setPreferences(DEFAULT_DISPLAY_PREFERENCES);
-          lastSavedRef.current = DEFAULT_DISPLAY_PREFERENCES;
+          const fallback = { ...DEFAULT_DISPLAY_PREFERENCES, ...(getStoredUiMode() ? { ui_mode: getStoredUiMode()! } : {}) };
+          setPreferences(fallback);
+          lastSavedRef.current = fallback;
         }
       } catch (error) {
         console.error('Error fetching display preferences:', error);
@@ -136,6 +146,10 @@ export const useDisplayPreferences = () => {
   }, []);
 
   const savePreferences = useCallback((newPreferences: DisplayPreferences, options?: { immediate?: boolean }) => {
+    if (newPreferences.ui_mode === 'simple' || newPreferences.ui_mode === 'advanced') {
+      window.localStorage.setItem(UI_MODE_STORAGE_KEY, newPreferences.ui_mode);
+    }
+
     setPreferences(newPreferences);
     preferencesRef.current = newPreferences;
     pendingRef.current = newPreferences;
