@@ -22,6 +22,7 @@ import { useExpenses } from '@/hooks/data/useExpenses';
 import { useIncome } from '@/hooks/data/useIncome';
 import { useProfile } from '@/hooks/data/useProfile';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
+import { SimpleOnboardingPath } from './SimpleOnboardingPath';
 import { cn } from '@/lib/utils';
 
 interface SimpleDashboardProps {
@@ -130,6 +131,9 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
         </h1>
         <p className="text-sm text-muted-foreground capitalize">{monthLabel}</p>
       </div>
+
+      {/* Onboarding path — auto-hides when all steps complete */}
+      <SimpleOnboardingPath />
 
       {/* Hero balance */}
       <Card
