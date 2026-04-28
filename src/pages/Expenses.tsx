@@ -55,7 +55,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 
-export default function Expenses() {
+function ExpensesAdvanced() {
   const { t, language } = useLanguage();
   const isMobile = useIsMobile();
   const [searchParams] = useSearchParams();
@@ -481,4 +481,24 @@ export default function Expenses() {
       </TooltipProvider>
     </Layout>
   );
+}
+
+import { useDisplayPreferences } from '@/hooks/data/useDisplayPreferences';
+import { useSearchParams as _useSP } from 'react-router-dom';
+import { Layout as _Layout } from '@/components/Layout';
+import { SimpleExpenses } from '@/components/simple/SimpleExpenses';
+
+export default function Expenses() {
+  const { uiMode } = useDisplayPreferences();
+  const [sp] = _useSP();
+  if (uiMode === 'simple' && sp.get('advanced') !== '1') {
+    return (
+      <_Layout>
+        <div className="page-container section-gap">
+          <SimpleExpenses />
+        </div>
+      </_Layout>
+    );
+  }
+  return <ExpensesAdvanced />;
 }

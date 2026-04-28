@@ -89,7 +89,7 @@ function SettingsSection({
   );
 }
 
-export default function Settings() {
+function SettingsAdvanced() {
   const navigate = useSafeNavigation();
   const { t, language, setLanguage } = useLanguage();
   const { data: isAdmin } = useIsAdmin();
@@ -485,4 +485,22 @@ export default function Settings() {
       </div>
     </Layout>
   );
+}
+
+import { useDisplayPreferences } from '@/hooks/data/useDisplayPreferences';
+import { SimpleSettings } from '@/components/simple/SimpleSettings';
+
+export default function Settings() {
+  const { uiMode } = useDisplayPreferences();
+  const [sp2] = useSearchParams();
+  if (uiMode === 'simple' && sp2.get('advanced') !== '1') {
+    return (
+      <Layout>
+        <div className="page-container section-gap">
+          <SimpleSettings />
+        </div>
+      </Layout>
+    );
+  }
+  return <SettingsAdvanced />;
 }

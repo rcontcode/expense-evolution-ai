@@ -47,7 +47,7 @@ const STATUS_ICONS: Record<ClientStatus, React.ElementType> = {
   active: Zap,
 };
 
-export default function Clients() {
+function ClientsAdvanced() {
   const { t, language } = useLanguage();
   const isMobile = useIsMobile();
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -494,4 +494,23 @@ export default function Clients() {
       </TooltipProvider>
     </Layout>
   );
+}
+import { useDisplayPreferences } from '@/hooks/data/useDisplayPreferences';
+import { useSearchParams as _useSP } from 'react-router-dom';
+import { Layout as _Layout } from '@/components/Layout';
+import { SimpleClients } from '@/components/simple/SimpleClients';
+
+export default function Clients() {
+  const { uiMode } = useDisplayPreferences();
+  const [sp] = _useSP();
+  if (uiMode === 'simple' && sp.get('advanced') !== '1') {
+    return (
+      <_Layout>
+        <div className="page-container section-gap">
+          <SimpleClients />
+        </div>
+      </_Layout>
+    );
+  }
+  return <ClientsAdvanced />;
 }

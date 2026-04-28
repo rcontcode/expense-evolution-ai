@@ -269,13 +269,13 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
   };
 
   return (
-    <div className="space-y-5 max-w-2xl mx-auto pb-8">
+    <div className="space-y-5 w-full max-w-6xl mx-auto pb-8">
       {/* Greeting */}
       <div className="px-1 pt-1">
-        <h1 className="text-2xl font-bold">
+        <h1 className="text-2xl lg:text-4xl font-bold">
           {greeting}, {firstName} 👋
         </h1>
-        <p className="text-sm text-muted-foreground capitalize">{monthLabel}</p>
+        <p className="text-sm lg:text-base text-muted-foreground capitalize">{monthLabel}</p>
       </div>
 
       {/* Inactivity nudge (B2) — only when last entry is more than a week old */}
@@ -535,8 +535,10 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
         </CardContent>
       </Card>
 
+      {/* From here on, switch to a 2-col layout on laptop so we use horizontal space */}
+      <div className="grid gap-5 lg:grid-cols-2">
       {/* 3 big primary actions */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-3 lg:col-span-2">
         <ActionButton
           icon={<Receipt className="h-6 w-6" />}
           label={language === 'es' ? 'Gasto' : 'Expense'}
@@ -720,6 +722,8 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
           </div>
         </CardContent>
       </Card>
+      </div>
+      {/* /lg 2-col wrapper */}
 
       {/* Footer — interactive, lets the user switch mode or reopen the setup guide */}
       <div className="space-y-2 pt-1 px-2">

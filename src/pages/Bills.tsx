@@ -6,7 +6,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { MobileTabLayout, type MobileTab } from '@/components/mobile';
 
-export default function Bills() {
+function BillsAdvanced() {
   const { language } = useLanguage();
   const isMobile = useIsMobile();
   const tabs: MobileTab[] = [
@@ -25,4 +25,23 @@ export default function Bills() {
       </div>
     </Layout>
   );
+}
+
+import { useDisplayPreferences } from '@/hooks/data/useDisplayPreferences';
+import { useSearchParams as _useSP } from 'react-router-dom';
+import { SimpleBills } from '@/components/simple/SimpleBills';
+
+export default function Bills() {
+  const { uiMode } = useDisplayPreferences();
+  const [sp] = _useSP();
+  if (uiMode === 'simple' && sp.get('advanced') !== '1') {
+    return (
+      <Layout>
+        <div className="page-container section-gap">
+          <SimpleBills />
+        </div>
+      </Layout>
+    );
+  }
+  return <BillsAdvanced />;
 }

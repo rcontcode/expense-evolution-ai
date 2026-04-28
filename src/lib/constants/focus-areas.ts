@@ -116,13 +116,11 @@ export const SIMPLE_MODE_ESSENTIAL_PATHS: string[] = [
   '/dashboard',
   '/expenses',
   '/income',
-  '/budget',
+  '/bills',
   '/banking',
-  '/capture',
-  '/mobile-capture',
-  '/chaos',
+  '/clients',
+  '/reports',
   '/settings',
-  '/notifications',
 ];
 
 export function isEssentialPath(path: string): boolean {
