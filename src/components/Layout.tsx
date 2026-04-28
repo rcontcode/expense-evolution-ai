@@ -623,7 +623,7 @@ export const Layout = ({ children }: LayoutProps) => {
                 
                 {/* All Menu Items - Grouped & Compact with Visual Warmth */}
                 <nav className="flex-1 overflow-y-auto px-3 py-2 space-y-2">
-                  {NAV_SECTIONS.slice(1).map((section) => {
+                  {NAV_SECTIONS_VISIBLE.slice(isSimpleMode ? 0 : 1).map((section) => {
                     const theme = sectionThemes[section.themeKey];
                     return (
                       <div 
@@ -950,7 +950,7 @@ export const Layout = ({ children }: LayoutProps) => {
 
           {/* Navigation */}
           <nav ref={sidebarNavRef} className="flex-1 py-2 px-2 space-y-2 overflow-y-auto scrollbar-thin" data-highlight="sidebar-nav">
-            {NAV_SECTIONS.map((section) => {
+            {NAV_SECTIONS_VISIBLE.map((section) => {
               const theme = sectionThemes[section.themeKey];
               return (
               <div 
