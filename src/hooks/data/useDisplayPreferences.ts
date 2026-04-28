@@ -1,4 +1,5 @@
- import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
@@ -78,59 +79,56 @@ export const useDisplayPreferences = () => {
     return () => window.removeEventListener(DISPLAY_PREFERENCES_EVENT, syncPreferences as EventListener);
   }, []);
 
-  // Fetch preferences from database
-  useEffect(() => {
-    const fetchPreferences = async () => {
-      const storedMode = getStoredUiMode();
-      // Always preserve the locally-stored ui_mode so we never flash from Simple → Advanced
-      const withStoredMode = (base: Partial<DisplayPreferences>): DisplayPreferences => ({
-        ...DEFAULT_DISPLAY_PREFERENCES,
-        ...base,
-        ...(storedMode ? { ui_mode: storedMode } : {}),
-      });
-
-      // Skip setPreferences if the result is structurally identical (avoids redundant re-renders)
-      const applyIfChanged = (next: DisplayPreferences) => {
-        const prev = preferencesRef.current;
-        if (JSON.stringify(prev) === JSON.stringify(next)) {
-          lastSavedRef.current = next;
-          return;
-        }
-        setPreferences(next);
-        lastSavedRef.current = next;
-      };
-
-      if (!user?.id) {
-        applyIfChanged(withStoredMode({}));
-        setIsLoading(false);
-        return;
-      }
-
-      try {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('display_preferences')
-          .eq('id', user.id)
-          .maybeSingle();
-
-        if (error) {
-          console.error('Error fetching display preferences:', error);
-          applyIfChanged(withStoredMode({}));
-        } else if (data?.display_preferences) {
-          applyIfChanged(withStoredMode(data.display_preferences as Partial<DisplayPreferences>));
-        } else {
-          applyIfChanged(withStoredMode({}));
-        }
-      } catch (error) {
+  // Shared fetch via React Query — dedupes across all 19+ consumers in the app
+  // so navigation doesn't trigger N parallel selects to `profiles`.
+  const { data: fetchedPrefs, isLoading: queryLoading } = useQuery({
+    queryKey: ['display-preferences', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('display_preferences')
+        .eq('id', user.id)
+        .maybeSingle();
+      if (error) {
         console.error('Error fetching display preferences:', error);
-        applyIfChanged(withStoredMode({}));
-      } finally {
-        setIsLoading(false);
+        return null;
       }
-    };
+      return (data?.display_preferences ?? null) as Partial<DisplayPreferences> | null;
+    },
+    enabled: !!user?.id,
+    staleTime: 5 * 60 * 1000, // 5 min — preferences change rarely
+    gcTime: 30 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+  });
 
-    fetchPreferences();
-  }, [user?.id]);
+  // Apply fetched prefs once, preserving locally-stored ui_mode to avoid Simple↔Advanced flash
+  useEffect(() => {
+    const storedMode = getStoredUiMode();
+    const merged: DisplayPreferences = {
+      ...DEFAULT_DISPLAY_PREFERENCES,
+      ...(fetchedPrefs ?? {}),
+      ...(storedMode ? { ui_mode: storedMode } : {}),
+    };
+    const prev = preferencesRef.current;
+    if (JSON.stringify(prev) === JSON.stringify(merged)) {
+      lastSavedRef.current = merged;
+      return;
+    }
+    setPreferences(merged);
+    lastSavedRef.current = merged;
+  }, [fetchedPrefs]);
+
+  // Keep `isLoading` in sync with the query, but stay false if we already have a stored UI mode
+  useEffect(() => {
+    if (getStoredUiMode() !== null) {
+      if (isLoading) setIsLoading(false);
+      return;
+    }
+    setIsLoading(!!user?.id && queryLoading);
+  }, [queryLoading, user?.id, isLoading]);
+
 
   const flushSave = useCallback(async () => {
     const userId = userIdRef.current;
