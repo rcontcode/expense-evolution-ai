@@ -108,7 +108,21 @@ export default function Dashboard() {
   const isMobile = useIsMobile();
   const [quickCaptureOpen, setQuickCaptureOpen] = useState(false);
 
-  // Mobile-optimized dashboard
+  // SIMPLE MODE — ultra-minimal dashboard for both mobile and desktop
+  if (uiMode === 'simple') {
+    return (
+      <Layout>
+        <div className="page-container section-gap">
+          <SimpleDashboard onQuickCapture={() => setQuickCaptureOpen(true)} />
+        </div>
+        <ExportDialog open={exportDialogOpen} onClose={() => setExportDialogOpen(false)} expenses={allExpenses || []} />
+        <QuickCaptureDialog open={quickCaptureOpen} onClose={() => setQuickCaptureOpen(false)} />
+        <UiModeWelcomeDialog open={welcomeOpen} onClose={() => setWelcomeOpen(false)} />
+      </Layout>
+    );
+  }
+
+  // Mobile-optimized dashboard (Advanced mode)
   if (isMobile) {
     return (
       <Layout>
@@ -117,6 +131,7 @@ export default function Dashboard() {
         </div>
         <ExportDialog open={exportDialogOpen} onClose={() => setExportDialogOpen(false)} expenses={allExpenses || []} />
         <QuickCaptureDialog open={quickCaptureOpen} onClose={() => setQuickCaptureOpen(false)} />
+        <UiModeWelcomeDialog open={welcomeOpen} onClose={() => setWelcomeOpen(false)} />
       </Layout>
     );
   }
