@@ -484,3 +484,48 @@ function SectionHeader({ title, subtitle }: { title: string; subtitle?: string }
     </div>
   );
 }
+
+/**
+ * Smart grid for the 3 dashboard panels (Avisos, Inventario, Mission Control).
+ * Layout rules:
+ * - All collapsed → 3 equal columns on xl, 2 on md, 1 on mobile.
+ * - One panel expanded → that panel takes full width (col-span-full) so its content
+ *   has room to breathe; the other two stay collapsed and sit side-by-side beneath.
+ * This avoids the "tall narrow column" problem and the empty space at the bottom of short panels.
+ */
+function SmartPanelGrid() {
+  const [expanded, setExpanded] = useState<{ avisos: boolean; inventario: boolean; mission: boolean }>({
+    avisos: false,
+    inventario: false,
+    mission: false,
+  });
+
+  const anyExpanded = expanded.avisos || expanded.inventario || expanded.mission;
+
+  const cls = (key: 'avisos' | 'inventario' | 'mission') =>
+    cn(
+      'min-w-0',
+      anyExpanded && expanded[key] && 'md:col-span-2 xl:col-span-3',
+      anyExpanded && !expanded[key] && 'md:col-span-1 xl:col-span-1',
+    );
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 items-start">
+      <div className={cls('avisos')}>
+        <DashboardNotificationHub
+          onExpandedChange={(v) => setExpanded((s) => ({ ...s, avisos: v }))}
+        />
+      </div>
+      <div className={cls('inventario')}>
+        <DataInventoryPanel
+          onExpandedChange={(v) => setExpanded((s) => ({ ...s, inventario: v }))}
+        />
+      </div>
+      <div className={cls('mission')}>
+        <MissionControl
+          onExpandedChange={(v) => setExpanded((s) => ({ ...s, mission: v }))}
+        />
+      </div>
+    </div>
+  );
+}
