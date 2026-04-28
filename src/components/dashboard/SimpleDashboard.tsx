@@ -403,12 +403,33 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
         </CardContent>
       </Card>
 
-      {/* Footer hint — informative, not promotional */}
-      <p className="text-center text-xs text-muted-foreground pt-1 px-4 leading-relaxed">
-        {language === 'es'
-          ? 'Estás en Modo Simple. Cuando necesites impuestos, inversiones, contratos o el ecosistema completo, cambia a Avanzado desde el botón en el header.'
-          : 'You are in Simple Mode. When you need taxes, investments, contracts or the full ecosystem, switch to Advanced from the header button.'}
-      </p>
+      {/* Footer — interactive, lets the user switch mode or reopen the setup guide */}
+      <div className="space-y-2 pt-1 px-2">
+        <p className="text-center text-xs text-muted-foreground leading-relaxed">
+          {language === 'es'
+            ? 'Estás en Modo Simple. Cuando necesites impuestos, inversiones, contratos o el ecosistema completo:'
+            : 'You are in Simple Mode. When you need taxes, investments, contracts or the full ecosystem:'}
+        </p>
+        <div className="flex flex-wrap justify-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 text-xs font-semibold gap-1.5 border-primary/30 text-primary hover:bg-primary/10"
+            onClick={() => setUiMode('advanced')}
+          >
+            <Sparkles className="h-3.5 w-3.5" />
+            {language === 'es' ? 'Cambiar a Avanzado' : 'Switch to Advanced'}
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 text-xs text-muted-foreground hover:text-foreground"
+            onClick={() => window.dispatchEvent(new Event('simple-onboarding:reopen'))}
+          >
+            {language === 'es' ? 'Ver guía de configuración' : 'Open setup guide'}
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }
