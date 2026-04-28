@@ -356,7 +356,7 @@ export default function Dashboard() {
 
           {/* Compact grid: Notification Hub + Data Inventory + Mission Control
               All collapsed by default, side-by-side on tablet/desktop to save vertical space */}
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 items-start">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 auto-rows-fr [&>*]:h-full">
             <DashboardNotificationHub />
             <DataInventoryPanel />
             <MissionControl />
