@@ -17,7 +17,11 @@ type Scenario =
   | "constructora_ca"
   | "familia_rodriguez"
   | "ecolavanderia_spa"
-  | "pareja_millennial";
+  | "pareja_millennial"
+  | "contador_independiente"
+  | "expat_multipais"
+  | "jubilado_inversiones"
+  | "emprendedor_digital";
 
 interface ReqBody {
   action: Action;
