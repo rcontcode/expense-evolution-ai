@@ -708,17 +708,17 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
         </CardContent>
       </Card>
 
-      {/* Single contextual tip */}
-      <Card className="border border-violet-500/20 bg-gradient-to-br from-violet-500/5 to-fuchsia-500/5">
-        <CardContent className="p-4 flex items-start gap-3">
+      {/* Single contextual tip — compact, side-by-side with recent activity on laptop */}
+      <Card className="h-full border border-violet-500/20 bg-gradient-to-br from-violet-500/5 to-fuchsia-500/5">
+        <CardContent className="p-3.5 flex items-start gap-3">
           <div className="shrink-0 w-9 h-9 rounded-lg bg-violet-500/15 text-violet-600 dark:text-violet-400 flex items-center justify-center">
             <Sparkles className="h-4 w-4" />
           </div>
           <div className="min-w-0 space-y-1">
-            <div className="text-xs font-semibold uppercase tracking-wide text-violet-600 dark:text-violet-400">
+            <div className="text-[11px] font-semibold uppercase tracking-wide text-violet-600 dark:text-violet-400">
               {language === 'es' ? 'Educación financiera' : 'Financial education'}
             </div>
-            <p className="text-sm text-foreground/90 leading-relaxed">{tip}</p>
+            <p className="text-[13px] text-foreground/90 leading-snug">{tip}</p>
             <p className="text-[10px] text-muted-foreground italic pt-0.5">
               {language === 'es'
                 ? 'Consulta a un profesional antes de tomar decisiones.'
@@ -728,7 +728,7 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
         </CardContent>
       </Card>
       </div>
-      {/* /lg 2-col wrapper */}
+      {/* /lg 2-col wrapper (recent + education) */}
 
       {/* Footer — interactive, lets the user switch mode or reopen the setup guide */}
       <div className="space-y-2 pt-1 px-2">
