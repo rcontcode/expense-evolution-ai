@@ -6,7 +6,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { MobileTabLayout, type MobileTab } from '@/components/mobile';
 
-export default function Bills() {
+function BillsAdvanced() {
   const { language } = useLanguage();
   const isMobile = useIsMobile();
   const tabs: MobileTab[] = [

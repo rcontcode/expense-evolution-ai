@@ -22,7 +22,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { BankingInsightsSummary } from '@/components/banking/BankingInsightsSummary';
 import { MobileTabLayout, type MobileTab } from '@/components/mobile';
 
-export default function Banking() {
+function BankingAdvanced() {
   const { language } = useLanguage();
   const isMobile = useIsMobile();
   const [importDialogOpen, setImportDialogOpen] = useState(false);

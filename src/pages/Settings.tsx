@@ -89,7 +89,7 @@ function SettingsSection({
   );
 }
 
-export default function Settings() {
+function SettingsAdvanced() {
   const navigate = useSafeNavigation();
   const { t, language, setLanguage } = useLanguage();
   const { data: isAdmin } = useIsAdmin();
