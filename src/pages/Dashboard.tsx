@@ -94,9 +94,32 @@ export default function Dashboard() {
 
   const { data: stats, isLoading } = useDashboardStats();
   const { data: allExpenses } = useExpenses();
+  const { data: clients } = useClients();
+  const { data: bills } = useRecurringBills();
 
   const handleAddIncome = useCallback(() => navigate('/income'), [navigate]);
   const handleAddExpense = useCallback(() => navigate('/expenses'), [navigate]);
+
+  // Context for QuickActions: drives which buttons get highlighted
+  const quickActionContext = (() => {
+    const now = new Date();
+    const ym = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const expensesThisMonth = (allExpenses ?? []).filter((e: any) =>
+      typeof e.date === 'string' && e.date.startsWith(ym)
+    ).length;
+    const limit = new Date(now);
+    limit.setDate(limit.getDate() + 3);
+    const billsDueSoon = (bills ?? []).filter((b: any) => {
+      if (!b?.next_due_date) return false;
+      const d = new Date(b.next_due_date);
+      return d >= new Date(now.getFullYear(), now.getMonth(), now.getDate()) && d <= limit;
+    }).length;
+    return {
+      noClients: (clients?.length ?? 0) === 0,
+      noExpensesThisMonth: expensesThisMonth === 0,
+      billsDueSoon,
+    };
+  })();
 
   // Check if first visit to show guide
   useEffect(() => {
