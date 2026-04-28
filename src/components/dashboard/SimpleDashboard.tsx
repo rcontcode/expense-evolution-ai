@@ -536,7 +536,7 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
       </Card>
 
       {/* 3 big primary actions — full width */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-2 sm:gap-3 min-w-0 overflow-hidden">
         <ActionButton
           icon={<Receipt className="h-6 w-6" />}
           label={language === 'es' ? 'Gasto' : 'Expense'}
@@ -561,7 +561,7 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
       </div>
 
       {/* Secondary shortcuts — compact row */}
-      <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-3">
+      <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-3 min-w-0 overflow-hidden">
         <SecondaryShortcut
           icon={<Landmark className="h-4 w-4" />}
           label={language === 'es' ? 'Subir extracto' : 'Upload statement'}
@@ -795,14 +795,14 @@ function ActionButton({
       type="button"
       onClick={onClick}
       className={cn(
-        'flex flex-col items-center justify-center gap-1.5 py-4 px-2 rounded-xl border-2 font-semibold text-sm transition-all hover:scale-[1.04] active:scale-[0.98] shadow-md',
+        'min-w-0 flex flex-col items-center justify-center gap-1.5 py-4 px-1.5 sm:px-2 rounded-xl border-2 font-semibold text-sm transition-all hover:scale-[1.04] active:scale-[0.98] shadow-md overflow-hidden',
         colorMap[color],
       )}
     >
       {icon}
-      <span className="leading-tight">{label}</span>
+      <span className="max-w-full truncate leading-tight">{label}</span>
       {subtitle && (
-        <span className={cn('text-[10px] font-medium leading-tight text-center', subtitleColor[color])}>
+        <span className={cn('max-w-full text-[10px] font-medium leading-tight text-center line-clamp-2', subtitleColor[color])}>
           {subtitle}
         </span>
       )}
@@ -825,10 +825,10 @@ function SecondaryShortcut({
     <button
       type="button"
       onClick={onClick}
-      className="relative flex items-center justify-center gap-2 py-3 rounded-xl border border-border bg-card hover:bg-muted/60 hover:border-primary/30 transition-all hover:scale-[1.02] active:scale-[0.98] text-sm font-medium text-foreground"
+      className="relative min-w-0 flex items-center justify-center gap-2 py-3 px-2 rounded-xl border border-border bg-card hover:bg-muted/60 hover:border-primary/30 transition-all hover:scale-[1.02] active:scale-[0.98] text-sm font-medium text-foreground overflow-hidden"
     >
       <span className="text-primary">{icon}</span>
-      <span>{label}</span>
+      <span className="min-w-0 truncate">{label}</span>
       {badge && (
         <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center shadow">
           {badge}
