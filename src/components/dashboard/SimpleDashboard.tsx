@@ -164,6 +164,25 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
     return { category: topCat, amount: topAmt, pct };
   }, [expenses, monthlyTotal, language]);
 
+  // End-of-month projection — answers "if I keep going at this pace, how will I finish?"
+  const projection = useMemo(() => {
+    if (monthProgress.day < 3 || monthlyTotal <= 0) return null; // need a few days of data
+    const dailyRate = monthlyTotal / monthProgress.day;
+    const projectedSpend = dailyRate * monthProgress.total;
+    const projectedBalance = monthlyIncome - projectedSpend;
+    return { projectedBalance, positive: projectedBalance >= 0 };
+  }, [monthlyTotal, monthlyIncome, monthProgress]);
+
+  // Optional savings goal from preferences
+  const savingsGoal = useMemo(() => {
+    const prefs = (profile as any)?.preferences;
+    const goal = Number(prefs?.savings_goal_monthly) || 0;
+    if (goal <= 0) return null;
+    const current = Math.max(0, balance);
+    const pct = Math.min(100, (current / goal) * 100);
+    return { goal, current, pct, achieved: current >= goal };
+  }, [profile, balance]);
+
   // Single contextual tip — financial education, rotates daily
   const tip = useMemo(() => {
     let ctx: TipContext;
@@ -173,6 +192,24 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
     else ctx = 'healthy';
     return getDailyTip(ctx, language);
   }, [monthlyIncome, monthlyTotal, positive, spentPct, language]);
+
+  // Spoken summary — accessibility helper
+  const speakSummary = () => {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+    const isEs = language === 'es';
+    const text = isEs
+      ? `Tu balance del mes es ${balance < 0 ? 'negativo ' : ''}${Math.abs(balance).toFixed(0)}. Has tenido ingresos por ${monthlyIncome.toFixed(0)} y gastos por ${monthlyTotal.toFixed(0)}. Vas en el día ${monthProgress.day} de ${monthProgress.total}.`
+      : `Your monthly balance is ${balance < 0 ? 'negative ' : ''}${Math.abs(balance).toFixed(0)}. You earned ${monthlyIncome.toFixed(0)} and spent ${monthlyTotal.toFixed(0)}. It's day ${monthProgress.day} of ${monthProgress.total}.`;
+    try {
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = isEs ? 'es-ES' : 'en-US';
+      u.rate = 1.05;
+      window.speechSynthesis.speak(u);
+    } catch {
+      // graceful no-op
+    }
+  };
 
   return (
     <div className="space-y-5 max-w-2xl mx-auto pb-8">
