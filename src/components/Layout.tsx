@@ -1058,6 +1058,7 @@ export const Layout = ({ children }: LayoutProps) => {
                         }}
                         onMouseEnter={() => preloadRoute(item.path)}
                         onFocus={() => preloadRoute(item.path)}
+                        onPointerDown={() => preloadRoute(item.path)}
                         className={cn(
                           'flex items-center gap-2 flex-1 px-2.5 py-2 rounded-xl text-sm transition-all duration-200',
                           'hover:bg-background/70 hover:shadow-md hover:-translate-y-0.5',
