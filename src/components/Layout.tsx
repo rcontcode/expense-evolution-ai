@@ -654,7 +654,7 @@ export const Layout = ({ children }: LayoutProps) => {
                         {/* Section Header — collapsible trigger */}
                         <button
                           type="button"
-                          onClick={() => setCollapsedSections((prev) => ({ ...prev, [sectionKey]: !prev[sectionKey] === false ? true : false }))}
+                          onClick={() => setCollapsedSections((prev) => ({ ...prev, [sectionKey]: !prev[sectionKey] }))}
                           className="w-full flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-muted/40 transition-colors"
                         >
                           <span className={cn("text-[10px] font-bold uppercase tracking-[0.1em]", theme.text)}>
