@@ -221,7 +221,29 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
             </div>
           </div>
 
-          {/* Spent progress bar — only when there's income */}
+          {/* Day-of-month context — frames the balance in time */}
+          <div className="pt-2 px-4">
+            <div className="flex items-center justify-between text-[11px] text-muted-foreground mb-1">
+              <span className="inline-flex items-center gap-1">
+                <CalendarClock className="h-3 w-3" />
+                {language === 'es'
+                  ? `Día ${monthProgress.day} de ${monthProgress.total}`
+                  : `Day ${monthProgress.day} of ${monthProgress.total}`}
+              </span>
+              <span>
+                {language === 'es'
+                  ? `quedan ${monthProgress.remaining} días`
+                  : `${monthProgress.remaining} days left`}
+              </span>
+            </div>
+            <div className="h-1 rounded-full bg-muted overflow-hidden">
+              <div
+                className="h-full bg-foreground/40 rounded-full transition-all"
+                style={{ width: `${monthProgress.pct}%` }}
+              />
+            </div>
+          </div>
+
           {monthlyIncome > 0 && (
             <div className="pt-2 px-4">
               <div className="text-xs text-muted-foreground mb-1.5 text-left">
