@@ -17,6 +17,7 @@ import { useBankImportFlow, EnrichedTransaction } from '@/hooks/data/useBankImpo
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { useAIErrorHandler } from '@/hooks/utils/useAIErrorHandler';
 
 interface BankImportDialogProps {
   open: boolean;
@@ -36,6 +37,7 @@ export function BankImportDialog({ open, onClose }: BankImportDialogProps) {
   
   const importFlow = useBankImportFlow();
   const { state } = importFlow;
+  const { handleAIError } = useAIErrorHandler();
 
   // Track source type when files are selected
   const trackSource = (type: 'csv' | 'pdf' | 'photo', fileName: string) => {
@@ -82,7 +84,11 @@ export function BankImportDialog({ open, onClose }: BankImportDialogProps) {
         reader.readAsDataURL(file);
       });
       const { data, error } = await supabase.functions.invoke('process-bank-statement', { body: { image: base64 } });
-      if (error) throw error;
+      if (error) {
+        if (handleAIError(error, { feature: 'bank_analysis', requiredPlan: 'premium' })) return;
+        throw error;
+      }
+      if (data?.error && handleAIError(data, { feature: 'bank_analysis', requiredPlan: 'premium' })) return;
       if (data.transactions?.length > 0) {
         setParsedTransactions(data.transactions.map((t: ParsedTransaction) => ({
           ...t, original_amount: t.amount,
@@ -115,7 +121,11 @@ export function BankImportDialog({ open, onClose }: BankImportDialogProps) {
       const { data, error } = await supabase.functions.invoke('analyze-bank-statement', {
         body: { content: base64, contentType: 'pdf', bankName: file.name.replace('.pdf', '') },
       });
-      if (error) throw error;
+      if (error) {
+        if (handleAIError(error, { feature: 'bank_analysis', requiredPlan: 'premium' })) return;
+        throw error;
+      }
+      if (data?.error && handleAIError(data, { feature: 'bank_analysis', requiredPlan: 'premium' })) return;
       if (data.transactions?.length > 0) {
         setParsedTransactions(data.transactions.map((t: any) => ({
           date: t.date,

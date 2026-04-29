@@ -15,6 +15,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { usePlanLimits } from '@/hooks/data/usePlanLimits';
 import { ELEVENLABS_VOICES } from '@/hooks/utils/useElevenLabsTTS';
 import { supabase } from '@/integrations/supabase/client';
+import { useUpgradePrompt } from '@/contexts/UpgradePromptContext';
 import { 
   Mic, Volume2, Bell, Zap, Trash2, Plus, Clock, Calendar, 
   MessageSquare, History, Play, Settings2, VolumeX, Volume1, Highlighter,
@@ -35,6 +36,7 @@ export function VoicePreferencesCard() {
   const voicePrefs = useVoicePreferences();
   const highlightCtx = useHighlight();
   const { canUsePremiumVoice, getRemainingVoiceMinutes, isGodMode } = usePlanLimits();
+  const upgrade = useUpgradePrompt();
 
   // Use curated premium voices directly - no API call needed
   const premiumOptionsEs = useMemo(() => ({
@@ -211,20 +213,14 @@ export function VoicePreferencesCard() {
     // Check remaining minutes first (admins are unlimited)
     const remaining = getRemainingVoiceMinutes();
     if (!isGodMode && remaining <= 0) {
-      // Use native voice fallback for preview
-      toast.info(
-        language === 'es' 
-          ? 'Límite alcanzado - usando voz nativa para preview' 
-          : 'Limit reached - using native voice for preview'
-      );
-      
-      const voices = window.speechSynthesis.getVoices();
-      const nativeVoice = voices.find(v => v.lang.startsWith(lang)) || voices[0];
-      const utterance = new SpeechSynthesisUtterance(testText);
-      if (nativeVoice) utterance.voice = nativeVoice;
-      utterance.onend = () => setIsTestingPremiumVoice(null);
-      utterance.onerror = () => setIsTestingPremiumVoice(null);
-      window.speechSynthesis.speak(utterance);
+      // Surface upgrade path explicitly instead of silently falling back
+      setIsTestingPremiumVoice(null);
+      upgrade.open({
+        feature: 'voice_premium',
+        requiredPlan: 'premium',
+        currentUsage: 0,
+        limit: 0,
+      });
       return;
     }
     
@@ -252,14 +248,15 @@ export function VoicePreferencesCard() {
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         
-        // Handle limit exceeded - show upgrade message
-        if (errorData.error === 'voice_limit_exceeded') {
+        // Handle limit exceeded - open upgrade prompt
+        if (errorData.error === 'voice_limit_exceeded' || errorData.feature === 'voice_premium') {
           setIsTestingPremiumVoice(null);
-          toast.warning(
-            language === 'es' 
-              ? `⏰ Límite mensual alcanzado (${errorData.currentUsage?.toFixed(1) || 3}/${errorData.limit || 3} min). Actualiza tu plan para más minutos.`
-              : `⏰ Monthly limit reached (${errorData.currentUsage?.toFixed(1) || 3}/${errorData.limit || 3} min). Upgrade for more minutes.`
-          );
+          upgrade.open({
+            feature: 'voice_premium',
+            requiredPlan: errorData.requiredPlan || 'premium',
+            currentUsage: errorData.currentUsage,
+            limit: errorData.limit,
+          });
           return;
         }
         
@@ -287,7 +284,7 @@ export function VoicePreferencesCard() {
       setIsTestingPremiumVoice(null);
       toast.error(language === 'es' ? 'Error al probar voz premium' : 'Error testing premium voice');
     }
-  }, [PREVIEW_THROTTLE_MS, getRemainingVoiceMinutes, isGodMode, language, lastPreviewTime]);
+  }, [PREVIEW_THROTTLE_MS, getRemainingVoiceMinutes, isGodMode, language, lastPreviewTime, upgrade]);
 
 
   const handleAddShortcut = () => {

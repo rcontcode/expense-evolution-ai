@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAIErrorHandler } from '@/hooks/utils/useAIErrorHandler';
 
 export interface LineItem {
   name: string;
@@ -52,6 +53,7 @@ export interface ProcessReceiptResult {
 export function useReceiptProcessor() {
   const [isProcessing, setIsProcessing] = useState(false);
   const { t } = useLanguage();
+  const { handleAIError } = useAIErrorHandler();
 
   const processReceipt = async (
     imageBase64?: string,
@@ -72,6 +74,10 @@ export function useReceiptProcessor() {
 
       if (error) {
         console.error('Receipt processing error:', error);
+        // Try plan/quota handler first
+        if (handleAIError(error, { feature: 'ocr', requiredPlan: 'premium' })) {
+          return null;
+        }
         if (error.message?.includes('429')) {
           toast.error(t('quickCapture.rateLimitError'));
         } else if (error.message?.includes('402')) {
@@ -82,7 +88,10 @@ export function useReceiptProcessor() {
         return null;
       }
 
-      if (data.error) {
+      if (data?.error) {
+        if (handleAIError(data, { feature: 'ocr', requiredPlan: 'premium' })) {
+          return null;
+        }
         toast.error(data.error);
         return null;
       }

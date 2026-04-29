@@ -59,6 +59,7 @@ import { useEntity } from '@/contexts/EntityContext';
 import { toast } from 'sonner';
 import { AnimatePresence } from 'framer-motion';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useAIErrorHandler } from '@/hooks/utils/useAIErrorHandler';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -87,6 +88,7 @@ const PUBLIC_ROUTES = ['/', '/landing', '/quiz', '/auth', '/legal', '/install'];
 export const ChatAssistant: React.FC = () => {
   const location = useLocation();
   const isMobile = useIsMobile();
+  const { handleAIError } = useAIErrorHandler();
   
   // Don't render on public/marketing pages
   const isPublicRoute = PUBLIC_ROUTES.includes(location.pathname);
@@ -1149,7 +1151,17 @@ export const ChatAssistant: React.FC = () => {
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        if (handleAIError(error, { feature: 'ai_credits', requiredPlan: 'pro' })) {
+          setIsLoading(false);
+          return;
+        }
+        throw error;
+      }
+      if (data?.error && handleAIError(data, { feature: 'ai_credits', requiredPlan: 'pro' })) {
+        setIsLoading(false);
+        return;
+      }
 
       // Check if AI returned an action
       const aiAction = data.action;
