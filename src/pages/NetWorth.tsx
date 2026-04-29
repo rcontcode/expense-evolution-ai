@@ -139,6 +139,26 @@ export default function NetWorth() {
     );
   }
 
+  if (!planLoading && !hasAccess) {
+    return (
+      <Layout>
+        <div className="page-container section-gap">
+          <FeatureGate
+            feature="net_worth"
+            promptFeature="net_worth"
+            requiredPlan="premium"
+            title={language === 'es' ? 'Patrimonio Neto' : 'Net Worth'}
+            description={language === 'es'
+              ? 'Lleva el control de tus activos, pasivos y la evolución de tu patrimonio.'
+              : 'Track your assets, liabilities and net worth evolution.'}
+          >
+            <div />
+          </FeatureGate>
+        </div>
+      </Layout>
+    );
+  }
+
   return (
     <Layout>
       <div className="page-container section-gap overflow-x-hidden">
