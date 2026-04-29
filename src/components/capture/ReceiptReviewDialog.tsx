@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
+import { useAIErrorHandler } from '@/hooks/utils/useAIErrorHandler';
 import { DocumentPreviewRenderer } from '@/components/shared/DocumentPreviewRenderer';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
