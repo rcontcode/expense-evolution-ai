@@ -59,6 +59,7 @@ import { useEntity } from '@/contexts/EntityContext';
 import { toast } from 'sonner';
 import { AnimatePresence } from 'framer-motion';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useAIErrorHandler } from '@/hooks/utils/useAIErrorHandler';
 
 interface Message {
   role: 'user' | 'assistant';
