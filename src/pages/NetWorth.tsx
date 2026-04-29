@@ -34,6 +34,8 @@ import { usePlanLimits } from '@/hooks/data/usePlanLimits';
 
 export default function NetWorth() {
   const { t, language } = useLanguage();
+  const { hasFeature, isGodMode, isLoading: planLoading } = usePlanLimits();
+  const hasAccess = isGodMode || hasFeature('net_worth');
   const { data: assets = [], isLoading: assetsLoading } = useAssets();
   const { data: liabilities = [], isLoading: liabilitiesLoading } = useLiabilities();
   const { data: snapshots = [], isLoading: snapshotsLoading } = useNetWorthSnapshots();
