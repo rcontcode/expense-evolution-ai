@@ -8,7 +8,7 @@ import { ContractWithClient } from '@/types/contract.types';
 import { ContractTermsViewer } from './ContractTermsViewer';
 import { format } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
-import { FileText, Calendar, Building2, DollarSign, Loader2, ChevronLeft, ChevronRight, Files } from 'lucide-react';
+import { FileText, Calendar, Building2, DollarSign, Loader2, ChevronLeft, ChevronRight, Files, ExternalLink } from 'lucide-react';
 import { FullScreenDialog } from '@/components/mobile/FullScreenDialog';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
