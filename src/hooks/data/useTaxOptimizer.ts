@@ -31,6 +31,7 @@ export function useTaxOptimizer() {
   const { data: expenses } = useExpenses();
   const { data: profile } = useProfile();
   const entityCtx = useEntityOptional();
+  const { handleAIError } = useAIErrorHandler();
 
   const analyzeAndOptimize = async () => {
     setIsAnalyzing(true);
@@ -77,10 +78,12 @@ export function useTaxOptimizer() {
       });
 
       if (fnError) {
+        if (handleAIError(fnError, { feature: 'ai_credits', requiredPlan: 'pro' })) return;
         throw new Error(fnError.message);
       }
 
-      if (data.error) {
+      if (data?.error) {
+        if (handleAIError(data, { feature: 'ai_credits', requiredPlan: 'pro' })) return;
         throw new Error(data.error);
       }
 
