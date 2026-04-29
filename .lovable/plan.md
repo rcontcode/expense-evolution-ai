@@ -1,60 +1,114 @@
-## Problema
+Sí: lo voy a corregir de raíz. No es un fallo aislado del contrato; el problema está en cómo están construidos los modales de preview y en que hoy hay 3 estrategias distintas para mostrar PDFs/fotos.
 
-En la vista de contratos, al abrir la previsualización:
+## Qué está fallando realmente
 
-1. El modal aparece **gigante y desplazado hacia abajo**: empieza a media pantalla y se extiende por debajo del borde inferior, dejando inaccesibles la esquina inferior (donde está el handle de redimensionado) y los botones del fondo.
-2. El **PDF no se previsualiza** (panel izquierdo aparece gris vacío) aunque es un PDF normal.
-3. El modal **no se puede mover** ni alcanzar la esquina para encogerlo, así que el usuario queda atrapado sin poder interactuar.
+1. **El contenedor base de diálogos pelea con los previews**
+   - `src/components/ui/dialog.tsx` fuerza `grid`, `overflow-y-auto`, `max-h-[85vh]` y centrado vertical con `!-translate-y-1/2`.
+   - Los modales de preview intentan sobrescribir eso parcialmente, pero no todos lo hacen igual.
+   - Resultado: algunos previews quedan desbordados, otros colapsan su altura y el usuario termina viendo solo el overlay negro.
 
-## Causas reales
+2. **Hay una implementación distinta por tipo de preview**
+   - `ContractDetailDialog.tsx` usa **iframe** para PDF.
+   - `FilePreviewDialog.tsx` usa **DocumentPreviewRenderer** con `react-pdf`.
+   - `ReceiptPhotoViewer.tsx` mezcla preview blob + transformaciones manuales.
+   - Resultado: un arreglo en un preview rompe otro, y los PDFs/fotos no se comportan igual.
 
-- En `ContractDetailDialog.tsx` el panel izquierdo y derecho se montan dentro de un `ResizablePanelGroup` con `min-h-[70vh]`, y dentro del panel del PDF hay un contenedor con `min-h-[400px]` + flex column con `min-h-[60vh]`. La suma de mínimos **excede** el `max-h-[92vh]` del `DialogContent`, así que el grid crece por debajo del viewport.
-- El `DialogContent` base usa `!top-1/2 !-translate-y-1/2` con `!important` (Radix), por lo que aun excediendo `max-h`, no se reposiciona y desborda hacia abajo.
-- El iframe del PDF está dentro de un `flex-1` cuyo padre nunca recibe altura efectiva (porque el `ResizablePanel` no propaga altura a hijos sin `h-full` explícito en cada nivel). Resultado: el iframe se renderiza con altura 0 → **PDF en blanco**.
-- El `.dialog-resizable` tenía `min-height: 320px` pero el contenido interno fuerza que el navegador ignore el `max-height` real, y como el handle está fuera de pantalla, el usuario no puede corregir el tamaño manualmente.
+3. **El resize actual no es una solución robusta**
+   - `.dialog-resizable` usa `resize: both`, pero eso no resuelve bien el posicionamiento ni permite mover la ventana.
+   - Cuando el modal nace mal ubicado o el contenido empuja el layout, el handle deja de servir.
 
-## Plan de corrección
+4. **Los cuerpos de preview no tienen una jerarquía de altura consistente**
+   - Hay combinaciones de `flex-1`, `min-h-*`, `max-h-*`, `overflow-*` y wrappers transformados que hacen que PDF e imagen no siempre reciban un área visible y estable.
 
-### 1. `src/components/mobile/FullScreenDialog.tsx`
-- Cambiar las clases de `size` para garantizar que el modal **nunca** exceda el viewport ni cuando es resizable:
-  - Usar `top-[2vh]` + `translate-y-0` (override del centrado vertical) cuando `resizable` está activo, así el modal queda anclado arriba y el handle inferior siempre cae dentro de la pantalla.
-  - Reducir `max-h` por defecto de `92vh` → `90vh` y aplicarlo también al contenedor interno.
-- Asegurar que el área de contenido (`<div className="overflow-y-auto …">`) use `h-[calc(90vh-7rem)]` cuando es resizable, en lugar de `100%-6rem` que depende de un padre sin altura definida.
-- Mantener `ResizeHandle` pero darle más tamaño táctil (24×24, posición `bottom-2 right-2`) para ser fácilmente alcanzable.
+## Plan de solución de raíz
 
-### 2. `src/index.css` — `.dialog-resizable`
-- Quitar `min-height: 320px` (era demasiado bajo y conflictivo). Ajustar a:
-  ```css
-  .dialog-resizable {
-    resize: both;
-    overflow: hidden;     /* el scroll lo maneja el contenedor interno */
-    min-width: 480px;
-    min-height: 400px;
-    max-width: 96vw;
-    max-height: 90vh;
-  }
-  ```
+### 1) Crear un contenedor compartido para previews de documentos
+Voy a introducir un contenedor único para previews desktop/mobile, en vez de seguir parchando cada modal por separado.
 
-### 3. `src/components/contracts/ContractDetailDialog.tsx`
-- Eliminar el `min-h-[70vh]` del `ResizablePanelGroup` y los `min-h-[60vh]` / `min-h-[400px]` del panel de preview. Reemplazar con `h-full` puros y un único `min-h-0` en el flex parent para permitir que el iframe se ajuste al espacio disponible (técnica estándar de flex con altura).
-- Envolver el iframe en un contenedor con `h-full w-full` y darle al iframe `style={{ height: '100%', width: '100%', minHeight: '60vh' }}` directamente; añadir `loading="lazy"` y `type="application/pdf"`. Esto soluciona el PDF en blanco.
-- Para móvil, mantener el flujo apilado pero darle al preview una altura concreta (`h-[60vh]`) en vez de mínima, para que el iframe efectivamente renderice.
+**Objetivo del contenedor compartido:**
+- Desktop: ventana acotada al viewport, con posición estable.
+- Header fijo.
+- Body con `min-h-0` y `overflow-hidden` real.
+- Footer opcional.
+- **Drag real desde el header** en desktop.
+- **Resize real desde la esquina** con límites mínimos/máximos y clamp al viewport.
+- Mobile: comportamiento fullscreen limpio.
 
-### 4. (Opcional pero recomendado) Botón "Abrir en pestaña nueva"
-- Agregar un pequeño botón en el header del panel de preview que abra `previewUrl` en una pestaña nueva. Es el fallback universal cuando un PDF embebido falla por políticas del navegador (algunos navegadores bloquean iframes de signed URLs de Supabase).
+Esto reemplaza la dependencia actual en `dialog-resizable` para previews críticos.
+
+### 2) Separar los previews del `DialogContent` genérico
+No voy a tocar a ciegas todos los diálogos normales del sistema.
+
+Haré una de estas dos cosas de forma controlada:
+- crear una variante/shared component específica para previews, o
+- extender `FullScreenDialog` para que use un modo de preview robusto.
+
+**Importante:** los modales comunes seguirán como están; el arreglo se aplicará específicamente a contratos, archivos y fotos/documentos.
+
+### 3) Unificar el renderer de documentos
+Voy a dejar de usar `iframe` en contratos como mecanismo principal.
+
+**Nuevo criterio único:**
+- PDFs: `DocumentPreviewRenderer` / `react-pdf`.
+- Imágenes: renderer consistente con `img` + contenedor estable.
+- Botón de fallback: **“Abrir en nueva pestaña”** y **descargar** cuando corresponda.
+
+Esto elimina la causa más probable de PDFs en negro/blanco por embedding inconsistente.
+
+### 4) Migrar todas las vistas afectadas al mismo patrón
+Voy a aplicar el mismo sistema a las vistas donde hoy puede repetirse el fallo:
+
+- `src/components/contracts/ContractDetailDialog.tsx`
+- `src/components/files/FilePreviewDialog.tsx`
+- `src/components/ReceiptPhotoViewer.tsx`
+- `src/components/capture/ReceiptReviewDialog.tsx`
+
+Y revisaré los otros diálogos con resize para que no queden en un estado mixto:
+- `src/components/capture/ScanSessionHistory.tsx`
+- cualquier otro preview/document viewer que esté usando el patrón antiguo
+
+### 5) Corregir la estructura interna de altura/scroll
+En todos los previews voy a normalizar:
+- wrapper exterior `flex flex-col`
+- header `shrink-0`
+- body `flex-1 min-h-0 overflow-hidden`
+- superficie de preview con altura efectiva real
+- scroll solo donde corresponde
+
+Así evito el patrón actual donde el contenido “empuja” el modal o colapsa el área visible.
+
+### 6) Verificación completa antes de darlo por cerrado
+No lo daré por arreglado hasta comprobarlo en las vistas reales.
+
+**Validación que haré:**
+- PDF de contrato visible en desktop.
+- Foto/imagen visible en desktop.
+- Preview de archivos visible en desktop.
+- Dialog abierto dentro del viewport en `1474x954`.
+- Esquina de resize alcanzable.
+- Drag del modal funcional en desktop.
+- Mobile sin cortes ni solapamientos.
+- Botón fallback “abrir en nueva pestaña” funcionando.
+
+## Archivos que tocaré
+
+- `src/components/ui/dialog.tsx` o nueva variante específica de preview
+- `src/components/mobile/FullScreenDialog.tsx` o nuevo shell compartido
+- `src/components/shared/DocumentPreviewRenderer.tsx`
+- `src/components/contracts/ContractDetailDialog.tsx`
+- `src/components/files/FilePreviewDialog.tsx`
+- `src/components/ReceiptPhotoViewer.tsx`
+- `src/components/capture/ReceiptReviewDialog.tsx`
+- `src/index.css` (solo si queda alguna regla global realmente necesaria)
 
 ## Resultado esperado
 
-- El modal abre dentro del viewport, anclado a 2vh del borde superior, con el handle de redimensionado siempre visible y alcanzable.
-- El PDF se renderiza correctamente porque el iframe ahora tiene altura efectiva propagada por la cadena flex.
-- Si por algún motivo el iframe sigue fallando (CSP del navegador), el usuario tiene un botón de escape para abrirlo en pestaña nueva.
+- Se acabará el “pantallazo negro” del overlay sin contenido visible.
+- PDFs y fotos cargarán con el mismo motor visual y el mismo layout estable.
+- Los previews dejarán de depender de hacks distintos por pantalla.
+- En desktop vas a poder **mover** y **redimensionar** el modal sin que se salga de la pantalla.
+- Quedará solucionado de forma transversal, no solo en el preview de contratos.
 
-## Archivos a editar
+## Nota técnica
 
-- `src/components/mobile/FullScreenDialog.tsx`
-- `src/components/contracts/ContractDetailDialog.tsx`
-- `src/index.css`
-
-## Verificación
-
-Después de aplicar los cambios, abriré el preview con browser tools en viewport 1474×954 (el del usuario) para confirmar que el modal cabe entero, el PDF se ve, y el handle de la esquina es accesible.
+No veo indicios de que el problema sea del backend o de las URLs firmadas; lo que encontré apunta a un problema de **arquitectura de layout/renderizado** en frontend. Por eso el arreglo correcto es unificar el sistema de preview, no seguir parchando un archivo cada vez.
