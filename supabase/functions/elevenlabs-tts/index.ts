@@ -95,6 +95,9 @@ Deno.serve(async (req) => {
       return new Response(
         JSON.stringify({ 
           error: "voice_limit_exceeded",
+          feature: "voice_premium",
+          currentPlan: planType,
+          requiredPlan: planType === "free" ? "premium" : "pro",
           message: "Has alcanzado tu límite de voz premium este mes",
           currentUsage,
           limit: monthlyLimit,
@@ -112,6 +115,9 @@ Deno.serve(async (req) => {
         return new Response(
           JSON.stringify({ 
             error: "voice_limit_exceeded",
+            feature: "voice_premium",
+            currentPlan: planType,
+            requiredPlan: planType === "free" ? "premium" : "pro",
             message: "Has alcanzado tu límite de voz premium este mes",
             currentUsage,
             limit: monthlyLimit,

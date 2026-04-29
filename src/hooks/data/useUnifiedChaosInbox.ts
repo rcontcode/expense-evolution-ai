@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEntity } from '@/contexts/EntityContext';
 import { compareDuplicateCandidate, DuplicateMatch } from '@/hooks/data/useContentDuplicateDetector';
+import { useAIErrorHandler } from '@/hooks/utils/useAIErrorHandler';
 
 export type DocumentClassificationType = 
   | 'receipt' | 'utility_bill' | 'bank_statement' | 'income_proof'
@@ -80,6 +81,7 @@ export function useUnifiedChaosInbox() {
   const { currentEntity } = useEntity();
   const userCountry = (currentEntity?.country as string) || 'CA';
   const userCurrency = userCountry === 'CL' ? 'CLP' : 'CAD';
+  const { handleAIError } = useAIErrorHandler();
   const [documents, setDocuments] = useState<ClassifiedDocument[]>([]);
   const [isProcessingBatch, setIsProcessingBatch] = useState(false);
 
@@ -595,7 +597,7 @@ export function useUnifiedChaosInbox() {
           if (contractError) throw contractError;
 
           try {
-            const { data: analysis } = await supabase.functions.invoke('analyze-contract', {
+            const { data: analysis, error: analyzeError } = await supabase.functions.invoke('analyze-contract', {
               body: {
                 documentBase64: doc.base64,
                 documentType: doc.fileType,
@@ -604,7 +606,14 @@ export function useUnifiedChaosInbox() {
               },
             });
 
-            if (analysis && contract) {
+            // Detect plan / quota errors and surface UpgradePrompt
+            const planHandled = analyzeError
+              ? handleAIError(analyzeError, { feature: 'contracts', requiredPlan: 'pro' })
+              : (analysis as any)?.error
+                ? handleAIError(analysis, { feature: 'contracts', requiredPlan: 'pro' })
+                : false;
+
+            if (analysis && !analysis.error && contract) {
               await supabase
                 .from('contracts')
                 .update({
@@ -614,11 +623,21 @@ export function useUnifiedChaosInbox() {
                   status: 'ready',
                 })
                 .eq('id', contract.id);
+              processedResult = { type: 'contract', contractId: contract?.id, analysis };
+            } else {
+              processedResult = {
+                type: 'contract',
+                contractId: contract?.id,
+                analysisError: true,
+                planLimited: planHandled,
+              };
+              if (!planHandled) {
+                toast.info('Contrato guardado. El análisis inteligente no pudo completarse.');
+              }
             }
-
-            processedResult = { type: 'contract', contractId: contract?.id, analysis };
-          } catch {
-            processedResult = { type: 'contract', contractId: contract?.id, analysisError: true };
+          } catch (err) {
+            const planHandled = handleAIError(err, { feature: 'contracts', requiredPlan: 'pro' });
+            processedResult = { type: 'contract', contractId: contract?.id, analysisError: true, planLimited: planHandled };
           }
 
           queryClient.invalidateQueries({ queryKey: ['contracts'] });

@@ -1,51 +1,146 @@
-## Diagnóstico de la demora
+# Plan: Mensajería de límites + Upgrade contextual en TODA la app
 
-No es caché de datos — es **descarga del bundle JS de cada página**.
+## Problema detectado
 
-Cada página está cargada con `lazy()` (lazyWithRetry en `src/App.tsx`). La primera vez que entras a una ruta, el navegador tiene que **descargar y parsear el chunk JS de esa página** (más sus dependencias: gráficos, PDFs, hooks pesados, etc.). Mientras eso pasa, se muestra el `PageLoader` (skeleton). En el preview de Lovable estos chunks pueden tardar varios segundos.
+Tu cuenta admin pasa los límites (modo "dios"), pero cuentas normales **fallan en silencio o con mensajes genéricos** en muchos flujos. El backend SÍ bloquea (devuelve `429 quota_exceeded` o `402 credits exhausted`), pero el frontend en muchos casos:
 
-**¿Por qué solo a páginas no visitadas recientemente?**
-Una vez descargado, el chunk queda cacheado en memoria por el navegador y `lazy()` lo sirve instantáneamente. Por eso volver a una página ya visitada es inmediato, pero entrar por primera vez tarda.
+1. Solo muestra `toast.error('Failed to process')` sin explicar el motivo
+2. No detecta el código `429` vs un error real → el usuario cree que está roto
+3. **No ofrece la ruta de upgrade** al plan que desbloquearía la función
 
-**¿Por qué solo en móvil/tablet se siente tanto?**
-Hay un `preloadRoute(path)` definido, pero solo se dispara en `onMouseEnter` / `onFocus` del menú lateral del **escritorio** (`src/components/Layout.tsx` líneas 1055-1056). El **bottom nav móvil** y el menú hamburguesa móvil **no precargan nada** (líneas 778, 794, 808, 616, 679). En móvil tocas → navegas → espera ~10s mientras se descarga el chunk.
+### Caso concreto del usuario (Chaos Inbox + Contrato)
+En `useUnifiedChaosInbox.ts` (línea 597-622), cuando se llama `analyze-contract`:
+- El plan **Free** y **Premium** tienen `contract_analyses_per_month = 0` → siempre devuelve `429`
+- El frontend hace `try { ... } catch { processedResult = { analysisError: true } }` y **no muestra nada explicativo**
 
-## Solución (3 capas)
+## Estado actual: dónde SÍ funciona vs dónde NO
 
-### 1. Precarga proactiva en idle de las rutas más usadas
-En `src/App.tsx`, después del primer render del usuario autenticado, usar `requestIdleCallback` para precargar en segundo plano los chunks de las rutas principales (Dashboard, Expenses, Income, Budget, Bills, Banking, Chaos, Analytics, Settings). Así, mientras el usuario lee el dashboard, los chunks de todas las páginas frecuentes se descargan en silencio.
+```text
+✅ Bien implementado (UpgradePrompt visible)
+   - ExpenseDialog        → bloquea + muestra prompt (pero solo conteo, no IA)
+   - IncomeDialog         → ídem
+   - ClientDialog         → ídem
+   - PlanUsageCard        → tarjeta de settings
 
-- Añadir función `preloadCoreRoutes()` que itera el `routeImportMap` y dispara los imports en idle, escalonados (uno cada ~150ms) para no saturar la red.
-- Llamarla en un `useEffect` dentro de `MissionListenerInitializer` (o un componente nuevo `IdlePreloader`) solo cuando hay sesión activa.
-- Saltar la precarga si `navigator.connection.saveData === true` o `effectiveType === '2g'`.
+❌ Falla silenciosa o solo toast genérico
+   - Chaos Inbox  → contratos / banco / OCR
+   - QuickCapture / ReceiptReviewDialog  → process-receipt (límite OCR)
+   - BankImportDialog + useBankImportFlow  → process-bank-statement
+   - ContractTermsViewer  → analyze-contract directo
+   - SmartTextInput  → parse-smart-input (créditos IA agotados)
+   - SmartReconciliationPanel  → ai-reconcile (créditos IA)
+   - FinancialAutopilot  → financial-autopilot (créditos IA)
+   - ExpensePredictions  → predict-expenses (créditos IA)
+   - useTagSuggestions  → suggest-tags (créditos IA)
+   - EcosystemSmartCoaching  → ecosystem-coaching (créditos IA)
+   - ChatAssistant voz  → 429 voice limit / 402 credits
+   - VoicePreferencesCard preview voz  → ídem
+   - useElevenLabsTTS (TTS general)  → ídem (parcial)
+```
 
-### 2. Preload en móvil al tocar (touchstart)
-Modificar `src/components/Layout.tsx`:
-- **Bottom nav** (líneas 778, 794, 808): añadir `onTouchStart={() => preloadRoute(item.path)}`. El touchstart dispara ~80-150ms antes que el click, dando una pequeña ventaja para empezar la descarga.
-- **Mobile menu items** (líneas 616, 679): mismo `onTouchStart`.
+## Solución propuesta
 
-### 3. Ampliar `routeImportMap` con todas las rutas relevantes
-Hoy faltan en el mapa: `/banking`, `/net-worth`, `/notifications`, `/mentorship`, `/tax-calendar`, `/files`, `/data-health`, `/reports`, `/contracts`, `/mileage`, `/reconciliation`, `/tags`, `/trash`, `/user-guide`. Sin entrada en el mapa, `preloadRoute` no hace nada para esas rutas.
+### 1. Hook centralizado `useAIErrorHandler`
+Nuevo archivo: `src/hooks/utils/useAIErrorHandler.ts`
 
-Agregar todas para que tanto el preload táctil como el idle puedan cubrirlas.
+Toma cualquier error de `supabase.functions.invoke()` o respuesta y:
+- Detecta `quota_exceeded` (429), `credits_exhausted` (402), `plan_required`
+- Mapea el feature → plan requerido (contracts → Pro, OCR → Premium, voz Premium → Premium, etc.)
+- Abre un `UpgradePrompt` específico, o muestra un toast con CTA "Ver planes"
 
-## Archivos a modificar
+API:
+```ts
+const { handleAIError } = useAIErrorHandler();
+const { data, error } = await supabase.functions.invoke('analyze-contract', {...});
+if (error || data?.error) {
+  handleAIError(error || data, { feature: 'contracts' });
+  return;
+}
+```
 
-- **`src/App.tsx`**:
-  - Ampliar `routeImportMap` con todas las rutas autenticadas.
-  - Añadir helper `preloadCoreRoutes()` y componente `IdlePreloader` que la dispara en `requestIdleCallback` tras montar (con fallback `setTimeout` 1500ms).
-  - Montar `<IdlePreloader />` dentro de `AuthProvider` para que solo corra con sesión.
+### 2. Estandarizar respuestas de error en edge functions
+Algunas funciones devuelven `{ error: 'AI credits exhausted' }`, otras `{ error: 'quota_exceeded', message, currentUsage, limit }`. Unificar a:
+```json
+{ "error": "quota_exceeded" | "credits_exhausted" | "plan_required",
+  "feature": "contracts",
+  "currentPlan": "free",
+  "requiredPlan": "pro",
+  "message": "...",
+  "currentUsage": 0, "limit": 0 }
+```
+Funciones a actualizar: `analyze-contract`, `process-receipt`, `process-bank-statement`, `elevenlabs-tts`, `parse-smart-input`, `ai-reconcile`, `financial-autopilot`, `predict-expenses`, `suggest-tags`, `ecosystem-coaching`, `classify-document`, `classify-bank-transactions`.
 
-- **`src/components/Layout.tsx`**:
-  - Añadir `onTouchStart={() => preloadRoute(item.path)}` a los 4 lugares de navegación móvil (bottom nav x2 y mobile menu x2).
-  - También en el botón del sidebar añadir `onTouchStart` (para tablets con touch + sidebar).
+Para las que sólo tienen 402 (créditos IA del gateway), añadir además **chequeo previo de plan** cuando la feature es premium-only (ej: `financial-autopilot` debería requerir Premium+).
 
-## Resultado esperado
+### 3. Pre-chequeo en el cliente antes de enviar
+En cada flujo que invoca IA, **antes** de subir el archivo / enviar la petición, llamar al hook:
 
-- **Primera carga del dashboard**: igual (no cambia).
-- **Mientras lees el dashboard**: en segundo plano se descargan los chunks de las páginas frecuentes (~5-10 chunks de 50-200 KB cada uno).
-- **Navegación a cualquier página después**: instantánea (chunk ya en memoria).
-- **Si tocas una página antes de que termine la precarga idle**: el `onTouchStart` adelanta la descarga ~100ms y no se duplica (gracias al `preloadedRoutes` Set).
-- **Conexiones lentas/Save-Data**: se respeta y no se precarga, comportamiento actual.
+```tsx
+const { canAnalyzeContract, canUseOCR, canAnalyzeBank, hasFeature, planType } = usePlanLimits();
 
-Sin cambios en caché de datos React Query (ya está bien configurado: 5min staleTime, 15min gcTime).
+// Chaos Inbox - antes de procesar contrato
+if (type === 'contract' && !canAnalyzeContract()) {
+  setUpgradeFeature('contracts'); setUpgradeOpen(true); return;
+}
+```
+
+Puntos a parchar:
+| Archivo | Feature a chequear | Plan requerido |
+|---|---|---|
+| `useUnifiedChaosInbox.ts` (3 casos) | OCR / contracts / bank | Premium / Pro / Pro |
+| `ChaosInbox.tsx` (2 casos) | OCR | Premium |
+| `ReceiptReviewDialog.tsx` | OCR | Premium |
+| `QuickCapture.tsx` | OCR | Premium |
+| `BankImportDialog.tsx` + `useBankImportFlow.ts` | bank | Pro |
+| `ContractTermsViewer.tsx` | contracts | Pro |
+| `FinancialAutopilot.tsx` | autopilot (nuevo flag) | Premium |
+| `SmartReconciliationPanel.tsx` | reconcile | Premium |
+| `ExpensePredictions.tsx` | predictions | Premium |
+| `EcosystemSmartCoaching.tsx` | coaching | Bundle |
+| `useElevenLabsTTS.ts` | premium voice (minutos) | Premium |
+| `ChatAssistant.tsx` | voice | Premium |
+
+### 4. Banner permanente "feature bloqueada" en lugar de botón roto
+Para botones/secciones de features Pro a las que un usuario Free entra (ej: tab de Banking, tab de Contratos), envolver en un componente `<FeatureGate feature="contracts">` que:
+- Si tiene acceso → renderiza children
+- Si no → muestra una tarjeta locked con icono, descripción del valor, y botón "Desbloquear con Pro – $14.99/mes"
+
+Nuevo componente: `src/components/FeatureGate.tsx`
+
+### 5. Mejorar `UpgradePrompt` con feature `contracts` ya existente
+El componente ya tiene mensajería rica para `contracts`, `ocr`, `mileage`, etc. **Solo falta dispararlo desde los flujos faltantes**. Añadir mensajería para:
+- `voice_premium` (minutos voz Eleven Labs)
+- `bank_analysis`
+- `ai_reconcile`
+- `predictions`
+- `autopilot`
+
+## Detalles técnicos
+
+### Archivos nuevos
+- `src/hooks/utils/useAIErrorHandler.ts` — handler único + estado del modal
+- `src/components/FeatureGate.tsx` — wrapper UI para gating
+- `src/contexts/UpgradePromptContext.tsx` — provider global para abrir UpgradePrompt desde cualquier hook (opcional pero limpio)
+
+### Edits
+- `src/components/UpgradePrompt.tsx` — añadir 5 entradas al `friendlyMessages`
+- 12 ediciones en componentes/hooks listados arriba
+- 6-8 ediciones en edge functions para estandarizar payload de error
+
+### Tests rápidos a hacer manualmente tras implementar
+1. Cuenta Free sube contrato en Chaos Inbox → debe ver modal "Pro necesario para análisis de contratos"
+2. Cuenta Free intenta OCR de recibo nº 6 → modal "OCR limit – Premium"
+3. Cuenta Premium sube extracto bancario → modal "Análisis bancario – Pro"
+4. Cuenta Free habla con asistente >3 min → modal "Voz Premium – Premium"
+5. Cuenta Free abre Autopilot → tarjeta locked con CTA upgrade
+
+## Entregables
+- 3 archivos nuevos (`useAIErrorHandler`, `FeatureGate`, opcional `UpgradePromptContext`)
+- ~12 ediciones de hooks/componentes para integrar el handler
+- ~8 ediciones de edge functions para estandarizar errores
+- Ampliación de mensajes en `UpgradePrompt.tsx`
+
+## Fuera del alcance
+- Cambios al sistema de planes/precios
+- Refactor del sistema de pagos Stripe
+- Lógica nueva de tracking de uso (ya existe)

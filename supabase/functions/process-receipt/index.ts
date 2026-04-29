@@ -47,10 +47,20 @@ async function checkQuota(req: Request, usageField: string, limitField: string, 
   const currentCount = (usage as any)?.[usageField] ?? 0;
 
   if (limit !== null && limit < 999999 && currentCount >= limit) {
+    // OCR limits → suggest Premium first; bank/contract handled in their own functions
+    const featureKey = limitField.includes('bank') ? 'bank_analysis'
+      : limitField.includes('contract') ? 'contracts'
+      : 'ocr';
+    const reqPlan = featureKey === 'ocr' ? 'premium' : 'pro';
     return {
       error: new Response(JSON.stringify({
         error: 'quota_exceeded',
-        message: `Has alcanzado tu límite mensual (${currentCount}/${limit}). Actualiza tu plan para continuar.`,
+        feature: featureKey,
+        currentPlan: planType,
+        requiredPlan: reqPlan,
+        message: limit === 0
+          ? 'Esta función requiere un plan superior.'
+          : `Has alcanzado tu límite mensual (${currentCount}/${limit}). Mejora tu plan para continuar.`,
         currentUsage: currentCount,
         limit,
       }), { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
