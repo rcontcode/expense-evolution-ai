@@ -284,7 +284,7 @@ export function VoicePreferencesCard() {
       setIsTestingPremiumVoice(null);
       toast.error(language === 'es' ? 'Error al probar voz premium' : 'Error testing premium voice');
     }
-  }, [PREVIEW_THROTTLE_MS, getRemainingVoiceMinutes, isGodMode, language, lastPreviewTime]);
+  }, [PREVIEW_THROTTLE_MS, getRemainingVoiceMinutes, isGodMode, language, lastPreviewTime, upgrade]);
 
 
   const handleAddShortcut = () => {
