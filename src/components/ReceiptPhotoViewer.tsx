@@ -188,10 +188,10 @@ export function ReceiptPhotoViewer({ documentId, size = 'sm', showButton = true 
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent 
-          className={`p-0 overflow-hidden transition-all duration-300 ${
+          className={`p-0 overflow-hidden transition-all duration-300 relative ${
             isFullscreen 
               ? 'max-w-[100vw] w-[100vw] h-[100vh] max-h-[100vh] rounded-none m-0' 
-              : 'max-w-5xl max-h-[95vh]'
+              : 'max-w-[92vw] w-[92vw] max-h-[95vh] dialog-resizable'
           }`}
         >
           <DialogHeader className="p-3 border-b bg-background/95 backdrop-blur-sm sticky top-0 z-10">

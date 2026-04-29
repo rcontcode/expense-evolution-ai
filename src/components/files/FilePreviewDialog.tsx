@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Download, ExternalLink } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { DocumentPreviewRenderer } from '@/components/shared/DocumentPreviewRenderer';
+import { ResizeHandle } from '@/components/ui/resize-handle';
 import type { UnifiedFile } from '@/hooks/data/useAllFiles';
 
 interface FilePreviewDialogProps {
@@ -20,7 +21,7 @@ export function FilePreviewDialog({ file, previewUrl, isLoading, onClose, onDown
 
   return (
     <Dialog open={!!file} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-3xl max-h-[85vh] flex flex-col">
+      <DialogContent className="max-w-[90vw] w-[90vw] max-h-[92vh] flex flex-col dialog-resizable relative">
         <DialogHeader>
           <DialogTitle className="truncate pr-8">{file.file_name}</DialogTitle>
         </DialogHeader>
@@ -31,8 +32,8 @@ export function FilePreviewDialog({ file, previewUrl, isLoading, onClose, onDown
             fileName={file.file_name}
             mimeType={file.file_type}
             isLoading={isLoading}
-            className="w-full min-h-[300px] max-h-[60vh]"
-            pdfWidth={600}
+            className="w-full min-h-[300px] max-h-[75vh]"
+            pdfWidth={800}
             onDownload={() => onDownload(file)}
           />
         </div>
@@ -47,6 +48,7 @@ export function FilePreviewDialog({ file, previewUrl, isLoading, onClose, onDown
             {language === 'es' ? 'Ir a sección' : 'Go to section'}
           </Button>
         </div>
+        <ResizeHandle />
       </DialogContent>
     </Dialog>
   );
