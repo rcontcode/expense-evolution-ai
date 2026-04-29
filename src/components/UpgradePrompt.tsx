@@ -664,24 +664,13 @@ export function UpgradePrompt({
             </div>
           )}
 
-          {/* Testimonial - Social Proof */}
-          <Card className="p-4 bg-muted/50 border-2 border-dashed">
-            <div className="flex items-start gap-3">
-              <div className="text-3xl">"</div>
-              <div className="flex-1">
-                <p className="text-sm italic">
-                  {friendly.testimonial.text}
-                </p>
-                <div className="flex items-center justify-between mt-2">
-                  <p className="text-xs text-muted-foreground font-medium">
-                    — {friendly.testimonial.author}
-                  </p>
-                  <Badge variant="secondary" className="text-xs bg-green-500/10 text-green-600">
-                    {friendly.testimonial.result}
-                  </Badge>
-                </div>
-              </div>
-            </div>
+          {/* Educational disclaimer instead of testimonial */}
+          <Card className="p-4 bg-muted/40 border border-border">
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              EvoFinz es una herramienta de educación y organización financiera.
+              Los resultados varían según cada situación personal. Para decisiones
+              importantes, consulta a un profesional certificado.
+            </p>
           </Card>
 
           {/* Benefits Grid - The Good Stuff */}
@@ -722,17 +711,8 @@ export function UpgradePrompt({
             </p>
           </div>
 
-          {/* FOMO + Urgency */}
-          <div className="grid grid-cols-2 gap-2">
-            <div className="flex items-center gap-2 text-xs p-2 rounded-lg bg-muted/30">
-              <Flame className="h-4 w-4 text-orange-500 flex-shrink-0" />
-              <span className="text-muted-foreground">{friendly.fomo}</span>
-            </div>
-            <div className="flex items-center gap-2 text-xs p-2 rounded-lg bg-muted/30">
-              <Clock className="h-4 w-4 text-blue-500 flex-shrink-0" />
-              <span className="text-muted-foreground">{friendly.urgency}</span>
-            </div>
-          </div>
+          {/* FOMO/urgency block intentionally removed — see project Core rule:
+              "Clean Pricing — NEVER use strikethroughs, urgency, or FOMO tactics." */}
 
           {/* Pricing Card - The Offer */}
           <Card className={`p-5 border-2 bg-gradient-to-br ${targetDetails.color} text-white relative overflow-hidden`}>
