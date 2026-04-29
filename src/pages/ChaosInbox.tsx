@@ -569,6 +569,13 @@ export default function ChaosInbox() {
               },
             });
 
+            if (aiError && handleAIError(aiError, { feature: 'ocr', requiredPlan: 'premium' })) {
+              return;
+            }
+            if (result?.error && handleAIError(result, { feature: 'ocr', requiredPlan: 'premium' })) {
+              return;
+            }
+
             if (!aiError && result?.expenses?.length > 0) {
               const extractedData = {
                 ...result.expenses[0],
