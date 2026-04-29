@@ -30,9 +30,9 @@ interface FullScreenDialogProps {
 
 const SIZE_CLASSES: Record<DialogSize, string> = {
   md: 'max-w-2xl max-h-[90vh]',
-  lg: 'max-w-4xl w-[90vw] max-h-[92vh]',
-  xl: 'max-w-[95vw] w-[95vw] max-h-[92vh]',
-  full: 'max-w-[98vw] w-[98vw] max-h-[96vh]',
+  lg: 'max-w-4xl w-[90vw] max-h-[90vh]',
+  xl: 'max-w-[95vw] w-[95vw] max-h-[90vh]',
+  full: 'max-w-[96vw] w-[96vw] max-h-[90vh]',
 };
 
 export function FullScreenDialog({
@@ -54,8 +54,12 @@ export function FullScreenDialog({
         className={cn(
           // Desktop styles per size
           SIZE_CLASSES[size],
-          // Resizable on desktop only
-          resizable && !isMobile && 'dialog-resizable relative',
+          // Resizable on desktop only — anchor near the top so the bottom-right
+          // resize handle is always inside the viewport (reachable).
+          resizable && !isMobile && [
+            'dialog-resizable relative flex flex-col',
+            '!top-[3vh] !-translate-y-0',
+          ],
           // Mobile: full screen (overrides size)
           isMobile && [
             'fixed inset-0 h-full w-full max-w-full max-h-full',
@@ -103,7 +107,7 @@ export function FullScreenDialog({
         ) : (
           <>
             {/* Desktop: Standard dialog layout */}
-            <DialogHeader>
+            <DialogHeader className={cn(resizable && 'shrink-0')}>
               <DialogTitle>{title}</DialogTitle>
               {description && <DialogDescription>{description}</DialogDescription>}
             </DialogHeader>
@@ -111,13 +115,13 @@ export function FullScreenDialog({
               className={cn(
                 'overflow-y-auto',
                 resizable
-                  ? 'max-h-[calc(100%-6rem)] h-[calc(100%-6rem)]'
+                  ? 'flex-1 min-h-0'
                   : 'max-h-[calc(90vh-8rem)]',
               )}
             >
               {children}
             </div>
-            {footer && <div className="mt-4">{footer}</div>}
+            {footer && <div className={cn('mt-4', resizable && 'shrink-0')}>{footer}</div>}
             {resizable && <ResizeHandle />}
           </>
         )}

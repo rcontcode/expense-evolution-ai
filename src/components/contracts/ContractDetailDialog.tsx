@@ -8,7 +8,7 @@ import { ContractWithClient } from '@/types/contract.types';
 import { ContractTermsViewer } from './ContractTermsViewer';
 import { format } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
-import { FileText, Calendar, Building2, DollarSign, Loader2, ChevronLeft, ChevronRight, Files } from 'lucide-react';
+import { FileText, Calendar, Building2, DollarSign, Loader2, ChevronLeft, ChevronRight, Files, ExternalLink } from 'lucide-react';
 import { FullScreenDialog } from '@/components/mobile/FullScreenDialog';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
@@ -84,12 +84,12 @@ export function ContractDetailDialog({
           {termsPanel}
         </div>
       ) : (
-        <ResizablePanelGroup direction="horizontal" className="min-h-[70vh] gap-2">
-          <ResizablePanel defaultSize={55} minSize={25}>
+        <ResizablePanelGroup direction="horizontal" className="flex-1 min-h-0 h-full gap-2">
+          <ResizablePanel defaultSize={55} minSize={25} className="min-h-0">
             {previewPanel}
           </ResizablePanel>
           <ResizableHandle withHandle className="mx-1" />
-          <ResizablePanel defaultSize={45} minSize={25}>
+          <ResizablePanel defaultSize={45} minSize={25} className="min-h-0">
             {termsPanel}
           </ResizablePanel>
         </ResizablePanelGroup>
@@ -123,8 +123,8 @@ function ContractPreviewPanel({
   language,
 }: PreviewPanelProps) {
   return (
-    <div className="flex flex-col h-full min-h-[300px] lg:min-h-[60vh] pr-2">
-      <div className="flex items-center justify-between mb-2">
+    <div className="flex flex-col h-full min-h-0 pr-2 lg:pr-0">
+      <div className="flex items-center justify-between mb-2 shrink-0">
         <span className="text-sm font-medium text-muted-foreground">
           {language === 'es' ? 'Documento' : 'Document'}
         </span>
@@ -138,6 +138,17 @@ function ContractPreviewPanel({
           <Badge variant="outline" className="text-xs max-w-[200px] truncate">
             {currentPage.file_name}
           </Badge>
+          {previewUrl && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 px-2"
+              onClick={() => window.open(previewUrl, '_blank', 'noopener,noreferrer')}
+              title={language === 'es' ? 'Abrir en pestaña nueva' : 'Open in new tab'}
+            >
+              <ExternalLink className="h-3.5 w-3.5" />
+            </Button>
+          )}
         </div>
       </div>
 
@@ -185,14 +196,19 @@ function ContractPreviewPanel({
         </div>
       )}
 
-      <div className="flex-1 bg-muted rounded-lg overflow-hidden min-h-[400px]">
+      <div className="flex-1 min-h-0 bg-muted rounded-lg overflow-hidden h-[60vh] lg:h-auto">
         {loadingUrl ? (
-          <div className="flex items-center justify-center h-full min-h-[200px]">
+          <div className="flex items-center justify-center h-full">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
           </div>
         ) : previewUrl ? (
           currentPage.file_type?.includes('pdf') ? (
-            <iframe src={previewUrl} className="w-full h-full min-h-[400px]" title={currentPage.file_name} />
+            <iframe
+              src={previewUrl}
+              title={currentPage.file_name}
+              className="block border-0"
+              style={{ width: '100%', height: '100%' }}
+            />
           ) : (
             <img
               src={previewUrl}
@@ -201,7 +217,7 @@ function ContractPreviewPanel({
             />
           )
         ) : (
-          <div className="flex flex-col items-center justify-center h-full min-h-[200px] text-muted-foreground gap-2">
+          <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-2">
             <FileText className="h-10 w-10 opacity-50" />
             <p className="text-sm">
               {language === 'es' ? 'No se pudo cargar el documento' : 'Could not load document'}

@@ -1,69 +1,60 @@
 ## Problema
 
-En la vista previa de **contratos** (`ContractDetailDialog`) y otras vistas de documentos:
-- El modal usa `FullScreenDialog` con ancho `max-w-2xl` (~672px). En desktop el panel izquierdo (PDF) y derecho (Términos del Acuerdo) quedan apretados — el PDF muestra "No se pudo cargar el documento" porque no hay ancho suficiente, y el panel derecho corta texto.
-- No existe forma de redimensionar el modal ni la división izquierda/derecha.
-- `FilePreviewDialog` (en /files) usa `max-w-3xl` — también estrecho para PDFs.
-- `ScanSessionHistory` usa `max-w-2xl`.
-- `ReceiptPhotoViewer` ya tiene controles de zoom/rotación pero no es redimensionable libremente.
+En la vista de contratos, al abrir la previsualización:
 
-## Objetivo
+1. El modal aparece **gigante y desplazado hacia abajo**: empieza a media pantalla y se extiende por debajo del borde inferior, dejando inaccesibles la esquina inferior (donde está el handle de redimensionado) y los botones del fondo.
+2. El **PDF no se previsualiza** (panel izquierdo aparece gris vacío) aunque es un PDF normal.
+3. El modal **no se puede mover** ni alcanzar la esquina para encogerlo, así que el usuario queda atrapado sin poder interactuar.
 
-Permitir al usuario **ajustar tamaño** de los modales de vista previa y dar **más espacio por defecto**, además de hacer la división izquierda/derecha (documento vs. términos) **redimensionable** mediante un panel arrastrable.
+## Causas reales
 
-## Cambios
+- En `ContractDetailDialog.tsx` el panel izquierdo y derecho se montan dentro de un `ResizablePanelGroup` con `min-h-[70vh]`, y dentro del panel del PDF hay un contenedor con `min-h-[400px]` + flex column con `min-h-[60vh]`. La suma de mínimos **excede** el `max-h-[92vh]` del `DialogContent`, así que el grid crece por debajo del viewport.
+- El `DialogContent` base usa `!top-1/2 !-translate-y-1/2` con `!important` (Radix), por lo que aun excediendo `max-h`, no se reposiciona y desborda hacia abajo.
+- El iframe del PDF está dentro de un `flex-1` cuyo padre nunca recibe altura efectiva (porque el `ResizablePanel` no propaga altura a hijos sin `h-full` explícito en cada nivel). Resultado: el iframe se renderiza con altura 0 → **PDF en blanco**.
+- El `.dialog-resizable` tenía `min-height: 320px` pero el contenido interno fuerza que el navegador ignore el `max-height` real, y como el handle está fuera de pantalla, el usuario no puede corregir el tamaño manualmente.
 
-### 1. `FullScreenDialog` — soporte resizable + ancho mayor
-- Cambiar `max-w-2xl` → `max-w-[95vw] w-[95vw]` en desktop por defecto, con `max-h-[92vh]`.
-- Añadir prop opcional `resizable?: boolean` y `size?: 'md' | 'lg' | 'xl' | 'full'` para casos donde solo se necesite formulario (ContractDialog, ClientDialog mantienen tamaño actual).
-- Cuando `resizable`, agregar un handle visible en la **esquina inferior derecha** (icono de flechita diagonal `GripDiagonal`) usando CSS `resize: both; overflow: auto;` aplicado al `DialogContent` con `min-w`/`min-h`/`max-w-[98vw]`/`max-h-[98vh]`.
+## Plan de corrección
 
-### 2. `ContractDetailDialog` — split redimensionable
-- Pasar `resizable` y `size="xl"` al `FullScreenDialog`.
-- Reemplazar el `grid grid-cols-1 lg:grid-cols-2` por **`ResizablePanelGroup`** de `@/components/ui/resizable` (shadcn — ya está disponible) con dos `ResizablePanel` y un `ResizableHandle withHandle` en medio. Esto permite arrastrar la división documento/términos.
-- Aumentar `min-h` del visor PDF a `min-h-[60vh]` y `pdfWidth` adaptativo (usar contenedor full width).
-- En mobile mantener stacked (sin resizable).
+### 1. `src/components/mobile/FullScreenDialog.tsx`
+- Cambiar las clases de `size` para garantizar que el modal **nunca** exceda el viewport ni cuando es resizable:
+  - Usar `top-[2vh]` + `translate-y-0` (override del centrado vertical) cuando `resizable` está activo, así el modal queda anclado arriba y el handle inferior siempre cae dentro de la pantalla.
+  - Reducir `max-h` por defecto de `92vh` → `90vh` y aplicarlo también al contenedor interno.
+- Asegurar que el área de contenido (`<div className="overflow-y-auto …">`) use `h-[calc(90vh-7rem)]` cuando es resizable, en lugar de `100%-6rem` que depende de un padre sin altura definida.
+- Mantener `ResizeHandle` pero darle más tamaño táctil (24×24, posición `bottom-2 right-2`) para ser fácilmente alcanzable.
 
-### 3. `FilePreviewDialog` — más ancho + resizable
-- Cambiar `max-w-3xl max-h-[85vh]` → `max-w-[90vw] w-[90vw] max-h-[92vh]`.
-- Aplicar CSS `resize: both` con handle visible en esquina inferior derecha.
-- Ajustar `pdfWidth` a `800` y permitir `max-h-[75vh]` en el preview interno.
+### 2. `src/index.css` — `.dialog-resizable`
+- Quitar `min-height: 320px` (era demasiado bajo y conflictivo). Ajustar a:
+  ```css
+  .dialog-resizable {
+    resize: both;
+    overflow: hidden;     /* el scroll lo maneja el contenedor interno */
+    min-width: 480px;
+    min-height: 400px;
+    max-width: 96vw;
+    max-height: 90vh;
+  }
+  ```
 
-### 4. `ReceiptPhotoViewer` — resizable cuando no está en fullscreen
-- En estado normal (no fullscreen) cambiar `max-w-5xl` → `max-w-[92vw] w-[92vw]` y agregar `resize: both` con handle visual.
-- Mantener el modo fullscreen existente.
+### 3. `src/components/contracts/ContractDetailDialog.tsx`
+- Eliminar el `min-h-[70vh]` del `ResizablePanelGroup` y los `min-h-[60vh]` / `min-h-[400px]` del panel de preview. Reemplazar con `h-full` puros y un único `min-h-0` en el flex parent para permitir que el iframe se ajuste al espacio disponible (técnica estándar de flex con altura).
+- Envolver el iframe en un contenedor con `h-full w-full` y darle al iframe `style={{ height: '100%', width: '100%', minHeight: '60vh' }}` directamente; añadir `loading="lazy"` y `type="application/pdf"`. Esto soluciona el PDF en blanco.
+- Para móvil, mantener el flujo apilado pero darle al preview una altura concreta (`h-[60vh]`) en vez de mínima, para que el iframe efectivamente renderice.
 
-### 5. `ScanSessionHistory` — ampliar
-- `max-w-2xl` → `max-w-[85vw] w-[85vw]`.
+### 4. (Opcional pero recomendado) Botón "Abrir en pestaña nueva"
+- Agregar un pequeño botón en el header del panel de preview que abra `previewUrl` en una pestaña nueva. Es el fallback universal cuando un PDF embebido falla por políticas del navegador (algunos navegadores bloquean iframes de signed URLs de Supabase).
 
-### 6. Nuevo componente helper `ResizeHandle`
-- Crear `src/components/ui/resize-handle.tsx`: un pequeño triángulo/grip absolute en `bottom-1 right-1` con `cursor-se-resize`, decorativo (el resize real lo hace CSS `resize: both` en el contenedor padre).
-- Usado como pista visual en los diálogos resizables.
+## Resultado esperado
 
-### 7. CSS global
-- Añadir en `src/index.css` una utilidad `.dialog-resizable { resize: both; overflow: auto; min-width: 400px; min-height: 300px; max-width: 98vw; max-height: 98vh; }` para aplicar de forma consistente.
+- El modal abre dentro del viewport, anclado a 2vh del borde superior, con el handle de redimensionado siempre visible y alcanzable.
+- El PDF se renderiza correctamente porque el iframe ahora tiene altura efectiva propagada por la cadena flex.
+- Si por algún motivo el iframe sigue fallando (CSP del navegador), el usuario tiene un botón de escape para abrirlo en pestaña nueva.
 
 ## Archivos a editar
 
 - `src/components/mobile/FullScreenDialog.tsx`
 - `src/components/contracts/ContractDetailDialog.tsx`
-- `src/components/files/FilePreviewDialog.tsx`
-- `src/components/ReceiptPhotoViewer.tsx`
-- `src/components/capture/ScanSessionHistory.tsx`
-- `src/components/ui/resize-handle.tsx` (nuevo)
-- `src/index.css` (utilidad `.dialog-resizable`)
+- `src/index.css`
 
-## Detalles técnicos
+## Verificación
 
-- `resize: both` en CSS funciona nativo en el navegador y muestra el handle estándar del SO en la esquina; añadimos un grip visual extra para descubribilidad.
-- `ResizablePanelGroup` de shadcn ya está en el proyecto (`src/components/ui/resizable.tsx`) — confirmar antes de usar; si no, instalar via `bun add react-resizable-panels`.
-- En mobile (<768px) ignoramos `resize` (queda en pantalla completa como hoy).
-- No tocamos formularios (`ContractDialog`, `ExpenseDialog`, etc.) — solo modales de **vista/preview**.
-
-## Resultado esperado
-
-El usuario podrá:
-1. Ver el PDF del contrato y los términos lado a lado con espacio adecuado por defecto (95vw).
-2. Arrastrar la división central para dar más espacio al PDF o a los términos según necesite.
-3. Arrastrar la esquina inferior derecha del modal para redimensionarlo libremente.
-4. Mismo comportamiento en `FilePreviewDialog`, `ReceiptPhotoViewer` y `ScanSessionHistory`.
+Después de aplicar los cambios, abriré el preview con browser tools en viewport 1474×954 (el del usuario) para confirmar que el modal cabe entero, el PDF se ve, y el handle de la esquina es accesible.
