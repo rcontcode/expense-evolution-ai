@@ -2,6 +2,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTags } from './useTags';
+import { useAIErrorHandler } from '@/hooks/utils/useAIErrorHandler';
 
 interface TagSuggestion {
   tagId: string;
@@ -19,6 +20,7 @@ interface SuggestTagsParams {
 
 export function useTagSuggestions() {
   const { data: tags } = useTags();
+  const { handleAIError } = useAIErrorHandler();
 
   return useMutation({
     mutationFn: async (params: SuggestTagsParams): Promise<TagSuggestion[]> => {
@@ -53,7 +55,11 @@ export function useTagSuggestions() {
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        if (handleAIError(error, { feature: 'ai_credits', requiredPlan: 'pro' })) return [];
+        throw error;
+      }
+      if (data?.error && handleAIError(data, { feature: 'ai_credits', requiredPlan: 'pro' })) return [];
       return data?.suggestions || [];
     },
   });

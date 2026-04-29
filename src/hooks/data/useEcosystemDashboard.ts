@@ -68,7 +68,11 @@ export function useEcosystemDashboard() {
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
 
-      if (response.error) throw response.error;
+      if (response.error) {
+        if (handleAIError(response.error, { feature: 'ai_credits', requiredPlan: 'bundle' })) return null;
+        throw response.error;
+      }
+      if (response.data?.error && handleAIError(response.data, { feature: 'ai_credits', requiredPlan: 'bundle' })) return null;
       return response.data;
     },
     enabled,

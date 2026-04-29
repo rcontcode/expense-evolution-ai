@@ -9,6 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { EcosystemErrorFallback } from './EcosystemErrorFallback';
+import { useAIErrorHandler } from '@/hooks/utils/useAIErrorHandler';
 
 interface SmartInsight {
   emoji: string;
@@ -24,6 +25,7 @@ export const EcosystemSmartCoaching = memo(() => {
   const { language } = useLanguage();
   const { hasBundleAccess, isEnabled, isLoading: flagsLoading } = useFeatureFlags();
   const { user } = useAuth();
+  const { handleAIError } = useAIErrorHandler();
   const isEs = language === 'es';
 
   const { data, isLoading, isError, refetch, isFetching } = useQuery({
@@ -37,7 +39,15 @@ export const EcosystemSmartCoaching = memo(() => {
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
 
-      if (response.error) throw response.error;
+      if (response.error) {
+        if (handleAIError(response.error, { feature: 'ai_credits', requiredPlan: 'bundle' })) {
+          return { insights: [], source: 'limit' };
+        }
+        throw response.error;
+      }
+      if (response.data?.error && handleAIError(response.data, { feature: 'ai_credits', requiredPlan: 'bundle' })) {
+        return { insights: [], source: 'limit' };
+      }
       return response.data || { insights: [], source: 'error' };
     },
     enabled: !!user?.id && hasBundleAccess,
