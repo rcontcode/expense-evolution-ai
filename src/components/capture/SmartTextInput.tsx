@@ -68,6 +68,7 @@ export function SmartTextInput({ onSuccess, onCancel }: SmartTextInputProps) {
   const createIncome = useCreateIncome();
   const [pendingBillCandidate, setPendingBillCandidate] = useState<RecurringBillCandidate | null>(null);
   const [showBillConfirm, setShowBillConfirm] = useState(false);
+  const { handleAIError } = useAIErrorHandler();
 
   const { isListening, transcript, isSupported: voiceSupported, toggleListening, setTranscript } = useVoiceInput({
     onResult: () => {}
@@ -98,6 +99,7 @@ export function SmartTextInput({ onSuccess, onCancel }: SmartTextInputProps) {
 
       if (error) {
         console.error('Smart input error:', error);
+        if (handleAIError(error, { feature: 'ai_credits', requiredPlan: 'pro' })) return;
         if (error.message?.includes('429')) {
           toast.error(l ? 'Demasiadas solicitudes, espera un momento' : 'Too many requests, please wait');
         } else if (error.message?.includes('402')) {
@@ -109,6 +111,7 @@ export function SmartTextInput({ onSuccess, onCancel }: SmartTextInputProps) {
       }
 
       if (data?.error) {
+        if (handleAIError(data, { feature: 'ai_credits', requiredPlan: 'pro' })) return;
         toast.error(data.error);
         return;
       }
