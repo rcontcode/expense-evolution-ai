@@ -55,6 +55,7 @@ export function SmartSearchChat() {
   const [isLoading, setIsLoading] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const { handleAIError } = useAIErrorHandler();
   
   const { data: transactions } = useBankTransactions();
   const { data: expenses } = useExpenses();
@@ -124,7 +125,17 @@ export function SmartSearchChat() {
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        if (handleAIError(error, { feature: 'bank_analysis', requiredPlan: 'premium' })) {
+          setIsLoading(false);
+          return;
+        }
+        throw error;
+      }
+      if (data?.error && handleAIError(data, { feature: 'bank_analysis', requiredPlan: 'premium' })) {
+        setIsLoading(false);
+        return;
+      }
 
       const answer = data?.insights?.[0] || 
         (l ? 'No pude encontrar información específica. Intenta con otra pregunta.'
