@@ -1,5 +1,6 @@
 import React, { createContext, useCallback, useContext, useState } from 'react';
 import { UpgradePrompt } from '@/components/UpgradePrompt';
+import { QuotaResetDialog } from '@/components/QuotaResetDialog';
 import { usePlanLimits, type PlanType } from '@/hooks/data/usePlanLimits';
 
 export type UpgradeFeatureKey =
@@ -15,6 +16,8 @@ interface OpenOptions {
   requiredPlan?: PlanType;
   currentUsage?: number;
   limit?: number;
+  /** ISO timestamp of when the monthly counter resets. */
+  resetDate?: string;
   /** Optional human message – currently logged for analytics. */
   message?: string;
 }
@@ -27,23 +30,50 @@ interface UpgradePromptContextValue {
 const UpgradePromptContext = createContext<UpgradePromptContextValue | null>(null);
 
 export function UpgradePromptProvider({ children }: { children: React.ReactNode }) {
-  const { planType } = usePlanLimits();
+  const { planType, isGodMode } = usePlanLimits();
   const [state, setState] = useState<{ isOpen: boolean; opts: OpenOptions | null }>({
     isOpen: false,
     opts: null,
   });
 
   const open = useCallback((opts: OpenOptions) => {
+    // Admins should never see upgrade prompts (they have full access)
+    if (isGodMode) {
+      console.warn('[UpgradePrompt] suppressed for admin user', opts);
+      return;
+    }
     setState({ isOpen: true, opts });
-  }, []);
+  }, [isGodMode]);
   const close = useCallback(() => setState({ isOpen: false, opts: null }), []);
 
   const opts = state.opts;
 
+  // If the user is already on the highest plan AND the block is purely a
+  // monthly quota (limit > 0 and currentUsage >= limit), there is no
+  // upgrade path — show a "comes back next month" dialog instead of
+  // pushing them to "upgrade" something that doesn't exist.
+  const isOnTopPlan = planType === 'pro' || planType === 'pro_beta';
+  const isQuotaOnly =
+    typeof opts?.limit === 'number' &&
+    opts.limit > 0 &&
+    typeof opts?.currentUsage === 'number' &&
+    opts.currentUsage >= opts.limit;
+  const showQuotaResetInstead = isOnTopPlan && isQuotaOnly;
+
   return (
     <UpgradePromptContext.Provider value={{ open, close }}>
       {children}
-      {opts && (
+      {opts && showQuotaResetInstead && (
+        <QuotaResetDialog
+          isOpen={state.isOpen}
+          onClose={close}
+          feature={opts.feature}
+          currentUsage={opts.currentUsage}
+          limit={opts.limit}
+          resetDate={opts.resetDate}
+        />
+      )}
+      {opts && !showQuotaResetInstead && (
         <UpgradePrompt
           isOpen={state.isOpen}
           onClose={close}
