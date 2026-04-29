@@ -80,7 +80,7 @@ export function FileUploadZone({ onDocumentProcessed }: FileUploadZoneProps = {}
       queryClient.invalidateQueries({ queryKey: ['documents'] });
     }
     setUploading(false);
-  }, [user?.id, language, queryClient]);
+  }, [user?.id, language, queryClient, ocrAccess, onDocumentProcessed]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
