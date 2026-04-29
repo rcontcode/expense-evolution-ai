@@ -11,6 +11,7 @@ import { es, enUS } from 'date-fns/locale';
 import { FileText, Calendar, Building2, DollarSign, Loader2, ChevronLeft, ChevronRight, Files } from 'lucide-react';
 import { FullScreenDialog } from '@/components/mobile/FullScreenDialog';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 
 interface ContractDetailDialogProps {
   open: boolean;
@@ -51,10 +52,79 @@ export function ContractDetailDialog({
       onOpenChange={onOpenChange}
       title={contract.title || contract.file_name}
       description={contract.client?.name}
+      size="xl"
+      resizable
     >
-      <div className={isMobile ? "space-y-4" : "grid grid-cols-1 lg:grid-cols-2 gap-4"}>
-        {/* Left: Document Preview */}
-        <div className="flex flex-col min-h-[300px] lg:min-h-[400px]">
+      {isMobile ? (
+        <div className="space-y-4">
+          <ContractPreviewPanel
+            contract={contract}
+            currentPage={currentPage}
+            pages={pages}
+            currentPageIndex={currentPageIndex}
+            setCurrentPageIndex={setCurrentPageIndex}
+            isMultiPage={isMultiPage}
+            totalPages={totalPages}
+            previewUrl={previewUrl}
+            loadingUrl={loadingUrl}
+            language={language}
+          />
+          <ContractTermsPanel
+            contract={contract}
+            extractedTerms={extractedTerms}
+            language={language}
+            locale={locale}
+            onContractUpdate={onContractUpdate}
+            isMobile
+          />
+        </div>
+      ) : (
+        <ResizablePanelGroup direction="horizontal" className="min-h-[70vh] gap-2">
+          <ResizablePanel defaultSize={55} minSize={25}>
+            <ContractPreviewPanel
+              contract={contract}
+              currentPage={currentPage}
+              pages={pages}
+              currentPageIndex={currentPageIndex}
+              setCurrentPageIndex={setCurrentPageIndex}
+              isMultiPage={isMultiPage}
+              totalPages={totalPages}
+              previewUrl={previewUrl}
+              loadingUrl={loadingUrl}
+              language={language}
+            />
+          </ResizablePanel>
+          <ResizableHandle withHandle className="mx-1" />
+          <ResizablePanel defaultSize={45} minSize={25}>
+            <ContractTermsPanel
+              contract={contract}
+              extractedTerms={extractedTerms}
+              language={language}
+              locale={locale}
+              onContractUpdate={onContractUpdate}
+            />
+          </ResizablePanel>
+        </ResizablePanelGroup>
+      )}
+    </FullScreenDialog>
+  );
+}
+
+// ─── Preview Panel ───────────────────────────────────────────────
+function ContractPreviewPanel({
+  contract,
+  currentPage,
+  pages,
+  currentPageIndex,
+  setCurrentPageIndex,
+  isMultiPage,
+  totalPages,
+  previewUrl,
+  loadingUrl,
+  language,
+}: any) {
+  return (
+    <div className="flex flex-col h-full min-h-[300px] lg:min-h-[400px] pr-2">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-medium text-muted-foreground">
               {language === 'es' ? 'Documento' : 'Document'}
