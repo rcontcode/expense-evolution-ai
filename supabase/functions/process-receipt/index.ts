@@ -52,17 +52,20 @@ async function checkQuota(req: Request, usageField: string, limitField: string, 
       : limitField.includes('contract') ? 'contracts'
       : 'ocr';
     const reqPlan = featureKey === 'ocr' ? 'premium' : 'pro';
+    const now = new Date();
+    const resetDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1)).toISOString();
     return {
       error: new Response(JSON.stringify({
-        error: 'quota_exceeded',
+        error: limit === 0 ? 'plan_required' : 'quota_exceeded',
         feature: featureKey,
         currentPlan: planType,
-        requiredPlan: reqPlan,
+        requiredPlan: planType === 'pro' || planType === 'pro_beta' ? undefined : reqPlan,
         message: limit === 0
           ? 'Esta función requiere un plan superior.'
-          : `Has alcanzado tu límite mensual (${currentCount}/${limit}). Mejora tu plan para continuar.`,
+          : `Has alcanzado el límite mensual (${currentCount}/${limit}). Se renueva el ${resetDate.slice(0, 10)}.`,
         currentUsage: currentCount,
         limit,
+        resetDate,
       }), { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     };
   }
