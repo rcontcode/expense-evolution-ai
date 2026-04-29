@@ -44,12 +44,16 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { FeatureGate } from '@/components/FeatureGate';
+import { usePlanLimits } from '@/hooks/data/usePlanLimits';
 
 export default function Mileage() {
   const { t, language } = useLanguage();
   const { currentCountry } = useEntity();
   const isEs = language === 'es';
   const isMobile = useIsMobile();
+  const { hasFeature, isGodMode, isLoading: planLoading } = usePlanLimits();
+  const hasAccess = isGodMode || hasFeature('mileage');
   const currentYear = new Date().getFullYear();
   const [selectedYear, setSelectedYear] = useState<number>(currentYear);
   const [dialogOpen, setDialogOpen] = useState(false);
