@@ -21,11 +21,21 @@ import { SimpleModePageBanner } from '@/components/dashboard/SimpleModePageBanne
 import { useIsMobile } from '@/hooks/use-mobile';
 import { BankingInsightsSummary } from '@/components/banking/BankingInsightsSummary';
 import { MobileTabLayout, type MobileTab } from '@/components/mobile';
+import { useFeatureAccess } from '@/hooks/data/useFeatureAccess';
 
 function BankingAdvanced() {
   const { language } = useLanguage();
   const isMobile = useIsMobile();
   const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const bankAccess = useFeatureAccess('bank_analysis');
+
+  const openImport = () => {
+    if (!bankAccess.allowed) {
+      bankAccess.openUpgrade();
+      return;
+    }
+    setImportDialogOpen(true);
+  };
 
   return (
     <Layout>
@@ -49,7 +59,7 @@ function BankingAdvanced() {
           <PageContextGuide
             {...PAGE_GUIDES.banking}
             actions={[
-              { icon: Upload, title: { es: 'Importar Estado', en: 'Import Statement' }, description: { es: 'CSV o foto', en: 'CSV or photo' }, action: () => setImportDialogOpen(true) },
+              { icon: Upload, title: { es: 'Importar Estado', en: 'Import Statement' }, description: { es: 'CSV o foto', en: 'CSV or photo' }, action: openImport },
               { icon: Search, title: { es: 'Buscar', en: 'Search' }, description: { es: 'En transacciones', en: 'In transactions' }, action: () => document.querySelector('[data-section="smart-search"]')?.scrollIntoView({ behavior: 'smooth' }) },
               { icon: AlertTriangle, title: { es: 'Ver Anomalías', en: 'View Anomalies' }, description: { es: 'Cobros sospechosos', en: 'Suspicious charges' }, action: () => document.querySelector('[data-highlight="bank-analysis-dashboard"]')?.scrollIntoView({ behavior: 'smooth' }) },
               { icon: TrendingDown, title: { es: 'Suscripciones', en: 'Subscriptions' }, description: { es: 'Detectadas', en: 'Detected' }, path: '/subscriptions' }
@@ -61,8 +71,19 @@ function BankingAdvanced() {
 
         {!isMobile && (
           <div data-highlight="bank-import-guide">
-            <BankingIntegrationGuide onImportClick={() => setImportDialogOpen(true)} />
+            <BankingIntegrationGuide onImportClick={openImport} />
           </div>
+        )}
+
+        {typeof bankAccess.limit === 'number' && bankAccess.limit !== Infinity && bankAccess.limit > 0 && (
+          <p className="text-xs text-muted-foreground">
+            {language === 'es' ? 'Análisis bancarios este mes' : 'Bank analyses this month'}: {bankAccess.currentUsage ?? 0}/{bankAccess.limit}
+            {!bankAccess.allowed && (
+              <button onClick={bankAccess.openUpgrade} className="ml-2 underline text-primary">
+                {language === 'es' ? 'Mejorar plan' : 'Upgrade'}
+              </button>
+            )}
+          </p>
         )}
 
         {isMobile ? (
@@ -101,7 +122,7 @@ function BankingAdvanced() {
                 emoji: '📈',
                 content: (
                   <div data-highlight="bank-analysis-dashboard">
-                    <BankAnalysisDashboard onImportClick={() => setImportDialogOpen(true)} />
+                    <BankAnalysisDashboard onImportClick={openImport} />
                   </div>
                 ),
               },
@@ -123,7 +144,7 @@ function BankingAdvanced() {
             </div>
             <BalanceDateLookup />
             <div data-highlight="bank-analysis-dashboard">
-              <BankAnalysisDashboard onImportClick={() => setImportDialogOpen(true)} />
+              <BankAnalysisDashboard onImportClick={openImport} />
             </div>
           </>
         )}

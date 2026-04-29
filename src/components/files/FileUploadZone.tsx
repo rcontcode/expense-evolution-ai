@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { Upload } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { checkFilePreUpload } from '@/hooks/data/useContentDuplicateDetector';
+import { useFeatureAccess } from '@/hooks/data/useFeatureAccess';
 
 interface FileUploadZoneProps {
   onDocumentProcessed?: (docId: string, fileName: string) => void;
@@ -19,9 +20,14 @@ export function FileUploadZone({ onDocumentProcessed }: FileUploadZoneProps = {}
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const ocrAccess = useFeatureAccess('ocr');
 
   const uploadFiles = useCallback(async (fileList: FileList) => {
     if (!user?.id || fileList.length === 0) return;
+    if (!ocrAccess.allowed) {
+      ocrAccess.openUpgrade();
+      return;
+    }
     setUploading(true);
     let successCount = 0;
 
@@ -74,7 +80,7 @@ export function FileUploadZone({ onDocumentProcessed }: FileUploadZoneProps = {}
       queryClient.invalidateQueries({ queryKey: ['documents'] });
     }
     setUploading(false);
-  }, [user?.id, language, queryClient]);
+  }, [user?.id, language, queryClient, ocrAccess, onDocumentProcessed]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
