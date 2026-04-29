@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useFeatureFlags } from '@/hooks/data/useFeatureFlags';
+import { useAIErrorHandler } from '@/hooks/utils/useAIErrorHandler';
 
 export interface EcosystemDashboardData {
   totalIncome: number;
@@ -54,6 +55,7 @@ export interface EcosystemDashboardData {
 export function useEcosystemDashboard() {
   const { user } = useAuth();
   const { hasBundleAccess, isEnabled, isLoading: flagsLoading } = useFeatureFlags();
+  const { handleAIError } = useAIErrorHandler();
 
   const enabled = !!user?.id && hasBundleAccess && !flagsLoading && isEnabled('ecosystem_insights');
 
@@ -68,7 +70,11 @@ export function useEcosystemDashboard() {
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
 
-      if (response.error) throw response.error;
+      if (response.error) {
+        if (handleAIError(response.error, { feature: 'ai_credits', requiredPlan: 'pro' })) return null;
+        throw response.error;
+      }
+      if (response.data?.error && handleAIError(response.data, { feature: 'ai_credits', requiredPlan: 'pro' })) return null;
       return response.data;
     },
     enabled,
