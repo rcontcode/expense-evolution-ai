@@ -4,6 +4,7 @@ import { useProfile } from './useProfile';
 import { useFinancialProfile } from './useFinancialProfile';
 import { useIncome } from './useIncome';
 import { toast } from 'sonner';
+import { useAIErrorHandler } from '@/hooks/utils/useAIErrorHandler';
 
 interface ApvRecommendation {
   recommended: number;
