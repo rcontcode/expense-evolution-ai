@@ -40,16 +40,20 @@ async function checkContractQuota(req: Request) {
   const currentCount = (usage as any)?.contract_analyses_count ?? 0;
 
   if (limit < 999999 && currentCount >= limit) {
+    const now = new Date();
+    const resetDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1)).toISOString();
     return {
       error: new Response(JSON.stringify({
-        error: 'quota_exceeded',
+        error: limit === 0 ? 'plan_required' : 'quota_exceeded',
         feature: 'contracts',
         currentPlan: planType,
-        requiredPlan: 'pro',
+        requiredPlan: planType === 'pro' || planType === 'pro_beta' ? undefined : 'pro',
         message: limit === 0
           ? 'El análisis inteligente de contratos está disponible en el plan Pro.'
-          : `Has alcanzado tu límite mensual de análisis de contratos (${currentCount}/${limit}).`,
-        currentUsage: currentCount, limit,
+          : `Has alcanzado el límite mensual de análisis de contratos (${currentCount}/${limit}). Se renueva el ${resetDate.slice(0, 10)}.`,
+        currentUsage: currentCount,
+        limit,
+        resetDate,
       }), { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     };
   }

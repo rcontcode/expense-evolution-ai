@@ -40,11 +40,20 @@ async function checkBankQuota(req: Request) {
   const currentCount = (usage as any)?.bank_analyses_count ?? 0;
 
   if (limit < 999999 && currentCount >= limit) {
+    const now = new Date();
+    const resetDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1)).toISOString();
     return {
       error: new Response(JSON.stringify({
-        error: 'quota_exceeded',
-        message: `Has alcanzado tu límite mensual de análisis bancarios (${currentCount}/${limit}).`,
-        currentUsage: currentCount, limit,
+        error: limit === 0 ? 'plan_required' : 'quota_exceeded',
+        feature: 'bank_analysis',
+        currentPlan: planType,
+        requiredPlan: planType === 'pro' || planType === 'pro_beta' ? undefined : (limit === 0 ? 'premium' : 'pro'),
+        message: limit === 0
+          ? 'El análisis bancario inteligente requiere el plan Premium o superior.'
+          : `Has alcanzado el límite mensual de análisis bancarios (${currentCount}/${limit}). Se renueva el ${resetDate.slice(0, 10)}.`,
+        currentUsage: currentCount,
+        limit,
+        resetDate,
       }), { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     };
   }
