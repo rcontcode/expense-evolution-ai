@@ -14,6 +14,7 @@ import { useBankTransactions } from '@/hooks/data/useBankTransactions';
 import { useExpenses } from '@/hooks/data/useExpenses';
 import { useBankInsights } from '@/hooks/data/useBankAnalysis';
 import { supabase } from '@/integrations/supabase/client';
+import { useAIErrorHandler } from '@/hooks/utils/useAIErrorHandler';
 import { parseISO, startOfMonth, endOfMonth, subMonths, format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
