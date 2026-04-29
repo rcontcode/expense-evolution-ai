@@ -9,6 +9,7 @@ import { TaxDeadlineCountdown } from '@/components/tax/TaxDeadlineCountdown';
 import { TaxDocumentChecklist } from '@/components/tax/TaxDocumentChecklist';
 import { Receipt } from 'lucide-react';
 import { LegalDisclaimer } from '@/components/ui/legal-disclaimer';
+import { FeatureGate } from '@/components/FeatureGate';
 
 const TaxOptimizerCard = lazy(() => import('@/components/dashboard/TaxOptimizerCard').then(m => ({ default: m.TaxOptimizerCard })));
 const SavingsOptimizerSection = lazy(() => import('@/components/tax/SavingsOptimizerSection').then(m => ({ default: m.SavingsOptimizerSection })));
@@ -39,12 +40,20 @@ export default function TaxOptimizer() {
           <TaxDeadlineCountdown />
           <TaxSummaryCards taxSummary={taxSummary} />
           <TaxDocumentChecklist />
-          <Suspense fallback={<Skeleton className="h-[300px]" />}>
-            <TaxOptimizerCard />
-          </Suspense>
-          <Suspense fallback={<Skeleton className="h-[300px]" />}>
-            <SavingsOptimizerSection />
-          </Suspense>
+          <FeatureGate
+            feature="tax_optimizer"
+            promptFeature="tax_optimizer"
+            requiredPlan="pro"
+            title={language === 'es' ? 'Optimizador Fiscal Inteligente' : 'Smart Tax Optimizer'}
+            description={language === 'es' ? 'Detecta deducciones aplicables y estrategias de ahorro fiscal según tu país.' : 'Detect applicable deductions and tax-saving strategies for your country.'}
+          >
+            <Suspense fallback={<Skeleton className="h-[300px]" />}>
+              <TaxOptimizerCard />
+            </Suspense>
+            <Suspense fallback={<Skeleton className="h-[300px]" />}>
+              <SavingsOptimizerSection />
+            </Suspense>
+          </FeatureGate>
           <LegalDisclaimer variant="tax" size="compact" />
         </div>
       </div>

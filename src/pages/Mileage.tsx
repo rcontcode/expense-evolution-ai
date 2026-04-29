@@ -44,12 +44,16 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { FeatureGate } from '@/components/FeatureGate';
+import { usePlanLimits } from '@/hooks/data/usePlanLimits';
 
 export default function Mileage() {
   const { t, language } = useLanguage();
   const { currentCountry } = useEntity();
   const isEs = language === 'es';
   const isMobile = useIsMobile();
+  const { hasFeature, isGodMode, isLoading: planLoading } = usePlanLimits();
+  const hasAccess = isGodMode || hasFeature('mileage');
   const currentYear = new Date().getFullYear();
   const [selectedYear, setSelectedYear] = useState<number>(currentYear);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -89,6 +93,26 @@ export default function Mileage() {
   const sortedRecords = [...(mileageRecords || [])].sort((a, b) => 
     new Date(a.date).getTime() - new Date(b.date).getTime()
   );
+
+  if (!planLoading && !hasAccess) {
+    return (
+      <Layout>
+        <div className="page-container section-gap p-4 sm:p-8">
+          <FeatureGate
+            feature="mileage"
+            promptFeature="mileage"
+            requiredPlan="premium"
+            title={isEs ? 'Registro de Kilometraje' : 'Mileage Tracking'}
+            description={isEs
+              ? 'Registra tus viajes de trabajo y maximiza la deducción fiscal por kilómetro.'
+              : 'Log work trips and maximize your per-kilometer tax deduction.'}
+          >
+            <div />
+          </FeatureGate>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>

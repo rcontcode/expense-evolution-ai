@@ -29,9 +29,13 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { MobileTabLayout, type MobileTab } from '@/components/mobile';
 import { LegalDisclaimer } from '@/components/ui/legal-disclaimer';
+import { FeatureGate } from '@/components/FeatureGate';
+import { usePlanLimits } from '@/hooks/data/usePlanLimits';
 
 export default function NetWorth() {
   const { t, language } = useLanguage();
+  const { hasFeature, isGodMode, isLoading: planLoading } = usePlanLimits();
+  const hasAccess = isGodMode || hasFeature('net_worth');
   const { data: assets = [], isLoading: assetsLoading } = useAssets();
   const { data: liabilities = [], isLoading: liabilitiesLoading } = useLiabilities();
   const { data: snapshots = [], isLoading: snapshotsLoading } = useNetWorthSnapshots();
@@ -130,6 +134,26 @@ export default function NetWorth() {
             onComplete={handleCompleteOnboarding}
             onSkip={handleSkipOnboarding}
           />
+        </div>
+      </Layout>
+    );
+  }
+
+  if (!planLoading && !hasAccess) {
+    return (
+      <Layout>
+        <div className="page-container section-gap">
+          <FeatureGate
+            feature="net_worth"
+            promptFeature="net_worth"
+            requiredPlan="premium"
+            title={language === 'es' ? 'Patrimonio Neto' : 'Net Worth'}
+            description={language === 'es'
+              ? 'Lleva el control de tus activos, pasivos y la evolución de tu patrimonio.'
+              : 'Track your assets, liabilities and net worth evolution.'}
+          >
+            <div />
+          </FeatureGate>
         </div>
       </Layout>
     );

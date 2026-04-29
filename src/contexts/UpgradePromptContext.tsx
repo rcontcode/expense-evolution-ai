@@ -9,7 +9,8 @@ export type UpgradeFeatureKey =
   | 'mentorship' | 'voice_assistant'
   // Extended (defined in UpgradePrompt friendlyMessages or fall back to closest)
   | 'voice_premium' | 'bank_analysis' | 'ai_reconcile'
-  | 'predictions' | 'autopilot' | 'coaching' | 'ai_credits';
+  | 'predictions' | 'autopilot' | 'coaching' | 'ai_credits'
+  | 'tax_optimizer' | 'rrsp_tfsa_optimizer';
 
 interface OpenOptions {
   feature: UpgradeFeatureKey;
