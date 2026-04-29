@@ -114,13 +114,13 @@ export const FEATURE_MATRIX: Record<AccessFeature, FeatureSpec> = {
   mileage: {
     limitKey: 'mileage',
     requiredPlan: 'premium',
-    promptFeature: 'mileage' as UpgradeFeatureKey,
+    promptFeature: 'mileage',
     label: { es: 'Kilometraje', en: 'Mileage tracking' },
   },
   net_worth: {
     limitKey: 'net_worth',
     requiredPlan: 'premium',
-    promptFeature: 'net_worth' as UpgradeFeatureKey,
+    promptFeature: 'net_worth',
     label: { es: 'Patrimonio neto', en: 'Net worth' },
   },
 };

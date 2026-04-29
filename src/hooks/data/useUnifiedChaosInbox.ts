@@ -329,7 +329,11 @@ export function useUnifiedChaosInbox() {
             },
           });
 
-          if (error) throw error;
+          if (error) {
+            if (handleAIError(error, { feature: 'ocr', requiredPlan: 'premium' })) return;
+            throw error;
+          }
+          if (result?.error && handleAIError(result, { feature: 'ocr', requiredPlan: 'premium' })) return;
 
           const { data: dbDoc } = await supabase
             .from('documents')
@@ -454,7 +458,11 @@ export function useUnifiedChaosInbox() {
             body: { imageBase64: doc.base64, country: userCountry },
           });
 
-          if (error) throw error;
+          if (error) {
+            if (handleAIError(error, { feature: 'ocr', requiredPlan: 'premium' })) return;
+            throw error;
+          }
+          if (result?.error && handleAIError(result, { feature: 'ocr', requiredPlan: 'premium' })) return;
 
           const { data: dbDoc } = await supabase
             .from('documents')
@@ -488,7 +496,11 @@ export function useUnifiedChaosInbox() {
             body: { image: doc.base64 },
           });
 
-          if (error) throw error;
+          if (error) {
+            if (handleAIError(error, { feature: 'bank_analysis', requiredPlan: 'premium' })) return;
+            throw error;
+          }
+          if (result?.error && handleAIError(result, { feature: 'bank_analysis', requiredPlan: 'premium' })) return;
 
           // Persist bank statement document to DB for audit trail
           await supabase
@@ -534,7 +546,11 @@ export function useUnifiedChaosInbox() {
             body: { imageBase64: doc.base64, country: userCountry },
           });
 
-          if (error) throw error;
+          if (error) {
+            if (handleAIError(error, { feature: 'ocr', requiredPlan: 'premium' })) return;
+            throw error;
+          }
+          if (result?.error && handleAIError(result, { feature: 'ocr', requiredPlan: 'premium' })) return;
 
           const suggestedAmount = preview.amount || result?.expenses?.[0]?.amount;
           const suggestedDate = preview.date || result?.expenses?.[0]?.date;
