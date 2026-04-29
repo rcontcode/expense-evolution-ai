@@ -54,8 +54,12 @@ export function FullScreenDialog({
         className={cn(
           // Desktop styles per size
           SIZE_CLASSES[size],
-          // Resizable on desktop only
-          resizable && !isMobile && 'dialog-resizable relative',
+          // Resizable on desktop only — anchor near the top so the bottom-right
+          // resize handle is always inside the viewport (reachable).
+          resizable && !isMobile && [
+            'dialog-resizable relative flex flex-col',
+            '!top-[3vh] !-translate-y-0',
+          ],
           // Mobile: full screen (overrides size)
           isMobile && [
             'fixed inset-0 h-full w-full max-w-full max-h-full',
