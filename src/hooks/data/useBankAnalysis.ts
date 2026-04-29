@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useBankTransactions } from './useBankTransactions';
 import { useMemo } from 'react';
+import { useAIErrorHandler } from '@/hooks/utils/useAIErrorHandler';
 
 export interface BankTransaction {
   date: string;
@@ -73,6 +74,7 @@ export const CATEGORY_LABELS: Record<string, { en: string; es: string; icon: str
 export function useAnalyzeBankStatement() {
   const queryClient = useQueryClient();
   const { data: existingTransactions } = useBankTransactions();
+  const { handleAIError } = useAIErrorHandler();
 
   return useMutation({
     mutationFn: async ({ 
@@ -97,7 +99,15 @@ export function useAnalyzeBankStatement() {
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        if (handleAIError(error, { feature: 'bank_analysis', requiredPlan: 'premium' })) {
+          throw new Error('plan_handled');
+        }
+        throw error;
+      }
+      if (data?.error && handleAIError(data, { feature: 'bank_analysis', requiredPlan: 'premium' })) {
+        throw new Error('plan_handled');
+      }
       return data;
     },
     onSuccess: () => {

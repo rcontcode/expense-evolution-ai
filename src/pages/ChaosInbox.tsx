@@ -22,6 +22,7 @@ import { DuplicateWarningDialog } from '@/components/chaos/DuplicateWarningDialo
 import { DuplicateMatch } from '@/hooks/data/useContentDuplicateDetector';
 import { RecurringBillConfirmDialog, type RecurringBillCandidate } from '@/components/bills/RecurringBillConfirmDialog';
 import { toast } from 'sonner';
+import { useAIErrorHandler } from '@/hooks/utils/useAIErrorHandler';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { UnifiedChaosInboxPanel } from '@/components/chaos/UnifiedChaosInboxPanel';
@@ -181,6 +182,7 @@ export default function ChaosInbox() {
   const { user } = useAuth();
   const isMobile = useIsMobile();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { handleAIError } = useAIErrorHandler();
   const [uploading, setUploading] = useState(false);
   const [processing, setProcessing] = useState<string | null>(null);
   const [cameraDialogOpen, setCameraDialogOpen] = useState(false);
@@ -340,6 +342,13 @@ export default function ChaosInbox() {
                 detectMultipleReceipts: detectMultipleReceipts,
               },
             });
+
+            if (aiError && handleAIError(aiError, { feature: 'ocr', requiredPlan: 'premium' })) {
+              return;
+            }
+            if (result?.error && handleAIError(result, { feature: 'ocr', requiredPlan: 'premium' })) {
+              return;
+            }
 
             if (!aiError && result?.expenses?.length > 0) {
               const extractedData = {
@@ -559,6 +568,13 @@ export default function ChaosInbox() {
                 detectMultipleReceipts: detectMultipleReceipts,
               },
             });
+
+            if (aiError && handleAIError(aiError, { feature: 'ocr', requiredPlan: 'premium' })) {
+              return;
+            }
+            if (result?.error && handleAIError(result, { feature: 'ocr', requiredPlan: 'premium' })) {
+              return;
+            }
 
             if (!aiError && result?.expenses?.length > 0) {
               const extractedData = {

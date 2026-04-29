@@ -21,6 +21,7 @@ import { es } from 'date-fns/locale';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { useAIErrorHandler } from '@/hooks/utils/useAIErrorHandler';
 
 export function SmartMonthlyReport() {
   const { language } = useLanguage();
@@ -30,6 +31,7 @@ export function SmartMonthlyReport() {
   const [expanded, setExpanded] = useState(false);
   const [aiInsight, setAiInsight] = useState<string | null>(null);
   const [loadingAI, setLoadingAI] = useState(false);
+  const { handleAIError } = useAIErrorHandler();
 
   const now = new Date();
   const currentMonth = now.getMonth();
@@ -148,7 +150,11 @@ Data:
           model: 'google/gemini-2.5-flash-lite',
         },
       });
-      if (error) throw error;
+      if (error) {
+        if (handleAIError(error, { feature: 'ai_credits', requiredPlan: 'pro' })) return;
+        throw error;
+      }
+      if (data?.error && handleAIError(data, { feature: 'ai_credits', requiredPlan: 'pro' })) return;
       setAiInsight(data?.response || data?.text || (l ? 'No se pudo generar el análisis.' : 'Could not generate analysis.'));
     } catch {
       toast.error(l ? 'Error generando análisis' : 'Error generating analysis');

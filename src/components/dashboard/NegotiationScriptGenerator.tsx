@@ -14,6 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { useAIErrorHandler } from '@/hooks/utils/useAIErrorHandler';
 
 interface NegotiableItem {
   vendor: string;
@@ -33,6 +34,7 @@ export function NegotiationScriptGenerator() {
   const [script, setScript] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [copied, setCopied] = useState(false);
+  const { handleAIError } = useAIErrorHandler();
 
   // Find negotiable items from recurring payments
   const negotiableItems: NegotiableItem[] = bankInsights.recurringPayments
@@ -97,7 +99,11 @@ Be direct, practical and brief. Max 200 words.`,
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        if (handleAIError(error, { feature: 'ai_credits', requiredPlan: 'pro' })) return;
+        throw error;
+      }
+      if (data?.error && handleAIError(data, { feature: 'ai_credits', requiredPlan: 'pro' })) return;
       setScript(data?.response || data?.message || (l ? 'No se pudo generar el guión.' : 'Could not generate script.'));
     } catch (err) {
       console.error('Script generation error:', err);

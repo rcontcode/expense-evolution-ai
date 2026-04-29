@@ -4,6 +4,7 @@ import { useProfile } from './useProfile';
 import { useFinancialProfile } from './useFinancialProfile';
 import { useIncome } from './useIncome';
 import { toast } from 'sonner';
+import { useAIErrorHandler } from '@/hooks/utils/useAIErrorHandler';
 
 interface ApvRecommendation {
   recommended: number;
@@ -40,6 +41,7 @@ export function useApvOptimizer() {
   const { data: profile } = useProfile();
   const { data: financialProfile } = useFinancialProfile();
   const { data: incomeData } = useIncome();
+  const { handleAIError } = useAIErrorHandler();
 
   const analyzeOptimalContributions = async () => {
     setIsAnalyzing(true);
@@ -66,10 +68,12 @@ export function useApvOptimizer() {
       });
 
       if (fnError) {
+        if (handleAIError(fnError, { feature: 'ai_credits', requiredPlan: 'pro' })) return;
         throw new Error(fnError.message);
       }
 
-      if (data.error) {
+      if (data?.error) {
+        if (handleAIError(data, { feature: 'ai_credits', requiredPlan: 'pro' })) return;
         throw new Error(data.error);
       }
 
