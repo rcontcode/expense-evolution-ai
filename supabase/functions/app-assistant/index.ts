@@ -1213,6 +1213,16 @@ serve(async (req) => {
   }
 
   try {
+    // Plan-guard for non-admin users (admins bypass automatically).
+    // Soft-fail: if anything goes wrong we still let the request through.
+    try {
+      const { checkPlanAccess } = await import('../_shared/plan-guard.ts');
+      const guard = await checkPlanAccess(req, 'ai_credits');
+      if (!guard.allowed) return guard.response;
+    } catch (e) {
+      console.warn('[app-assistant] plan-guard skipped:', e);
+    }
+
     // Extract user ID from authorization header
     const authHeader = req.headers.get('authorization');
     let userId: string | null = null;
