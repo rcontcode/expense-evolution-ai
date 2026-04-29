@@ -196,9 +196,9 @@ function ContractPreviewPanel({
         </div>
       )}
 
-      <div className="flex-1 min-h-0 bg-muted rounded-lg overflow-hidden h-[60vh] lg:h-auto">
+      <div className="flex-1 min-h-0 bg-muted rounded-lg overflow-hidden h-[70vh]">
         {loadingUrl ? (
-          <div className="flex items-center justify-center h-full">
+          <div className="flex items-center justify-center w-full h-full">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
           </div>
         ) : previewUrl ? (
@@ -206,8 +206,7 @@ function ContractPreviewPanel({
             <iframe
               src={previewUrl}
               title={currentPage.file_name}
-              className="block border-0"
-              style={{ width: '100%', height: '100%' }}
+              className="block border-0 w-full h-full"
             />
           ) : (
             <img
@@ -217,7 +216,7 @@ function ContractPreviewPanel({
             />
           )
         ) : (
-          <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-2">
+          <div className="flex flex-col items-center justify-center w-full h-full text-muted-foreground gap-2">
             <FileText className="h-10 w-10 opacity-50" />
             <p className="text-sm">
               {language === 'es' ? 'No se pudo cargar el documento' : 'Could not load document'}

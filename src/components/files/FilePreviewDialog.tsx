@@ -21,7 +21,7 @@ export function FilePreviewDialog({ file, previewUrl, isLoading, onClose, onDown
 
   return (
     <Dialog open={!!file} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-[90vw] w-[90vw] max-h-[92vh] flex flex-col dialog-resizable relative">
+      <DialogContent className="max-w-[90vw] w-[90vw] max-h-[92vh] flex flex-col dialog-resizable relative !grid-cols-none !overflow-hidden !top-[3vh] !-translate-y-0">
         <DialogHeader>
           <DialogTitle className="truncate pr-8">{file.file_name}</DialogTitle>
         </DialogHeader>
