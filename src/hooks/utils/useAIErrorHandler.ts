@@ -17,6 +17,7 @@ export interface AIErrorPayload {
   requiredPlan?: PlanType;
   currentUsage?: number;
   limit?: number;
+  resetDate?: string;
   status?: number;
   // Supabase FunctionsHttpError has `context.status`
   context?: { status?: number };
@@ -77,6 +78,7 @@ export function useAIErrorHandler() {
           requiredPlan,
           currentUsage: payload.currentUsage,
           limit: payload.limit,
+          resetDate: payload.resetDate,
           message: payload.message,
         });
         return true;
