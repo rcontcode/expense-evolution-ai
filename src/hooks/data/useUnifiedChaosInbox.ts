@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEntity } from '@/contexts/EntityContext';
 import { compareDuplicateCandidate, DuplicateMatch } from '@/hooks/data/useContentDuplicateDetector';
+import { useAIErrorHandler } from '@/hooks/utils/useAIErrorHandler';
 
 export type DocumentClassificationType = 
   | 'receipt' | 'utility_bill' | 'bank_statement' | 'income_proof'
@@ -80,6 +81,7 @@ export function useUnifiedChaosInbox() {
   const { currentEntity } = useEntity();
   const userCountry = (currentEntity?.country as string) || 'CA';
   const userCurrency = userCountry === 'CL' ? 'CLP' : 'CAD';
+  const { handleAIError } = useAIErrorHandler();
   const [documents, setDocuments] = useState<ClassifiedDocument[]>([]);
   const [isProcessingBatch, setIsProcessingBatch] = useState(false);
 
