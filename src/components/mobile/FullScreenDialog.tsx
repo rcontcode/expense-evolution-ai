@@ -30,9 +30,9 @@ interface FullScreenDialogProps {
 
 const SIZE_CLASSES: Record<DialogSize, string> = {
   md: 'max-w-2xl max-h-[90vh]',
-  lg: 'max-w-4xl w-[90vw] max-h-[92vh]',
-  xl: 'max-w-[95vw] w-[95vw] max-h-[92vh]',
-  full: 'max-w-[98vw] w-[98vw] max-h-[96vh]',
+  lg: 'max-w-4xl w-[90vw] max-h-[90vh]',
+  xl: 'max-w-[95vw] w-[95vw] max-h-[90vh]',
+  full: 'max-w-[96vw] w-[96vw] max-h-[90vh]',
 };
 
 export function FullScreenDialog({
