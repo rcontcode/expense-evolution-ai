@@ -123,8 +123,8 @@ function ContractPreviewPanel({
   language,
 }: PreviewPanelProps) {
   return (
-    <div className="flex flex-col h-full min-h-[300px] lg:min-h-[60vh] pr-2">
-      <div className="flex items-center justify-between mb-2">
+    <div className="flex flex-col h-full min-h-0 pr-2 lg:pr-0">
+      <div className="flex items-center justify-between mb-2 shrink-0">
         <span className="text-sm font-medium text-muted-foreground">
           {language === 'es' ? 'Documento' : 'Document'}
         </span>
@@ -138,6 +138,17 @@ function ContractPreviewPanel({
           <Badge variant="outline" className="text-xs max-w-[200px] truncate">
             {currentPage.file_name}
           </Badge>
+          {previewUrl && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 px-2"
+              onClick={() => window.open(previewUrl, '_blank', 'noopener,noreferrer')}
+              title={language === 'es' ? 'Abrir en pestaña nueva' : 'Open in new tab'}
+            >
+              <ExternalLink className="h-3.5 w-3.5" />
+            </Button>
+          )}
         </div>
       </div>
 
