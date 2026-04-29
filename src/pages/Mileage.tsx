@@ -94,6 +94,26 @@ export default function Mileage() {
     new Date(a.date).getTime() - new Date(b.date).getTime()
   );
 
+  if (!planLoading && !hasAccess) {
+    return (
+      <Layout>
+        <div className="page-container section-gap p-4 sm:p-8">
+          <FeatureGate
+            feature="mileage"
+            promptFeature="mileage"
+            requiredPlan="premium"
+            title={isEs ? 'Registro de Kilometraje' : 'Mileage Tracking'}
+            description={isEs
+              ? 'Registra tus viajes de trabajo y maximiza la deducción fiscal por kilómetro.'
+              : 'Log work trips and maximize your per-kilometer tax deduction.'}
+          >
+            <div />
+          </FeatureGate>
+        </div>
+      </Layout>
+    );
+  }
+
   return (
     <Layout>
       <TooltipProvider>
