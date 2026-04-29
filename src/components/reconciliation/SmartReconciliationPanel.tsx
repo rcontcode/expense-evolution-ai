@@ -59,6 +59,7 @@ export function SmartReconciliationPanel() {
   const matchTransaction = useMatchTransaction();
   const markAsDiscrepancy = useMarkAsDiscrepancy();
   const createExpense = useCreateExpense();
+  const { handleAIError } = useAIErrorHandler();
 
   const [aiResult, setAiResult] = useState<AIReconciliationResult | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -117,8 +118,14 @@ export function SmartReconciliationPanel() {
         }
       });
 
-      if (error) throw error;
-      if (data.error) throw new Error(data.error);
+      if (error) {
+        if (handleAIError(error, { feature: 'ai_reconcile', requiredPlan: 'pro' })) return;
+        throw error;
+      }
+      if (data?.error) {
+        if (handleAIError(data, { feature: 'ai_reconcile', requiredPlan: 'pro' })) return;
+        throw new Error(data.error);
+      }
 
       setAiResult(data);
 
