@@ -29,6 +29,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { MobileTabLayout, type MobileTab } from '@/components/mobile';
 import { LegalDisclaimer } from '@/components/ui/legal-disclaimer';
+import { FeatureGate } from '@/components/FeatureGate';
 
 export default function NetWorth() {
   const { t, language } = useLanguage();
