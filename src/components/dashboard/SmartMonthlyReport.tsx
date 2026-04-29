@@ -21,6 +21,7 @@ import { es } from 'date-fns/locale';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { useAIErrorHandler } from '@/hooks/utils/useAIErrorHandler';
 
 export function SmartMonthlyReport() {
   const { language } = useLanguage();
