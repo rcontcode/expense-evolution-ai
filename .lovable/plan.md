@@ -1,146 +1,102 @@
-# Plan: Mensajería de límites + Upgrade contextual en TODA la app
+# Plan: Sistema unificado de límites y upgrade
 
-## Problema detectado
+Objetivo: que para **cualquier combinación** de plan (free / premium / pro / pro_beta / admin) y situación (función IA, voz, OCR, banca, contratos, optimizadores), el usuario vea:
+- Un mensaje claro de **por qué** se bloqueó.
+- El **plan correcto** al que debe subir (no adivinado por el frontend).
+- Su **uso actual vs límite** y, cuando aplique, **cuándo se renueva**.
+- Un botón directo para mejorar plan, o un mensaje de "ya estás en el plan máximo" cuando corresponde.
 
-Tu cuenta admin pasa los límites (modo "dios"), pero cuentas normales **fallan en silencio o con mensajes genéricos** en muchos flujos. El backend SÍ bloquea (devuelve `429 quota_exceeded` o `402 credits exhausted`), pero el frontend en muchos casos:
+## 1. Backend: helper único `plan-guard.ts`
 
-1. Solo muestra `toast.error('Failed to process')` sin explicar el motivo
-2. No detecta el código `429` vs un error real → el usuario cree que está roto
-3. **No ofrece la ruta de upgrade** al plan que desbloquearía la función
+Crear `supabase/functions/_shared/plan-guard.ts` con una sola función `checkPlanAccess()` que toda edge function IA llamará al inicio.
 
-### Caso concreto del usuario (Chaos Inbox + Contrato)
-En `useUnifiedChaosInbox.ts` (línea 597-622), cuando se llama `analyze-contract`:
-- El plan **Free** y **Premium** tienen `contract_analyses_per_month = 0` → siempre devuelve `429`
-- El frontend hace `try { ... } catch { processedResult = { analysisError: true } }` y **no muestra nada explicativo**
+Hace 4 cosas:
+1. Valida JWT y obtiene `user_id`.
+2. Lee `plan_configurations` (fuente única) + `user_subscriptions` + `usage_tracking` + `profiles.is_beta_tester` + `user_roles` (para detectar admin → bypass).
+3. Determina si la feature está habilitada y si queda cuota mensual.
+4. Devuelve `{ allowed: true, plan, usage, limit }` o lanza una respuesta HTTP estandarizada **429** con el payload que `useAIErrorHandler` ya entiende:
 
-## Estado actual: dónde SÍ funciona vs dónde NO
-
-```text
-✅ Bien implementado (UpgradePrompt visible)
-   - ExpenseDialog        → bloquea + muestra prompt (pero solo conteo, no IA)
-   - IncomeDialog         → ídem
-   - ClientDialog         → ídem
-   - PlanUsageCard        → tarjeta de settings
-
-❌ Falla silenciosa o solo toast genérico
-   - Chaos Inbox  → contratos / banco / OCR
-   - QuickCapture / ReceiptReviewDialog  → process-receipt (límite OCR)
-   - BankImportDialog + useBankImportFlow  → process-bank-statement
-   - ContractTermsViewer  → analyze-contract directo
-   - SmartTextInput  → parse-smart-input (créditos IA agotados)
-   - SmartReconciliationPanel  → ai-reconcile (créditos IA)
-   - FinancialAutopilot  → financial-autopilot (créditos IA)
-   - ExpensePredictions  → predict-expenses (créditos IA)
-   - useTagSuggestions  → suggest-tags (créditos IA)
-   - EcosystemSmartCoaching  → ecosystem-coaching (créditos IA)
-   - ChatAssistant voz  → 429 voice limit / 402 credits
-   - VoicePreferencesCard preview voz  → ídem
-   - useElevenLabsTTS (TTS general)  → ídem (parcial)
-```
-
-## Solución propuesta
-
-### 1. Hook centralizado `useAIErrorHandler`
-Nuevo archivo: `src/hooks/utils/useAIErrorHandler.ts`
-
-Toma cualquier error de `supabase.functions.invoke()` o respuesta y:
-- Detecta `quota_exceeded` (429), `credits_exhausted` (402), `plan_required`
-- Mapea el feature → plan requerido (contracts → Pro, OCR → Premium, voz Premium → Premium, etc.)
-- Abre un `UpgradePrompt` específico, o muestra un toast con CTA "Ver planes"
-
-API:
-```ts
-const { handleAIError } = useAIErrorHandler();
-const { data, error } = await supabase.functions.invoke('analyze-contract', {...});
-if (error || data?.error) {
-  handleAIError(error || data, { feature: 'contracts' });
-  return;
-}
-```
-
-### 2. Estandarizar respuestas de error en edge functions
-Algunas funciones devuelven `{ error: 'AI credits exhausted' }`, otras `{ error: 'quota_exceeded', message, currentUsage, limit }`. Unificar a:
 ```json
-{ "error": "quota_exceeded" | "credits_exhausted" | "plan_required",
-  "feature": "contracts",
+{
+  "error": "quota_exceeded",
+  "feature": "ocr",
   "currentPlan": "free",
-  "requiredPlan": "pro",
-  "message": "...",
-  "currentUsage": 0, "limit": 0 }
-```
-Funciones a actualizar: `analyze-contract`, `process-receipt`, `process-bank-statement`, `elevenlabs-tts`, `parse-smart-input`, `ai-reconcile`, `financial-autopilot`, `predict-expenses`, `suggest-tags`, `ecosystem-coaching`, `classify-document`, `classify-bank-transactions`.
-
-Para las que sólo tienen 402 (créditos IA del gateway), añadir además **chequeo previo de plan** cuando la feature es premium-only (ej: `financial-autopilot` debería requerir Premium+).
-
-### 3. Pre-chequeo en el cliente antes de enviar
-En cada flujo que invoca IA, **antes** de subir el archivo / enviar la petición, llamar al hook:
-
-```tsx
-const { canAnalyzeContract, canUseOCR, canAnalyzeBank, hasFeature, planType } = usePlanLimits();
-
-// Chaos Inbox - antes de procesar contrato
-if (type === 'contract' && !canAnalyzeContract()) {
-  setUpgradeFeature('contracts'); setUpgradeOpen(true); return;
+  "requiredPlan": "premium",
+  "currentUsage": 5,
+  "limit": 5,
+  "resetDate": "2026-05-01T00:00:00Z",
+  "message": "Has usado 5 de 5 escaneos OCR este mes."
 }
 ```
 
-Puntos a parchar:
-| Archivo | Feature a chequear | Plan requerido |
-|---|---|---|
-| `useUnifiedChaosInbox.ts` (3 casos) | OCR / contracts / bank | Premium / Pro / Pro |
-| `ChaosInbox.tsx` (2 casos) | OCR | Premium |
-| `ReceiptReviewDialog.tsx` | OCR | Premium |
-| `QuickCapture.tsx` | OCR | Premium |
-| `BankImportDialog.tsx` + `useBankImportFlow.ts` | bank | Pro |
-| `ContractTermsViewer.tsx` | contracts | Pro |
-| `FinancialAutopilot.tsx` | autopilot (nuevo flag) | Premium |
-| `SmartReconciliationPanel.tsx` | reconcile | Premium |
-| `ExpensePredictions.tsx` | predictions | Premium |
-| `EcosystemSmartCoaching.tsx` | coaching | Bundle |
-| `useElevenLabsTTS.ts` | premium voice (minutos) | Premium |
-| `ChatAssistant.tsx` | voice | Premium |
+Aplicarlo en las ~12 edge functions IA: `analyze-contract`, `process-receipt`, `process-bank-statement`, `analyze-bank-statement`, `classify-bank-transactions`, `app-assistant`, `elevenlabs-tts`, `optimize-taxes`, `optimize-rrsp-tfsa`, `optimize-apv-chile`, `predict-expenses`, `financial-autopilot`, `ecosystem-coaching`, `ecosystem-dashboard`, `ai-reconcile`, `parse-smart-input`, `generate-lead-message`, `classify-document`.
 
-### 4. Banner permanente "feature bloqueada" en lugar de botón roto
-Para botones/secciones de features Pro a las que un usuario Free entra (ej: tab de Banking, tab de Contratos), envolver en un componente `<FeatureGate feature="contracts">` que:
-- Si tiene acceso → renderiza children
-- Si no → muestra una tarjeta locked con icono, descripción del valor, y botón "Desbloquear con Pro – $14.99/mes"
+Cada función pasa su `feature` ("ocr", "bank_analysis", etc.) y el `requiredPlan` se calcula del lado backend a partir de `plan_configurations` (qué plan más bajo habilita esa feature) — el frontend deja de adivinarlo.
 
-Nuevo componente: `src/components/FeatureGate.tsx`
+## 2. Frontend: matriz única `featureMatrix.ts`
 
-### 5. Mejorar `UpgradePrompt` con feature `contracts` ya existente
-El componente ya tiene mensajería rica para `contracts`, `ocr`, `mileage`, etc. **Solo falta dispararlo desde los flujos faltantes**. Añadir mensajería para:
-- `voice_premium` (minutos voz Eleven Labs)
-- `bank_analysis`
-- `ai_reconcile`
-- `predictions`
-- `autopilot`
+Crear `src/config/featureMatrix.ts`. Una constante con cada feature, su clave en `usePlanLimits`, su `requiredPlan` y su nombre amigable ES/EN. Es la misma matriz que el backend deriva de `plan_configurations` — sirve para gating preventivo sin pegarle al backend.
+
+```ts
+export const FEATURE_MATRIX = {
+  ocr:           { limitKey: 'ocr_scans_per_month',          requiredPlan: 'premium' },
+  contracts:     { limitKey: 'contract_analyses_per_month',  requiredPlan: 'pro' },
+  bank_analysis: { limitKey: 'bank_analyses_per_month',      requiredPlan: 'premium' },
+  voice_premium: { limitKey: 'voice_minutes_per_month',      requiredPlan: 'premium' },
+  // ...
+} as const;
+```
+
+## 3. `useFeatureAccess(feature)` — hook reactivo
+
+Devuelve `{ allowed, reason, currentUsage, limit, requiredPlan, resetDate, openUpgrade() }`. Combina `usePlanLimits` (límites del plan actual del usuario) + `useUsage` (consumo del mes). Usado por:
+
+- **`FeatureGate`** (gating preventivo): bloquea botones con candado y tooltip "Disponible en Premium" antes de que el usuario gaste tiempo subiendo un PDF.
+- Pantallas que muestran progreso de cuota ("47/50 escaneos este mes").
+
+## 4. Mejoras al `UpgradePrompt`
+
+- Mostrar `resetDate` cuando viene del backend ("Se renueva el 1 de mayo").
+- Si el usuario ya está en el plan máximo (`pro` y feature bloqueada por cuota mensual): cambiar el CTA de "Mejorar plan" a "Entendido" + mostrar fecha de reseteo, en vez de invitar a un upgrade que no existe.
+- Caso admin: nunca debería abrirse — añadir guard.
+- Limpiar mensajes para que cumplan la regla del proyecto: **sin FOMO, sin urgencia, sin testimoniales inventados** (memoria Core: "Clean Pricing — NEVER use strikethroughs, urgency, or FOMO tactics"). Reescribir los `friendlyMessages` a tono educativo neutro.
+
+## 5. Aplicar `FeatureGate` preventivo en los puntos de entrada
+
+Envolver con `FeatureGate` los CTAs principales para que el bloqueo se vea **antes** de la acción:
+
+- Botón "Subir contrato" en ChaosInbox y ContractsPage.
+- Botón "Importar estado de cuenta" en BankImportDialog.
+- Botón "Escanear recibo" en capture.
+- Botón "Probar voz" en VoicePreferencesCard.
+- Tarjetas de Optimizadores (impuestos / RRSP / APV).
+- Tarjeta "Predicciones" y "Autopilot".
+
+Resultado visible: candado + tooltip + click abre el modal de upgrade en vez de fallar después.
+
+## 6. Auditoría y QA
+
+- Script de prueba que llama cada edge function con un JWT de cuenta free → debe devolver 429 con payload correcto.
+- Checklist manual: con cuenta free, premium y pro, recorrer cada flujo y confirmar mensaje + plan sugerido + CTA correcto.
+
+## Archivos
+
+**Crear**
+- `supabase/functions/_shared/plan-guard.ts`
+- `src/config/featureMatrix.ts`
+- `src/hooks/data/useFeatureAccess.ts`
+
+**Editar**
+- `src/components/UpgradePrompt.tsx` (resetDate, plan máximo, limpieza tono)
+- `src/contexts/UpgradePromptContext.tsx` (acepta `resetDate`, guard admin)
+- ~12 edge functions IA (insertar `await checkPlanAccess(req, 'feature_name')` al inicio)
+- ~8 componentes con CTAs principales (envolver con `FeatureGate`)
 
 ## Detalles técnicos
 
-### Archivos nuevos
-- `src/hooks/utils/useAIErrorHandler.ts` — handler único + estado del modal
-- `src/components/FeatureGate.tsx` — wrapper UI para gating
-- `src/contexts/UpgradePromptContext.tsx` — provider global para abrir UpgradePrompt desde cualquier hook (opcional pero limpio)
-
-### Edits
-- `src/components/UpgradePrompt.tsx` — añadir 5 entradas al `friendlyMessages`
-- 12 ediciones en componentes/hooks listados arriba
-- 6-8 ediciones en edge functions para estandarizar payload de error
-
-### Tests rápidos a hacer manualmente tras implementar
-1. Cuenta Free sube contrato en Chaos Inbox → debe ver modal "Pro necesario para análisis de contratos"
-2. Cuenta Free intenta OCR de recibo nº 6 → modal "OCR limit – Premium"
-3. Cuenta Premium sube extracto bancario → modal "Análisis bancario – Pro"
-4. Cuenta Free habla con asistente >3 min → modal "Voz Premium – Premium"
-5. Cuenta Free abre Autopilot → tarjeta locked con CTA upgrade
-
-## Entregables
-- 3 archivos nuevos (`useAIErrorHandler`, `FeatureGate`, opcional `UpgradePromptContext`)
-- ~12 ediciones de hooks/componentes para integrar el handler
-- ~8 ediciones de edge functions para estandarizar errores
-- Ampliación de mensajes en `UpgradePrompt.tsx`
-
-## Fuera del alcance
-- Cambios al sistema de planes/precios
-- Refactor del sistema de pagos Stripe
-- Lógica nueva de tracking de uso (ya existe)
+- `plan-guard.ts` usa `SUPABASE_SERVICE_ROLE_KEY` para leer `plan_configurations` y `user_roles` sin chocar con RLS, pero deriva el `user_id` del JWT del request, nunca del body.
+- Admin (`is_admin(user_id)` en BD) → siempre `allowed: true`, sin contar uso.
+- `pro_beta` se mapea a límites de `pro`.
+- Funciones IA llaman `increment_usage(user_id, type)` solo **después** del éxito, para no consumir cuota en errores.
+- `useFeatureAccess` mira `Infinity` correctamente: features ilimitadas siempre `allowed: true`.
+- El backend es la **fuente de verdad**: si frontend y backend discrepan (cache stale), gana el 429 del backend.
