@@ -100,6 +100,17 @@ export default function Contracts() {
           </>
         )}
 
+        {typeof contractAccess.limit === 'number' && contractAccess.limit !== Infinity && contractAccess.limit > 0 && (
+          <p className="text-xs text-muted-foreground -mt-2">
+            {t('common.usage') || 'Uso'}: {contractAccess.currentUsage ?? 0}/{contractAccess.limit} {t('common.thisMonth') || 'este mes'}
+            {!contractAccess.allowed && contractAccess.reason === 'quota' && (
+              <button onClick={contractAccess.openUpgrade} className="ml-2 underline text-primary">
+                {t('common.upgrade') || 'Mejorar plan'}
+              </button>
+            )}
+          </p>
+        )}
+
         {/* Contract Renewal Countdown */}
         <ContractRenewalCountdown />
 
