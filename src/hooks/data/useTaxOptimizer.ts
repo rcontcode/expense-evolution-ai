@@ -5,6 +5,7 @@ import { useProfile } from './useProfile';
 import { useEntityOptional } from '@/contexts/EntityContext';
 import { getTaxDeductionRules } from './useTaxCalculations';
 import { toast } from 'sonner';
+import { useAIErrorHandler } from '@/hooks/utils/useAIErrorHandler';
 
 interface QuickInsight {
   type: 'success' | 'warning' | 'info';
