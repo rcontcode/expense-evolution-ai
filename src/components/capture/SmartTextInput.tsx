@@ -15,6 +15,7 @@ import { useCreateIncome } from '@/hooks/data/useIncome';
 import { useVoiceInput } from '@/hooks/utils/useVoiceInput';
 import { useEntity } from '@/contexts/EntityContext';
 import { toast } from 'sonner';
+import { useAIErrorHandler } from '@/hooks/utils/useAIErrorHandler';
 import type { IncomeType } from '@/types/income.types';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
