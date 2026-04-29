@@ -14,6 +14,7 @@ import { Brain, Sparkles, RefreshCw, TrendingUp, Shield, Lightbulb, AlertTriangl
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { LegalDisclaimer } from '@/components/ui/legal-disclaimer';
+import { useAIErrorHandler } from '@/hooks/utils/useAIErrorHandler';
 
 interface AutopilotInsight {
   type: 'opportunity' | 'warning' | 'achievement' | 'tip';
@@ -48,6 +49,7 @@ export function FinancialAutopilot() {
   const [insights, setInsights] = useState<AutopilotInsight[]>([]);
   const [loading, setLoading] = useState(false);
   const [lastGenerated, setLastGenerated] = useState<Date | null>(null);
+  const { handleAIError } = useAIErrorHandler();
 
   const generateInsights = async () => {
     if (!user || !expenses) return;
@@ -77,7 +79,11 @@ export function FinancialAutopilot() {
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        if (handleAIError(error, { feature: 'autopilot', requiredPlan: 'pro' })) return;
+        throw error;
+      }
+      if (data?.error && handleAIError(data, { feature: 'autopilot', requiredPlan: 'pro' })) return;
 
       setInsights(data.insights || []);
       setLastGenerated(new Date());
