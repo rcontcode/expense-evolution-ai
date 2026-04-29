@@ -161,6 +161,10 @@ serve(async (req) => {
   }
 
   try {
+    const { checkPlanAccess } = await import('../_shared/plan-guard.ts');
+    const guard = await checkPlanAccess(req, 'rrsp_tfsa_optimizer');
+    if (!guard.allowed) return guard.response;
+
     const { 
       annualIncome, 
       taxRegime,
