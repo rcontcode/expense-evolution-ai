@@ -11,6 +11,7 @@ import { EntityProvider } from "@/contexts/EntityContext";
 import { HighlightProvider } from "@/contexts/HighlightContext";
 import { GamificationProvider } from "@/contexts/GamificationContext";
 import { UndoRedoProvider } from "@/contexts/UndoRedoContext";
+import { UpgradePromptProvider } from "@/contexts/UpgradePromptContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AdminRoute } from "@/components/AdminRoute";
 import { AuthenticatedRedirect } from "@/components/AuthenticatedRedirect";
@@ -452,6 +453,7 @@ const App = () => (
               <EntityProvider>
                 <HighlightProvider>
                   <GamificationProvider>
+                  <UpgradePromptProvider>
                   <MissionListenerInitializer />
                   <GlobalBackgroundServices />
                   <IdlePreloader />
@@ -530,6 +532,7 @@ const App = () => (
                     <SessionTimeoutWarning />
                   </Suspense>
                   <RecModeFab />
+                  </UpgradePromptProvider>
                   </GamificationProvider>
                 </HighlightProvider>
               </EntityProvider>
