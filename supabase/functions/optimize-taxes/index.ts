@@ -34,9 +34,12 @@ async function checkFeatureAccess(req: Request, featureFlag: string) {
   if (!hasAccess) {
     return {
       error: new Response(JSON.stringify({
-        error: 'feature_not_available',
-        message: 'Esta función no está disponible en tu plan actual. Actualiza para acceder.',
-      }), { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+        error: 'plan_required',
+        feature: 'ai_credits',
+        currentPlan: planType,
+        requiredPlan: 'pro',
+        message: 'La optimización fiscal inteligente está disponible en el plan Pro.',
+      }), { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     };
   }
 
