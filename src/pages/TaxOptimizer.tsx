@@ -9,6 +9,7 @@ import { TaxDeadlineCountdown } from '@/components/tax/TaxDeadlineCountdown';
 import { TaxDocumentChecklist } from '@/components/tax/TaxDocumentChecklist';
 import { Receipt } from 'lucide-react';
 import { LegalDisclaimer } from '@/components/ui/legal-disclaimer';
+import { FeatureGate } from '@/components/FeatureGate';
 
 const TaxOptimizerCard = lazy(() => import('@/components/dashboard/TaxOptimizerCard').then(m => ({ default: m.TaxOptimizerCard })));
 const SavingsOptimizerSection = lazy(() => import('@/components/tax/SavingsOptimizerSection').then(m => ({ default: m.SavingsOptimizerSection })));
