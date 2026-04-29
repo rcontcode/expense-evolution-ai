@@ -10,6 +10,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { ResizeHandle } from '@/components/ui/resize-handle';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useScanSessions, DailyStats, WeeklyComparison } from '@/hooks/data/useScanSessions';
 import { 
@@ -332,6 +333,7 @@ export function ScanSessionHistory({ className }: ScanSessionHistoryProps) {
             </CardContent>
           </Card>
         </div>
+        <ResizeHandle />
       </DialogContent>
     </Dialog>
   );
