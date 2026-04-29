@@ -8,6 +8,7 @@ import { ContractsTable } from '@/components/tables/ContractsTable';
 import { ContractCard } from '@/components/contracts/ContractCard';
 import { ContractDetailDialog } from '@/components/contracts/ContractDetailDialog';
 import { useContracts, useDeleteContract } from '@/hooks/data/useContracts';
+import { useFeatureAccess } from '@/hooks/data/useFeatureAccess';
 import { PageContextGuide, PAGE_GUIDES } from '@/components/guidance/PageContextGuide';
 import { SectionEmptyState } from '@/components/guidance/SectionEmptyState';
 import { MentorQuoteBanner } from '@/components/MentorQuoteBanner';
@@ -35,6 +36,15 @@ export default function Contracts() {
   const [selectedContract, setSelectedContract] = useState<ContractWithClient | null>(null);
   const { data: contracts, isLoading, refetch } = useContracts();
   const deleteContract = useDeleteContract();
+  const contractAccess = useFeatureAccess('contract_analysis');
+
+  const openContractDialog = () => {
+    if (!contractAccess.allowed) {
+      contractAccess.openUpgrade();
+      return;
+    }
+    setDialogOpen(true);
+  };
 
   const contractGroups = contracts ? groupContracts(contracts) : [];
 
@@ -69,7 +79,7 @@ export default function Contracts() {
           title={t('nav.contracts')}
           description={!isMobile ? t('contracts.description') : undefined}
         >
-          <Button data-highlight="upload-contract-button" onClick={() => setDialogOpen(true)} size={isMobile ? 'sm' : 'default'}>
+          <Button data-highlight="upload-contract-button" onClick={openContractDialog} size={isMobile ? 'sm' : 'default'}>
             <Plus className="mr-2 h-4 w-4" />
             {isMobile ? t('common.upload') : t('contracts.uploadContract')}
           </Button>
@@ -81,10 +91,10 @@ export default function Contracts() {
             <PageContextGuide
               {...PAGE_GUIDES.contracts}
               actions={[
-                { icon: Plus, title: { es: 'Subir Contrato', en: 'Upload Contract' }, description: { es: 'PDF o imagen', en: 'PDF or image' }, action: () => setDialogOpen(true) },
+                { icon: Plus, title: { es: 'Subir Contrato', en: 'Upload Contract' }, description: { es: 'PDF o imagen', en: 'PDF or image' }, action: openContractDialog },
                 { icon: Eye, title: { es: 'Ver Términos', en: 'View Terms' }, description: { es: 'Extraídos Smart', en: 'Smart extracted' }, path: '/files' },
                 { icon: Users, title: { es: 'Ver Clientes', en: 'View Clients' }, description: { es: 'Vincular contratos', en: 'Link contracts' }, path: '/clients' },
-                { icon: FileText, title: { es: 'Agregar Notas', en: 'Add Notes' }, description: { es: 'Acuerdos manuales', en: 'Manual agreements' }, action: () => setDialogOpen(true) }
+                { icon: FileText, title: { es: 'Agregar Notas', en: 'Add Notes' }, description: { es: 'Acuerdos manuales', en: 'Manual agreements' }, action: openContractDialog }
               ]}
             />
           </>
@@ -119,7 +129,7 @@ export default function Contracts() {
         ) : (
           <SectionEmptyState 
             section="contracts" 
-            onAction={() => setDialogOpen(true)}
+            onAction={openContractDialog}
             showSampleDataButton={true}
           />
         )}
