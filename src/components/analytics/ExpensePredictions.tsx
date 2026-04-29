@@ -18,6 +18,7 @@ import {
 import { format, subMonths, startOfMonth, endOfMonth } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 import { ProjectionDisclaimer } from '@/components/projections/ProjectionDisclaimer';
+import { useAIErrorHandler } from '@/hooks/utils/useAIErrorHandler';
 
 interface Expense {
   id: string;
@@ -63,6 +64,7 @@ export function ExpensePredictions({ expenses, isLoading }: ExpensePredictionsPr
   const { formatCurrency: fc, formatCompact } = useFormatCurrency();
   const [predictions, setPredictions] = useState<PredictionResult | null>(null);
   const [isPredicting, setIsPredicting] = useState(false);
+  const { handleAIError } = useAIErrorHandler();
 
   // Prepare historical data (last 6 months)
   const historicalData = useMemo(() => {
@@ -140,8 +142,14 @@ export function ExpensePredictions({ expenses, isLoading }: ExpensePredictionsPr
         body: { historicalData, language }
       });
 
-      if (error) throw error;
-      if (data.error) throw new Error(data.error);
+      if (error) {
+        if (handleAIError(error, { feature: 'predictions', requiredPlan: 'pro' })) return;
+        throw error;
+      }
+      if (data?.error) {
+        if (handleAIError(data, { feature: 'predictions', requiredPlan: 'pro' })) return;
+        throw new Error(data.error);
+      }
 
       setPredictions(data);
       toast({
