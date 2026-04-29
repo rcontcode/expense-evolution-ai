@@ -92,15 +92,17 @@ Deno.serve(async (req) => {
     const currentUsage = Number(usageData?.voice_minutes_used || 0);
 
     if (!isAdmin && currentUsage >= monthlyLimit) {
+      const reset = new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth() + 1, 1)).toISOString();
       return new Response(
         JSON.stringify({ 
-          error: "voice_limit_exceeded",
+          error: "quota_exceeded",
           feature: "voice_premium",
           currentPlan: planType,
-          requiredPlan: planType === "free" ? "premium" : "pro",
-          message: "Has alcanzado tu límite de voz premium este mes",
+          requiredPlan: planType === "free" ? "premium" : (planType === "premium" ? "pro" : undefined),
+          message: `Has usado ${currentUsage}/${monthlyLimit} minutos de voz este mes. Se renueva el ${reset.slice(0, 10)}.`,
           currentUsage,
           limit: monthlyLimit,
+          resetDate: reset,
           useFallback: true
         }),
         { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
