@@ -43,7 +43,12 @@ async function checkBankQuota(req: Request) {
     return {
       error: new Response(JSON.stringify({
         error: 'quota_exceeded',
-        message: `Has alcanzado tu límite mensual de análisis bancarios (${currentCount}/${limit}).`,
+        feature: 'bank_analysis',
+        currentPlan: planType,
+        requiredPlan: 'pro',
+        message: limit === 0
+          ? 'El análisis bancario inteligente está disponible en el plan Pro.'
+          : `Has alcanzado tu límite mensual de análisis bancarios (${currentCount}/${limit}).`,
         currentUsage: currentCount, limit,
       }), { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     };

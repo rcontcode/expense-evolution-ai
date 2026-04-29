@@ -43,7 +43,12 @@ async function checkContractQuota(req: Request) {
     return {
       error: new Response(JSON.stringify({
         error: 'quota_exceeded',
-        message: `Has alcanzado tu límite mensual de análisis de contratos (${currentCount}/${limit}).`,
+        feature: 'contracts',
+        currentPlan: planType,
+        requiredPlan: 'pro',
+        message: limit === 0
+          ? 'El análisis inteligente de contratos está disponible en el plan Pro.'
+          : `Has alcanzado tu límite mensual de análisis de contratos (${currentCount}/${limit}).`,
         currentUsage: currentCount, limit,
       }), { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     };
