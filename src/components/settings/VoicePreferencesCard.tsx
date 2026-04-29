@@ -15,6 +15,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { usePlanLimits } from '@/hooks/data/usePlanLimits';
 import { ELEVENLABS_VOICES } from '@/hooks/utils/useElevenLabsTTS';
 import { supabase } from '@/integrations/supabase/client';
+import { useUpgradePrompt } from '@/contexts/UpgradePromptContext';
 import { 
   Mic, Volume2, Bell, Zap, Trash2, Plus, Clock, Calendar, 
   MessageSquare, History, Play, Settings2, VolumeX, Volume1, Highlighter,
