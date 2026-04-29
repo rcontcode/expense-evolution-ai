@@ -40,12 +40,12 @@ export const EcosystemSmartCoaching = memo(() => {
       });
 
       if (response.error) {
-        if (handleAIError(response.error, { feature: 'ai_credits', requiredPlan: 'bundle' })) {
+        if (handleAIError(response.error, { feature: 'ai_credits', requiredPlan: 'pro' })) {
           return { insights: [], source: 'limit' };
         }
         throw response.error;
       }
-      if (response.data?.error && handleAIError(response.data, { feature: 'ai_credits', requiredPlan: 'bundle' })) {
+      if (response.data?.error && handleAIError(response.data, { feature: 'ai_credits', requiredPlan: 'pro' })) {
         return { insights: [], source: 'limit' };
       }
       return response.data || { insights: [], source: 'error' };

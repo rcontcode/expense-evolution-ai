@@ -69,10 +69,10 @@ export function useEcosystemDashboard() {
       });
 
       if (response.error) {
-        if (handleAIError(response.error, { feature: 'ai_credits', requiredPlan: 'bundle' })) return null;
+        if (handleAIError(response.error, { feature: 'ai_credits', requiredPlan: 'pro' })) return null;
         throw response.error;
       }
-      if (response.data?.error && handleAIError(response.data, { feature: 'ai_credits', requiredPlan: 'bundle' })) return null;
+      if (response.data?.error && handleAIError(response.data, { feature: 'ai_credits', requiredPlan: 'pro' })) return null;
       return response.data;
     },
     enabled,
