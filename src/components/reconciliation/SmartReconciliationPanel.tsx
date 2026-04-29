@@ -25,6 +25,7 @@ import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
+import { useAIErrorHandler } from '@/hooks/utils/useAIErrorHandler';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 interface AIMatch {
