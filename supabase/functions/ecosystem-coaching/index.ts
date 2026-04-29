@@ -13,16 +13,15 @@ serve(async (req) => {
   }
 
   try {
+    const { checkPlanAccess } = await import('../_shared/plan-guard.ts');
+    const guard = await checkPlanAccess(req, 'coaching');
+    if (!guard.allowed) return guard.response;
+
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) throw new Error("No authorization header");
-
-    const token = authHeader.replace("Bearer ", "");
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-    if (authError || !user) throw new Error("Unauthorized");
+    const user = { id: guard.userId };
 
     // Fetch user's ecosystem data
     const oneMonthAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();

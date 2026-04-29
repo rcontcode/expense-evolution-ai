@@ -22,6 +22,10 @@ serve(async (req) => {
   }
 
   try {
+    const { checkPlanAccess } = await import('../_shared/plan-guard.ts');
+    const guard = await checkPlanAccess(req, 'predictions');
+    if (!guard.allowed) return guard.response;
+
     const { historicalData, language } = await req.json() as PredictionRequest;
     
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
