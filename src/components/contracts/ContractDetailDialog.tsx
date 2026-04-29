@@ -84,12 +84,12 @@ export function ContractDetailDialog({
           {termsPanel}
         </div>
       ) : (
-        <ResizablePanelGroup direction="horizontal" className="min-h-[70vh] gap-2">
-          <ResizablePanel defaultSize={55} minSize={25}>
+        <ResizablePanelGroup direction="horizontal" className="flex-1 min-h-0 h-full gap-2">
+          <ResizablePanel defaultSize={55} minSize={25} className="min-h-0">
             {previewPanel}
           </ResizablePanel>
           <ResizableHandle withHandle className="mx-1" />
-          <ResizablePanel defaultSize={45} minSize={25}>
+          <ResizablePanel defaultSize={45} minSize={25} className="min-h-0">
             {termsPanel}
           </ResizablePanel>
         </ResizablePanelGroup>
