@@ -12,6 +12,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useFinancialProfile } from '@/hooks/data/useFinancialProfile';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useAIErrorHandler } from '@/hooks/utils/useAIErrorHandler';
 
 interface PassiveIncomeIdea {
   name: string;
@@ -41,6 +42,7 @@ export function PassiveIncomeSuggestions({ onOpenProfile }: PassiveIncomeSuggest
   const [suggestions, setSuggestions] = useState<Suggestions | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [expandedIdea, setExpandedIdea] = useState<string | null>(null);
+  const { handleAIError } = useAIErrorHandler();
 
   const hasCompleteProfile = profile && 
     (profile.passions?.length > 0 || profile.talents?.length > 0 || profile.interests?.length > 0);
@@ -55,6 +57,7 @@ export function PassiveIncomeSuggestions({ onOpenProfile }: PassiveIncomeSuggest
       });
 
       if (error) {
+        if (handleAIError(error, { feature: 'predictions', requiredPlan: 'pro' })) return;
         if (error.message?.includes('429')) {
           toast.error(t('investments.rateLimitError'));
         } else if (error.message?.includes('402')) {
@@ -64,6 +67,7 @@ export function PassiveIncomeSuggestions({ onOpenProfile }: PassiveIncomeSuggest
         }
         return;
       }
+      if (data?.error && handleAIError(data, { feature: 'predictions', requiredPlan: 'pro' })) return;
 
       setSuggestions(data);
     } catch (error) {
