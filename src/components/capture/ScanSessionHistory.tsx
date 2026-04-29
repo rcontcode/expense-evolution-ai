@@ -91,7 +91,7 @@ export function ScanSessionHistory({ className }: ScanSessionHistoryProps) {
           {t('scanHistory.title').split(' ')[0]}
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[85vh] overflow-hidden flex flex-col">
+      <DialogContent className="max-w-[85vw] w-[85vw] max-h-[90vh] overflow-hidden flex flex-col dialog-resizable relative">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <BarChart3 className="h-5 w-5 text-primary" />

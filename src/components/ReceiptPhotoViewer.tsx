@@ -15,6 +15,7 @@ import {
   RefreshCw,
   Download
 } from 'lucide-react';
+import { ResizeHandle } from '@/components/ui/resize-handle';
 import { useDocumentUrl } from '@/hooks/data/useDocumentUrl';
 import { useLanguage } from '@/contexts/LanguageContext';
 import {
@@ -397,6 +398,7 @@ export function ReceiptPhotoViewer({ documentId, size = 'sm', showButton = true 
               <ZoomIn className="h-4 w-4 text-muted-foreground" />
             </div>
           </div>
+          {!isFullscreen && <ResizeHandle />}
         </DialogContent>
       </Dialog>
     </>
