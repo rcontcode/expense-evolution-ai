@@ -56,9 +56,11 @@ export function FullScreenDialog({
           SIZE_CLASSES[size],
           // Resizable on desktop only — anchor near the top so the bottom-right
           // resize handle is always inside the viewport (reachable).
+          // Override base DialogContent's `grid` + `overflow-y-auto` + `max-h-[85vh]`
+          // so the inner flex chain can propagate height to iframes/images.
           resizable && !isMobile && [
-            'dialog-resizable relative flex flex-col',
-            '!top-[3vh] !-translate-y-0',
+            'dialog-resizable relative !grid-cols-none flex flex-col !overflow-hidden',
+            '!max-h-[90vh] !top-[3vh] !-translate-y-0',
           ],
           // Mobile: full screen (overrides size)
           isMobile && [
