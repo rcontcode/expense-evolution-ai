@@ -3090,3 +3090,20 @@
   visibility: hidden !important;
   opacity: 0 !important;
 }
+
+/* Resizable dialogs: native browser resize with custom min/max */
+.dialog-resizable {
+  resize: both;
+  overflow: auto;
+  min-width: 400px;
+  min-height: 320px;
+  max-width: 98vw;
+  max-height: 98vh;
+}
+@media (max-width: 768px) {
+  .dialog-resizable {
+    resize: none;
+    min-width: 0;
+    min-height: 0;
+  }
+}

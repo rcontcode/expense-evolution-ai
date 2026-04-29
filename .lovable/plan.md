@@ -1,66 +1,69 @@
-# Cerrar los huecos críticos del sistema de límites
+## Problema
 
-## Contexto
+En la vista previa de **contratos** (`ContractDetailDialog`) y otras vistas de documentos:
+- El modal usa `FullScreenDialog` con ancho `max-w-2xl` (~672px). En desktop el panel izquierdo (PDF) y derecho (Términos del Acuerdo) quedan apretados — el PDF muestra "No se pudo cargar el documento" porque no hay ancho suficiente, y el panel derecho corta texto.
+- No existe forma de redimensionar el modal ni la división izquierda/derecha.
+- `FilePreviewDialog` (en /files) usa `max-w-3xl` — también estrecho para PDFs.
+- `ScanSessionHistory` usa `max-w-2xl`.
+- `ReceiptPhotoViewer` ya tiene controles de zoom/rotación pero no es redimensionable libremente.
 
-Tras el repaso, las únicas invocaciones a edge functions con cuota que **hoy fallan en silencio** (no muestran modal de upgrade ni mensaje claro al usuario) están en `useUnifiedChaosInbox.ts`. El resto del frontend ya pasa por `handleAIError`.
+## Objetivo
 
-También quedan dos pulidos de mensajería para que el modal sea preciso siempre.
+Permitir al usuario **ajustar tamaño** de los modales de vista previa y dar **más espacio por defecto**, además de hacer la división izquierda/derecha (documento vs. términos) **redimensionable** mediante un panel arrastrable.
 
 ## Cambios
 
-### 1. `src/hooks/data/useUnifiedChaosInbox.ts` — añadir `handleAIError` a 4 puntos
+### 1. `FullScreenDialog` — soporte resizable + ancho mayor
+- Cambiar `max-w-2xl` → `max-w-[95vw] w-[95vw]` en desktop por defecto, con `max-h-[92vh]`.
+- Añadir prop opcional `resizable?: boolean` y `size?: 'md' | 'lg' | 'xl' | 'full'` para casos donde solo se necesite formulario (ContractDialog, ClientDialog mantienen tamaño actual).
+- Cuando `resizable`, agregar un handle visible en la **esquina inferior derecha** (icono de flechita diagonal `GripDiagonal`) usando CSS `resize: both; overflow: auto;` aplicado al `DialogContent` con `min-w`/`min-h`/`max-w-[98vw]`/`max-h-[98vh]`.
 
-En cada uno de los 4 `supabase.functions.invoke('process-receipt'|'process-bank-statement', ...)` sustituir el actual:
+### 2. `ContractDetailDialog` — split redimensionable
+- Pasar `resizable` y `size="xl"` al `FullScreenDialog`.
+- Reemplazar el `grid grid-cols-1 lg:grid-cols-2` por **`ResizablePanelGroup`** de `@/components/ui/resizable` (shadcn — ya está disponible) con dos `ResizablePanel` y un `ResizableHandle withHandle` en medio. Esto permite arrastrar la división documento/términos.
+- Aumentar `min-h` del visor PDF a `min-h-[60vh]` y `pdfWidth` adaptativo (usar contenedor full width).
+- En mobile mantener stacked (sin resizable).
 
-```ts
-if (error) throw error;
-```
+### 3. `FilePreviewDialog` — más ancho + resizable
+- Cambiar `max-w-3xl max-h-[85vh]` → `max-w-[90vw] w-[90vw] max-h-[92vh]`.
+- Aplicar CSS `resize: both` con handle visible en esquina inferior derecha.
+- Ajustar `pdfWidth` a `800` y permitir `max-h-[75vh]` en el preview interno.
 
-por:
+### 4. `ReceiptPhotoViewer` — resizable cuando no está en fullscreen
+- En estado normal (no fullscreen) cambiar `max-w-5xl` → `max-w-[92vw] w-[92vw]` y agregar `resize: both` con handle visual.
+- Mantener el modo fullscreen existente.
 
-```ts
-if (error) {
-  if (handleAIError(error, { feature: 'ocr', requiredPlan: 'premium' })) return;
-  throw error;
-}
-if (result?.error && handleAIError(result, { feature: 'ocr', requiredPlan: 'premium' })) return;
-```
+### 5. `ScanSessionHistory` — ampliar
+- `max-w-2xl` → `max-w-[85vw] w-[85vw]`.
 
-(usar `feature: 'bank_analysis'` para `process-bank-statement`).
+### 6. Nuevo componente helper `ResizeHandle`
+- Crear `src/components/ui/resize-handle.tsx`: un pequeño triángulo/grip absolute en `bottom-1 right-1` con `cursor-se-resize`, decorativo (el resize real lo hace CSS `resize: both` en el contenedor padre).
+- Usado como pista visual en los diálogos resizables.
 
-Líneas afectadas: 324, 453, 487, 533. El hook ya importa `useAIErrorHandler`, no requiere imports nuevos.
+### 7. CSS global
+- Añadir en `src/index.css` una utilidad `.dialog-resizable { resize: both; overflow: auto; min-width: 400px; min-height: 300px; max-width: 98vw; max-height: 98vh; }` para aplicar de forma consistente.
 
-### 2. `src/contexts/UpgradePromptContext.tsx` — añadir keys faltantes al tipo
+## Archivos a editar
 
-Hoy `mileage` y `net_worth` se castean a `UpgradeFeatureKey as never` desde `featureMatrix.ts`. Añadirlas oficialmente al union:
+- `src/components/mobile/FullScreenDialog.tsx`
+- `src/components/contracts/ContractDetailDialog.tsx`
+- `src/components/files/FilePreviewDialog.tsx`
+- `src/components/ReceiptPhotoViewer.tsx`
+- `src/components/capture/ScanSessionHistory.tsx`
+- `src/components/ui/resize-handle.tsx` (nuevo)
+- `src/index.css` (utilidad `.dialog-resizable`)
 
-```ts
-export type UpgradeFeatureKey =
-  | 'expenses' | 'incomes' | 'ocr' | 'clients' | 'projects'
-  | 'contracts' | 'mileage' | 'net_worth' | 'fire_calculator'
-  | 'mentorship' | 'voice_assistant'
-  | 'voice_premium' | 'bank_analysis' | 'ai_reconcile'
-  | 'predictions' | 'autopilot' | 'coaching' | 'ai_credits';
-```
+## Detalles técnicos
 
-Y eliminar los `as UpgradeFeatureKey` redundantes en `src/config/featureMatrix.ts` (ya están).
-
-### 3. `src/components/UpgradePrompt.tsx` — copy específico para keys nuevas
-
-Verificar que `friendlyMessages` (o equivalente) tenga entradas ES/EN para `mileage`, `net_worth`, `fire_calculator`, `predictions`, `autopilot`, `coaching`, `bank_analysis`, `ai_reconcile`, `voice_premium`. Si alguna cae al fallback genérico, agregar mensaje breve y educativo (sin FOMO) en ambos idiomas.
-
-## Lo que NO se hace (decisión consciente)
-
-- **`classify-document`, `parse-smart-input`, `suggest-tags`**: features base de captura. Bloquearlas rompería onboarding del plan free. Quedan sin guard de plan.
-- **`classify-bank-transactions`**: clasificación interna post-import; el flujo principal ya validó cuota antes. Silenciar errores aquí es aceptable.
-- **`process-bank-statement` backend**: ya tiene su propio guard local con payload 429 estándar. No requiere migración al helper compartido.
-- **FeatureGate envolvente en páginas Pro completas (TaxOptimizer, RRSP/TFSA, Predictions, Autopilot, FIRE, NetWorth, Mileage)**: pendiente para una iteración posterior; los gates inline + guards backend ya bloquean ejecución, pero la página entera carga UI inútil para planes que no la tienen. Lo dejamos como tarea de pulido futuro.
-- **Migración global a `useGuardedInvoke`**: refactor opcional; el patrón actual con `handleAIError` funciona.
-- **Tests de `plan-guard` / `useFeatureAccess`**: fuera del alcance de este turno.
+- `resize: both` en CSS funciona nativo en el navegador y muestra el handle estándar del SO en la esquina; añadimos un grip visual extra para descubribilidad.
+- `ResizablePanelGroup` de shadcn ya está en el proyecto (`src/components/ui/resizable.tsx`) — confirmar antes de usar; si no, instalar via `bun add react-resizable-panels`.
+- En mobile (<768px) ignoramos `resize` (queda en pantalla completa como hoy).
+- No tocamos formularios (`ContractDialog`, `ExpenseDialog`, etc.) — solo modales de **vista/preview**.
 
 ## Resultado esperado
 
-Tras estos 3 cambios:
-- Ningún flujo del Chaos Inbox falla en silencio al alcanzar cuota.
-- El modal de upgrade muestra el mensaje correcto para todas las features (sin caer al fallback genérico para mileage/net_worth).
-- Tipos consistentes entre `featureMatrix.ts` y `UpgradePromptContext.tsx`.
+El usuario podrá:
+1. Ver el PDF del contrato y los términos lado a lado con espacio adecuado por defecto (95vw).
+2. Arrastrar la división central para dar más espacio al PDF o a los términos según necesite.
+3. Arrastrar la esquina inferior derecha del modal para redimensionarlo libremente.
+4. Mismo comportamiento en `FilePreviewDialog`, `ReceiptPhotoViewer` y `ScanSessionHistory`.
