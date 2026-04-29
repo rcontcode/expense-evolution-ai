@@ -8,6 +8,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useAIErrorHandler } from '@/hooks/utils/useAIErrorHandler';
 import { 
   Sparkles, Loader2, ChevronDown, ChevronUp, Check, X, 
   FileText, DollarSign, Clock, AlertTriangle, Building2,
@@ -107,6 +108,7 @@ export function ContractTermsViewer({
   const [editingNotes, setEditingNotes] = useState(false);
   const [notes, setNotes] = useState(userNotes || '');
   const [isSavingNotes, setIsSavingNotes] = useState(false);
+  const { handleAIError } = useAIErrorHandler();
 
   const handleAnalyze = async () => {
     setIsAnalyzing(true);
@@ -139,7 +141,11 @@ export function ContractTermsViewer({
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        if (handleAIError(error, { feature: 'contracts', requiredPlan: 'pro' })) return;
+        throw error;
+      }
+      if (result?.error && handleAIError(result, { feature: 'contracts', requiredPlan: 'pro' })) return;
 
       // Save extracted terms to database
       const { error: updateError } = await supabase

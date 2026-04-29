@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
+import { useAIErrorHandler } from '@/hooks/utils/useAIErrorHandler';
 import { DocumentPreviewRenderer } from '@/components/shared/DocumentPreviewRenderer';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -115,6 +116,7 @@ export function ReceiptReviewDialog({
   const { language } = useLanguage();
   const { data: clients = [] } = useClients();
   const { data: projects = [] } = useProjects('active');
+  const { handleAIError } = useAIErrorHandler();
   
   const [isEditing, setIsEditing] = useState(false);
   const [showCommentInput, setShowCommentInput] = useState(false);
@@ -274,7 +276,11 @@ export function ReceiptReviewDialog({
         body: { imageBase64: base64 },
       });
 
-      if (error) throw error;
+      if (error) {
+        if (handleAIError(error, { feature: 'ocr', requiredPlan: 'premium' })) return;
+        throw error;
+      }
+      if (result?.error && handleAIError(result, { feature: 'ocr', requiredPlan: 'premium' })) return;
 
       if (result?.expenses?.length > 0) {
         const extractedData = result.expenses[0];
