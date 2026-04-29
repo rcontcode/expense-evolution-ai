@@ -30,6 +30,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { MobileTabLayout, type MobileTab } from '@/components/mobile';
 import { LegalDisclaimer } from '@/components/ui/legal-disclaimer';
 import { FeatureGate } from '@/components/FeatureGate';
+import { usePlanLimits } from '@/hooks/data/usePlanLimits';
 
 export default function NetWorth() {
   const { t, language } = useLanguage();
