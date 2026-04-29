@@ -107,7 +107,7 @@ export function FullScreenDialog({
         ) : (
           <>
             {/* Desktop: Standard dialog layout */}
-            <DialogHeader>
+            <DialogHeader className={cn(resizable && 'shrink-0')}>
               <DialogTitle>{title}</DialogTitle>
               {description && <DialogDescription>{description}</DialogDescription>}
             </DialogHeader>
@@ -115,13 +115,13 @@ export function FullScreenDialog({
               className={cn(
                 'overflow-y-auto',
                 resizable
-                  ? 'max-h-[calc(100%-6rem)] h-[calc(100%-6rem)]'
+                  ? 'flex-1 min-h-0'
                   : 'max-h-[calc(90vh-8rem)]',
               )}
             >
               {children}
             </div>
-            {footer && <div className="mt-4">{footer}</div>}
+            {footer && <div className={cn('mt-4', resizable && 'shrink-0')}>{footer}</div>}
             {resizable && <ResizeHandle />}
           </>
         )}
