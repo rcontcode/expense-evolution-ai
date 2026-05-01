@@ -218,16 +218,25 @@ export function SampleDataManager() {
                 ) : (
                   <CheckCircle2 className="h-4 w-4 text-green-500" />
                 )}
-                <span className="font-semibold text-sm">
-                  {countsLoading
-                    ? (isEs ? "Analizando datos..." : "Analyzing data...")
-                    : hasAnySampleData
-                      ? isEs
-                        ? `${totalSampleRecords} registros de ejemplo detectados en ${sectionsWithData.length} sección${sectionsWithData.length !== 1 ? 'es' : ''}`
-                        : `${totalSampleRecords} sample records detected in ${sectionsWithData.length} section${sectionsWithData.length !== 1 ? 's' : ''}`
-                      : isEs ? "Sin datos de ejemplo — todo es real ✓" : "No sample data found — all real ✓"
-                  }
-                </span>
+                <div className="flex flex-col">
+                  <span className="font-semibold text-sm">
+                    {countsLoading
+                      ? (isEs ? "Analizando datos..." : "Analyzing data...")
+                      : hasAnySampleData
+                        ? isEs
+                          ? `${totalSampleRecords} registros de ejemplo en ${sectionsWithData.length} sección${sectionsWithData.length !== 1 ? 'es' : ''}`
+                          : `${totalSampleRecords} sample records in ${sectionsWithData.length} section${sectionsWithData.length !== 1 ? 's' : ''}`
+                        : isEs ? "Sin datos de ejemplo — todo es tuyo ✓" : "No sample data found — all yours ✓"
+                    }
+                  </span>
+                  {!countsLoading && counts?.totals && (
+                    <span className="text-[11px] text-muted-foreground">
+                      {isEs
+                        ? `🟠 ${counts.totals.sample} de ejemplo · 🟢 ${counts.totals.user} tuyos · ${counts.totals.total} en total`
+                        : `🟠 ${counts.totals.sample} sample · 🟢 ${counts.totals.user} yours · ${counts.totals.total} total`}
+                    </span>
+                  )}
+                </div>
               </div>
               <Button variant="ghost" size="sm" onClick={() => refetchCounts()} disabled={countsLoading} className="gap-1.5 text-xs">
                 <Search className="h-3 w-3" />
