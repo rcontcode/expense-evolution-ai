@@ -102,11 +102,15 @@ export function SampleDataManager() {
     return () => { clearInterval(interval); clearInterval(timeInterval); };
   }, [generateSampleData.isPending]);
 
+  const sampleCountFor = (key: string): number => counts?.breakdown?.[key]?.sample ?? 0;
+  const totalCountFor = (key: string): number => counts?.breakdown?.[key]?.total ?? 0;
+  const userCountFor = (key: string): number => counts?.breakdown?.[key]?.user ?? 0;
+
   const toggleSection = (key: string) => {
     setSelectedSections(prev => prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]);
   };
   const selectAllWithData = () => {
-    const withData = SAMPLE_SECTIONS.filter(s => (counts?.[s.countKey as keyof typeof counts] ?? 0) > 0).map(s => s.key);
+    const withData = SAMPLE_SECTIONS.filter(s => sampleCountFor(s.countKey) > 0).map(s => s.key);
     setSelectedSections(withData.length > 0 ? withData : SAMPLE_SECTIONS.map(s => s.key));
   };
   const selectAll = () => setSelectedSections(SAMPLE_SECTIONS.map(s => s.key));
