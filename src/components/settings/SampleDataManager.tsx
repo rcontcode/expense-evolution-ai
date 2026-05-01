@@ -348,7 +348,8 @@ export function SampleDataManager() {
             {SAMPLE_SECTIONS.map(section => {
               const Icon = section.icon;
               const isSelected = selectedSections.includes(section.key);
-              const count = counts?.[section.countKey as keyof typeof counts] ?? 0;
+              const count = sampleCountFor(section.countKey);
+              const total = totalCountFor(section.countKey);
               const hasData = count > 0;
               return (
                 <div
@@ -372,7 +373,9 @@ export function SampleDataManager() {
                     </div>
                     {!countsLoading && (
                       <div className={cn("text-[10px] font-bold", hasData ? "text-amber-600" : "text-muted-foreground")}>
-                        {hasData ? `${count} ${isEs ? 'registros' : 'records'}` : isEs ? 'sin datos' : 'no data'}
+                        {hasData
+                          ? `${count} ${isEs ? 'de ejemplo' : 'sample'}${total > count ? ` · ${total} ${isEs ? 'total' : 'total'}` : ''}`
+                          : isEs ? 'sin ejemplos' : 'no samples'}
                       </div>
                     )}
                   </div>
