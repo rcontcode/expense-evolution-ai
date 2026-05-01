@@ -102,11 +102,15 @@ export function SampleDataManager() {
     return () => { clearInterval(interval); clearInterval(timeInterval); };
   }, [generateSampleData.isPending]);
 
+  const sampleCountFor = (key: string): number => counts?.breakdown?.[key]?.sample ?? 0;
+  const totalCountFor = (key: string): number => counts?.breakdown?.[key]?.total ?? 0;
+  const userCountFor = (key: string): number => counts?.breakdown?.[key]?.user ?? 0;
+
   const toggleSection = (key: string) => {
     setSelectedSections(prev => prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]);
   };
   const selectAllWithData = () => {
-    const withData = SAMPLE_SECTIONS.filter(s => (counts?.[s.countKey as keyof typeof counts] ?? 0) > 0).map(s => s.key);
+    const withData = SAMPLE_SECTIONS.filter(s => sampleCountFor(s.countKey) > 0).map(s => s.key);
     setSelectedSections(withData.length > 0 ? withData : SAMPLE_SECTIONS.map(s => s.key));
   };
   const selectAll = () => setSelectedSections(SAMPLE_SECTIONS.map(s => s.key));
@@ -129,7 +133,7 @@ export function SampleDataManager() {
   const isLoading = generateSampleData.isPending || deleteSampleData.isPending || deleteSampleDataBySection.isPending || generateBySection.isPending;
   const progressPercent = generateSampleData.isPending ? Math.min(((currentStep + 1) / GENERATION_STEPS.length) * 100, 95) : 0;
   const totalSampleRecords = counts?.total ?? 0;
-  const sectionsWithData = SAMPLE_SECTIONS.filter(s => (counts?.[s.countKey as keyof typeof counts] ?? 0) > 0);
+  const sectionsWithData = SAMPLE_SECTIONS.filter(s => sampleCountFor(s.countKey) > 0);
   const hasAnySampleData = totalSampleRecords > 0;
 
   return (
@@ -214,16 +218,25 @@ export function SampleDataManager() {
                 ) : (
                   <CheckCircle2 className="h-4 w-4 text-green-500" />
                 )}
-                <span className="font-semibold text-sm">
-                  {countsLoading
-                    ? (isEs ? "Analizando datos..." : "Analyzing data...")
-                    : hasAnySampleData
-                      ? isEs
-                        ? `${totalSampleRecords} registros de ejemplo detectados en ${sectionsWithData.length} sección${sectionsWithData.length !== 1 ? 'es' : ''}`
-                        : `${totalSampleRecords} sample records detected in ${sectionsWithData.length} section${sectionsWithData.length !== 1 ? 's' : ''}`
-                      : isEs ? "Sin datos de ejemplo — todo es real ✓" : "No sample data found — all real ✓"
-                  }
-                </span>
+                <div className="flex flex-col">
+                  <span className="font-semibold text-sm">
+                    {countsLoading
+                      ? (isEs ? "Analizando datos..." : "Analyzing data...")
+                      : hasAnySampleData
+                        ? isEs
+                          ? `${totalSampleRecords} registros de ejemplo en ${sectionsWithData.length} sección${sectionsWithData.length !== 1 ? 'es' : ''}`
+                          : `${totalSampleRecords} sample records in ${sectionsWithData.length} section${sectionsWithData.length !== 1 ? 's' : ''}`
+                        : isEs ? "Sin datos de ejemplo — todo es tuyo ✓" : "No sample data found — all yours ✓"
+                    }
+                  </span>
+                  {!countsLoading && counts?.totals && (
+                    <span className="text-[11px] text-muted-foreground">
+                      {isEs
+                        ? `🟠 ${counts.totals.sample} de ejemplo · 🟢 ${counts.totals.user} tuyos · ${counts.totals.total} en total`
+                        : `🟠 ${counts.totals.sample} sample · 🟢 ${counts.totals.user} yours · ${counts.totals.total} total`}
+                    </span>
+                  )}
+                </div>
               </div>
               <Button variant="ghost" size="sm" onClick={() => refetchCounts()} disabled={countsLoading} className="gap-1.5 text-xs">
                 <Search className="h-3 w-3" />
@@ -236,8 +249,10 @@ export function SampleDataManager() {
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
                 {SAMPLE_SECTIONS.map(section => {
                   const Icon = section.icon;
-                  const count = counts?.[section.countKey as keyof typeof counts] ?? 0;
-                  const hasData = count > 0;
+                  const sample = sampleCountFor(section.countKey);
+                  const total = totalCountFor(section.countKey);
+                  const userOwn = userCountFor(section.countKey);
+                  const hasData = sample > 0;
                   return (
                     <div
                       key={section.key}
@@ -247,6 +262,9 @@ export function SampleDataManager() {
                           ? "border-amber-400/50 bg-amber-400/10"
                           : "border-border/40 bg-muted/30 opacity-60"
                       )}
+                      title={isEs
+                        ? `${sample} de ejemplo · ${userOwn} tuyos · ${total} total`
+                        : `${sample} sample · ${userOwn} yours · ${total} total`}
                     >
                       <Icon className={cn("h-3.5 w-3.5 shrink-0", section.color)} />
                       <span className="flex-1 truncate text-xs font-medium">
@@ -256,7 +274,7 @@ export function SampleDataManager() {
                         variant={hasData ? "default" : "secondary"}
                         className={cn("text-[10px] px-1.5 py-0 font-bold", hasData ? "bg-amber-500 text-white" : "")}
                       >
-                        {count}
+                        {sample}{total > sample ? `/${total}` : ''}
                       </Badge>
                     </div>
                   );
@@ -339,7 +357,8 @@ export function SampleDataManager() {
             {SAMPLE_SECTIONS.map(section => {
               const Icon = section.icon;
               const isSelected = selectedSections.includes(section.key);
-              const count = counts?.[section.countKey as keyof typeof counts] ?? 0;
+              const count = sampleCountFor(section.countKey);
+              const total = totalCountFor(section.countKey);
               const hasData = count > 0;
               return (
                 <div
@@ -363,7 +382,9 @@ export function SampleDataManager() {
                     </div>
                     {!countsLoading && (
                       <div className={cn("text-[10px] font-bold", hasData ? "text-amber-600" : "text-muted-foreground")}>
-                        {hasData ? `${count} ${isEs ? 'registros' : 'records'}` : isEs ? 'sin datos' : 'no data'}
+                        {hasData
+                          ? `${count} ${isEs ? 'de ejemplo' : 'sample'}${total > count ? ` · ${total} ${isEs ? 'total' : 'total'}` : ''}`
+                          : isEs ? 'sin ejemplos' : 'no samples'}
                       </div>
                     )}
                   </div>
