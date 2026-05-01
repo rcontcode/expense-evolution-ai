@@ -10,8 +10,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import {
   Database, Trash2, Receipt, DollarSign, Landmark,
-  FileText, Users, Car, CalendarCheck, AlertTriangle,
+  FileText, Users, Car, CalendarCheck, AlertTriangle, Sparkles,
 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { useSampleDataCounts } from '@/hooks/data/useGenerateSampleData';
 
 interface DataSection {
   key: string;
