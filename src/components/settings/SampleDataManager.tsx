@@ -133,7 +133,7 @@ export function SampleDataManager() {
   const isLoading = generateSampleData.isPending || deleteSampleData.isPending || deleteSampleDataBySection.isPending || generateBySection.isPending;
   const progressPercent = generateSampleData.isPending ? Math.min(((currentStep + 1) / GENERATION_STEPS.length) * 100, 95) : 0;
   const totalSampleRecords = counts?.total ?? 0;
-  const sectionsWithData = SAMPLE_SECTIONS.filter(s => (counts?.[s.countKey as keyof typeof counts] ?? 0) > 0);
+  const sectionsWithData = SAMPLE_SECTIONS.filter(s => sampleCountFor(s.countKey) > 0);
   const hasAnySampleData = totalSampleRecords > 0;
 
   return (
