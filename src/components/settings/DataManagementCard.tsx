@@ -239,12 +239,33 @@ export function DataManagementCard() {
             </ol>
           </div>
 
+          {/* Global summary */}
+          {sampleCounts?.totals && (
+            <div className="rounded-lg border bg-muted/30 p-3 flex flex-wrap items-center gap-3 text-xs">
+              <span className="font-semibold">{l ? 'Resumen total:' : 'Overall summary:'}</span>
+              <span className="inline-flex items-center gap-1">
+                <span className="h-2 w-2 rounded-full bg-amber-500" />
+                {sampleCounts.totals.sample} {l ? 'de ejemplo' : 'sample'}
+              </span>
+              <span className="inline-flex items-center gap-1">
+                <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                {sampleCounts.totals.user} {l ? 'tuyos' : 'yours'}
+              </span>
+              <span className="ml-auto font-medium">
+                {sampleCounts.totals.total} {l ? 'registros en total' : 'total records'}
+              </span>
+            </div>
+          )}
+
           {/* Section list */}
           <div className="grid gap-2">
             {DATA_SECTIONS.map((section) => {
               const Icon = section.icon;
               const count = counts[section.key] || 0;
               const label = l ? section.labelEs : section.labelEn;
+              const breakdown = section.sampleKey ? sampleCounts?.breakdown?.[section.sampleKey] : undefined;
+              const sampleN = breakdown?.sample ?? 0;
+              const userN = breakdown ? Math.max(0, count - sampleN) : count;
               return (
                 <div
                   key={section.key}
@@ -255,9 +276,20 @@ export function DataManagementCard() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate">{label}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {count} {l ? 'registros' : 'records'}
-                    </p>
+                    <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+                      <span>{count} {l ? 'registros' : 'records'}</span>
+                      {sampleN > 0 && (
+                        <Badge variant="outline" className="h-4 px-1.5 gap-1 text-[10px] border-amber-400/60 text-amber-600 dark:text-amber-400">
+                          <Sparkles className="h-2.5 w-2.5" />
+                          {sampleN} {l ? 'ejemplo' : 'sample'}
+                        </Badge>
+                      )}
+                      {userN > 0 && (
+                        <Badge variant="outline" className="h-4 px-1.5 gap-1 text-[10px] border-emerald-500/60 text-emerald-600 dark:text-emerald-400">
+                          {userN} {l ? 'tuyos' : 'yours'}
+                        </Badge>
+                      )}
+                    </div>
                   </div>
                   <Button
                     variant="ghost"
