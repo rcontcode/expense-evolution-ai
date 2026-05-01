@@ -117,6 +117,9 @@ export function DataManagementCard() {
 
   const confirmWord = l ? 'ELIMINAR' : 'DELETE';
 
+  // Sample-data breakdown (sample / user / total per section)
+  const { data: sampleCounts } = useSampleDataCounts();
+
   // Fetch counts for all sections
   const { data: counts = {} } = useQuery({
     queryKey: ['data-management-counts', user?.id],
