@@ -27,6 +27,18 @@ export type SampleDataCounts = {
   category_budgets: number;
   recurring_bills: number;
   total: number;
+  /** Per-section breakdown: sample / user / total. */
+  breakdown: Record<string, { sample: number; user: number; total: number }>;
+  totals: { sample: number; user: number; total: number };
+};
+
+const EMPTY_COUNTS: SampleDataCounts = {
+  clients: 0, projects: 0, expenses: 0, income: 0, mileage: 0,
+  assets: 0, liabilities: 0, goals: 0, contracts: 0, notifications: 0,
+  education: 0, bank_transactions: 0, category_budgets: 0, recurring_bills: 0,
+  total: 0,
+  breakdown: {},
+  totals: { sample: 0, user: 0, total: 0 },
 };
 
 export function useSampleDataCounts() {
@@ -34,50 +46,86 @@ export function useSampleDataCounts() {
     queryKey: ['sample-data-counts'],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return { clients: 0, projects: 0, expenses: 0, income: 0, mileage: 0, assets: 0, liabilities: 0, goals: 0, contracts: 0, notifications: 0, education: 0, bank_transactions: 0, category_budgets: 0, recurring_bills: 0, total: 0 };
+      if (!user) return EMPTY_COUNTS;
 
       const uid = user.id;
       const m = SAMPLE_MARKER;
 
-      const [
-        clientsRes, projectsRes, expensesRes, incomeRes, mileageRes,
-        assetsRes, liabilitiesRes, investGoalsRes, savingsGoalsRes,
-        contractsRes, notifRes, eduRes, bankRes, catBudgetsRes, recurBillsRes,
-      ] = await Promise.all([
-        supabase.from('clients').select('id', { count: 'exact', head: true }).eq('user_id', uid).like('name', `%${m}%`),
-        supabase.from('projects').select('id', { count: 'exact', head: true }).eq('user_id', uid).like('name', `%${m}%`),
-        supabase.from('expenses').select('id', { count: 'exact', head: true }).eq('user_id', uid).like('description', `%${m}%`),
-        supabase.from('income').select('id', { count: 'exact', head: true }).eq('user_id', uid).like('description', `%${m}%`),
-        supabase.from('mileage').select('id', { count: 'exact', head: true }).eq('user_id', uid).like('route', `%${m}%`),
-        supabase.from('assets').select('id', { count: 'exact', head: true }).eq('user_id', uid).like('name', `%${m}%`),
-        supabase.from('liabilities').select('id', { count: 'exact', head: true }).eq('user_id', uid).like('name', `%${m}%`),
-        supabase.from('investment_goals').select('id', { count: 'exact', head: true }).eq('user_id', uid).like('name', `%${m}%`),
-        supabase.from('savings_goals').select('id', { count: 'exact', head: true }).eq('user_id', uid).like('name', `%${m}%`),
-        supabase.from('contracts').select('id', { count: 'exact', head: true }).eq('user_id', uid).like('file_name', `%${m}%`),
-        supabase.from('notifications').select('id', { count: 'exact', head: true }).eq('user_id', uid).like('title', `%${m}%`),
-        supabase.from('financial_education').select('id', { count: 'exact', head: true }).eq('user_id', uid).like('title', `%${m}%`),
-        supabase.from('bank_transactions').select('id', { count: 'exact', head: true }).eq('user_id', uid).like('description', `%${m}%`),
-        supabase.from('category_budgets').select('id', { count: 'exact', head: true }).eq('user_id', uid).like('category', `%${m}%`),
-        supabase.from('recurring_bills').select('id', { count: 'exact', head: true }).eq('user_id', uid).like('name', `%${m}%`),
-      ]);
+      // For each section we query: total count + sample count.
+      // user count = total - sample.
+      type SectionDef = { key: string; table: string; field: string };
+      const sections: SectionDef[] = [
+        { key: 'clients',           table: 'clients',             field: 'name' },
+        { key: 'projects',          table: 'projects',            field: 'name' },
+        { key: 'expenses',          table: 'expenses',            field: 'description' },
+        { key: 'income',            table: 'income',              field: 'description' },
+        { key: 'mileage',           table: 'mileage',             field: 'route' },
+        { key: 'assets',            table: 'assets',              field: 'name' },
+        { key: 'liabilities',       table: 'liabilities',         field: 'name' },
+        { key: 'investment_goals',  table: 'investment_goals',    field: 'name' },
+        { key: 'savings_goals',     table: 'savings_goals',       field: 'name' },
+        { key: 'contracts',         table: 'contracts',           field: 'file_name' },
+        { key: 'notifications',     table: 'notifications',       field: 'title' },
+        { key: 'education',         table: 'financial_education', field: 'title' },
+        { key: 'bank_transactions', table: 'bank_transactions',   field: 'description' },
+        { key: 'category_budgets',  table: 'category_budgets',    field: 'category' },
+        { key: 'recurring_bills',   table: 'recurring_bills',     field: 'name' },
+      ];
 
-      const clients = clientsRes.count ?? 0;
-      const projects = projectsRes.count ?? 0;
-      const expenses = expensesRes.count ?? 0;
-      const income = incomeRes.count ?? 0;
-      const mileage = mileageRes.count ?? 0;
-      const assets = assetsRes.count ?? 0;
-      const liabilities = liabilitiesRes.count ?? 0;
-      const goals = (investGoalsRes.count ?? 0) + (savingsGoalsRes.count ?? 0);
-      const contracts = contractsRes.count ?? 0;
-      const notifications = notifRes.count ?? 0;
-      const education = eduRes.count ?? 0;
-      const bank_transactions = bankRes.count ?? 0;
-      const category_budgets = catBudgetsRes.count ?? 0;
-      const recurring_bills = recurBillsRes.count ?? 0;
+      const queries = sections.flatMap(s => [
+        supabase.from(s.table as any).select('id', { count: 'exact', head: true }).eq('user_id', uid),
+        supabase.from(s.table as any).select('id', { count: 'exact', head: true }).eq('user_id', uid).like(s.field, `%${m}%`),
+      ]);
+      const results = await Promise.all(queries);
+
+      const breakdown: Record<string, { sample: number; user: number; total: number }> = {};
+      sections.forEach((s, i) => {
+        const total = results[i * 2].count ?? 0;
+        const sample = results[i * 2 + 1].count ?? 0;
+        breakdown[s.key] = { sample, user: Math.max(0, total - sample), total };
+      });
+
+      // Aggregate goals (savings + investment)
+      const goalsBreakdown = {
+        sample: (breakdown.investment_goals?.sample ?? 0) + (breakdown.savings_goals?.sample ?? 0),
+        user:   (breakdown.investment_goals?.user   ?? 0) + (breakdown.savings_goals?.user   ?? 0),
+        total:  (breakdown.investment_goals?.total  ?? 0) + (breakdown.savings_goals?.total  ?? 0),
+      };
+      breakdown.goals = goalsBreakdown;
+
+      const pick = (k: string) => breakdown[k]?.sample ?? 0;
+      const clients = pick('clients');
+      const projects = pick('projects');
+      const expenses = pick('expenses');
+      const income = pick('income');
+      const mileage = pick('mileage');
+      const assets = pick('assets');
+      const liabilities = pick('liabilities');
+      const goals = goalsBreakdown.sample;
+      const contracts = pick('contracts');
+      const notifications = pick('notifications');
+      const education = pick('education');
+      const bank_transactions = pick('bank_transactions');
+      const category_budgets = pick('category_budgets');
+      const recurring_bills = pick('recurring_bills');
       const total = clients + projects + expenses + income + mileage + assets + liabilities + goals + contracts + notifications + education + bank_transactions + category_budgets + recurring_bills;
 
-      return { clients, projects, expenses, income, mileage, assets, liabilities, goals, contracts, notifications, education, bank_transactions, category_budgets, recurring_bills, total };
+      // Aggregate totals across sections (excluding the duplicate investment/savings raw entries to avoid double counting goals)
+      const aggKeys = ['clients','projects','expenses','income','mileage','assets','liabilities','goals','contracts','notifications','education','bank_transactions','category_budgets','recurring_bills'];
+      const totals = aggKeys.reduce(
+        (acc, k) => {
+          const b = breakdown[k];
+          if (!b) return acc;
+          return {
+            sample: acc.sample + b.sample,
+            user: acc.user + b.user,
+            total: acc.total + b.total,
+          };
+        },
+        { sample: 0, user: 0, total: 0 }
+      );
+
+      return { clients, projects, expenses, income, mileage, assets, liabilities, goals, contracts, notifications, education, bank_transactions, category_budgets, recurring_bills, total, breakdown, totals };
     },
     staleTime: 30_000,
   });
