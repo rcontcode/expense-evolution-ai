@@ -240,8 +240,10 @@ export function SampleDataManager() {
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
                 {SAMPLE_SECTIONS.map(section => {
                   const Icon = section.icon;
-                  const count = counts?.[section.countKey as keyof typeof counts] ?? 0;
-                  const hasData = count > 0;
+                  const sample = sampleCountFor(section.countKey);
+                  const total = totalCountFor(section.countKey);
+                  const userOwn = userCountFor(section.countKey);
+                  const hasData = sample > 0;
                   return (
                     <div
                       key={section.key}
@@ -251,6 +253,9 @@ export function SampleDataManager() {
                           ? "border-amber-400/50 bg-amber-400/10"
                           : "border-border/40 bg-muted/30 opacity-60"
                       )}
+                      title={isEs
+                        ? `${sample} de ejemplo · ${userOwn} tuyos · ${total} total`
+                        : `${sample} sample · ${userOwn} yours · ${total} total`}
                     >
                       <Icon className={cn("h-3.5 w-3.5 shrink-0", section.color)} />
                       <span className="flex-1 truncate text-xs font-medium">
@@ -260,7 +265,7 @@ export function SampleDataManager() {
                         variant={hasData ? "default" : "secondary"}
                         className={cn("text-[10px] px-1.5 py-0 font-bold", hasData ? "bg-amber-500 text-white" : "")}
                       >
-                        {count}
+                        {sample}{total > sample ? `/${total}` : ''}
                       </Badge>
                     </div>
                   );
