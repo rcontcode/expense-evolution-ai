@@ -24,6 +24,8 @@ interface DataSection {
   dependents?: { table: string; fk: string }[];
   extraTables?: string[];
   colorClass: string;
+  /** Key in the sample-data breakdown map (from useSampleDataCounts). */
+  sampleKey?: string;
 }
 
 const DATA_SECTIONS: DataSection[] = [
@@ -35,6 +37,7 @@ const DATA_SECTIONS: DataSection[] = [
     table: 'expenses',
     dependents: [{ table: 'expense_tags', fk: 'expense_id' }],
     colorClass: 'text-destructive',
+    sampleKey: 'expenses',
   },
   {
     key: 'income',
@@ -43,6 +46,7 @@ const DATA_SECTIONS: DataSection[] = [
     labelEn: 'Income',
     table: 'income',
     colorClass: 'text-emerald-600',
+    sampleKey: 'income',
   },
   {
     key: 'bank_transactions',
@@ -52,6 +56,7 @@ const DATA_SECTIONS: DataSection[] = [
     table: 'bank_transactions',
     extraTables: ['bank_import_sessions'],
     colorClass: 'text-sky-600',
+    sampleKey: 'bank_transactions',
   },
   {
     key: 'contracts',
@@ -60,6 +65,7 @@ const DATA_SECTIONS: DataSection[] = [
     labelEn: 'Contracts',
     table: 'contracts',
     colorClass: 'text-violet-600',
+    sampleKey: 'contracts',
   },
   {
     key: 'documents',
@@ -76,6 +82,7 @@ const DATA_SECTIONS: DataSection[] = [
     labelEn: 'Clients',
     table: 'clients',
     colorClass: 'text-orange-600',
+    sampleKey: 'clients',
   },
   {
     key: 'mileage_logs',
@@ -84,6 +91,7 @@ const DATA_SECTIONS: DataSection[] = [
     labelEn: 'Mileage',
     table: 'mileage_logs',
     colorClass: 'text-teal-600',
+    sampleKey: 'mileage',
   },
   {
     key: 'recurring_bills',
@@ -93,6 +101,7 @@ const DATA_SECTIONS: DataSection[] = [
     table: 'recurring_bills',
     dependents: [{ table: 'bill_payments', fk: 'bill_id' }],
     colorClass: 'text-amber-600',
+    sampleKey: 'recurring_bills',
   },
 ];
 
