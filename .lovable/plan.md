@@ -1,114 +1,60 @@
-Sí: lo voy a corregir de raíz. No es un fallo aislado del contrato; el problema está en cómo están construidos los modales de preview y en que hoy hay 3 estrategias distintas para mostrar PDFs/fotos.
+## Objetivo
 
-## Qué está fallando realmente
+Crear un bloque tipo carrusel inspirado en UniversMind que golpee **emocionalmente** primero con un dolor humano profundo, y luego revele una **promesa transformacional** (no una feature de la app). Menos "qué hace EvoFinz", más "en quién te conviertes".
 
-1. **El contenedor base de diálogos pelea con los previews**
-   - `src/components/ui/dialog.tsx` fuerza `grid`, `overflow-y-auto`, `max-h-[85vh]` y centrado vertical con `!-translate-y-1/2`.
-   - Los modales de preview intentan sobrescribir eso parcialmente, pero no todos lo hacen igual.
-   - Resultado: algunos previews quedan desbordados, otros colapsan su altura y el usuario termina viendo solo el overlay negro.
+## Filosofía del contenido
 
-2. **Hay una implementación distinta por tipo de preview**
-   - `ContractDetailDialog.tsx` usa **iframe** para PDF.
-   - `FilePreviewDialog.tsx` usa **DocumentPreviewRenderer** con `react-pdf`.
-   - `ReceiptPhotoViewer.tsx` mezcla preview blob + transformaciones manuales.
-   - Resultado: un arreglo en un preview rompe otro, y los PDFs/fotos no se comportan igual.
+Cada par sigue esta fórmula:
 
-3. **El resize actual no es una solución robusta**
-   - `.dialog-resizable` usa `resize: both`, pero eso no resuelve bien el posicionamiento ni permite mover la ventana.
-   - Cuando el modal nace mal ubicado o el contenido empuja el layout, el handle deja de servir.
+```text
+[FASE 1 - DOLOR] (4s, frío, gris, cursiva)
+  Pregunta o escena humana, íntima, que duele.
+  Ej: "¿Y si mi hijo me pregunta cuánto tenemos ahorrado... y no sé qué responder?"
 
-4. **Los cuerpos de preview no tienen una jerarquía de altura consistente**
-   - Hay combinaciones de `flex-1`, `min-h-*`, `max-h-*`, `overflow-*` y wrappers transformados que hacen que PDF e imagen no siempre reciban un área visible y estable.
+[FASE 2 - TRANSFORMACIÓN] (7s, cálido, gradiente EvoFinz, bold)
+  Promesa de identidad / paz / poder, NO feature.
+  Ej: "Eres el padre que construye certezas, no el que esconde dudas."
+```
 
-## Plan de solución de raíz
+NO se mencionan: recibos, OCR, bancos conectados, dashboards, deducciones, categorías. Eso ya está en otras secciones.
 
-### 1) Crear un contenedor compartido para previews de documentos
-Voy a introducir un contenedor único para previews desktop/mobile, en vez de seguir parchando cada modal por separado.
+SÍ se evocan: tranquilidad, control, dignidad, legado, libertad, claridad mental, dormir tranquilo, mirar a los ojos, decidir sin miedo.
 
-**Objetivo del contenedor compartido:**
-- Desktop: ventana acotada al viewport, con posición estable.
-- Header fijo.
-- Body con `min-h-0` y `overflow-hidden` real.
-- Footer opcional.
-- **Drag real desde el header** en desktop.
-- **Resize real desde la esquina** con límites mínimos/máximos y clamp al viewport.
-- Mobile: comportamiento fullscreen limpio.
+## 12 pares transformacionales propuestos
 
-Esto reemplaza la dependencia actual en `dialog-resizable` para previews críticos.
+1. Hijo pregunta cuánto hay ahorrado → "Eres quien responde con certeza, no con silencio."
+2. Despertar a las 3am pensando en dinero → "Vuelves a dormir como antes de que el dinero te robara la paz."
+3. Pareja pregunta "¿podemos?" y no sabes → "Decides juntos con datos, no con miedo."
+4. Fin de año sin saber a dónde se fue todo → "Cierras el año mirando atrás con orgullo, no con vergüenza."
+5. Sentir que trabajas mucho y no avanzas → "Tu esfuerzo por fin tiene una huella visible."
+6. Miedo a abrir la app del banco → "Abres tus finanzas con la misma calma con la que abres una ventana."
+7. Comparación con otros que "sí saben" → "Dejas de admirar a quien tiene control. Te conviertes en esa persona."
+8. Postergar decisiones grandes (casa, viaje, estudio) → "Dices 'sí' a la vida que estabas aplazando."
+9. Vergüenza de no saber cuánto ganas realmente → "Conoces tus números como conoces tu nombre."
+10. Heredar caos a tu familia → "Dejas orden, no un rompecabezas."
+11. Sensación de que el dinero te controla → "Tú llevas el timón. El dinero rema."
+12. Llegar a fin de mes sin entender por qué no alcanza → "El mes termina y tú entiendes exactamente por qué."
 
-### 2) Separar los previews del `DialogContent` genérico
-No voy a tocar a ciegas todos los diálogos normales del sistema.
+## Implementación técnica
 
-Haré una de estas dos cosas de forma controlada:
-- crear una variante/shared component específica para previews, o
-- extender `FullScreenDialog` para que use un modo de preview robusto.
+- **Nuevo componente**: `src/components/landing/EvoTransformationBlock.tsx`
+  - Replica la lógica de UniversMind: `useState<'fear' | 'hope'>`, `useEffect` con timeouts (4s dolor, 7s esperanza), `AnimatePresence` para transición.
+  - Fase dolor: `bg-slate-900`, `text-slate-400 italic`, sin CTA.
+  - Fase esperanza: gradiente cálido EvoFinz (cyan→emerald o el primary del proyecto), `text-white font-bold`, CTA suave al `/quiz` ("Empieza tu transformación").
+  - Indicador de progreso entre los 12 pares (puntos discretos, no números).
+  - Pausable al hover en desktop, swipe manual en mobile.
 
-**Importante:** los modales comunes seguirán como están; el arreglo se aplicará específicamente a contratos, archivos y fotos/documentos.
+- **Nuevo data file**: `src/data/landing/transformationPairs.ts` con los 12 pares (estructura `{ id, fear: string, hope: string }`).
 
-### 3) Unificar el renderer de documentos
-Voy a dejar de usar `iframe` en contratos como mecanismo principal.
+- **Integración en Landing**: insertarlo justo después del Hero, antes del resto del flujo.
 
-**Nuevo criterio único:**
-- PDFs: `DocumentPreviewRenderer` / `react-pdf`.
-- Imágenes: renderer consistente con `img` + contenedor estable.
-- Botón de fallback: **“Abrir en nueva pestaña”** y **descargar** cuando corresponda.
+- **Preservación**: `PainPointsSection` y `TransformationCarousel` actuales se conservan en el código pero se quitan del render activo (comentados en `Landing.tsx` con nota).
 
-Esto elimina la causa más probable de PDFs en negro/blanco por embedding inconsistente.
+## Lo que NO se hace
 
-### 4) Migrar todas las vistas afectadas al mismo patrón
-Voy a aplicar el mismo sistema a las vistas donde hoy puede repetirse el fallo:
+- No se crean imágenes (es puro texto + color + tipografía, como UniversMind).
+- No se mencionan features de la app en este bloque.
+- No se elimina ningún componente existente.
+- No se cambia el routing del root `/` en este paso (eso lo dejamos como está).
 
-- `src/components/contracts/ContractDetailDialog.tsx`
-- `src/components/files/FilePreviewDialog.tsx`
-- `src/components/ReceiptPhotoViewer.tsx`
-- `src/components/capture/ReceiptReviewDialog.tsx`
-
-Y revisaré los otros diálogos con resize para que no queden en un estado mixto:
-- `src/components/capture/ScanSessionHistory.tsx`
-- cualquier otro preview/document viewer que esté usando el patrón antiguo
-
-### 5) Corregir la estructura interna de altura/scroll
-En todos los previews voy a normalizar:
-- wrapper exterior `flex flex-col`
-- header `shrink-0`
-- body `flex-1 min-h-0 overflow-hidden`
-- superficie de preview con altura efectiva real
-- scroll solo donde corresponde
-
-Así evito el patrón actual donde el contenido “empuja” el modal o colapsa el área visible.
-
-### 6) Verificación completa antes de darlo por cerrado
-No lo daré por arreglado hasta comprobarlo en las vistas reales.
-
-**Validación que haré:**
-- PDF de contrato visible en desktop.
-- Foto/imagen visible en desktop.
-- Preview de archivos visible en desktop.
-- Dialog abierto dentro del viewport en `1474x954`.
-- Esquina de resize alcanzable.
-- Drag del modal funcional en desktop.
-- Mobile sin cortes ni solapamientos.
-- Botón fallback “abrir en nueva pestaña” funcionando.
-
-## Archivos que tocaré
-
-- `src/components/ui/dialog.tsx` o nueva variante específica de preview
-- `src/components/mobile/FullScreenDialog.tsx` o nuevo shell compartido
-- `src/components/shared/DocumentPreviewRenderer.tsx`
-- `src/components/contracts/ContractDetailDialog.tsx`
-- `src/components/files/FilePreviewDialog.tsx`
-- `src/components/ReceiptPhotoViewer.tsx`
-- `src/components/capture/ReceiptReviewDialog.tsx`
-- `src/index.css` (solo si queda alguna regla global realmente necesaria)
-
-## Resultado esperado
-
-- Se acabará el “pantallazo negro” del overlay sin contenido visible.
-- PDFs y fotos cargarán con el mismo motor visual y el mismo layout estable.
-- Los previews dejarán de depender de hacks distintos por pantalla.
-- En desktop vas a poder **mover** y **redimensionar** el modal sin que se salga de la pantalla.
-- Quedará solucionado de forma transversal, no solo en el preview de contratos.
-
-## Nota técnica
-
-No veo indicios de que el problema sea del backend o de las URLs firmadas; lo que encontré apunta a un problema de **arquitectura de layout/renderizado** en frontend. Por eso el arreglo correcto es unificar el sistema de preview, no seguir parchando un archivo cada vez.
+## ¿Procedo así?
