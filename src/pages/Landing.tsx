@@ -43,6 +43,7 @@ function lazyWithRetry<T extends ComponentType<unknown>>(
 
 // Lazy load heavy components with retry
 const TransformationCarousel = lazyWithRetry(() => import('@/components/landing/TransformationCarousel').then(m => ({ default: m.TransformationCarousel })));
+const EvoTransformationBlock = lazyWithRetry(() => import('@/components/landing/EvoTransformationBlock').then(m => ({ default: m.EvoTransformationBlock })));
 const FeaturesShowcase = lazyWithRetry(() => import('@/components/landing/FeaturesShowcase').then(m => ({ default: m.FeaturesShowcase })));
 const AnimatedStats = lazyWithRetry(() => import('@/components/landing/AnimatedStats').then(m => ({ default: m.AnimatedStats })));
 const TestimonialsCarousel = lazyWithRetry(() => import('@/components/landing/TestimonialsCarousel').then(m => ({ default: m.TestimonialsCarousel })));
@@ -843,11 +844,13 @@ export default function Landing() {
         </div>
       </motion.section>
 
-      {/* Transformation Journey Carousel - Right after hero */}
-      <TransformationCarousel />
+      {/* Emotional Transformation Block - Pain → Promise (UniversMind-inspired) */}
+      <EvoTransformationBlock />
 
-      {/* Pain Points - Show the problem */}
-      <PainPointsSection />
+      {/* PRESERVED (oculto del render activo, conservado por petición del usuario):
+          <TransformationCarousel />
+          <PainPointsSection />
+      */}
 
       {/* How It Works - 3 simple steps */}
       <HowItWorksSection />
