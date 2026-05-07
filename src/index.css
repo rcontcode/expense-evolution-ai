@@ -3112,25 +3112,25 @@
 }
 
 /* ──────────────────────────────────────────────────────────────
- * Surface texture overlay (additive, opt-in via useSurfaceTexture)
- * Default: --surface-texture is unset → overlay renders nothing.
- * Rendered as a fixed overlay above the app background but below
- * any interactive content, with pointer-events: none so it never
- * blocks clicks. Textures are intentionally subtle (~5-15% alpha).
+ * Surface texture (additive, opt-in via useSurfaceTexture).
+ * Applied as the BODY background only. Cards, popovers, dialogs
+ * and modals keep their own opaque backgrounds (bg-card,
+ * bg-popover, bg-background on Dialogs) so the texture never
+ * shows on top of content.
+ *
+ * To let the texture peek through, the outermost app shells
+ * (.mobile-app-shell and the desktop wrapper) become transparent
+ * only when a non-default texture is active.
  * ────────────────────────────────────────────────────────────── */
-body::after {
-  content: '';
-  position: fixed;
-  inset: 0;
+body[data-surface-texture]:not([data-surface-texture="none"]) {
   background-image: var(--surface-texture, none);
   background-size: var(--surface-texture-size, auto);
   background-repeat: repeat;
-  pointer-events: none;
-  z-index: 9998;
-  mix-blend-mode: multiply;
+  background-attachment: fixed;
 }
-.dark body::after {
-  mix-blend-mode: screen;
-  opacity: 0.5;
+body[data-surface-texture]:not([data-surface-texture="none"]) .mobile-app-shell,
+body[data-surface-texture]:not([data-surface-texture="none"]) #root > .flex.h-screen {
+  background-color: transparent !important;
 }
+
 
