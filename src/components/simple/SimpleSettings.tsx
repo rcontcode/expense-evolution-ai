@@ -1,10 +1,11 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Globe, Sparkles, LogOut, Settings as SettingsIcon } from 'lucide-react';
+import { Globe, Sparkles, LogOut, Settings as SettingsIcon, Layers } from 'lucide-react';
 import { SimplePageShell } from './SimplePageShell';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { SurfaceTextureSelector } from '@/components/settings/SurfaceTextureSelector';
 import {
   applyUiModeImmediately,
   openDashboardAfterUiModeChange,
