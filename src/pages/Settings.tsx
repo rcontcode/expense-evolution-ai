@@ -29,6 +29,7 @@ import { DisplayPreferencesCard } from '@/components/settings/DisplayPreferences
 import { ThemeCard } from '@/components/settings/ThemeCard';
 import { SurfaceTextureSelector } from '@/components/settings/SurfaceTextureSelector';
 import { ExperienceModeSwitcher } from '@/components/layout/ExperienceModeSwitcher';
+import { ProfessionalThemeSelector } from '@/components/settings/ProfessionalThemeSelector';
 import { useIsAdmin } from '@/hooks/data/useIsAdmin';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
