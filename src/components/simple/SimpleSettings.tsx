@@ -57,6 +57,25 @@ export function SimpleSettings() {
         </CardContent>
       </Card>
 
+      <Card>
+        <CardContent className="p-4 space-y-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+              <Layers className="h-5 w-5" />
+            </div>
+            <div className="min-w-0">
+              <div className="text-sm font-semibold">
+                {language === 'es' ? 'Apariencia' : 'Appearance'}
+              </div>
+              <div className="text-xs text-muted-foreground">
+                {language === 'es' ? 'Elegí una textura suave para el fondo' : 'Pick a soft background texture'}
+              </div>
+            </div>
+          </div>
+          <SurfaceTextureSelector compact />
+        </CardContent>
+      </Card>
+
       <Card className="border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
         <CardContent className="p-4 flex items-center justify-between gap-3 flex-wrap">
           <div className="flex items-center gap-3 min-w-0">
