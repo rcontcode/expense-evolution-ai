@@ -388,6 +388,21 @@ function SettingsAdvanced() {
                   <SurfaceTextureSelector />
                 </CardContent>
               </Card>
+              <Card className="mt-4">
+                <CardHeader>
+                  <CardTitle className="text-base">
+                    {language === 'es' ? 'Temas profesionales' : 'Professional themes'}
+                  </CardTitle>
+                  <CardDescription>
+                    {language === 'es'
+                      ? 'Look sobrio y enfocado. Cada tema cambia el conjunto completo de colores.'
+                      : 'Sober, focused look. Each theme swaps the full color palette.'}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ProfessionalThemeSelector />
+                </CardContent>
+              </Card>
             </SettingsSection>
 
             {/* Notification Preferences */}
