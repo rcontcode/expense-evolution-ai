@@ -3113,9 +3113,12 @@
 
 /* ──────────────────────────────────────────────────────────────
  * Surface texture overlay (additive, opt-in via useSurfaceTexture)
- * Default: --surface-texture is unset → ::before renders nothing.
+ * Default: --surface-texture is unset → overlay renders nothing.
+ * Rendered as a fixed overlay above the app background but below
+ * any interactive content, with pointer-events: none so it never
+ * blocks clicks. Textures are intentionally subtle (~5-15% alpha).
  * ────────────────────────────────────────────────────────────── */
-body::before {
+body::after {
   content: '';
   position: fixed;
   inset: 0;
@@ -3123,10 +3126,11 @@ body::before {
   background-size: var(--surface-texture-size, auto);
   background-repeat: repeat;
   pointer-events: none;
-  z-index: 0;
-  opacity: 1;
+  z-index: 9998;
+  mix-blend-mode: multiply;
 }
-body > #root {
-  position: relative;
-  z-index: 1;
+.dark body::after {
+  mix-blend-mode: screen;
+  opacity: 0.5;
 }
+
