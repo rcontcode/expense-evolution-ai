@@ -1324,6 +1324,24 @@ export const Layout = ({ children }: LayoutProps) => {
                     : (language === 'es' ? 'Modo Oscuro' : 'Dark Mode')}
                 </TooltipContent>
               </Tooltip>
+              {/* Texture Picker */}
+              <Popover>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <PopoverTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-7 w-7">
+                        <Layers className="h-4 w-4" />
+                      </Button>
+                    </PopoverTrigger>
+                  </TooltipTrigger>
+                  <TooltipContent side={collapsed ? "right" : "top"}>
+                    {language === 'es' ? 'Textura del fondo' : 'Background texture'}
+                  </TooltipContent>
+                </Tooltip>
+                <PopoverContent side="top" align="start" className="w-80 p-3">
+                  <SurfaceTextureSelector compact />
+                </PopoverContent>
+              </Popover>
 
               {/* Notifications */}
               <Tooltip>
