@@ -3110,3 +3110,23 @@
     max-height: 100vh;
   }
 }
+
+/* ──────────────────────────────────────────────────────────────
+ * Surface texture overlay (additive, opt-in via useSurfaceTexture)
+ * Default: --surface-texture is unset → ::before renders nothing.
+ * ────────────────────────────────────────────────────────────── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: var(--surface-texture, none);
+  background-size: var(--surface-texture-size, auto);
+  background-repeat: repeat;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 1;
+}
+body > #root {
+  position: relative;
+  z-index: 1;
+}
