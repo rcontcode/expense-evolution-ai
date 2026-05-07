@@ -27,6 +27,8 @@ import { resetOnboardingTutorial } from '@/components/guidance/OnboardingTutoria
 import { PageHeader } from '@/components/PageHeader';
 import { DisplayPreferencesCard } from '@/components/settings/DisplayPreferencesCard';
 import { ThemeCard } from '@/components/settings/ThemeCard';
+import { SurfaceTextureSelector } from '@/components/settings/SurfaceTextureSelector';
+import { ExperienceModeSwitcher } from '@/components/layout/ExperienceModeSwitcher';
 import { useIsAdmin } from '@/hooks/data/useIsAdmin';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -347,6 +349,44 @@ function SettingsAdvanced() {
               isMobile={isMobile}
             >
               <ThemeCard />
+            </SettingsSection>
+
+            {/* Appearance: surface texture + experience mode */}
+            <SettingsSection
+              title={language === 'es' ? 'Apariencia' : 'Appearance'}
+              icon={Settings2}
+              isMobile={isMobile}
+            >
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">
+                    {language === 'es' ? 'Modo de experiencia' : 'Experience mode'}
+                  </CardTitle>
+                  <CardDescription>
+                    {language === 'es'
+                      ? 'Tranquilo, Equilibrado o Pro. Combina modo de uso + textura del fondo.'
+                      : 'Quiet, Balanced or Pro. Combines UI mode + background texture.'}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ExperienceModeSwitcher />
+                </CardContent>
+              </Card>
+              <Card className="mt-4">
+                <CardHeader>
+                  <CardTitle className="text-base">
+                    {language === 'es' ? 'Textura del fondo' : 'Background texture'}
+                  </CardTitle>
+                  <CardDescription>
+                    {language === 'es'
+                      ? 'Elegí un patrón sutil para el fondo. No afecta colores ni tarjetas.'
+                      : 'Pick a subtle background pattern. Does not affect colors or cards.'}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <SurfaceTextureSelector />
+                </CardContent>
+              </Card>
             </SettingsSection>
 
             {/* Notification Preferences */}

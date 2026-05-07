@@ -19,6 +19,7 @@ import { useLoginMissionListener } from "@/hooks/data/useMissions";
 import { useAutoReminders } from "@/hooks/data/useAutoReminders";
 import { useGlobalReminders } from "@/hooks/utils/useGlobalReminders";
 import { Skeleton } from "@/components/ui/skeleton";
+import { SurfaceTextureMount } from "@/components/settings/SurfaceTextureMount";
 
 // Lazy loader with retry on failure (handles transient network/build errors)
 // Preview/dev: shorter backoff (200ms base) for faster interactive navigation
@@ -444,6 +445,7 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
       <TooltipProvider>
+        <SurfaceTextureMount />
         <Toaster />
         <Sonner />
         <Router>

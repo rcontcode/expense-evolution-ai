@@ -1,10 +1,11 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Globe, Sparkles, LogOut, Settings as SettingsIcon } from 'lucide-react';
+import { Globe, Sparkles, LogOut, Settings as SettingsIcon, Layers } from 'lucide-react';
 import { SimplePageShell } from './SimplePageShell';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { SurfaceTextureSelector } from '@/components/settings/SurfaceTextureSelector';
 import {
   applyUiModeImmediately,
   openDashboardAfterUiModeChange,
@@ -53,6 +54,25 @@ export function SimpleSettings() {
               EN
             </Button>
           </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent className="p-4 space-y-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+              <Layers className="h-5 w-5" />
+            </div>
+            <div className="min-w-0">
+              <div className="text-sm font-semibold">
+                {language === 'es' ? 'Apariencia' : 'Appearance'}
+              </div>
+              <div className="text-xs text-muted-foreground">
+                {language === 'es' ? 'Elegí una textura suave para el fondo' : 'Pick a soft background texture'}
+              </div>
+            </div>
+          </div>
+          <SurfaceTextureSelector compact />
         </CardContent>
       </Card>
 
