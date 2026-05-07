@@ -83,6 +83,9 @@ import { SocialLinks } from '@/components/SocialLinks';
 import { ChatAssistant } from '@/components/chat/ChatAssistant';
 import { CountryFlag } from '@/components/ui/country-flag';
 import { UiModeToggle } from '@/components/layout/UiModeToggle';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { SurfaceTextureSelector } from '@/components/settings/SurfaceTextureSelector';
+import { Layers } from 'lucide-react';
 import { useDisplayPreferences } from '@/hooks/data/useDisplayPreferences';
 import { isEssentialPath } from '@/lib/constants/focus-areas';
 
