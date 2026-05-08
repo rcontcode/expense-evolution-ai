@@ -14,7 +14,7 @@ User-agent: *
 Allow: /
 
 # Sitemap
-Sitemap: https://expense-evolution-ai.lovable.app/sitemap.xml
+Sitemap: https://evofinz.com/sitemap.xml
 
 # Disallow admin routes
 Disallow: /admin/
