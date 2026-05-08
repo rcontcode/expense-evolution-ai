@@ -38,23 +38,34 @@ function readStored(): ProfessionalThemePresetId {
   return DEFAULT_PROFESSIONAL_THEME;
 }
 
+function clearOverrides() {
+  if (typeof document === 'undefined') return;
+  const root = document.documentElement;
+  TOKEN_KEYS.forEach(([, cssVar]) => root.style.removeProperty(cssVar));
+  root.removeAttribute('data-pro-theme');
+}
+
 function applyToRoot(id: ProfessionalThemePresetId) {
   if (typeof document === 'undefined') return;
   const root = document.documentElement;
   if (id === 'none') {
-    TOKEN_KEYS.forEach(([, cssVar]) => root.style.removeProperty(cssVar));
-    root.removeAttribute('data-pro-theme');
+    clearOverrides();
     return;
   }
   const preset = getProfessionalTheme(id);
+  // Only override tokens when the preset's mode matches the current mode.
+  // This way, toggling dark/light reveals the base theme instead of being
+  // locked to the preset's palette.
+  const currentMode: 'light' | 'dark' = root.classList.contains('dark') ? 'dark' : 'light';
+  if (preset.mode !== currentMode) {
+    clearOverrides();
+    return;
+  }
   TOKEN_KEYS.forEach(([key, cssVar]) => {
     const v = preset.tokens[key];
     if (v) root.style.setProperty(cssVar, v);
   });
   root.setAttribute('data-pro-theme', id);
-  // Sync dark class so other components reading mode keep working visually.
-  if (preset.mode === 'dark') root.classList.add('dark');
-  else root.classList.remove('dark');
 }
 
 export function useProfessionalTheme(opts: { autoApply?: boolean } = {}) {
