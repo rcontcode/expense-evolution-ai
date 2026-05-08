@@ -80,9 +80,19 @@ export function useProfessionalTheme(opts: { autoApply?: boolean } = {}) {
     const handler = () => setPresetIdState(readStored());
     window.addEventListener(EVENT, handler);
     window.addEventListener('storage', handler);
+    const reapply = () => applyToRoot(readStored());
+    const observer = new MutationObserver((muts) => {
+      for (const m of muts) {
+        if (m.attributeName === 'class') { reapply(); break; }
+      }
+    });
+    if (typeof document !== 'undefined') {
+      observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    }
     return () => {
       window.removeEventListener(EVENT, handler);
       window.removeEventListener('storage', handler);
+      observer.disconnect();
     };
   }, []);
 
