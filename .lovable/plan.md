@@ -1,55 +1,51 @@
-## Implementación aditiva (sin eliminar nada)
+# Profesionalizar EvoFinz fuera de Lovable
 
-Regla de oro: **NO eliminar** temas visuales, modos, ni componentes actuales. Sólo añadir capas nuevas opcionales.
+## 1. Reemplazar favicons e íconos con el fénix
+Usar `src/assets/phoenix-no-bg.png` como fuente y generar (con ImageMagick vía nix) todos los tamaños:
 
-### 1. Sistema de texturas de superficie (nuevo, opcional)
-- **Crear** `src/config/surfaceTextures.ts` — portado tal cual de Fokuspark (7 texturas CSS puras: Liso, Cuadrícula, Punteado, Lino, Denim, Caliza, Kraft).
-- **Crear** `src/hooks/useSurfaceTexture.ts` — persiste en `localStorage` (`evofinz.surfaceTexture`), aplica `--surface-texture` y `--surface-texture-size` al `<body>`. Default: `none` (no cambia nada hasta que el usuario elija).
-- **Modificar** `src/index.css` — añadir AL FINAL una regla que use las CSS vars sólo si están definidas:
-  ```css
-  body::before {
-    content: '';
-    position: fixed; inset: 0;
-    background-image: var(--surface-texture, none);
-    background-size: var(--surface-texture-size, auto);
-    pointer-events: none; z-index: 0; opacity: 1;
-  }
-  ```
-  Así no toca el background existente, sólo añade una capa encima del fondo y debajo del contenido (`z-index: 0` con el resto del app en stacking contexts superiores).
-- **Crear** `src/components/settings/SurfaceTextureSelector.tsx` — grid visual de previews con el patrón actual de la app (3D candy, scale 1.04 hover).
-- **Montar** el hook en `src/App.tsx` (un `<SurfaceTextureMount />` invisible) para que la preferencia se aplique al cargar.
+| Archivo destino | Tamaño |
+|---|---|
+| `public/favicon.ico` | multi (16/32/48) |
+| `public/favicon-32.png` | 32×32 |
+| `public/favicon-16.png` | 16×16 |
+| `public/apple-touch-icon.png` | 180×180 (con fondo de marca, sin transparencia para iOS) |
+| `public/pwa-192x192.png` | 192×192 |
+| `public/pwa-512x512.png` | 512×512 |
+| `public/og-image.png` | 1200×630 (fénix + texto "EvoFinz — Evoluciona tus Finanzas" sobre fondo de marca) |
 
-### 2. Experience Mode Switcher (nuevo, opcional, encima del toggle existente)
-- **Crear** `src/hooks/useExperienceMode.ts` — 3 presets ("Tranquilo", "Equilibrado", "Pro") que aplican combinaciones de: `uiMode` + textura + (futuro) animaciones/sonidos. Persiste en `localStorage`.
-- **Crear** `src/components/layout/ExperienceModeSwitcher.tsx` — dropdown estilo Fokuspark.
-- **NO TOCAR** `UiModeToggle.tsx` ni `UiModeWelcomeDialog.tsx` — siguen funcionando igual. El nuevo switcher es complementario y opcional.
+Reemplazan los archivos actuales (logo Lovable / placeholders).
 
-### 3. Mejoras al Modo Simple (aditivas, sin romper nada)
-- **Modificar** `src/components/dashboard/SimpleModePageBanner.tsx` — añadir botón "X" para descartar (persiste en `localStorage`). NO eliminar el banner, sólo hacerlo dismissible.
-- **Modificar** `src/components/simple/SimpleSettings.tsx` — AÑADIR (no quitar) tarjeta de Apariencia con `SurfaceTextureSelector` compacto y toggle de tema claro/oscuro. Las tarjetas existentes (Idioma, Modo, Más ajustes, Cerrar sesión) quedan intactas.
-- **Modificar** `src/pages/Settings.tsx` — añadir nueva sección "Apariencia" con el selector completo de texturas + Experience Mode. No tocar las secciones existentes.
+## 2. Crear `public/manifest.webmanifest`
+Hoy `index.html` lo referencia pero no existe. Crearlo con:
+- `name`: "EvoFinz — Evoluciona tus Finanzas"
+- `short_name`: "EvoFinz"
+- `theme_color`: `#8B5CF6` (consistente con `index.html`)
+- `background_color`: acorde a la marca
+- `display`: `standalone`
+- `start_url`: `/`
+- `icons`: referencias a `pwa-192x192.png` y `pwa-512x512.png` (con `purpose: "any maskable"`)
 
-### 4. Nada más se elimina
-- `SimpleBanking`, `SimpleBills`, `SimpleExpenses`, `SimpleClients`, `SimpleIncome`, `SimpleReports` quedan exactamente como están.
-- `Layout.tsx` no se toca (la nav inferior sigue igual).
-- Los temas, presets de color, gradients y demás no se tocan.
+Nota: solo manifest, sin service worker ni `vite-plugin-pwa` (mantiene la app instalable sin riesgos de cache).
 
-## Archivos NUEVOS
-1. `src/config/surfaceTextures.ts`
-2. `src/hooks/useSurfaceTexture.ts`
-3. `src/components/settings/SurfaceTextureSelector.tsx`
-4. `src/components/settings/SurfaceTextureMount.tsx` (componente vacío que sólo activa el hook)
-5. `src/hooks/useExperienceMode.ts`
-6. `src/components/layout/ExperienceModeSwitcher.tsx`
+## 3. Actualizar URLs al dominio real `evofinz.com`
+- `public/sitemap.xml`: reemplazar `expense-evolution-ai.lovable.app` → `evofinz.com` en los 5 `<loc>` y subir `lastmod`.
+- `public/robots.txt`: actualizar línea `Sitemap:` a `https://evofinz.com/sitemap.xml`.
+- `index.html`: ya tiene `og:url` y canonical en `evofinz.com` ✓ (sin cambios).
 
-## Archivos MODIFICADOS (sólo añadiendo)
-1. `src/index.css` — append de las CSS vars + regla `body::before`
-2. `src/App.tsx` — montar `<SurfaceTextureMount />`
-3. `src/components/simple/SimpleSettings.tsx` — añadir tarjeta Apariencia
-4. `src/components/dashboard/SimpleModePageBanner.tsx` — añadir botón dismiss
-5. `src/pages/Settings.tsx` — añadir sección Apariencia
+## 4. Ocultar el badge "Edit with Lovable"
+Llamar `publish_settings--set_badge_visibility` con `hide_badge: true` (requiere aprobación tuya y plan Pro+).
 
-## QA
-- Verificar visualmente cada textura en preview (capturar screenshots).
-- Confirmar que con textura "none" (default) la app se ve **idéntica** a hoy.
-- Confirmar que el toggle Simple/Avanzado original sigue funcionando.
+## 5. Pasos manuales que tenés que hacer vos (te los detallo después de implementar)
+Resumen rápido para que sepas qué viene:
+- Dar de alta `evofinz.com` en Google Search Console.
+- Verificar propiedad (TXT en Cloudflare).
+- Enviar el sitemap.
+- Pedir indexación de la home.
+- Probar previews en WhatsApp/LinkedIn.
+
+Te paso el paso a paso detallado una vez completados los puntos 1–4.
+
+## Detalle técnico
+- Generación de imágenes: `nix run nixpkgs#imagemagick -- ...` (convert/magick). Para el OG image: componer fénix sobre fondo `#0F0A1F` con texto blanco usando `-pointsize` y `-annotate`.
+- QA visual: convertir cada PNG generado a vista previa y verificar antes de entregar.
+- No tocar `src/integrations/supabase/*`, `.env`, ni `supabase/config.toml`.
