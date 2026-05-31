@@ -158,7 +158,7 @@ export const QuizHero = ({ onStartQuiz, referralInfo, isLoadingReferral }: QuizH
   const hasValidReferral = referralInfo?.isValid && referralInfo?.referrerName;
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 py-12 relative z-10">
+    <div className="min-h-[100svh] flex flex-col items-center justify-start px-4 pb-8 pt-12 relative z-10 sm:justify-center sm:py-12">
       {/* Language Selector */}
       <div className="absolute top-4 right-4 z-30">
         <LanguageSelector />
