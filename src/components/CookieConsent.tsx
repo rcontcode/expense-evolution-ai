@@ -95,14 +95,14 @@ export function CookieConsent() {
 
   return (
     <div
-      className="fixed left-3 right-3 z-40 pointer-events-none sm:left-auto sm:right-4 sm:bottom-4 sm:max-w-sm"
-      style={{ bottom: 'calc(var(--mobile-bottom-nav-height) + env(safe-area-inset-bottom, 0px) + 0.75rem)' }}
+      className="fixed left-3 right-3 bottom-3 z-40 pointer-events-none sm:left-auto sm:right-4 sm:bottom-4 sm:max-w-sm"
+      style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 0.75rem)' }}
     >
       <div className="pointer-events-auto">
-        <div className="bg-card border-2 border-border/60 rounded-xl sm:rounded-2xl shadow-2xl shadow-primary/5 overflow-hidden">
+        <div className="max-h-[48dvh] overflow-y-auto bg-card border-2 border-border/60 rounded-xl sm:rounded-2xl shadow-2xl shadow-primary/5">
           {/* Header */}
           <div className="p-3 sm:p-4 md:p-6">
-            <div className="flex items-start gap-4">
+            <div className="flex items-start gap-3 sm:gap-4">
               <div className="hidden sm:flex h-12 w-12 rounded-xl bg-primary/10 items-center justify-center shrink-0">
                 <Cookie className="h-6 w-6 text-primary" />
               </div>
@@ -110,9 +110,9 @@ export function CookieConsent() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
                   <Shield className="h-4 w-4 text-primary sm:hidden" />
-                  <h3 className="font-semibold text-foreground">{t.title}</h3>
+                  <h3 className="text-sm font-semibold text-foreground sm:text-base">{t.title}</h3>
                 </div>
-                <p className="text-xs sm:text-sm text-muted-foreground">
+                <p className="text-[11px] leading-snug text-muted-foreground sm:text-sm">
                   {t.description}{' '}
                   <Link to="/privacy" className="text-primary hover:underline">
                     {t.privacy}
@@ -181,28 +181,31 @@ export function CookieConsent() {
           </div>
 
           {/* Actions */}
-          <div className="px-3 pb-3 sm:px-4 sm:pb-4 md:px-6 md:pb-6 flex flex-wrap gap-2 justify-end">
+          <div className="flex flex-nowrap justify-end gap-2 px-3 pb-3 sm:flex-wrap sm:px-4 sm:pb-4 md:px-6 md:pb-6">
             {!showDetails ? (
               <>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => setShowDetails(true)}
-                  className="gap-2"
+                  className="h-10 shrink-0 gap-1.5 px-3 text-xs sm:gap-2 sm:text-sm"
+                  aria-label={t.customize}
                 >
                   <Settings className="h-4 w-4" />
-                  {t.customize}
+                  <span className="hidden sm:inline">{t.customize}</span>
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={handleAcceptNecessary}
+                  className="h-10 shrink min-w-0 px-3 text-xs sm:text-sm"
                 >
                   {t.acceptNecessary}
                 </Button>
                 <Button
                   size="sm"
                   onClick={handleAcceptAll}
+                  className="h-10 shrink-0 px-3 text-xs sm:text-sm"
                 >
                   {t.acceptAll}
                 </Button>
