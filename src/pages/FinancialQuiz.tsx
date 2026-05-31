@@ -114,7 +114,7 @@ const FinancialQuiz = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 relative overflow-x-hidden text-white">
+    <div className="min-h-[100svh] bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 relative overflow-x-hidden text-white">
       <ThemeBackground />
 
       {result ? (
