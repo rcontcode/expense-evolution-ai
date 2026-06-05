@@ -1667,6 +1667,17 @@
     transition: background-color 0.3s ease, color 0.3s ease;
   }
 
+  html.public-scroll-page,
+  body.public-scroll-page {
+    height: auto !important;
+    min-height: 100%;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior-y: auto !important;
+    touch-action: pan-y !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-heading);
     @apply tracking-tight;
