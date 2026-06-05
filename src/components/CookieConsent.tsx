@@ -95,7 +95,7 @@ export function CookieConsent() {
 
   return (
     <div
-      className="fixed left-3 right-3 top-3 z-40 pointer-events-none sm:left-auto sm:right-4 sm:top-auto sm:bottom-4 sm:max-w-sm"
+      className="fixed left-2 right-2 top-3 z-40 pointer-events-none sm:left-auto sm:right-4 sm:top-auto sm:bottom-4 sm:max-w-sm"
       style={{ top: 'calc(env(safe-area-inset-top, 0px) + 0.75rem)' }}
     >
       <div className="pointer-events-auto touch-pan-y">
@@ -184,7 +184,7 @@ export function CookieConsent() {
           </div>
 
           {/* Actions */}
-          <div className="flex flex-nowrap justify-end gap-1.5 px-2 pb-2 sm:flex-wrap sm:gap-2 sm:px-4 sm:pb-4 md:px-6 md:pb-6">
+          <div className="grid grid-cols-[auto_1fr_1fr] gap-1.5 px-2 pb-2 sm:flex sm:flex-wrap sm:justify-end sm:gap-2 sm:px-4 sm:pb-4 md:px-6 md:pb-6">
             {!showDetails ? (
               <>
                 <Button
@@ -201,14 +201,14 @@ export function CookieConsent() {
                   variant="outline"
                   size="sm"
                   onClick={handleAcceptNecessary}
-                  className="h-9 shrink min-w-0 px-2.5 text-xs sm:h-10 sm:px-3 sm:text-sm"
+                  className="h-9 min-w-0 px-2 text-[11px] sm:h-10 sm:px-3 sm:text-sm"
                 >
                   {t.acceptNecessary}
                 </Button>
                 <Button
                   size="sm"
                   onClick={handleAcceptAll}
-                  className="h-9 shrink-0 px-2.5 text-xs sm:h-10 sm:px-3 sm:text-sm"
+                  className="h-9 min-w-0 px-2 text-[11px] sm:h-10 sm:px-3 sm:text-sm"
                 >
                   {t.acceptAll}
                 </Button>
