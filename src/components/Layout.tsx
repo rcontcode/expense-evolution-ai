@@ -352,6 +352,7 @@ export const Layout = ({ children }: LayoutProps) => {
   const { data: unreadCount = 0 } = useUnreadNotifications();
   const { uiMode } = useDisplayPreferences();
   const isSimpleMode = uiMode === 'simple';
+  const isPublicRoute = ['/', '/home', '/quiz', '/landing', '/legal', '/privacy', '/terms', '/status', '/about', '/auth', '/reset-password', '/install', '/unsubscribe'].includes(location.pathname);
 
   // Collapsible sidebar sections (Advanced mode) — persist in localStorage
   const SIDEBAR_SECTIONS_KEY = 'sidebar-collapsed-sections';
@@ -462,15 +463,17 @@ export const Layout = ({ children }: LayoutProps) => {
     return () => root.classList.remove('stability-mode');
   }, []);
 
-  // Mobile app shell owns vertical scroll. Prevent body/window from competing with it.
+  // Mobile app shell owns vertical scroll. Never apply this lock to public pages.
   useEffect(() => {
-    document.body.classList.toggle('app-mobile-scroll-lock', isMobile);
-    document.documentElement.classList.toggle('app-mobile-scroll-lock', isMobile);
+    const shouldLockDocumentScroll = isMobile && !isPublicRoute;
+
+    document.body.classList.toggle('app-mobile-scroll-lock', shouldLockDocumentScroll);
+    document.documentElement.classList.toggle('app-mobile-scroll-lock', shouldLockDocumentScroll);
     return () => {
       document.body.classList.remove('app-mobile-scroll-lock');
       document.documentElement.classList.remove('app-mobile-scroll-lock');
     };
-  }, [isMobile]);
+  }, [isMobile, isPublicRoute]);
 
   // Unified submenu navigation handler with highlight effect (8 seconds)
   const handleSubmenuNavigation = useCallback((path: string) => {
