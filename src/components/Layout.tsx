@@ -352,7 +352,7 @@ export const Layout = ({ children }: LayoutProps) => {
   const { data: unreadCount = 0 } = useUnreadNotifications();
   const { uiMode } = useDisplayPreferences();
   const isSimpleMode = uiMode === 'simple';
-  const isPublicRoute = ['/', '/home', '/quiz', '/landing', '/legal', '/privacy', '/terms', '/status', '/about', '/auth', '/reset-password', '/install', '/unsubscribe'].includes(location.pathname);
+  const isPublicRoute = ['/', '/home', '/evo', '/quiz', '/landing', '/legal', '/privacy', '/terms', '/status', '/about', '/auth', '/reset-password', '/install', '/unsubscribe'].includes(location.pathname);
 
   // Collapsible sidebar sections (Advanced mode) — persist in localStorage
   const SIDEBAR_SECTIONS_KEY = 'sidebar-collapsed-sections';
