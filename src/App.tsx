@@ -467,6 +467,10 @@ const App = () => (
                     <Suspense fallback={<PageLoader />}>
                       <Routes>
                         <Route path="/" element={<AuthenticatedRedirect><Landing /></AuthenticatedRedirect>} />
+                        <Route path="/1" element={<FinancialQuiz />} />
+                        <Route path="/home" element={<FinancialQuiz />} />
+                        <Route path="/evo" element={<FinancialQuiz />} />
+                        <Route path="/index.html" element={<FinancialQuiz />} />
                         <Route path="/quiz" element={<FinancialQuiz />} />
                         <Route path="/landing" element={<Navigate to="/" replace />} />
                         <Route path="/legal" element={<Legal />} />

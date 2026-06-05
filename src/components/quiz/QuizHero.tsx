@@ -158,7 +158,7 @@ export const QuizHero = ({ onStartQuiz, referralInfo, isLoadingReferral }: QuizH
   const hasValidReferral = referralInfo?.isValid && referralInfo?.referrerName;
 
   return (
-    <div className="min-h-[100svh] flex flex-col items-center justify-start px-4 pb-8 pt-12 relative z-10 sm:justify-center sm:py-12">
+    <div className="min-h-[100svh] w-full max-w-full touch-pan-y flex flex-col items-center justify-start overflow-x-hidden px-3 pb-28 pt-8 relative z-10 sm:justify-center sm:px-4 sm:py-12">
       {/* Language Selector */}
       <div className="absolute top-4 right-4 z-30">
         <LanguageSelector />
@@ -281,7 +281,7 @@ export const QuizHero = ({ onStartQuiz, referralInfo, isLoadingReferral }: QuizH
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="mb-6"
+        className="mb-3 sm:mb-6"
       >
         <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 text-amber-400 text-sm font-medium backdrop-blur-sm">
           <Sparkles className="w-4 h-4" />
@@ -294,7 +294,7 @@ export const QuizHero = ({ onStartQuiz, referralInfo, isLoadingReferral }: QuizH
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.6, delay: 0.1 }}
-        className="mb-8"
+        className="mb-4 sm:mb-8"
       >
         <PhoenixLogo variant="hero" showText={false} showEffects={true} />
       </motion.div>
@@ -304,7 +304,7 @@ export const QuizHero = ({ onStartQuiz, referralInfo, isLoadingReferral }: QuizH
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.2 }}
-        className="text-4xl md:text-5xl lg:text-6xl font-bold text-center mb-6 text-white"
+        className="w-full max-w-[22rem] break-words text-3xl md:text-5xl lg:text-6xl font-bold text-center leading-tight mb-4 text-white sm:max-w-3xl sm:text-4xl sm:mb-6"
       >
         {t.title}{" "}
         <span className="bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 bg-clip-text text-transparent">
@@ -317,7 +317,7 @@ export const QuizHero = ({ onStartQuiz, referralInfo, isLoadingReferral }: QuizH
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.3 }}
-        className="text-lg md:text-xl text-slate-300 text-center max-w-2xl mb-8"
+        className="w-full max-w-[22rem] text-base md:text-xl text-slate-300 text-center mb-5 sm:max-w-2xl sm:text-lg sm:mb-8"
       >
         {t.subtitle}
       </motion.p>
@@ -327,7 +327,7 @@ export const QuizHero = ({ onStartQuiz, referralInfo, isLoadingReferral }: QuizH
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.4 }}
-        className="flex flex-wrap items-center justify-center gap-4 mb-8"
+        className="flex w-full max-w-[22rem] flex-wrap items-center justify-center gap-2 mb-5 sm:max-w-none sm:gap-4 sm:mb-8"
       >
         <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800/50 backdrop-blur-sm border border-slate-700/50">
           <Clock className="w-4 h-4 text-amber-400" />
@@ -363,17 +363,17 @@ export const QuizHero = ({ onStartQuiz, referralInfo, isLoadingReferral }: QuizH
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.6, delay: 0.5 }}
-        className="flex flex-col items-center gap-4 mb-12"
+        className="flex flex-col items-center gap-3 mb-8 sm:gap-4 sm:mb-12"
       >
         <Button
           onClick={onStartQuiz}
           size="lg"
-          className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 hover:from-amber-600 hover:via-orange-600 hover:to-amber-600 text-white font-semibold text-lg px-10 py-7 rounded-2xl shadow-lg shadow-amber-500/30 hover:shadow-xl hover:shadow-amber-500/40 transition-all duration-300 hover:scale-105 border border-amber-400/30"
+          className="w-full max-w-[20rem] bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 hover:from-amber-600 hover:via-orange-600 hover:to-amber-600 text-white font-semibold text-base px-5 py-6 rounded-2xl shadow-lg shadow-amber-500/30 hover:shadow-xl hover:shadow-amber-500/40 transition-all duration-300 hover:scale-105 border border-amber-400/30 sm:w-auto sm:max-w-none sm:text-lg sm:px-10 sm:py-7"
         >
           <Flame className="w-6 h-6 mr-2" />
           {t.cta}
         </Button>
-        <p className="text-sm text-slate-500 flex items-center gap-2">
+        <p className="max-w-[20rem] text-center text-sm text-slate-500 flex flex-wrap items-center justify-center gap-2">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
           {t.ctaSubtext}
         </p>
@@ -394,7 +394,7 @@ export const QuizHero = ({ onStartQuiz, referralInfo, isLoadingReferral }: QuizH
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.6, delay: 0.6 }}
-        className="flex items-center gap-3 mb-6 px-4 py-2 rounded-full bg-slate-800/30 backdrop-blur-sm border border-slate-700/30"
+        className="flex items-center gap-3 mb-4 px-3 py-2 rounded-full bg-slate-800/30 backdrop-blur-sm border border-slate-700/30 sm:mb-6 sm:px-4"
       >
         <div className="flex -space-x-2">
           {[
@@ -425,7 +425,7 @@ export const QuizHero = ({ onStartQuiz, referralInfo, isLoadingReferral }: QuizH
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.7 }}
-        className="mb-12"
+        className="mb-8 sm:mb-12"
       >
         <LiveSocialProof />
       </motion.div>
@@ -458,7 +458,7 @@ export const QuizHero = ({ onStartQuiz, referralInfo, isLoadingReferral }: QuizH
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.6, delay: 1 }}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2"
+        className="pointer-events-none absolute bottom-8 left-1/2 hidden -translate-x-1/2 sm:block"
       >
         <motion.div
           animate={{ y: [0, 8, 0] }}

@@ -95,13 +95,16 @@ export function CookieConsent() {
 
   return (
     <div
-      className="fixed left-3 right-3 top-3 z-40 pointer-events-none sm:left-auto sm:right-4 sm:top-auto sm:bottom-4 sm:max-w-sm"
+      className="fixed left-2 right-2 top-3 z-40 pointer-events-none sm:left-auto sm:right-4 sm:top-auto sm:bottom-4 sm:max-w-sm"
       style={{ top: 'calc(env(safe-area-inset-top, 0px) + 0.75rem)' }}
     >
-      <div className="pointer-events-auto">
-        <div className="max-h-[38dvh] overflow-y-auto bg-card border-2 border-border/60 rounded-xl shadow-2xl shadow-primary/5 sm:max-h-[48dvh] sm:rounded-2xl">
+      <div className="pointer-events-auto touch-pan-y">
+        <div className={cn(
+          "bg-card border-2 border-border/60 rounded-xl shadow-2xl shadow-primary/5 sm:max-h-[48dvh] sm:overflow-y-auto sm:rounded-2xl",
+          showDetails ? "max-h-[36dvh] overflow-y-auto" : "overflow-visible"
+        )}>
           {/* Header */}
-          <div className="p-2.5 sm:p-4 md:p-6">
+          <div className="p-2 sm:p-4 md:p-6">
             <div className="flex items-start gap-3 sm:gap-4">
               <div className="hidden sm:flex h-12 w-12 rounded-xl bg-primary/10 items-center justify-center shrink-0">
                 <Cookie className="h-6 w-6 text-primary" />
@@ -112,7 +115,7 @@ export function CookieConsent() {
                   <Shield className="h-4 w-4 text-primary sm:hidden" />
                   <h3 className="text-sm font-semibold text-foreground sm:text-base">{t.title}</h3>
                 </div>
-                <p className="text-[10px] leading-snug text-muted-foreground sm:text-sm">
+                <p className="text-[10px] leading-tight text-muted-foreground sm:text-sm sm:leading-snug">
                   {t.description}{' '}
                   <Link to="/privacy" className="text-primary hover:underline">
                     {t.privacy}
@@ -181,14 +184,14 @@ export function CookieConsent() {
           </div>
 
           {/* Actions */}
-          <div className="flex flex-nowrap justify-end gap-2 px-2.5 pb-2.5 sm:flex-wrap sm:px-4 sm:pb-4 md:px-6 md:pb-6">
+          <div className="grid grid-cols-[auto_1fr_1fr] gap-1.5 px-2 pb-2 sm:flex sm:flex-wrap sm:justify-end sm:gap-2 sm:px-4 sm:pb-4 md:px-6 md:pb-6">
             {!showDetails ? (
               <>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => setShowDetails(true)}
-                  className="h-10 shrink-0 gap-1.5 px-3 text-xs sm:gap-2 sm:text-sm"
+                  className="h-9 shrink-0 gap-1.5 px-2.5 text-xs sm:h-10 sm:gap-2 sm:px-3 sm:text-sm"
                   aria-label={t.customize}
                 >
                   <Settings className="h-4 w-4" />
@@ -198,14 +201,14 @@ export function CookieConsent() {
                   variant="outline"
                   size="sm"
                   onClick={handleAcceptNecessary}
-                  className="h-10 shrink min-w-0 px-3 text-xs sm:text-sm"
+                  className="h-9 min-w-0 px-2 text-[11px] sm:h-10 sm:px-3 sm:text-sm"
                 >
                   {t.acceptNecessary}
                 </Button>
                 <Button
                   size="sm"
                   onClick={handleAcceptAll}
-                  className="h-10 shrink-0 px-3 text-xs sm:text-sm"
+                  className="h-9 min-w-0 px-2 text-[11px] sm:h-10 sm:px-3 sm:text-sm"
                 >
                   {t.acceptAll}
                 </Button>

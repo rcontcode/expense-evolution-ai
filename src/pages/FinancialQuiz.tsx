@@ -41,6 +41,21 @@ const FinancialQuiz = () => {
   const [referralInfo, setReferralInfo] = useState<ReferralInfo | null>(null);
   const [isLoadingReferral, setIsLoadingReferral] = useState(false);
 
+  useEffect(() => {
+    const root = document.documentElement;
+    const body = document.body;
+
+    root.classList.remove("app-mobile-scroll-lock");
+    body.classList.remove("app-mobile-scroll-lock");
+    root.classList.add("public-scroll-page");
+    body.classList.add("public-scroll-page");
+
+    return () => {
+      root.classList.remove("public-scroll-page");
+      body.classList.remove("public-scroll-page");
+    };
+  }, []);
+
   // Check for referral code in URL
   useEffect(() => {
     const refCode = searchParams.get("ref");
@@ -114,7 +129,7 @@ const FinancialQuiz = () => {
   };
 
   return (
-    <div className="min-h-[100svh] bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 relative overflow-x-hidden text-white">
+    <div className="min-h-[100svh] bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 relative overflow-x-hidden overflow-y-auto overscroll-y-auto touch-pan-y text-white">
       <ThemeBackground />
 
       {result ? (
