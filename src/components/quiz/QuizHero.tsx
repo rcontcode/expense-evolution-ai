@@ -158,7 +158,7 @@ export const QuizHero = ({ onStartQuiz, referralInfo, isLoadingReferral }: QuizH
   const hasValidReferral = referralInfo?.isValid && referralInfo?.referrerName;
 
   return (
-    <div className="min-h-[100svh] touch-pan-y flex flex-col items-center justify-start px-3 pb-28 pt-8 relative z-10 sm:justify-center sm:px-4 sm:py-12">
+    <div className="min-h-[100svh] w-full max-w-full touch-pan-y flex flex-col items-center justify-start overflow-x-hidden px-3 pb-28 pt-8 relative z-10 sm:justify-center sm:px-4 sm:py-12">
       {/* Language Selector */}
       <div className="absolute top-4 right-4 z-30">
         <LanguageSelector />
@@ -304,7 +304,7 @@ export const QuizHero = ({ onStartQuiz, referralInfo, isLoadingReferral }: QuizH
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.2 }}
-        className="text-3xl md:text-5xl lg:text-6xl font-bold text-center mb-4 text-white sm:text-4xl sm:mb-6"
+        className="w-full max-w-[22rem] break-words text-3xl md:text-5xl lg:text-6xl font-bold text-center leading-tight mb-4 text-white sm:max-w-3xl sm:text-4xl sm:mb-6"
       >
         {t.title}{" "}
         <span className="bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 bg-clip-text text-transparent">
@@ -317,7 +317,7 @@ export const QuizHero = ({ onStartQuiz, referralInfo, isLoadingReferral }: QuizH
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.3 }}
-        className="text-base md:text-xl text-slate-300 text-center max-w-2xl mb-5 sm:text-lg sm:mb-8"
+        className="w-full max-w-[22rem] text-base md:text-xl text-slate-300 text-center mb-5 sm:max-w-2xl sm:text-lg sm:mb-8"
       >
         {t.subtitle}
       </motion.p>
@@ -327,7 +327,7 @@ export const QuizHero = ({ onStartQuiz, referralInfo, isLoadingReferral }: QuizH
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.4 }}
-        className="flex flex-wrap items-center justify-center gap-2 mb-5 sm:gap-4 sm:mb-8"
+        className="flex w-full max-w-[22rem] flex-wrap items-center justify-center gap-2 mb-5 sm:max-w-none sm:gap-4 sm:mb-8"
       >
         <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800/50 backdrop-blur-sm border border-slate-700/50">
           <Clock className="w-4 h-4 text-amber-400" />
@@ -368,12 +368,12 @@ export const QuizHero = ({ onStartQuiz, referralInfo, isLoadingReferral }: QuizH
         <Button
           onClick={onStartQuiz}
           size="lg"
-          className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 hover:from-amber-600 hover:via-orange-600 hover:to-amber-600 text-white font-semibold text-base px-6 py-6 rounded-2xl shadow-lg shadow-amber-500/30 hover:shadow-xl hover:shadow-amber-500/40 transition-all duration-300 hover:scale-105 border border-amber-400/30 sm:text-lg sm:px-10 sm:py-7"
+          className="w-full max-w-[20rem] bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 hover:from-amber-600 hover:via-orange-600 hover:to-amber-600 text-white font-semibold text-base px-5 py-6 rounded-2xl shadow-lg shadow-amber-500/30 hover:shadow-xl hover:shadow-amber-500/40 transition-all duration-300 hover:scale-105 border border-amber-400/30 sm:w-auto sm:max-w-none sm:text-lg sm:px-10 sm:py-7"
         >
           <Flame className="w-6 h-6 mr-2" />
           {t.cta}
         </Button>
-        <p className="text-sm text-slate-500 flex items-center gap-2">
+        <p className="max-w-[20rem] text-center text-sm text-slate-500 flex flex-wrap items-center justify-center gap-2">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
           {t.ctaSubtext}
         </p>
