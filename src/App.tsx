@@ -468,6 +468,7 @@ const App = () => (
                       <Routes>
                         <Route path="/" element={<AuthenticatedRedirect><Landing /></AuthenticatedRedirect>} />
                         <Route path="/home" element={<FinancialQuiz />} />
+                        <Route path="/evo" element={<FinancialQuiz />} />
                         <Route path="/quiz" element={<FinancialQuiz />} />
                         <Route path="/landing" element={<Navigate to="/" replace />} />
                         <Route path="/legal" element={<Legal />} />
