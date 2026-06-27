@@ -20,6 +20,8 @@ import {
 import { format } from 'date-fns';
 import { es as esLocale } from 'date-fns/locale';
 import { toast } from 'sonner';
+import { UserActivityCard } from './UserActivityCard';
+
 
 interface UserDetailSheetProps {
   userId: string | null;
