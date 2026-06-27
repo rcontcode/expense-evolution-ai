@@ -19,7 +19,7 @@ interface Props {
   ruleName?: string
 }
 
-const UniversmindLittleNurtureEmail = ({ subject, body, ctaText, ctaUrl, ruleName }: Props) => (
+const UniversmindLittleNurtureEmail = ({ subject, body, ctaText, ctaUrl }: Props) => (
   <Html lang="es" dir="ltr">
     <Head />
     <Preview>{subject || 'Universmind Little'}</Preview>
@@ -42,7 +42,6 @@ const UniversmindLittleNurtureEmail = ({ subject, body, ctaText, ctaUrl, ruleNam
           <Hr style={hr} />
           <Text style={footer}>
             {SITE_NAME} — la ciencia de criar, en simple
-            {ruleName ? ` · ${ruleName}` : ''}
           </Text>
         </Container>
       </Container>
