@@ -15,9 +15,9 @@ import { supabase } from '@/integrations/supabase/client';
 type Event = {
   user_id: string;
   feature_name: string;
-  page_path: string | null;
+  page_path: string;
   action_type: string;
-  metadata: Record<string, unknown> | null;
+  metadata: any;
   session_id: string;
 };
 
