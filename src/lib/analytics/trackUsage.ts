@@ -105,7 +105,7 @@ export function trackFeature(
 ) {
   void push({
     feature_name: featureName,
-    page_path: typeof window !== 'undefined' ? window.location.pathname : null,
+    page_path: typeof window !== 'undefined' ? window.location.pathname : '',
     action_type: actionType,
     metadata: metadata ?? null,
   });
