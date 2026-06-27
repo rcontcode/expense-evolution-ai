@@ -4,13 +4,16 @@ const corsHeaders = {
 };
 
 // Reemplaza los merge tags del copy fijo de nurturing: {{name}}, {{stage}}.
-// Si el lead no trae una etapa explícita, usa un fallback que lee natural.
+// La etapa del bebé viene del quiz Brújula (Universmind Little) en lead.situation
+// (o baby_stage/stage/metadata.situacion). Si no hay, usa un fallback que lee natural.
 function renderVars(text: string, lead: any): string {
   const firstName = String(lead?.name || '').trim().split(/\s+/)[0] || '';
-  const stage = lead?.baby_stage || lead?.stage || 'que tu bebé vive ahora';
+  const stageRaw = lead?.baby_stage || lead?.stage || lead?.situation
+    || lead?.metadata?.situacion || lead?.metadata?.situation || '';
+  const stage = String(stageRaw).trim() || 'que tu bebé vive ahora';
   return String(text || '')
     .replace(/\{\{\s*name\s*\}\}/gi, firstName)
-    .replace(/\{\{\s*stage\s*\}\}/gi, String(stage));
+    .replace(/\{\{\s*stage\s*\}\}/gi, stage);
 }
 
 Deno.serve(async (req) => {
