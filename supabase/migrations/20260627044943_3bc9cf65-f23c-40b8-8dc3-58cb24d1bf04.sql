@@ -1,0 +1,2 @@
+UPDATE public.automation_rules SET is_enabled=true WHERE name='Universmind Little — Inscribir Brújula';
+INSERT INTO public.quiz_leads (name, email, source) VALUES ('Rudy', 'rcontreraslittle@gmail.com', 'universmind_test') RETURNING id;
