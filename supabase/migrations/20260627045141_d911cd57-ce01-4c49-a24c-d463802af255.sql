@@ -1,0 +1,1 @@
+UPDATE public.lead_nurturing_log SET status='pending', executed_at=NULL, scheduled_for=now() WHERE lead_id='821c5ed0-480a-419a-83d4-ee803d8bc6f0' AND step_index=0;
