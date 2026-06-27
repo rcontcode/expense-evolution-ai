@@ -11,7 +11,7 @@ interface Props { recipientName?: string; body?: string; ruleName?: string }
 const UniversMindReactivationEmail = ({ recipientName, body, ruleName }: Props) => (
   <Html lang="es" dir="ltr">
     <Head />
-    <Preview>{recipientName ? `${recipientName}, tu bienestar te espera` : 'Tu bienestar te espera'} — {SITE_NAME}</Preview>
+    <Preview>{recipientName ? `${recipientName}, te seguimos acompañando` : 'Te seguimos acompañando'} — {SITE_NAME}</Preview>
     <Body style={main}>
       <Container style={wrapper}>
         <Section style={header}>
@@ -20,19 +20,19 @@ const UniversMindReactivationEmail = ({ recipientName, body, ruleName }: Props) 
         </Section>
         <Container style={card}>
           <Heading style={h1}>
-            {recipientName ? `${recipientName}, tu bienestar te espera 🌌` : 'Tu bienestar te espera 🌌'}
+            {recipientName ? `${recipientName}, te seguimos acompañando 🌌` : 'Te seguimos acompañando 🌌'}
           </Heading>
           <Text style={textStyle}>
-            {body || 'Hace tiempo que no te vemos en UniversMind. Tu mente merece ese espacio de calma y reflexión. Hemos añadido nuevas meditaciones y herramientas de journaling.'}
+            {body || 'Hace tiempo que no te vemos en Universmind. Volvimos con nuevas guías y herramientas para acompañarte en la crianza de tus hijos.'}
           </Text>
           <Section style={ctaSection}>
-            <Button style={ctaButton} href="https://universmind.com/dashboard">
-              Retomar mi práctica
+            <Button style={ctaButton} href="https://universmind.com">
+              Volver a Universmind
             </Button>
           </Section>
           <Hr style={hr} />
           <Text style={footer}>
-            {SITE_NAME} — Expande tu universo mental
+            {SITE_NAME} — crianza con ciencia
             {ruleName ? ` · ${ruleName}` : ''}
           </Text>
         </Container>
@@ -43,9 +43,9 @@ const UniversMindReactivationEmail = ({ recipientName, body, ruleName }: Props) 
 
 export const template = {
   component: UniversMindReactivationEmail,
-  subject: (data: Record<string, any>) => data.subject || '¿Retomamos tu práctica de bienestar? — UniversMind',
+  subject: (data: Record<string, any>) => data.subject || '¿Volvemos? — Universmind',
   displayName: 'UniversMind Reactivation',
-  previewData: { recipientName: 'María', body: 'Han pasado semanas desde tu última meditación. Nuevos ejercicios de mindfulness y journaling te esperan. ¿Volvemos?', ruleName: 'Reactivation Cold' },
+  previewData: { recipientName: 'María', body: 'Hace tiempo que no te vemos en Universmind. Nuevas guías y herramientas de crianza te esperan. ¿Volvemos?', ruleName: 'Reactivation Cold' },
 } satisfies TemplateEntry
 
 const main = { backgroundColor: '#faf5ff', fontFamily: "'Plus Jakarta Sans', Arial, sans-serif" }

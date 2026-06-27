@@ -3,6 +3,16 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Reemplaza los merge tags del copy fijo de nurturing: {{name}}, {{stage}}.
+// Si el lead no trae una etapa explícita, usa un fallback que lee natural.
+function renderVars(text: string, lead: any): string {
+  const firstName = String(lead?.name || '').trim().split(/\s+/)[0] || '';
+  const stage = lead?.baby_stage || lead?.stage || 'que tu bebé vive ahora';
+  return String(text || '')
+    .replace(/\{\{\s*name\s*\}\}/gi, firstName)
+    .replace(/\{\{\s*stage\s*\}\}/gi, String(stage));
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -169,69 +179,109 @@ Deno.serve(async (req) => {
           if (srcLower.includes('fokuspark')) targetApp = 'fokuspark';
           else if (srcLower.includes('universmind')) targetApp = 'universmind';
 
+          // Un paso con `body` fijo usa copy curado (sin IA). Si no, cae al flujo de IA legacy.
+          const isFixed = !!(step && typeof step.body === 'string' && step.body.trim());
+
           let generatedMessage = '';
           let emailSent = false;
 
-          // Step A: Generate AI message
-          try {
-            const msgRes = await fetch(`${supabaseUrl}/functions/v1/generate-lead-message`, {
-              method: 'POST',
-              headers: { 'Authorization': `Bearer ${serviceKey}`, 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                lead,
-                messageType: channel === 'email' ? 'email' : 'whatsapp',
-                language: 'es',
-                targetApp,
-                templateType: messageHint,
-              }),
-            });
+          if (isFixed && channel === 'email') {
+            // ───── COPY FIJO (nurturing Universmind Little) — sin IA ─────
+            const subject = renderVars(step.subject || sequence.name, lead);
+            const body = renderVars(step.body, lead);
+            generatedMessage = body;
 
-            if (msgRes.ok) {
-              const msgData = await msgRes.json();
-              generatedMessage = msgData.message || '';
+            if (lead.email) {
+              try {
+                const sendRes = await fetch(`${supabaseUrl}/functions/v1/send-crm-email`, {
+                  method: 'POST',
+                  headers: { 'Authorization': `Bearer ${serviceKey}`, 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    recipientEmail: lead.email,
+                    recipientName: lead.name || '',
+                    subject,
+                    textBody: body,
+                    leadId: lead.id,
+                    ruleName: sequence.name,
+                    leadSource,
+                    templateName: step.template_name || 'crm-universmind-little-nurture',
+                    ctaText: step.cta_text || '',
+                    ctaUrl: step.cta_url || '',
+                    isFollowUp: false,
+                    stepNumber: log.step_index + 1,
+                  }),
+                });
+                if (sendRes.ok) {
+                  const sendData = await sendRes.json();
+                  emailSent = sendData.success === true;
+                }
+              } catch (sendErr) {
+                console.error(`Fixed-copy send error for nurturing log ${log.id}:`, sendErr);
+              }
             }
-          } catch (aiErr) {
-            console.error(`AI generation error for nurturing log ${log.id}:`, aiErr);
-          }
-
-          // Fallback message if AI generation failed
-          if (!generatedMessage) {
-            generatedMessage = `[${channel.toUpperCase()}] Nurturing paso ${log.step_index + 1} para ${lead.name || lead.email}: ${messageHint}`;
-          }
-
-          // Step B: If email channel and we have a message, send via send-crm-email
-          if (channel === 'email' && lead.email && generatedMessage) {
-            let subject = `Seguimiento paso ${log.step_index + 1}`;
-            let body = generatedMessage;
-            const subjectMatch = generatedMessage.match(/\[SUBJECT:\s*(.+?)\]/i);
-            if (subjectMatch) {
-              subject = subjectMatch[1].trim();
-              body = generatedMessage.replace(subjectMatch[0], '').trim();
-            }
-
+          } else {
+            // ───── FLUJO IA (legacy, sin cambios para evofinz/fokuspark) ─────
+            // Step A: Generate AI message
             try {
-              const sendRes = await fetch(`${supabaseUrl}/functions/v1/send-crm-email`, {
+              const msgRes = await fetch(`${supabaseUrl}/functions/v1/generate-lead-message`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${serviceKey}`, 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                  recipientEmail: lead.email,
-                  recipientName: lead.name || '',
-                  subject,
-                  textBody: body,
-                  leadId: lead.id,
-                  ruleName: sequence.name,
-                  leadSource,
-                  isFollowUp: log.step_index > 0,
-                  stepNumber: log.step_index + 1,
+                  lead,
+                  messageType: channel === 'email' ? 'email' : 'whatsapp',
+                  language: 'es',
+                  targetApp,
+                  templateType: messageHint,
                 }),
               });
 
-              if (sendRes.ok) {
-                const sendData = await sendRes.json();
-                emailSent = sendData.success === true;
+              if (msgRes.ok) {
+                const msgData = await msgRes.json();
+                generatedMessage = msgData.message || '';
               }
-            } catch (sendErr) {
-              console.error(`Email send error for nurturing log ${log.id}:`, sendErr);
+            } catch (aiErr) {
+              console.error(`AI generation error for nurturing log ${log.id}:`, aiErr);
+            }
+
+            // Fallback message if AI generation failed
+            if (!generatedMessage) {
+              generatedMessage = `[${channel.toUpperCase()}] Nurturing paso ${log.step_index + 1} para ${lead.name || lead.email}: ${messageHint}`;
+            }
+
+            // Step B: If email channel and we have a message, send via send-crm-email
+            if (channel === 'email' && lead.email && generatedMessage) {
+              let subject = `Seguimiento paso ${log.step_index + 1}`;
+              let body = generatedMessage;
+              const subjectMatch = generatedMessage.match(/\[SUBJECT:\s*(.+?)\]/i);
+              if (subjectMatch) {
+                subject = subjectMatch[1].trim();
+                body = generatedMessage.replace(subjectMatch[0], '').trim();
+              }
+
+              try {
+                const sendRes = await fetch(`${supabaseUrl}/functions/v1/send-crm-email`, {
+                  method: 'POST',
+                  headers: { 'Authorization': `Bearer ${serviceKey}`, 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    recipientEmail: lead.email,
+                    recipientName: lead.name || '',
+                    subject,
+                    textBody: body,
+                    leadId: lead.id,
+                    ruleName: sequence.name,
+                    leadSource,
+                    isFollowUp: log.step_index > 0,
+                    stepNumber: log.step_index + 1,
+                  }),
+                });
+
+                if (sendRes.ok) {
+                  const sendData = await sendRes.json();
+                  emailSent = sendData.success === true;
+                }
+              } catch (sendErr) {
+                console.error(`Email send error for nurturing log ${log.id}:`, sendErr);
+              }
             }
           }
 

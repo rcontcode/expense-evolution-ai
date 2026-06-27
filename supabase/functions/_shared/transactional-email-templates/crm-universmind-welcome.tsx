@@ -23,16 +23,16 @@ const UniversMindWelcomeEmail = ({ recipientName, body, ruleName }: Props) => (
             {recipientName ? `¡Bienvenido ${recipientName}! 🌌` : '¡Bienvenido! 🌌'}
           </Heading>
           <Text style={textStyle}>
-            {body || 'Gracias por unirte a UniversMind. Estamos listos para acompañarte en tu viaje de crecimiento personal con meditación, journaling y herramientas de bienestar mental.'}
+            {body || 'Gracias por sumarte a Universmind. Estamos para acompañarte en la crianza de tus hijos, con herramientas simples y basadas en ciencia.'}
           </Text>
           <Section style={ctaSection}>
-            <Button style={ctaButton} href="https://universmind.com/dashboard">
-              Explorar UniversMind
+            <Button style={ctaButton} href="https://universmind.com">
+              Explorar Universmind
             </Button>
           </Section>
           <Hr style={hr} />
           <Text style={footer}>
-            {SITE_NAME} — Expande tu universo mental
+            {SITE_NAME} — crianza con ciencia
             {ruleName ? ` · ${ruleName}` : ''}
           </Text>
         </Container>
@@ -43,9 +43,9 @@ const UniversMindWelcomeEmail = ({ recipientName, body, ruleName }: Props) => (
 
 export const template = {
   component: UniversMindWelcomeEmail,
-  subject: (data: Record<string, any>) => data.subject || '¡Bienvenido a UniversMind! Tu viaje interior comienza',
+  subject: (data: Record<string, any>) => data.subject || '¡Bienvenido a Universmind!',
   displayName: 'UniversMind Welcome',
-  previewData: { recipientName: 'María', body: 'Tu perfil de bienestar está listo. Descubre meditaciones guiadas, journaling reflexivo y herramientas para expandir tu mente.', ruleName: 'Welcome Sequence' },
+  previewData: { recipientName: 'María', body: 'Gracias por sumarte a Universmind. Estamos para acompañarte en la crianza con herramientas simples y basadas en ciencia.', ruleName: 'Welcome Sequence' },
 } satisfies TemplateEntry
 
 const main = { backgroundColor: '#faf5ff', fontFamily: "'Plus Jakarta Sans', Arial, sans-serif" }

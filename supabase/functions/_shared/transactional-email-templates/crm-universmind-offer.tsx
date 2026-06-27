@@ -11,7 +11,7 @@ interface Props { recipientName?: string; body?: string; offerDetails?: string; 
 const UniversMindOfferEmail = ({ recipientName, body, offerDetails, ruleName }: Props) => (
   <Html lang="es" dir="ltr">
     <Head />
-    <Preview>{recipientName ? `${recipientName}, oferta exclusiva` : 'Oferta exclusiva'} — {SITE_NAME}</Preview>
+    <Preview>{recipientName ? `${recipientName}, algo para ti` : 'Algo para ti'} — {SITE_NAME}</Preview>
     <Body style={main}>
       <Container style={wrapper}>
         <Section style={header}>
@@ -23,7 +23,7 @@ const UniversMindOfferEmail = ({ recipientName, body, offerDetails, ruleName }: 
             {recipientName ? `${recipientName}, tenemos algo especial para ti 🎁` : 'Tenemos algo especial para ti 🎁'}
           </Heading>
           <Text style={textStyle}>
-            {body || 'Queremos darte acceso exclusivo a nuestras herramientas premium de bienestar mental y crecimiento personal. Esta oferta es solo para ti.'}
+            {body || 'Preparamos las guías de Universmind Little para acompañarte en la etapa de tu bebé, con la ciencia en simple.'}
           </Text>
           {offerDetails && (
             <Section style={offerBox}>
@@ -31,13 +31,13 @@ const UniversMindOfferEmail = ({ recipientName, body, offerDetails, ruleName }: 
             </Section>
           )}
           <Section style={ctaSection}>
-            <Button style={ctaButton} href="https://universmind.com/pricing">
-              Ver mi oferta exclusiva
+            <Button style={ctaButton} href="https://universmind.com/little">
+              Ver las guías
             </Button>
           </Section>
           <Hr style={hr} />
           <Text style={footer}>
-            {SITE_NAME} — Expande tu universo mental
+            {SITE_NAME} — crianza con ciencia
             {ruleName ? ` · ${ruleName}` : ''}
           </Text>
         </Container>
@@ -48,9 +48,9 @@ const UniversMindOfferEmail = ({ recipientName, body, offerDetails, ruleName }: 
 
 export const template = {
   component: UniversMindOfferEmail,
-  subject: (data: Record<string, any>) => data.subject || 'Oferta exclusiva para ti — UniversMind',
+  subject: (data: Record<string, any>) => data.subject || 'Algo para ti — Universmind',
   displayName: 'UniversMind Special Offer',
-  previewData: { recipientName: 'María', body: 'Queremos ayudarte en tu viaje de crecimiento personal.', offerDetails: '🌌 21 días gratis de UniversMind Premium — meditaciones guiadas, journaling profundo y coaching mental', ruleName: 'Offer Campaign' },
+  previewData: { recipientName: 'María', body: 'Preparamos las guías de Universmind Little para la etapa de tu bebé.', offerDetails: '👶 Guía de tu etapa + Colección completa, con la ciencia de los primeros 12 meses', ruleName: 'Offer Campaign' },
 } satisfies TemplateEntry
 
 const main = { backgroundColor: '#faf5ff', fontFamily: "'Plus Jakarta Sans', Arial, sans-serif" }

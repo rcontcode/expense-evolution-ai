@@ -45,7 +45,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { recipientEmail, recipientName, subject, htmlBody, textBody, leadId, ruleName, leadSource, isFollowUp, stepNumber, templateType } = await req.json();
+    const { recipientEmail, recipientName, subject, htmlBody, textBody, leadId, ruleName, leadSource, isFollowUp, stepNumber, templateType, templateName: requestedTemplate, ctaText, ctaUrl } = await req.json();
 
     if (!recipientEmail) {
       return new Response(
@@ -62,7 +62,9 @@ Deno.serve(async (req) => {
 
     const appKey = detectAppKey(leadSource);
     const appName = APP_NAME_MAP[appKey] || 'EvoFinz';
-    let templateName = getTemplateName(appKey, templateType, isFollowUp);
+    // An explicit templateName (e.g. fixed-copy nurturing) wins over auto-detection
+    // and over the isFollowUp → crm-follow-up override.
+    let templateName = requestedTemplate || getTemplateName(appKey, templateType, isFollowUp);
     let abVariant: string | null = null;
     let abTestId: string | null = null;
 
@@ -105,6 +107,8 @@ Deno.serve(async (req) => {
             ruleName: ruleName || '',
             appName,
             stepNumber: stepNumber || 1,
+            ctaText: ctaText || '',
+            ctaUrl: ctaUrl || '',
           },
         }),
       });
