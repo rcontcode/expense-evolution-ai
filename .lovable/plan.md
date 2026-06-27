@@ -1,64 +1,76 @@
-## Rediseño visual del menú de tabs del CRM (`/admin/crm`)
+## Tracking de uso por usuario — diagnóstico y plan
 
-### Problema actual
-Las 6 filas de tabs (General, Leads, Contacto, Métricas, Técnico, BI) viven dentro de un mismo bloque gris plano. Los labels de grupo son etiquetas minúsculas de 9px que se pierden, los colores son pastel similares y no hay separación visual real — parece "un montón de chips de colores" en vez de un menú organizado por función.
+### Diagnóstico (estado actual)
 
-### Objetivo
-Convertir cada grupo en una "sección" claramente identificable, con identidad de color propia, ícono grande del grupo, descripción corta de para qué sirve, y separación física entre filas. Mantener compacto en desktop, accesible en móvil.
+Reviso lo que ya existe y la realidad de los datos:
 
-### Cambios (solo en `src/pages/admin/AdminCRM.tsx`, líneas 706–907)
+| Fuente | Para qué sirve | Filas hoy | Estado |
+|---|---|---|---|
+| `feature_usage_logs` | Eventos por feature/página/sesión por usuario (la tabla "buena") | **0** | Tabla creada y leída en 4 sitios, **pero nadie escribe en ella** |
+| `audit_log` | Cambios CRUD (crear/editar/borrar entidades) | 40 | Funciona, pero solo registra mutaciones |
+| `ai_usage_logs` | Llamadas a IA por usuario, créditos consumidos | 0 | Sin uso reciente |
+| `usage_tracking` | Contadores mensuales (gastos, OCR, voz, etc.) | 6 | Funciona |
+| `mission_control_history` | Snapshot semanal del "fuel score" del usuario | 17 | Funciona |
+| `financial_focus_sessions` | Minutos en modo foco | 1 | Funciona pero casi vacío |
+| `ecosystem_streaks` | Rachas diarias | — | Funciona |
 
-1. **Refactor a estructura declarativa**: Extraer la config de los 6 grupos a un array `TAB_GROUPS` arriba del JSX, cada uno con `{ id, icon (Lucide), title, subtitle, accentClass, ringClass, items[] }`. Elimina los 6 bloques repetidos casi idénticos → un solo `.map()` que renderiza cada grupo. Mismo comportamiento, código más limpio.
+**Conclusión honesta**: hoy puedes ver *qué creó* cada usuario y *cuántos contadores* tiene, pero **no puedes ver "tiempo en app", "qué sección visita", "qué botón pulsa"** porque la tabla diseñada para eso (`feature_usage_logs`) nunca recibe escrituras.
 
-2. **Tarjeta por grupo** (nuevo wrapper visual):
-   - Cada grupo es una **mini-card** con:
-     - Borde izquierdo de 3px del color del grupo (`border-l-4 border-l-{accent}`) → identifica el grupo de un vistazo.
-     - Fondo sutil con gradiente del color del grupo (`bg-gradient-to-r from-{accent}/5 to-transparent`).
-     - Sombra suave + `rounded-xl` + hover lift muy ligero.
-   - Header del grupo (izquierda, ancho fijo ~140px):
-     - **Ícono Lucide** real en círculo de color (no emoji): `Home`, `Target`, `MessageSquare`, `BarChart3`, `Settings2`, `Brain`.
-     - **Título** en tamaño legible (text-xs font-bold uppercase) en el color del acento.
-     - **Subtítulo** de 1 línea (text-[10px] muted) explicando para qué sirve el grupo (ej. "Vista general y agenda", "Captura y pipeline de leads", "Comunicación y secuencias", "KPIs y revenue", "Webhooks y reglas", "Inteligencia de negocio").
-   - Divisor vertical sutil entre header y chips.
-   - Chips a la derecha en flex-wrap (los mismos botones actuales, sin cambiar tamaños ni comportamiento).
+### Lo que se puede medir cuando esté instrumentado
 
-3. **Chips mejorados ligeramente**:
-   - Sombra interna sutil en estado normal para sensación "3D candy" alineada con el resto de la app.
-   - Estado activo: mantener gradiente actual + pequeño "halo" (ring del color del grupo).
-   - Indicador puntito de color del grupo a la izquierda del chip cuando no está activo, para reforzar pertenencia.
+Por usuario:
+- **Tiempo total en la app** (sesiones + duración)
+- **Sesiones por día/semana** y hora típica de uso
+- **Páginas más visitadas** y tiempo en cada una
+- **Features usadas** (voz, OCR, banco, contratos, reportes, etc.) con conteo
+- **Última conexión** y **racha de días activos**
+- **Embudo de adopción**: qué features descubrió y cuáles no toca
+- **Dispositivo** (móvil vs desktop), navegador, idioma, país
+- **Eventos clave**: primer gasto, primer reporte, primera importación bancaria
+- **Errores/abandono**: dónde se quedan atascados
+- **Engagement score** combinando frecuencia + variedad de features + duración
 
-4. **Separación visual real entre grupos**:
-   - `space-y-3` entre cards (en vez de `space-y-2` actual sin separadores).
-   - Quitar el wrapper gris `bg-muted/30` que englobaba todo y "aplastaba" la jerarquía. Cada grupo respira por sí mismo.
+A nivel agregado (admin):
+- Top 10 usuarios más activos / en riesgo de churn
+- Features muertas (nadie las usa)
+- Heatmap de horarios de uso
+- Cohorts de retención (D1, D7, D30)
+- Tiempo promedio hasta "aha moment" (primer reporte, primera carga bancaria)
 
-5. **Responsive**:
-   - Desktop: header del grupo a la izquierda, chips a la derecha (layout horizontal).
-   - Móvil (`<md`): header arriba (ícono + título en línea), chips debajo en wrap — ya funciona porque los chips usan emoji en móvil.
+### Plan en 3 fases
 
-6. **Accesibilidad**:
-   - `aria-label` en cada card con el nombre del grupo.
-   - Tooltips actuales se mantienen tal cual.
+#### Fase 1 — Instrumentar (lo que falta)
+Crear `src/lib/analytics/trackUsage.ts` con dos funciones ligeras:
 
-### Diagrama visual
+- `trackPageView(path)` — se dispara en cada cambio de ruta desde `Layout` o un hook global.
+- `trackFeature(featureName, metadata?)` — se llama en hooks clave ya existentes (`useCreateExpense`, `useVoiceInput`, `process-bank-statement`, `analyze-contract`, generación de reportes, etc.).
 
-```text
-┌─────────────────────────────────────────────────────────────────┐
-│ ▎🏠 GENERAL          │ [Home] [Agenda]                          │
-│   Vista y agenda     │                                          │
-├─────────────────────────────────────────────────────────────────┤
-│ ▎🎯 LEADS            │ [Usuarios] [Leads] [Pipeline] [Ranking]  │
-│   Captura y pipeline │                                          │
-├─────────────────────────────────────────────────────────────────┤
-│ ▎💬 CONTACTO         │ [Contactar•3] [Historial] [Plantillas]…  │
-│   Comunicación       │                                          │
-└─────────────────────────────────────────────────────────────────┘
-```
-(borde izquierdo de color por grupo, header con ícono real + subtítulo, chips a la derecha)
+Ambas insertan en `feature_usage_logs` con `session_id` (uuid en `sessionStorage`, así se mide duración por sesión) + debounce + cola para no saturar. Sin PII, sin texto del usuario.
 
-### Lo que NO cambia
-- Lógica de tabs, valores, navegación, contenidos, badges de hotCount, tooltips → todo se preserva.
-- No se toca ningún otro archivo.
-- Se mantienen tokens semánticos del design system (sin colores hardcoded fuera de los acentos que ya se usaban).
+#### Fase 2 — Panel "Actividad del usuario"
+Nueva subtab en `Admin → CRM & Apps → Usuarios → [click en un usuario]` (o tab nueva "Actividad") que muestre por usuario:
 
-### Resultado esperado
-De "fila de chips colorida" → "panel de control segmentado" donde se entiende en 1 segundo qué hace cada grupo y los chips se leen como subitems del grupo, no como un mar de botones.
+- Header: última sesión, racha, sesiones últimos 30 días, tiempo total estimado.
+- Línea de tiempo de eventos (últimos 50).
+- Heatmap día/hora.
+- Top features usadas + features nunca usadas.
+- Embudo de onboarding (cuáles hitos completó).
+- Sesiones por día (gráfica).
+
+Reutiliza el panel existente `AdminUserOverview` y le agrega una pestaña "Actividad".
+
+#### Fase 3 — Vista agregada
+Nueva tab en CRM "📊 Engagement":
+- Ranking de usuarios por engagement score.
+- Lista de "en riesgo" (sin sesión > 7 días) → enlaza con el flujo de nurturing/reactivación que ya tienes.
+- Features muertas y features estrella.
+- Cohorts de retención.
+
+### Privacidad y costo
+- Solo se registran rutas y nombres de features, **nunca contenido** (montos, descripciones, nombres de personas).
+- Se respeta el flag actual `notification_preferences` para opt-out de telemetría (añadiré `analytics_opt_in` si no existe).
+- Volumen estimado: ~50–200 eventos/usuario/día → bajo costo en Cloud.
+- Job mensual opcional para archivar eventos > 6 meses.
+
+### Pregunta antes de implementar
+¿Avanzo con **las 3 fases completas** (instrumentación + panel individual + panel agregado), o prefieres que empiece **solo con la Fase 1 + panel individual** y dejemos el agregado para después de tener datos reales (1–2 semanas)?
