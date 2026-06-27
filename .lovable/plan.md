@@ -1,27 +1,39 @@
-Problema identificado:
-- La pantalla que se queda pegada es el hero del quiz que también aparece en `/home`.
-- En la sesión de navegador se detecta `body` con `overflow: hidden` y un banner de cookies fijo ocupando la parte inferior. En iOS/Safari esto puede capturar el gesto y dejar la página sin scroll aunque el documento tenga más contenido.
-- También hay reglas globales móviles con `overscroll-behavior-y: none` y una lógica de `Layout` que bloquea el scroll del documento en vistas móviles autenticadas. Aunque esa lógica es útil dentro del app shell, no debe afectar páginas públicas como quiz/home.
+## Objetivo
 
-Plan de corrección:
-1. Hacer que las páginas públicas de quiz usen explícitamente scroll de documento en móvil:
-   - Forzar `overflow-y-auto`, `touch-pan-y` y `overscroll-y-auto` en el contenedor de `FinancialQuiz`.
-   - Asegurar que el contenido tenga padding inferior suficiente para no quedar tapado por overlays.
+Dejar viva la secuencia de nurturing "Universmind Little — Brújula" en la base, redeployar las funciones que la consumen y confirmar que el dominio de envío está listo.
 
-2. Ajustar el hero del quiz para pantallas móviles reales:
-   - Reducir espaciados verticales en mobile.
-   - Quitar/ocultar el indicador absoluto inferior en mobile si interfiere con el área táctil.
-   - Evitar que elementos decorativos ocupen/capturen el gesto de scroll.
+## Pasos
 
-3. Corregir el banner de cookies como posible bloqueador:
-   - En mobile dejarlo compacto y sin cubrir la zona principal de scroll.
-   - Añadir `touch-action: pan-y` y mantener el scroll interno solo cuando se abren detalles.
-   - Evitar que un contenedor fijo grande capture gestos fuera del banner.
+### 1. Aplicar la migración a la base
+Ejecutar `supabase/migrations/20260626130000_universmind_little_nurturing.sql`. Es idempotente y hace dos cosas:
+- Inserta en `lead_nurturing_sequences` la secuencia **"Universmind Little — Brújula Nurturing"** con 6 pasos (días 0/2/5/9/14/21), todos usando la plantilla `crm-universmind-little-nurture` con copy fijo (sin IA).
+- Inserta en `automation_rules` la regla **"Universmind Little — Inscribir Brújula"** (`trigger_type = new_lead`, condición `source contiene "universmind"`, acción `email_sequence`) con `is_enabled = false` a propósito, para que no dispare en producción hasta que tú la actives manualmente.
 
-4. Contener el scroll-lock global:
-   - Cambiar la lógica de `Layout` para que `app-mobile-scroll-lock` solo se aplique en rutas autenticadas que realmente renderizan el shell móvil, no en páginas públicas como `/`, `/home`, `/quiz`, `/auth`, `/privacy`, etc.
-   - Añadir limpieza defensiva al montar `FinancialQuiz` para remover clases stale de scroll-lock si quedaron de navegación anterior.
+Si la secuencia ya existe, el script no hace nada (lo avisa por NOTICE).
 
-5. Verificación:
-   - Probar `/quiz` y `/home` en viewport móvil 390x844 y 320x568.
-   - Confirmar que `window.scrollY` cambia al hacer scroll, que el CTA sigue visible/tocable, y que no queda `body.app-mobile-scroll-lock` en páginas públicas.
+### 2. Redeployar las dos edge functions
+Deploy en paralelo de:
+- `send-crm-email` — orquesta el envío por app/template, incluye routing A/B y log a `lead_interactions`.
+- `run-delayed-automations` — worker que procesa los pasos diferidos de las secuencias de nurturing.
+
+Tras deploy, revisar logs de cada una para confirmar arranque limpio.
+
+### 3. Verificar el dominio de envío
+Consultar el estado del dominio `notify.evofinz.com` (ya configurado en `send-transactional-email`). En las últimas verificaciones aparecía **activo y verificado** (delegado a `ns3.lovable.cloud` / `ns4.lovable.cloud`), así que lo esperable es confirmar "active" sin acción tuya.
+
+Si por algún motivo el estado vuelve `awaiting_dns` / `provisioning_failed` / no existe, te guío en ese momento:
+- `awaiting_dns` → esperar propagación (hasta 72 h) y reintentar verificación en Cloud → Emails.
+- `provisioning_failed` → "Rerun Setup" en Cloud → Emails.
+- Sin dominio → abrir el diálogo de setup de dominio.
+
+## Lo que NO se cambia
+- No se activa la regla de automatización (queda `is_enabled = false` como pediste implícitamente al traer la migración así).
+- No se tocan las plantillas de email ya existentes; ya están en el repo.
+- No se ejecuta ninguna inscripción manual de leads ni envío de prueba.
+
+## Después del plan
+Una vez aplicado, te confirmo:
+- ID de la secuencia creada.
+- Estado de cada deploy.
+- Estado real del dominio.
+- Comando exacto (UPDATE) para activar la regla cuando quieras dispararla.
