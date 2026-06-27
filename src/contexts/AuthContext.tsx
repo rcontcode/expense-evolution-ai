@@ -154,6 +154,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Clear subscription cache on sign out
     queryClient.removeQueries({ queryKey: ['subscription'] });
     queryClient.removeQueries({ queryKey: ['stripe-subscription'] });
+    // Reset usage tracking session
+    try {
+      const { resetTrackingUser } = await import('@/lib/analytics/trackUsage');
+      resetTrackingUser();
+    } catch { /* noop */ }
     navigate('/auth');
   };
 

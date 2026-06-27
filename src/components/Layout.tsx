@@ -354,6 +354,12 @@ export const Layout = ({ children }: LayoutProps) => {
   const isSimpleMode = uiMode === 'simple';
   const isPublicRoute = ['/', '/1', '/home', '/evo', '/index.html', '/quiz', '/landing', '/legal', '/privacy', '/terms', '/status', '/about', '/auth', '/reset-password', '/install', '/unsubscribe'].includes(location.pathname);
 
+  // Telemetry: track route changes for authenticated users only.
+  useEffect(() => {
+    if (isPublicRoute) return;
+    void import('@/lib/analytics/trackUsage').then(m => m.trackPageView(location.pathname));
+  }, [location.pathname, isPublicRoute]);
+
   // Collapsible sidebar sections (Advanced mode) — persist in localStorage
   const SIDEBAR_SECTIONS_KEY = 'sidebar-collapsed-sections';
   const DEFAULT_COLLAPSED_SECTIONS = ['layout.growth', 'layout.system'];
