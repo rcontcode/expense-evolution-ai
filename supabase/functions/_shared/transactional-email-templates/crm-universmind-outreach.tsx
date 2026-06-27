@@ -29,7 +29,7 @@ interface UniversMindOutreachProps {
 const UniversMindOutreachEmail = ({ recipientName, body, ruleName }: UniversMindOutreachProps) => (
   <Html lang="es" dir="ltr">
     <Head />
-    <Preview>{recipientName ? `Hola ${recipientName}` : 'Expande tu mente'} — {SITE_NAME}</Preview>
+    <Preview>{recipientName ? `Hola ${recipientName}` : 'Crianza con ciencia'} — {SITE_NAME}</Preview>
     <Body style={main}>
       <Container style={wrapper}>
         <Section style={header}>
@@ -41,11 +41,11 @@ const UniversMindOutreachEmail = ({ recipientName, body, ruleName }: UniversMind
             {recipientName ? `Hola ${recipientName} 🌌` : 'Hola 🌌'}
           </Heading>
           <Text style={textStyle}>
-            {body || 'Descubre herramientas para expandir tu mente y transformar tu vida. Estamos aquí para guiarte.'}
+            {body || 'Descubre herramientas simples y con base científica para acompañarte en la crianza. Estamos para ayudarte.'}
           </Text>
           <Hr style={hr} />
           <Text style={footer}>
-            {SITE_NAME} — Expande tu universo mental
+            {SITE_NAME} — crianza con ciencia
             {ruleName ? ` · ${ruleName}` : ''}
           </Text>
         </Container>
@@ -56,12 +56,12 @@ const UniversMindOutreachEmail = ({ recipientName, body, ruleName }: UniversMind
 
 export const template = {
   component: UniversMindOutreachEmail,
-  subject: (data: Record<string, any>) => data.subject || 'Expande tu mente — UniversMind',
+  subject: (data: Record<string, any>) => data.subject || 'Universmind — crianza con ciencia',
   displayName: 'UniversMind Lead Outreach',
   previewData: {
     recipientName: 'Ana',
-    subject: 'Tu viaje de crecimiento personal comienza aquí',
-    body: 'Gracias por tu interés en UniversMind. Hemos preparado recursos especiales para ti basados en tu perfil. ¿Te gustaría explorarlos?',
+    subject: 'Recursos de crianza pensados para ti',
+    body: 'Gracias por tu interés en Universmind. Preparamos recursos basados en la etapa de tu hijo. ¿Te gustaría explorarlos?',
     ruleName: 'UniversMind Welcome',
   },
 } satisfies TemplateEntry
