@@ -290,21 +290,23 @@ const AdminCRM = () => {
   const testWebhook = useMutation({
     mutationFn: async (sourceKey: string) => {
       setTestingApp(sourceKey);
-      const response = await fetch(WEBHOOK_BASE_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      // Uses supabase.functions.invoke so the admin user's JWT is sent
+      // automatically — webhook-leads accepts admin JWT as alternative to
+      // the LEADS_WEBHOOK_SHARED_SECRET (which we never expose to the browser).
+      const { data, error } = await supabase.functions.invoke('webhook-leads', {
+        body: {
           name: 'Test Lead',
           email: `test-${Date.now()}@webhook-test.com`,
           phone: '+1234567890',
           score: 50,
           level: 'test',
           source: sourceKey,
-        }),
+        },
       });
-      if (!response.ok) throw new Error('Webhook failed');
-      return response.json();
+      if (error) throw new Error(error.message || 'Webhook failed');
+      return data;
     },
+
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['lead-stats-by-source'] });
       queryClient.invalidateQueries({ queryKey: ['crm-lead-count'] });
