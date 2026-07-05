@@ -1,5 +1,3 @@
-// Temporary probe: posts to webhook-leads using LEADS_WEBHOOK_SHARED_SECRET
-// from env. Delete after verification.
 Deno.serve(async () => {
   const secret = Deno.env.get('LEADS_WEBHOOK_SHARED_SECRET') ?? '';
   const url = `${Deno.env.get('SUPABASE_URL')}/functions/v1/webhook-leads`;
