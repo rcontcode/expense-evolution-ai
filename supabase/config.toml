@@ -38,7 +38,7 @@ project_id = "oxrfslyuzcgxacomgzgw"
   [functions.process-receipt]
     verify_jwt = true
   [functions.run-automations]
-    verify_jwt = false
+    verify_jwt = true
   [functions.run-delayed-automations]
     verify_jwt = false
   [functions.stripe-revenue]
