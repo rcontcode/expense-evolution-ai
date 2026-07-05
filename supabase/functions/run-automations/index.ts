@@ -314,6 +314,53 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // ===== AUTH GUARD =====
+  // Accept either:
+  //  a) Bearer <SERVICE_ROLE_KEY> — used by internal edge callers
+  //     (webhook-leads, send-quiz-lead, run-delayed-automations)
+  //  b) Bearer <user JWT> where the user has role='admin' — used by the
+  //     admin UI via supabase.functions.invoke('run-automations', ...)
+  const serviceKeyForAuth = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+  const authHeader = req.headers.get('Authorization') ?? '';
+  const bearer = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
+
+  let authorized = false;
+  if (bearer && serviceKeyForAuth && bearer === serviceKeyForAuth) {
+    authorized = true;
+  } else if (bearer) {
+    // Try user-JWT path: must be a valid session AND user must be admin.
+    try {
+      const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+      const anonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? Deno.env.get('SUPABASE_PUBLISHABLE_KEY') ?? '';
+      const userRes = await fetch(`${supabaseUrl}/auth/v1/user`, {
+        headers: { Authorization: `Bearer ${bearer}`, apikey: anonKey },
+      });
+      if (userRes.ok) {
+        const user = await userRes.json();
+        const userId = user?.id;
+        if (userId) {
+          const roleRes = await fetch(
+            `${supabaseUrl}/rest/v1/user_roles?user_id=eq.${userId}&role=eq.admin&select=user_id&limit=1`,
+            { headers: { Authorization: `Bearer ${serviceKeyForAuth}`, apikey: serviceKeyForAuth } },
+          );
+          if (roleRes.ok) {
+            const rows = await roleRes.json();
+            if (Array.isArray(rows) && rows.length > 0) authorized = true;
+          }
+        }
+      }
+    } catch (e) {
+      console.error('Auth guard error:', e);
+    }
+  }
+
+  if (!authorized) {
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+      status: 401,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
   try {
     const { lead } = await req.json();
     if (!lead?.id) {
@@ -322,6 +369,7 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
+
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
