@@ -182,6 +182,54 @@ Deno.serve(async (req) => {
     );
   }
 
+  // ===== SHARED-SECRET GUARD =====
+  // External systems (Future Lab, other apps) must send:
+  //   x-leads-secret: <LEADS_WEBHOOK_SHARED_SECRET>
+  // Admin UI callers (browser) can alternatively send Authorization: Bearer <user JWT>
+  // where the user has role='admin', so we don't have to expose the secret in browser code.
+  const sharedSecret = Deno.env.get("LEADS_WEBHOOK_SHARED_SECRET") ?? "";
+  const providedSecret = req.headers.get("x-leads-secret") ?? "";
+  let authOk = sharedSecret.length > 0 && providedSecret === sharedSecret;
+
+  if (!authOk) {
+    const authHeader = req.headers.get("Authorization") ?? "";
+    const bearer = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
+    if (bearer) {
+      try {
+        const sUrl = Deno.env.get("SUPABASE_URL")!;
+        const svcKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+        const anonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? Deno.env.get("SUPABASE_PUBLISHABLE_KEY") ?? "";
+        const userRes = await fetch(`${sUrl}/auth/v1/user`, {
+          headers: { Authorization: `Bearer ${bearer}`, apikey: anonKey },
+        });
+        if (userRes.ok) {
+          const user = await userRes.json();
+          if (user?.id) {
+            const roleRes = await fetch(
+              `${sUrl}/rest/v1/user_roles?user_id=eq.${user.id}&role=eq.admin&select=user_id&limit=1`,
+              { headers: { Authorization: `Bearer ${svcKey}`, apikey: svcKey } },
+            );
+            if (roleRes.ok) {
+              const rows = await roleRes.json();
+              if (Array.isArray(rows) && rows.length > 0) authOk = true;
+            }
+          }
+        }
+      } catch (e) {
+        console.error("[WEBHOOK-LEADS] Auth guard error:", e);
+      }
+    }
+  }
+
+  if (!authOk) {
+    console.warn("[WEBHOOK-LEADS] Unauthorized attempt from", req.headers.get("x-forwarded-for") ?? "unknown");
+    return new Response(
+      JSON.stringify({ error: "Unauthorized" }),
+      { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+
+
   try {
     const payload: ExternalLeadPayload = await req.json();
 
