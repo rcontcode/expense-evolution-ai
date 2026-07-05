@@ -13,6 +13,7 @@ const WEBHOOK_URL = `https://oxrfslyuzcgxacomgzgw.supabase.co/functions/v1/webho
 
 const CURL_SNIPPET = `curl -X POST '${WEBHOOK_URL}' \\
   -H 'Content-Type: application/json' \\
+  -H 'x-leads-secret: <LEADS_WEBHOOK_SHARED_SECRET>' \\
   -d '{
   "name": "Juan Pérez",
   "email": "juan@example.com",
@@ -27,7 +28,10 @@ const CURL_SNIPPET = `curl -X POST '${WEBHOOK_URL}' \\
 const JS_SNIPPET = `// JavaScript / Node.js
 const response = await fetch('${WEBHOOK_URL}', {
   method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
+  headers: {
+    'Content-Type': 'application/json',
+    'x-leads-secret': process.env.LEADS_WEBHOOK_SHARED_SECRET, // never hardcode
+  },
   body: JSON.stringify({
     name: 'Juan Pérez',
     email: 'juan@example.com',
@@ -44,6 +48,10 @@ const data = await response.json();
 console.log('Lead created:', data);`;
 
 const HTML_SNIPPET = `<!-- HTML Form Example -->
+<!--
+  ⚠️  Never embed LEADS_WEBHOOK_SHARED_SECRET in browser code.
+  Post from a server (or an edge/proxy function that adds the header).
+-->
 <form id="leadForm">
   <input name="name" placeholder="Nombre" required />
   <input name="email" type="email" placeholder="Email" required />
@@ -55,8 +63,9 @@ const HTML_SNIPPET = `<!-- HTML Form Example -->
 document.getElementById('leadForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const form = new FormData(e.target);
-  
-  await fetch('${WEBHOOK_URL}', {
+
+  // Proxy this request through your backend so the secret stays server-side.
+  await fetch('/api/submit-lead', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -66,10 +75,11 @@ document.getElementById('leadForm').addEventListener('submit', async (e) => {
       source: 'mi-landing',
     })
   });
-  
+
   alert('¡Gracias!');
 });
 </script>`;
+
 
 export const AdminWebhookSnippet = ({ language }: Props) => {
   const isEs = language === 'es';
