@@ -308,18 +308,23 @@ Deno.serve(async (req) => {
     status: 'pending',
   })
 
-  // Nombre del remitente para correos de crianza: una mamá no debe ver "EvoFinz"
-  // (app de finanzas) en un correo de Universmind Little. Solo afecta a universmind;
-  // EvoFinz y Fokuspark quedan exactamente como estaban.
-  const fromName = templateName.includes('universmind') ? 'Universmind Little' : SITE_NAME
+  // Selección de dominio por prefijo de plantilla:
+  // - Plantillas de marca Universmind (universmind-* o crm-universmind-*) → notify.universmind.com
+  // - El resto (EvoFinz, Fokuspark, etc.) → notify.evofinz.com
+  const isUniversmind =
+    templateName.startsWith('universmind-') || templateName.startsWith('crm-universmind-')
+  const fromName = isUniversmind ? 'Universmind Little' : SITE_NAME
+  const senderDomain = isUniversmind ? 'notify.universmind.com' : SENDER_DOMAIN
+  const fromDomain = isUniversmind ? 'universmind.com' : FROM_DOMAIN
 
   const { error: enqueueError } = await supabase.rpc('enqueue_email', {
     queue_name: 'transactional_emails',
     payload: {
       message_id: messageId,
       to: effectiveRecipient,
-      from: `${fromName} <noreply@${FROM_DOMAIN}>`,
-      sender_domain: SENDER_DOMAIN,
+      from: `${fromName} <noreply@${fromDomain}>`,
+      sender_domain: senderDomain,
+
       subject: resolvedSubject,
       html,
       text: plainText,
