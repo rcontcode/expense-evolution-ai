@@ -31,6 +31,62 @@ const logStep = (step: string, details?: Record<string, unknown>) => {
   console.log(`[STRIPE-WEBHOOK] ${step}${detailsStr}`);
 };
 
+// FIX 3: mismos estados que check-subscription trata como "suscrito" (activo, en prueba o en
+// período de gracia por cobro fallido), para que ambas funciones no se contradigan.
+const VALID_SUBSCRIPTION_STATUSES = new Set(["active", "trialing", "past_due"]);
+
+// FIX 1: identifica al usuario primero por subscription.metadata.user_id (create-checkout lo
+// guarda en subscription_data.metadata). Solo si no viene, cae a buscar por email normalizado
+// (trim + lowercase en ambos lados de la comparación).
+async function identifyUserId(
+  supabaseClient: ReturnType<typeof createClient>,
+  subscription: Stripe.Subscription,
+  email: string | null,
+  customerId: string
+): Promise<string | null> {
+  const metadataUserId = subscription.metadata?.user_id;
+  if (metadataUserId) {
+    logStep("User identified via subscription metadata", { userId: metadataUserId });
+    return metadataUserId;
+  }
+
+  if (!email) {
+    logStep("No customer email found and no metadata.user_id", { customerId });
+    return null;
+  }
+
+  const normalizedEmail = email.trim().toLowerCase();
+  const { data: profiles } = await supabaseClient
+    .from("profiles")
+    .select("id, email")
+    .ilike("email", normalizedEmail)
+    .limit(5);
+
+  const match = profiles?.find((p) => (p.email ?? "").trim().toLowerCase() === normalizedEmail);
+
+  if (!match) {
+    logStep("No user found for email (metadata.user_id missing, email fallback failed)", { email: normalizedEmail, customerId });
+    return null;
+  }
+
+  logStep("User identified via email fallback", { userId: match.id, email: normalizedEmail });
+  return match.id;
+}
+
+// FIX 4: lectura defensiva de la fecha de renovación. En la API 2025-08-27.basil el campo puede
+// haberse movido al nivel del item; probamos ambos y nos quedamos con el primero que sea número válido.
+function resolveSubscriptionPeriodEnd(subscription: Stripe.Subscription): number | null {
+  const primary = subscription.current_period_end;
+  if (typeof primary === "number" && primary > 0) return primary;
+
+  // El SDK de tipos puede no tener aún documentado este campo a nivel de item; se lee defensivo.
+  const item = subscription.items?.data?.[0] as (Stripe.SubscriptionItem & { current_period_end?: number }) | undefined;
+  const itemPeriodEnd = item?.current_period_end;
+  if (typeof itemPeriodEnd === "number" && itemPeriodEnd > 0) return itemPeriodEnd;
+
+  return null;
+}
+
 function parseStripeDate(value: unknown): string | null {
   if (value === null || value === undefined) return null;
   try {
@@ -114,34 +170,26 @@ serve(async (req) => {
         }
         
         const email = customer.email;
-        if (!email) {
-          logStep("No customer email found");
-          break;
-        }
+        const userId = await identifyUserId(supabaseClient, subscription, email, customerId);
+        if (!userId) break;
 
-        const { data: profiles } = await supabaseClient
-          .from("profiles")
-          .select("id")
-          .eq("email", email)
-          .limit(1);
-
-        if (!profiles || profiles.length === 0) {
-          logStep("No user found for email", { email });
-          break;
-        }
-
-        const userId = profiles[0].id;
         const productId = subscription.items.data[0]?.price?.product as string;
         const { planType, billingPeriod, isBundle } = getPlanFromProductId(productId);
-        const isActive = subscription.status === "active" || subscription.status === "trialing";
-        
-        logStep("Raw subscription data", { 
+        const isActive = VALID_SUBSCRIPTION_STATUSES.has(subscription.status);
+
+        const resolvedPeriodEnd = resolveSubscriptionPeriodEnd(subscription);
+        if (resolvedPeriodEnd === null) {
+          logStep("WARNING: could not resolve period end from subscription or items", { subscriptionId: subscription.id });
+        }
+
+        logStep("Raw subscription data", {
           status: subscription.status,
           current_period_end: subscription.current_period_end,
-          productId 
+          resolvedPeriodEnd,
+          productId
         });
 
-        const expiresAt = isActive ? parseStripeDate(subscription.current_period_end) : null;
+        const expiresAt = isActive ? parseStripeDate(resolvedPeriodEnd) : null;
 
         logStep("Updating subscription", { userId, planType, billingPeriod, isActive, isBundle, expiresAt });
 
@@ -176,17 +224,8 @@ serve(async (req) => {
         if (customer.deleted) break;
 
         const email = customer.email;
-        if (!email) break;
-
-        const { data: profiles } = await supabaseClient
-          .from("profiles")
-          .select("id")
-          .eq("email", email)
-          .limit(1);
-
-        if (!profiles || profiles.length === 0) break;
-
-        const userId = profiles[0].id;
+        const userId = await identifyUserId(supabaseClient, subscription, email, customerId);
+        if (!userId) break;
 
         logStep("Subscription cancelled, reverting to free", { userId });
 
@@ -222,7 +261,21 @@ serve(async (req) => {
       case "invoice.payment_failed": {
         const invoice = event.data.object as Stripe.Invoice;
         const customerId = invoice.customer as string;
-        logStep("Payment failed", { invoiceId: invoice.id, customerId });
+        // FIX 5: dejar el motivo del fallo si Stripe lo trae, para poder avisar al usuario después.
+        // (payment_intent normalmente llega como string sin expandir; se lee defensivo por si acaso).
+        const paymentIntent = invoice.payment_intent as unknown as
+          | { last_payment_error?: { message?: string } }
+          | string
+          | null;
+        const failureReason =
+          (typeof paymentIntent === "object" && paymentIntent?.last_payment_error?.message) ||
+          null;
+        logStep("Payment failed", {
+          invoiceId: invoice.id,
+          customerId,
+          attemptCount: invoice.attempt_count,
+          reason: failureReason,
+        });
         break;
       }
 

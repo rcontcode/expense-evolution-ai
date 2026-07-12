@@ -31,6 +31,24 @@ const logStep = (step: string, details?: any) => {
   console.log(`[CHECK-SUBSCRIPTION] ${step}${detailsStr}`);
 };
 
+// FIX 3: mismos estados que trata el webhook como isActive (activo, en prueba o en período de
+// gracia por cobro fallido), para que ambas funciones no se contradigan.
+const VALID_SUBSCRIPTION_STATUSES = new Set(["active", "trialing", "past_due"]);
+
+// FIX 4: lectura defensiva de la fecha de renovación. En la API 2025-08-27.basil el campo puede
+// haberse movido al nivel del item; probamos ambos y nos quedamos con el primero que sea número válido.
+function resolveSubscriptionPeriodEnd(subscription: Stripe.Subscription): number | null {
+  const primary = subscription.current_period_end;
+  if (typeof primary === "number" && primary > 0) return primary;
+
+  // El SDK de tipos puede no tener aún documentado este campo a nivel de item; se lee defensivo.
+  const item = subscription.items?.data?.[0] as (Stripe.SubscriptionItem & { current_period_end?: number }) | undefined;
+  const itemPeriodEnd = item?.current_period_end;
+  if (typeof itemPeriodEnd === "number" && itemPeriodEnd > 0) return itemPeriodEnd;
+
+  return null;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -92,26 +110,29 @@ serve(async (req) => {
     const customerId = customers.data[0].id;
     logStep("Found Stripe customer", { customerId });
 
+    // FIX 3: la API no permite pedir varios status a la vez, así que traemos "all" y filtramos en
+    // código las que cuentan como suscritas (activa, trial o período de gracia por cobro fallido).
     const subscriptions = await stripe.subscriptions.list({
       customer: customerId,
-      status: "active",
-      limit: 1,
+      status: "all",
+      limit: 10,
     });
 
-    const hasActiveSub = subscriptions.data.length > 0;
+    const activeSubscription = subscriptions.data.find((sub) => VALID_SUBSCRIPTION_STATUSES.has(sub.status));
+    const hasActiveSub = !!activeSubscription;
     let planType = "free";
-    let billingPeriod = null;
-    let subscriptionEnd = null;
+    let billingPeriod: string | null = null;
+    let subscriptionEnd: string | null = null;
     let hasBundle = false;
 
-    if (hasActiveSub) {
-      const subscription = subscriptions.data[0];
-      const periodEnd = subscription.current_period_end;
-      // Handle both timestamp (number) and string formats
-      if (typeof periodEnd === 'number' && periodEnd > 0) {
+    if (activeSubscription) {
+      const subscription = activeSubscription;
+      // FIX 4: fecha robusta (subscription.current_period_end o, si no viene, el item)
+      const periodEnd = resolveSubscriptionPeriodEnd(subscription);
+      if (periodEnd !== null) {
         subscriptionEnd = new Date(periodEnd * 1000).toISOString();
-      } else if (periodEnd) {
-        subscriptionEnd = new Date(String(periodEnd)).toISOString();
+      } else {
+        logStep("WARNING: could not resolve period end from subscription or items", { subscriptionId: subscription.id });
       }
       const productId = subscription.items.data[0].price.product as string;
       
@@ -124,9 +145,11 @@ serve(async (req) => {
         billingPeriod = productConfig.period;
         hasBundle = productConfig.bundle || false;
       } else {
-        logStep("WARNING: Unknown product ID, defaulting to premium", { productId });
-        planType = "premium";
-        billingPeriod = "monthly";
+        // FIX 2: un producto desconocido NUNCA regala plan pagado — se deja en gratis.
+        logStep("WARNING: Unknown product ID, defaulting to free (nunca se regala premium)", { productId });
+        planType = "free";
+        billingPeriod = null;
+        hasBundle = false;
       }
 
       logStep("Determined plan", { planType, billingPeriod, hasBundle });
