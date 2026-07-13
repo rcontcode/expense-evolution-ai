@@ -77,33 +77,19 @@ export function TestimonialsCarousel() {
   const { data: realTestimonials } = useQuery({
     queryKey: ['landing-testimonials'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('beta_feedback')
-        .select('*')
-        .eq('is_published_testimonial', true)
-        .order('created_at', { ascending: false });
+      const { data, error } = await (supabase as any).rpc('get_published_testimonials');
 
       if (error) return [];
 
-      const userIds = [...new Set((data || []).map(f => f.user_id))];
-      if (userIds.length === 0) return [];
-
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('id, full_name')
-        .in('id', userIds);
-
-      const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
-
-      return (data || []).map(f => ({
-        name: (f as any).display_name_override || profileMap.get(f.user_id)?.full_name || 'Early User',
+      return ((data as any[]) || []).map((f: any) => ({
+        name: f.display_name || 'Early User',
         role: language === 'es' ? 'Usuario Verificado • EvoFinz' : 'Verified User • EvoFinz',
         avatar: '',
         quote: f.comment || f.suggestions || '',
         rating: f.rating,
         highlight: language === 'es' ? 'Usuario Verificado' : 'Verified User',
         isVerified: true,
-      })).filter(t => t.quote.length > 20) as Testimonial[];
+      })).filter((t: Testimonial) => t.quote.length > 20) as Testimonial[];
     },
     staleTime: 5 * 60 * 1000,
   });
