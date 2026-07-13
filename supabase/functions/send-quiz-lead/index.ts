@@ -21,6 +21,7 @@ interface QuizLeadPayload {
   comments?: string;
   source?: string;
   metadata?: Record<string, unknown>;
+  marketing_consent?: boolean;
 }
 
 // Lead Scoring Functions
@@ -186,28 +187,49 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     // Save to quiz_leads table with scoring
-    const { data: savedLead, error: dbError } = await supabase
+    const leadRow: Record<string, unknown> = {
+      name: payload.name,
+      email: payload.email,
+      phone: payload.phone || null,
+      country: payload.country,
+      situation: payload.situation,
+      goal: payload.goal,
+      obstacle: payload.obstacle,
+      time_spent: payload.time_spent,
+      quiz_score: payload.quiz_score,
+      quiz_level: payload.quiz_level,
+      failed_questions: payload.failed_questions,
+      comments: payload.comments || null,
+      lead_score: leadScore,
+      priority: leadPriority,
+      source: payload.source || 'evofinz',
+      metadata: payload.metadata || {},
+      // El usuario marca el checkbox de consentimiento en el quiz; default
+      // false si no viene (nunca asumimos un "sí" que no se marcó).
+      marketing_consent: payload.marketing_consent === true,
+    };
+
+    let { data: savedLead, error: dbError } = await supabase
       .from("quiz_leads")
-      .insert({
-        name: payload.name,
-        email: payload.email,
-        phone: payload.phone || null,
-        country: payload.country,
-        situation: payload.situation,
-        goal: payload.goal,
-        obstacle: payload.obstacle,
-        time_spent: payload.time_spent,
-        quiz_score: payload.quiz_score,
-        quiz_level: payload.quiz_level,
-        failed_questions: payload.failed_questions,
-        comments: payload.comments || null,
-        lead_score: leadScore,
-        priority: leadPriority,
-        source: payload.source || 'evofinz',
-        metadata: payload.metadata || {},
-      })
+      .insert(leadRow)
       .select()
       .single();
+
+    // Tolerancia: si la migración que agrega marketing_consent aún no corrió
+    // en producción, el insert falla con "columna no existe" (42703). En ese
+    // caso reintentamos sin la columna para no perder el lead; el consentimiento
+    // se recupera reenviando el quiz una vez la migración esté aplicada.
+    if (dbError && (dbError.code === "42703" || dbError.message?.includes("marketing_consent"))) {
+      console.error("marketing_consent column missing, retrying insert without it:", dbError.message);
+      const { marketing_consent: _omit, ...leadRowWithoutConsent } = leadRow;
+      const retry = await supabase
+        .from("quiz_leads")
+        .insert(leadRowWithoutConsent)
+        .select()
+        .single();
+      savedLead = retry.data;
+      dbError = retry.error;
+    }
 
     if (dbError) {
       console.error("Database error:", dbError);
