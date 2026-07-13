@@ -34,14 +34,8 @@ export const LiveSocialProof = memo(function LiveSocialProof() {
           return;
         }
 
-        const { data: ratings } = await supabase
-          .from('beta_feedback')
-          .select('rating')
-          .not('rating', 'is', null);
-
-        const avgRating = ratings && ratings.length > 0
-          ? ratings.reduce((acc, r) => acc + r.rating, 0) / ratings.length
-          : 0;
+        const { data: statsRow } = await (supabase as any).rpc('get_public_feedback_stats');
+        const avgRating = statsRow && statsRow[0] ? Number(statsRow[0].avg_rating) : 0;
 
         const { data: countries } = await supabase
           .from('profiles')
