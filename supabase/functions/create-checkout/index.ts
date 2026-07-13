@@ -122,6 +122,7 @@ serve(async (req) => {
       subscription_data: {
         description: productInfo?.description || undefined,
         metadata: {
+          user_id: user.id,
           plan_type: planType,
           billing_period: billingPeriod,
         },
