@@ -304,6 +304,9 @@ export const QuizModal = ({ isOpen, onClose, onComplete, referralInfo, initialSt
         quiz_level: result.level,
         failed_questions: result.failedQuestions,
         comments: comments || undefined,
+        // El checkbox de consentimiento ya se guarda en formData; antes se
+        // armaba el payload sin este campo y el "sí" del usuario se perdía.
+        marketing_consent: formData.marketingConsent,
       };
 
       const { data, error } = await supabase.functions.invoke("send-quiz-lead", {
