@@ -111,7 +111,7 @@ export const ChatAssistant: React.FC = () => {
   const [isProcessingVoice, setIsProcessingVoice] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const recordingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const recordingIntervalRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const previousPathRef = useRef<string>('');
   const navigate = useNavigate();
   const [pendingBillCandidate, setPendingBillCandidate] = useState<RecurringBillCandidate | null>(null);

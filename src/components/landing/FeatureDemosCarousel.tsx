@@ -174,7 +174,7 @@ export function FeatureDemosCarousel() {
   const isVisible = usePageVisibility();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [autoPlay, setAutoPlay] = useState(true);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const demos = getDemos(language);
 

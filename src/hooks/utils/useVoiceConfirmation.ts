@@ -68,7 +68,7 @@ export function useVoiceConfirmation() {
   const { language } = useLanguage();
   const [pendingConfirmation, setPendingConfirmation] = useState<PendingConfirmation | null>(null);
   const [isWaitingForConfirmation, setIsWaitingForConfirmation] = useState(false);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Clear any existing timeout
   const clearConfirmationTimeout = useCallback(() => {

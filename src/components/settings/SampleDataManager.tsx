@@ -86,8 +86,8 @@ export function SampleDataManager() {
   const isAuthenticated = !!user;
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
-    let timeInterval: NodeJS.Timeout;
+    let interval: ReturnType<typeof setTimeout>;
+    let timeInterval: ReturnType<typeof setTimeout>;
     if (generateSampleData.isPending) {
       setCurrentStep(0);
       setElapsedTime(0);

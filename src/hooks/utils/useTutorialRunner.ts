@@ -42,7 +42,7 @@ export function useTutorialRunner(options: UseTutorialRunnerOptions = {}) {
   const isVoiceSupported = typeof window !== 'undefined' && 'speechSynthesis' in window;
   
   const stepsRef = useRef<TutorialStep[]>([]);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const clearTimeouts = useCallback(() => {
     if (timeoutRef.current) {

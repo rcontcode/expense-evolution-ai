@@ -33,8 +33,8 @@ export function useConversationState() {
   const [status, setStatus] = useState<ConversationStatus>('idle');
   const [context, setContext] = useState<ConversationContext | null>(null);
   const [remainingSeconds, setRemainingSeconds] = useState(0);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const countdownRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const countdownRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Clear timeout on unmount
   useEffect(() => {

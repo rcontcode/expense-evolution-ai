@@ -35,7 +35,7 @@ export function useVoiceSynthesis(options: UseVoiceSynthesisOptions = {}) {
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
   const sentenceQueueRef = useRef<string[]>([]);
   const currentIndexRef = useRef(0);
-  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const debounceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Clean text for speech (remove emojis, markdown, etc.)
   const cleanText = useCallback((text: string): string => {
