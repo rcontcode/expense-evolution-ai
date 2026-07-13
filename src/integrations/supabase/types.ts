@@ -4700,17 +4700,6 @@ export type Database = {
         }
         Relationships: []
       }
-      published_testimonials: {
-        Row: {
-          comment: string | null
-          created_at: string | null
-          display_name: string | null
-          id: string | null
-          rating: number | null
-          suggestions: string | null
-        }
-        Relationships: []
-      }
     }
     Functions: {
       activate_beta_tester: {
@@ -4811,6 +4800,17 @@ export type Database = {
         Returns: {
           avg_rating: number
           ratings_count: number
+        }[]
+      }
+      get_published_testimonials: {
+        Args: never
+        Returns: {
+          comment: string
+          created_at: string
+          display_name: string
+          id: string
+          rating: number
+          suggestions: string
         }[]
       }
       get_user_beta_stats: { Args: { target_user_id: string }; Returns: Json }
