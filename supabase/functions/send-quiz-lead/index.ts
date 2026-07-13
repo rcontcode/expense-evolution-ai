@@ -270,6 +270,11 @@ serve(async (req) => {
           lead_priority_label: getPriorityLabel(leadPriority),
           is_high_priority: leadScore >= 80,
           is_warm_or_higher: leadScore >= 50,
+          // Consentimiento de marketing (PIPEDA / Ley 19.628). GHL debe usar
+          // este campo para NO disparar campañas de marketing a quien no lo
+          // marcó. Se toma del valor realmente persistido (fail-closed: solo
+          // es true si en la base quedó true; false o ausente => false).
+          marketing_consent: savedLead.marketing_consent === true,
         };
 
         const ghlResponse = await fetch(ghlWebhookUrl, {
