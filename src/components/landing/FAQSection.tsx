@@ -84,7 +84,7 @@ const getStoryContent = (language: string) => language === 'es' ? {
       },
       {
         plan: 'Premium',
-        price: '$6.99',
+        price: '$7.99',
         description: 'Para el usuario activo',
         features: ['Gastos ilimitados', '50 escaneos OCR/mes', 'Patrimonio neto completo', 'Gamificación total'],
         cta: 'El más popular'
@@ -176,7 +176,7 @@ const getStoryContent = (language: string) => language === 'es' ? {
       },
       {
         plan: 'Premium',
-        price: '$6.99',
+        price: '$7.99',
         description: 'For the active user',
         features: ['Unlimited expenses', '50 OCR scans/mo', 'Full net worth', 'Full gamification'],
         cta: 'Most popular'
@@ -387,7 +387,7 @@ const getFaqs = (language: string) => language === 'es' ? [
   },
   {
     question: '¿Hay una versión gratuita?',
-    answer: 'Sí, el plan gratuito incluye hasta 50 gastos manuales/mes, 20 ingresos/mes, 5 escaneos OCR gratis, 2 clientes y 2 proyectos. Perfecto para explorar las bondades de EvoFinz antes de escalar a Premium ($6.99/mes) o Pro ($14.99/mes).'
+    answer: 'Sí, el plan gratuito incluye hasta 50 gastos manuales/mes, 20 ingresos/mes, 5 escaneos OCR gratis, 2 clientes y 2 proyectos. Perfecto para explorar las bondades de EvoFinz antes de escalar a Premium ($7.99/mes) o Pro ($14.99/mes).'
   },
   {
     question: '¿Cómo funciona la gamificación?',
@@ -424,7 +424,7 @@ const getFaqs = (language: string) => language === 'es' ? [
   },
   {
     question: 'Is there a free version?',
-    answer: 'Yes, the free plan includes up to 50 manual expenses/month, 20 incomes/month, 5 free OCR scans, 2 clients and 2 projects. Perfect for exploring EvoFinz before scaling to Premium ($6.99/month) or Pro ($14.99/month).'
+    answer: 'Yes, the free plan includes up to 50 manual expenses/month, 20 incomes/month, 5 free OCR scans, 2 clients and 2 projects. Perfect for exploring EvoFinz before scaling to Premium ($7.99/month) or Pro ($14.99/month).'
   },
   {
     question: 'How does gamification work?',
