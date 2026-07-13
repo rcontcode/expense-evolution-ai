@@ -64,7 +64,7 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null);
   const accumulatedTextRef = useRef('');
-  const pauseTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const pauseTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sentenceQueueRef = useRef<string[]>([]);
   const currentSentenceIndexRef = useRef(0);
   

@@ -38,7 +38,7 @@ export function TouchTooltip({
 }: TouchTooltipProps) {
   const [open, setOpen] = useState(false);
   const [isTouch, setIsTouch] = useState(false);
-  const longPressTimer = useRef<NodeJS.Timeout | null>(null);
+  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const triggerRef = useRef<HTMLDivElement>(null);
 
   // Update touch detection on mount and resize
