@@ -47,7 +47,7 @@ export default function About() {
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
-        title={es ? 'Sobre EvoFinz' : 'About EvoFinz'}
+        title={es ? 'Sobre nosotros' : 'About us'}
         description={es
           ? 'Conoce a EvoFinz: una herramienta de organización y educación financiera para profesionales en Canadá y Chile. No es asesoría financiera.'
           : 'Meet EvoFinz: a financial organization and education tool for professionals in Canada and Chile. Not financial advice.'}
