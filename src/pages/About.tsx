@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { ArrowLeft, Flame, Target, Heart, Shield, Globe } from 'lucide-react';
 import { SocialLinks } from '@/components/SocialLinks';
 import { PhoenixLogo } from '@/components/ui/phoenix-logo';
+import { SEOHead } from '@/components/shared/SEOHead';
 
 export default function About() {
   const { language } = useLanguage();
@@ -45,6 +46,13 @@ export default function About() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title={es ? 'Sobre EvoFinz' : 'About EvoFinz'}
+        description={es
+          ? 'Conoce a EvoFinz: una herramienta de organización y educación financiera para profesionales en Canadá y Chile. No es asesoría financiera.'
+          : 'Meet EvoFinz: a financial organization and education tool for professionals in Canada and Chile. Not financial advice.'}
+        path="/about"
+      />
       <div className="max-w-3xl mx-auto px-4 py-8 sm:py-12">
         <div className="flex items-center gap-4 mb-8">
           <Link to={user ? '/dashboard' : '/landing'}>

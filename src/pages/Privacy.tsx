@@ -26,6 +26,7 @@ import {
   FileText,
   Clock,
 } from 'lucide-react';
+import { SEOHead } from '@/components/shared/SEOHead';
 
 export default function Privacy() {
   const { language } = useLanguage();
@@ -592,6 +593,13 @@ export default function Privacy() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title={isEs ? 'Privacidad' : 'Privacy'}
+        description={isEs
+          ? 'Política de privacidad de EvoFinz: qué datos guardamos, cómo los protegemos y tus derechos sobre tu información financiera.'
+          : 'EvoFinz privacy policy: what data we store, how we protect it, and your rights over your financial information.'}
+        path="/privacy"
+      />
       {/* Header */}
       <div className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b">
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
