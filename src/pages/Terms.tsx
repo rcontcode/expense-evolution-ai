@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, FileText, CreditCard, RefreshCw, Brain, Trash2, Scale, AlertTriangle } from 'lucide-react';
+import { SEOHead } from '@/components/shared/SEOHead';
 
 export default function Terms() {
   const { language } = useLanguage();
@@ -72,6 +73,13 @@ export default function Terms() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title={es ? 'Términos de Servicio' : 'Terms of Service'}
+        description={es
+          ? 'Términos de servicio de EvoFinz: descripción del servicio, suscripciones, reembolsos y responsabilidades. EvoFinz es educación, no asesoría financiera.'
+          : 'EvoFinz terms of service: service description, subscriptions, refunds, and responsibilities. EvoFinz is education, not financial advice.'}
+        path="/terms"
+      />
       <div className="max-w-4xl mx-auto px-4 py-8 sm:py-12">
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">

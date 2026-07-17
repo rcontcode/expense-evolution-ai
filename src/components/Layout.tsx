@@ -4,6 +4,7 @@ import { useSafeNavigation } from '@/hooks/useSafeNavigation';
 import { preloadRoute } from '@/App';
 import { QuickCaptureDialog } from '@/components/dialogs/QuickCaptureDialog';
 import { GlobalSearch } from '@/components/search/GlobalSearch';
+import { SEOHead } from '@/components/shared/SEOHead';
 import { 
   LayoutDashboard, 
   Inbox, 
@@ -527,10 +528,21 @@ export const Layout = ({ children }: LayoutProps) => {
   const taxBadge = currentCountry === 'CL' ? 'SII' : currentCountry === 'CA' ? 'CRA' : null;
   const userInitial = profile?.full_name?.charAt(0)?.toUpperCase() || profile?.email?.charAt(0)?.toUpperCase() || 'U';
 
+  // SEO genérico para TODAS las páginas privadas de la app (siempre noindex: son datos de
+  // usuario, no contenido para buscadores). Busca el label ya existente en la navegación
+  // para la ruta actual; si no hay match (rutas sin ítem de sidebar, ej. /onboarding), cae
+  // a un título genérico. Evita tener que montar SEOHead página por página en 34 archivos.
+  const currentNavItem = NAV_SECTIONS.flatMap((s) => s.items).find((it) => it.path === location.pathname);
+  const pageTitle = currentNavItem ? t(currentNavItem.label) : (language === 'es' ? 'Panel' : 'Dashboard');
+  const pageDescription = language === 'es'
+    ? 'Panel privado de EvoFinz — gestión financiera personal y empresarial.'
+    : 'EvoFinz private dashboard — personal and business financial management.';
+
   // Mobile Layout
   if (isMobile) {
     return (
       <div className="mobile-app-shell flex flex-col h-[100dvh] bg-background relative overflow-hidden">
+        <SEOHead title={pageTitle} description={pageDescription} path={location.pathname} noindex />
         <ThemeBackground />
         {/* Mobile Header */}
         <header className="mobile-app-header shrink-0 z-50 backdrop-blur-2xl border-b border-border/30 px-3 py-1.5" style={{ background: 'hsl(var(--background) / 0.98)' }}>
@@ -846,6 +858,7 @@ export const Layout = ({ children }: LayoutProps) => {
   return (
     <TooltipProvider delayDuration={300}>
       <div className="flex h-screen bg-background relative">
+        <SEOHead title={pageTitle} description={pageDescription} path={location.pathname} noindex />
         <ThemeBackground />
         {/* Sidebar */}
         <aside 

@@ -19,6 +19,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { SocialLinks } from '@/components/SocialLinks';
 import { ContactForm } from '@/components/ContactForm';
 import { LiveSocialProof } from '@/components/landing/LiveSocialProof';
+import { SEOHead } from '@/components/shared/SEOHead';
 
 import { Wallet, CalendarCheck } from 'lucide-react';
 
@@ -366,25 +367,6 @@ export default function Landing() {
   const features = getFeatures(language);
   const pricingTiers = getPricingTiers(language);
   const stats = getStats(language);
-  
-  // SEO meta tags
-  useEffect(() => {
-    document.title = language === 'es' 
-      ? 'EvoFinz — Gestión Financiera Inteligente para Freelancers' 
-      : 'EvoFinz — Smart Financial Management for Freelancers';
-    const metaDesc = document.querySelector('meta[name="description"]');
-    const content = language === 'es'
-      ? 'Plataforma de gestión financiera con OCR, asistente de voz, gamificación y mentoría. Para profesionales en Canadá y Latinoamérica.'
-      : 'Financial management platform with OCR, voice assistant, gamification and mentorship. For professionals in Canada and Latin America.';
-    if (metaDesc) {
-      metaDesc.setAttribute('content', content);
-    } else {
-      const meta = document.createElement('meta');
-      meta.name = 'description';
-      meta.content = content;
-      document.head.appendChild(meta);
-    }
-  }, [language]);
 
   // Calculate prices based on billing period - fixed prices matching Stripe
   const getPrice = (monthlyPrice: number, _isBundle?: boolean) => {
@@ -417,6 +399,15 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-100 overflow-hidden">
+      <SEOHead
+        title={language === 'es'
+          ? 'EvoFinz — Gestión Financiera Inteligente para Freelancers'
+          : 'EvoFinz — Smart Financial Management for Freelancers'}
+        description={language === 'es'
+          ? 'Plataforma de gestión financiera con OCR, asistente de voz, gamificación y mentoría. Educación financiera para profesionales en Canadá y Latinoamérica.'
+          : 'Financial management platform with OCR, voice assistant, gamification and mentorship. Financial education for professionals in Canada and Latin America.'}
+        path="/"
+      />
       {/* Sticky Pricing Bar - Premium design */}
       <motion.div
         initial={{ y: -100, opacity: 0 }}

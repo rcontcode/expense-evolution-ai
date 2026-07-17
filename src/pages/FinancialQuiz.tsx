@@ -5,6 +5,8 @@ import { QuizModal } from "@/components/quiz/QuizModal";
 import { QuizResults } from "@/components/quiz/QuizResults";
 import { ThemeBackground } from "@/components/ThemeBackground";
 import { supabase } from "@/integrations/supabase/client";
+import { SEOHead } from "@/components/shared/SEOHead";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export interface QuizData {
   name: string;
@@ -33,6 +35,7 @@ export interface ReferralInfo {
 }
 
 const FinancialQuiz = () => {
+  const { language } = useLanguage();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [isQuizOpen, setIsQuizOpen] = useState(false);
@@ -130,6 +133,15 @@ const FinancialQuiz = () => {
 
   return (
     <div className="min-h-[100svh] bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 relative overflow-x-hidden overflow-y-auto overscroll-y-auto touch-pan-y text-white">
+      <SEOHead
+        title={language === 'es'
+          ? 'Test de Salud Financiera Gratis'
+          : 'Free Financial Health Quiz'}
+        description={language === 'es'
+          ? 'Responde este test gratuito y descubre en qué nivel está tu organización financiera. Educación financiera, no asesoría de inversión.'
+          : 'Take this free quiz to discover your financial organization level. Financial education, not investment advice.'}
+        path="/quiz"
+      />
       <ThemeBackground />
 
       {result ? (

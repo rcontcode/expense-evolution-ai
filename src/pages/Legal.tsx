@@ -19,6 +19,7 @@ import {
   Heart,
   ArrowRight
 } from 'lucide-react';
+import { SEOHead } from '@/components/shared/SEOHead';
 
 export default function Legal() {
   const { language } = useLanguage();
@@ -520,6 +521,13 @@ export default function Legal() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
+      <SEOHead
+        title={isEs ? 'Legal' : 'Legal'}
+        description={isEs
+          ? 'Información legal de EvoFinz: qué es, qué no es (no es asesoría financiera, contable ni fiscal), y cómo usamos los datos.'
+          : 'EvoFinz legal information: what it is, what it is not (not financial, accounting, or tax advice), and how we use data.'}
+        path="/legal"
+      />
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         {/* Header */}
         <div className="mb-8">
