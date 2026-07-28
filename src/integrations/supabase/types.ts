@@ -4772,6 +4772,16 @@ export type Database = {
         Args: { user_uuid: string }
         Returns: number
       }
+      get_my_referral_leads: {
+        Args: never
+        Returns: {
+          converted_at: string
+          created_at: string
+          id: string
+          marketing_consent: boolean
+          name_initial: string
+        }[]
+      }
       get_or_create_monthly_usage: {
         Args: { p_user_id: string }
         Returns: {
