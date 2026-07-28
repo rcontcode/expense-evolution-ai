@@ -83,6 +83,26 @@ function evaluateTriggerConditions(lead: any, conditions: any): { match: boolean
   return { match: true };
 }
 
+// ===== MARKETING CONSENT GATE (PIPEDA / Ley 19.628) =====
+// El outreach de marketing (email/whatsapp de contacto y enrolamiento en
+// secuencias de nurturing) solo puede enviarse a leads que dieron su
+// consentimiento explícito (quiz_leads.marketing_consent === true).
+// Los mensajes puramente transaccionales quedan EXENTOS: la regla los declara
+// con action_config.transactional === true.
+const MARKETING_ACTION_TYPES = new Set(['email', 'whatsapp', 'email_sequence']);
+
+function requiresMarketingConsent(actionType: string, actionConfig: any): boolean {
+  if (!MARKETING_ACTION_TYPES.has(actionType)) return false;
+  // Exención transaccional (confirmaciones, recibos, etc.): explícita en la regla.
+  if (actionConfig?.transactional === true) return false;
+  return true;
+}
+
+// Fail-closed: sin dato o cualquier valor distinto de true => NO hay consentimiento.
+function hasMarketingConsent(lead: any): boolean {
+  return lead?.marketing_consent === true;
+}
+
 // ===== ACTION EXECUTORS =====
 async function executeAIMessage(
   supabaseUrl: string, serviceKey: string, lead: any, rule: any, actionConfig: any, actionType: string, lovableApiKey: string | undefined
@@ -432,6 +452,19 @@ Deno.serve(async (req) => {
 
       const actionType = rule.action_type;
       const actionConfig = rule.action_config || {};
+
+      // ===== MARKETING CONSENT GATE =====
+      // Nunca mandamos marketing a quien no consintió. Los transaccionales
+      // (action_config.transactional === true) pasan sin este chequeo.
+      if (requiresMarketingConsent(actionType, actionConfig) && !hasMarketingConsent(lead)) {
+        skipped.push(`${rule.name} (sin consentimiento de marketing)`);
+        await dbPost(`${supabaseUrl}/rest/v1/automation_logs`, headers, {
+          rule_id: rule.id, lead_id: lead.id, action_type: actionType,
+          status: 'skipped', result_data: { reason: 'no_marketing_consent' },
+        });
+        continue;
+      }
+
       let result: ActionResult;
 
       try {

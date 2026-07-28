@@ -169,6 +169,20 @@ Deno.serve(async (req) => {
             continue;
           }
 
+          // ===== MARKETING CONSENT GATE (PIPEDA / Ley 19.628) =====
+          // El nurturing SIEMPRE es marketing: no se envía a un lead sin
+          // consentimiento. Éste es el punto REAL de envío, así que cubre
+          // también revocaciones de consentimiento y enrolamientos previos a
+          // esta política. Fail-closed: solo continúa si marketing_consent === true.
+          if (lead.marketing_consent !== true) {
+            await fetch(`${supabaseUrl}/rest/v1/lead_nurturing_log?id=eq.${log.id}`, {
+              method: 'PATCH',
+              headers: { ...headers, 'Prefer': 'return=minimal' },
+              body: JSON.stringify({ status: 'skipped', executed_at: now, message_generated: 'Sin consentimiento de marketing — omitido' }),
+            });
+            continue;
+          }
+
           const channel = step?.channel || 'email';
           const messageHint = step?.message_hint || step?.template_type || 'follow_up';
           const leadSource = lead.source || 'evofinz';

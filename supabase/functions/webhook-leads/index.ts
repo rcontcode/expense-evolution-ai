@@ -345,6 +345,17 @@ Deno.serve(async (req) => {
     const timeSpent = extractField(payload, "time_spent", ["tiempo_disponible", "time_spent", "tiempo"]);
     const comments = extractField(payload, "comments", ["comments", "comentarios", "comentario"]);
 
+    // Consentimiento de marketing (PIPEDA / Ley 19.628). Fail-closed: solo es
+    // true si la app externa lo manda explícitamente afirmativo (booleano o
+    // string 'true'/'1'/'yes'/'si'); ausente, false o cualquier otra cosa => false.
+    // Las apps externas (Universmind Little, Future Lab) deben reenviar el
+    // consentimiento REAL del usuario para que su nurturing pueda enviarse.
+    const parseConsent = (v: unknown): boolean =>
+      v === true || (typeof v === 'string' && ['true', '1', 'yes', 'si', 'sí'].includes(v.trim().toLowerCase()));
+    const marketingConsent = parseConsent(
+      payload.marketing_consent ?? payload.marketingConsent ?? payload.metadata?.marketing_consent
+    );
+
     // Failed questions: direct or from metadata best practices
     let failedQuestions: number[] = [];
     if (Array.isArray(payload.failed_questions)) {
@@ -421,28 +432,47 @@ Deno.serve(async (req) => {
     // Store full metadata object in JSONB column
     const metadataToStore = Object.keys(extraMetadata).length > 0 ? extraMetadata : {};
 
-    const { data: savedLead, error: dbError } = await supabase
+    const leadRow: Record<string, unknown> = {
+      name: cleanName,
+      email: cleanEmail,
+      phone: cleanPhone,
+      country,
+      situation,
+      goal,
+      obstacle,
+      time_spent: timeSpent,
+      quiz_score: quizScore,
+      quiz_level: quizLevel,
+      failed_questions: failedQuestions,
+      comments: cleanComments,
+      lead_score: leadScore,
+      priority,
+      source,
+      metadata: metadataToStore,
+      marketing_consent: marketingConsent,
+    };
+
+    let { data: savedLead, error: dbError } = await supabase
       .from("quiz_leads")
-      .insert({
-        name: cleanName,
-        email: cleanEmail,
-        phone: cleanPhone,
-        country,
-        situation,
-        goal,
-        obstacle,
-        time_spent: timeSpent,
-        quiz_score: quizScore,
-        quiz_level: quizLevel,
-        failed_questions: failedQuestions,
-        comments: cleanComments,
-        lead_score: leadScore,
-        priority,
-        source,
-        metadata: metadataToStore,
-      })
+      .insert(leadRow)
       .select()
       .single();
+
+    // Tolerancia (mismo patrón que send-quiz-lead): si la migración que agrega
+    // marketing_consent aún no corrió en producción, el insert falla con
+    // "columna no existe" (42703). Reintentamos sin la columna para NO perder
+    // el lead; el consentimiento se recupera cuando la migración esté aplicada.
+    if (dbError && (dbError.code === "42703" || dbError.message?.includes("marketing_consent"))) {
+      console.error("[WEBHOOK-LEADS] marketing_consent column missing, retrying insert without it:", dbError.message);
+      const { marketing_consent: _omit, ...leadRowWithoutConsent } = leadRow;
+      const retry = await supabase
+        .from("quiz_leads")
+        .insert(leadRowWithoutConsent)
+        .select()
+        .single();
+      savedLead = retry.data;
+      dbError = retry.error;
+    }
 
     if (dbError) {
       console.error("[WEBHOOK-LEADS] DB error:", dbError);
@@ -474,6 +504,9 @@ Deno.serve(async (req) => {
           comments: comments || "",
           returning_lead: !!payload.returning_lead,
           previous_sources: payload.previous_sources || [],
+          // Consentimiento de marketing (PIPEDA / Ley 19.628): GHL NO debe
+          // disparar marketing a quien no consintió. Fail-closed a false.
+          marketing_consent: marketingConsent,
         };
         const ghlRes = await fetch(ghlWebhookUrl, {
           method: "POST",
