@@ -8,6 +8,8 @@ import {
   Shield, Clock, Heart, Award
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 interface WorkflowStep {
@@ -231,6 +233,7 @@ const getWorkflows = (language: string): Workflow[] => [
 
 export function HowItWorksSection() {
   const { language } = useLanguage();
+  const navigate = useNavigate();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [autoPlay, setAutoPlay] = useState(true);
   const [direction, setDirection] = useState(1);
@@ -469,6 +472,38 @@ export function HowItWorksSection() {
             <span className="text-slate-500 text-sm">
               {currentIndex + 1} / {workflows.length}
             </span>
+          </div>
+
+          {/* Salida al diagnóstico — agregada el 15-ago-2026 por orden de Rudy.
+              POR QUÉ AQUÍ: el carrusel recorría los 8 flujos y terminaba en NADA. La persona
+              acababa de entender todo lo que hace la app —el punto más alto de interés de toda
+              la visita— y se quedaba mirando la pantalla, sin más camino que subir a buscar un
+              botón por su cuenta. Ese es el lugar donde más gente se pierde.
+              Lleva al quiz (15 preguntas, ~3 min) y no al registro a propósito: el quiz DA algo
+              (el diagnóstico de la persona) antes de pedir el correo, así que es un sí mucho más
+              fácil que "crea una cuenta" para quien recién conoce EvoFinz.
+              Este bloque es además la ÚNICA puerta al quiz en móvil y tablet: el botón del héroe
+              (Landing.tsx) es `hidden lg:inline-flex` porque la barra superior no aguanta un tercer
+              botón bajo 1024px. Si algún día se quita esto, el móvil se queda sin quiz. */}
+          <div className="text-center mt-12">
+            <p className="text-slate-300 text-lg mb-5 max-w-xl mx-auto">
+              {language === 'es'
+                ? 'Ya viste cómo funciona. ¿Por dónde te conviene empezar a ti?'
+                : 'You have seen how it works. Where should you start?'}
+            </p>
+            <Button
+              size="lg"
+              onClick={() => navigate('/quiz')}
+              className="bg-gradient-to-r from-violet-500 to-purple-500 hover:from-violet-400 hover:to-purple-400 text-white font-bold shadow-lg"
+            >
+              <Target className="w-5 h-5 mr-2" />
+              {language === 'es' ? 'Hacer mi diagnóstico' : 'Take my assessment'}
+            </Button>
+            <p className="text-slate-500 text-sm mt-3">
+              {language === 'es'
+                ? '15 preguntas · 3 minutos · gratis'
+                : '15 questions · 3 minutes · free'}
+            </p>
           </div>
         </div>
       </div>

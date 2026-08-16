@@ -483,6 +483,30 @@ export default function Landing() {
                 </motion.div>
               </div>
               
+              {/* Diagnóstico gratis → /quiz — agregado el 15-ago-2026 por orden de Rudy.
+                  POR QUÉ: medido en vivo ese día, la landing tenía CERO enlaces a /quiz. Todos sus
+                  botones pedían algo (crear cuenta, ver precios, pagar) y ninguno daba algo, así que
+                  el visitante que aún no quería registrarse se iba sin dejar rastro. El quiz ya
+                  existía, funciona y captura el correo de verdad (QuizModal.tsx valida el email y lo
+                  manda a la función send-quiz-lead), pero no se ofrecía desde ninguna parte.
+                  Fokuspark ya resuelve esto igual: su botón principal es "Quiero ordenar mi mente" → /quiz.
+
+                  POR QUÉ `hidden lg:inline-flex` Y NO SIEMPRE VISIBLE: esta barra ya lleva "Ver planes"
+                  + el CTA naranja, y bajo 1024px los precios se esconden justo porque el espacio se
+                  acaba. Un tercer botón con texto en español —siempre más largo que el inglés— es
+                  exactamente lo que rompió el navbar de Universmind Little el 14-ago (el menú no cabía
+                  y se montaba sobre el logo). El móvil NO queda sin puerta al quiz: lo cubre el cierre
+                  del carrusel en HowItWorksSection.tsx, que sí se ve en todos los tamaños. */}
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => navigate('/quiz')}
+                className="hidden lg:inline-flex text-white/80 hover:text-white hover:bg-white/10 font-medium text-sm"
+              >
+                <Target className="w-4 h-4 mr-1.5 text-cyan-400" />
+                {language === 'es' ? 'Diagnóstico gratis' : 'Free assessment'}
+              </Button>
+
               {/* Ver Planes */}
               <Button
                 size="sm"
