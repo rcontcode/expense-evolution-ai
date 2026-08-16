@@ -4866,6 +4866,17 @@ export type Database = {
         }
       }
       is_admin: { Args: { p_user_id: string }; Returns: boolean }
+      log_audit_event: {
+        Args: {
+          _action: string
+          _entity_id?: string
+          _entity_name?: string
+          _entity_type: string
+          _new_values?: Json
+          _old_values?: Json
+        }
+        Returns: string
+      }
       move_to_dlq: {
         Args: {
           dlq_name: string
