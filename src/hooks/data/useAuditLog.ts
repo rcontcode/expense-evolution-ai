@@ -2,8 +2,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
-/** Centralized audit log insert — encapsulates type cast in one place */
-export async function insertAuditLog(userId: string, entry: {
+/**
+ * Centralized audit log insert.
+ * Writes go through the server-side `log_audit_event` function, which forces
+ * the row's user_id to the authenticated user and validates the action.
+ * Direct client inserts into audit_log are not allowed.
+ */
+export async function insertAuditLog(_userId: string, entry: {
   action: string;
   entity_type: string;
   entity_id?: string | null;
@@ -11,17 +16,14 @@ export async function insertAuditLog(userId: string, entry: {
   old_values?: Record<string, any> | null;
   new_values?: Record<string, any> | null;
 }) {
-  const { error } = await supabase
-    .from('audit_log')
-    .insert({
-      user_id: userId,
-      action: entry.action,
-      entity_type: entry.entity_type,
-      entity_id: entry.entity_id || null,
-      entity_name: entry.entity_name || null,
-      old_values: entry.old_values || null,
-      new_values: entry.new_values || null,
-    });
+  const { error } = await supabase.rpc('log_audit_event', {
+    _action: entry.action,
+    _entity_type: entry.entity_type,
+    _entity_id: entry.entity_id || null,
+    _entity_name: entry.entity_name || null,
+    _old_values: (entry.old_values ?? null) as any,
+    _new_values: (entry.new_values ?? null) as any,
+  });
   if (error) console.error('Audit log error:', error);
 }
 
