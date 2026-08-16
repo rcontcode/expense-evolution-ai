@@ -16,12 +16,11 @@ export function useAdminAccessGuard() {
     setAttempts(newAttempts);
 
     try {
-      await supabase.from('audit_log').insert({
-        user_id: userId,
-        action: 'unauthorized_admin_access',
-        entity_type: 'admin_route',
-        entity_name: path,
-        new_values: { attempt_number: newAttempts, blocked: newAttempts >= MAX_ATTEMPTS },
+      await supabase.rpc('log_audit_event', {
+        _action: 'unauthorized_admin_access',
+        _entity_type: 'admin_route',
+        _entity_name: path,
+        _new_values: { attempt_number: newAttempts, blocked: newAttempts >= MAX_ATTEMPTS } as any,
       });
     } catch (err) {
       console.error('[AdminGuard] Failed to log attempt:', err);
