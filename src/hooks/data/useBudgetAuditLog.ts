@@ -39,17 +39,15 @@ export function useLogBudgetChange() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (entry: { action: string; entity_type: string; entity_id?: string; entity_name?: string; old_values?: any; new_values?: any }) => {
-      const { error } = await supabase
-        .from('audit_log')
-        .insert({
-          user_id: user!.id,
-          action: entry.action,
-          entity_type: entry.entity_type,
-          entity_id: entry.entity_id || null,
-          entity_name: entry.entity_name || null,
-          old_values: entry.old_values || null,
-          new_values: entry.new_values || null,
-        });
+      if (!user) throw new Error('Not authenticated');
+      const { error } = await supabase.rpc('log_audit_event', {
+        _action: entry.action,
+        _entity_type: entry.entity_type,
+        _entity_id: entry.entity_id || null,
+        _entity_name: entry.entity_name || null,
+        _old_values: (entry.old_values ?? null) as any,
+        _new_values: (entry.new_values ?? null) as any,
+      });
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['budget-audit-log'] }),
