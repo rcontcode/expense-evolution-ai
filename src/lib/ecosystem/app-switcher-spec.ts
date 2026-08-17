@@ -24,7 +24,9 @@ export const ECO_APPS: Record<EcoApp, EcoAppInfo> = {
     emoji: '💰',
     taglineEs: 'Finanzas inteligentes',
     taglineEn: 'Smart finances',
-    url: 'https://expense-evolution-ai.lovable.app',
+    // Dominios propios (15-ago-2026). El de Fokuspark estaba MUERTO (404) y el de EvoFinz,
+    // aunque responde, es la dirección interna de Lovable y no la marca que el usuario conoce.
+    url: 'https://evofinz.com',
     colorClass: 'bg-primary/15',
   },
   fokuspark: {
@@ -33,7 +35,7 @@ export const ECO_APPS: Record<EcoApp, EcoAppInfo> = {
     emoji: '🧘',
     taglineEs: 'Bienestar y enfoque',
     taglineEn: 'Wellbeing & focus',
-    url: 'https://fokuspark.lovable.app',
+    url: 'https://fokuspark.com',
     colorClass: 'bg-accent/15',
   },
 };

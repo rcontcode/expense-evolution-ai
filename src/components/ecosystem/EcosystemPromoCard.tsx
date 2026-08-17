@@ -4,7 +4,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Brain, ExternalLink } from 'lucide-react';
 
-const FOKUSPARK_URL = 'https://fokuspark.lovable.app/?utm_source=evofinz&utm_medium=ecosystem&utm_campaign=promo';
+// Dominio propio — `fokuspark.lovable.app` devuelve 404 (verificado 15-ago-2026).
+const FOKUSPARK_URL = 'https://fokuspark.com/?utm_source=evofinz&utm_medium=ecosystem&utm_campaign=promo';
 
 export function EcosystemPromoCard() {
   const { language } = useLanguage();

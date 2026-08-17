@@ -123,7 +123,8 @@ export const EcosystemOnboarding = memo(() => {
               size="sm"
               className="gap-1 text-xs h-8"
               onClick={() => {
-                window.open('https://fokuspark.lovable.app', '_blank');
+                // Dominio propio — el de Lovable devuelve 404 (verificado 15-ago-2026).
+                window.open('https://fokuspark.com', '_blank');
                 handleDismiss();
               }}
             >

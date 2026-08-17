@@ -3,7 +3,11 @@
  * Generates URLs to specific Fokuspark tools with UTM tracking.
  */
 
-const FOKUSPARK_BASE = 'https://fokuspark.lovable.app';
+// Dominio propio, NO el de Lovable. Corregido el 15-ago-2026: `fokuspark.lovable.app`
+// devuelve 404 (verificado con curl ese día), así que TODO el cross-sell del ecosistema
+// —cada botón "Iniciar en Fokuspark", cada herramienta del digest semanal— llevaba a los
+// usuarios de EvoFinz a una página muerta. Tráfico perdido entre las apps del mismo dueño.
+const FOKUSPARK_BASE = 'https://fokuspark.com';
 
 const UTM = 'utm_source=evofinz&utm_medium=ecosystem&utm_campaign=deeplink';
 

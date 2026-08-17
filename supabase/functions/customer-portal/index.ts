@@ -51,7 +51,11 @@ serve(async (req) => {
     const customerId = customers.data[0].id;
     logStep("Found Stripe customer", { customerId });
 
-    const origin = req.headers.get("origin") || "https://evofinz.lovable.app";
+    // Respaldo = dominio propio. Corregido el 15-ago-2026 junto con create-checkout: era
+    // `evofinz.lovable.app` (404 verificado). Aquí arma el `return_url` del portal de
+    // facturación de Stripe, o sea adónde vuelve el cliente después de cambiar su plan o su
+    // tarjeta. Caía en una página muerta.
+    const origin = req.headers.get("origin") || "https://evofinz.com";
     const portalSession = await stripe.billingPortal.sessions.create({
       customer: customerId,
       return_url: `${origin}/dashboard`,

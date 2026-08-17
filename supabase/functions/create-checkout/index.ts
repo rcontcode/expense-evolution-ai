@@ -100,7 +100,12 @@ serve(async (req) => {
       logStep("Found existing customer", { customerId });
     }
 
-    const origin = req.headers.get("origin") || "https://evofinz.lovable.app";
+    // Respaldo = dominio propio. Corregido el 15-ago-2026: era `evofinz.lovable.app`, que
+    // devuelve 404 (verificado con curl). Como este valor arma el `success_url` de Stripe, si
+    // la cabecera `origin` no llegaba, el cliente terminaba en una página muerta JUSTO DESPUÉS
+    // DE PAGAR. Es raro que falte esa cabecera, pero el precio de que falte era perder al cliente
+    // en el peor momento posible.
+    const origin = req.headers.get("origin") || "https://evofinz.com";
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
@@ -139,7 +144,9 @@ serve(async (req) => {
             : '🚀 Estás a un clic de tomar el control de tus finanzas. ¡Bienvenido a EvoFinz!',
         },
         terms_of_service_acceptance: {
-          message: 'Al suscribirte, aceptas nuestros [términos de servicio](https://evofinz.lovable.app/legal) y confirmas que puedes cancelar en cualquier momento.',
+          // Dominio propio: `evofinz.lovable.app` da 404 y este enlace es el de los TÉRMINOS DE
+          // SERVICIO que el cliente acepta al suscribirse. Apuntaba a una página inexistente.
+          message: 'Al suscribirte, aceptas nuestros [términos de servicio](https://evofinz.com/legal) y confirmas que puedes cancelar en cualquier momento.',
         },
       },
       // Payment settings
