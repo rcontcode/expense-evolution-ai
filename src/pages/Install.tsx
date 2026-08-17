@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useNavigate } from 'react-router-dom';
+import { SEOHead } from '@/components/shared/SEOHead';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -126,6 +127,15 @@ export default function Install() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-background">
+      {/* Va solo en esta rama: la de arriba (isStandalone) únicamente la ve quien
+          ya tiene la app instalada, nunca un buscador ni un visitante nuevo. */}
+      <SEOHead
+        title={language === 'es' ? 'Instalar EvoFinz en tu celular' : 'Install EvoFinz on your phone'}
+        description={language === 'es'
+          ? 'Instala EvoFinz como app en tu celular o computadora. Captura recibos con la cámara, funciona sin conexión y sincroniza al instante. Sin tienda de aplicaciones.'
+          : 'Install EvoFinz as an app on your phone or computer. Capture receipts with your camera, works offline and syncs instantly. No app store needed.'}
+        path="/install"
+      />
       <div className="container max-w-lg mx-auto px-4 py-8 space-y-6">
         {/* Header */}
         <div className="text-center space-y-4">

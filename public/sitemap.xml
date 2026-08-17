@@ -1,33 +1,62 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Mapa del sitio de EvoFinz.
+
+  Cada URL de aquí calza exactamente con el canonical que declara su página vía
+  <SEOHead path="...">. Si el sitemap lista una URL cuyo canonical apunta a otra
+  parte, Google descarta la entrada — por eso salió /landing de esta lista: esa
+  página declara path="/" y las dos versiones anteriores se contradecían.
+
+  Quedan FUERA a propósito:
+  - /landing, /home, /evo, /1, /index.html — todas son la misma landing y canonizan a "/".
+  - /auth, /reset-password, /onboarding — puertas de acceso, no contenido.
+  - /dashboard y todo lo demás detrás de sesión — marcado noindex desde el código.
+  - /admin/* — bloqueado además en robots.txt.
+-->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
   <url>
     <loc>https://evofinz.com/</loc>
-    <lastmod>2026-05-08</lastmod>
+    <lastmod>2026-08-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
+
   <url>
-    <loc>https://evofinz.com/landing</loc>
-    <lastmod>2026-05-08</lastmod>
-    <changefreq>weekly</changefreq>
+    <loc>https://evofinz.com/quiz</loc>
+    <lastmod>2026-08-17</lastmod>
+    <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
+
   <url>
-    <loc>https://evofinz.com/auth</loc>
-    <lastmod>2026-05-08</lastmod>
+    <loc>https://evofinz.com/about</loc>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.7</priority>
   </url>
-  <url>
-    <loc>https://evofinz.com/legal</loc>
-    <lastmod>2026-05-08</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
+
   <url>
     <loc>https://evofinz.com/install</loc>
-    <lastmod>2026-05-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
+
+  <url>
+    <loc>https://evofinz.com/legal</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
+  </url>
+
+  <url>
+    <loc>https://evofinz.com/privacy</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+
+  <url>
+    <loc>https://evofinz.com/terms</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+
 </urlset>
