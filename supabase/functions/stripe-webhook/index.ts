@@ -162,6 +162,27 @@ serve(async (req) => {
       case "customer.subscription.updated": {
         const subscription = event.data.object as Stripe.Subscription;
         const customerId = subscription.customer as string;
+
+        // GUARDIA DE PROPIEDAD (22-ago-2026).
+        //
+        // Las 3 apps de Rudy cobran en la MISMA cuenta de Stripe, asi que Stripe
+        // notifica cada suscripcion a TODOS los webhooks de la cuenta. Una de
+        // Fokuspark llega aqui sin `metadata.user_id`, `identifyUserId` cae al
+        // fallback por CORREO y —como el cliente suele tener cuenta en las dos—
+        // lo encuentra igual.
+        //
+        // A partir de ahi el dano era real: `getPlanFromProductId` no reconocia
+        // el producto ajeno y devolvia "free", y el upsert (onConflict user_id)
+        // PISABA la suscripcion de EvoFinz del cliente dejandola en free, con el
+        // stripe_subscription_id de la otra app. O sea: comprar Fokuspark te
+        // podia borrar el EvoFinz Premium que estabas pagando.
+        if (!PRODUCT_ID_MAP[subscription.items.data[0]?.price?.product as string]) {
+          logStep("Suscripcion de otra app, se ignora", {
+            subscriptionId: subscription.id,
+            productId: subscription.items.data[0]?.price?.product,
+          });
+          break;
+        }
         
         const customer = await stripe.customers.retrieve(customerId);
         if (customer.deleted) {
@@ -219,6 +240,18 @@ serve(async (req) => {
       case "customer.subscription.deleted": {
         const subscription = event.data.object as Stripe.Subscription;
         const customerId = subscription.customer as string;
+
+        // GUARDIA DE PROPIEDAD (ver customer.subscription.created).
+        // Esta rama era la peor de las dos porque NO miraba el producto: pasaba
+        // directo a identificar por correo y escribia plan_type "free". Cancelar
+        // Fokuspark le apagaba a ese mismo cliente su EvoFinz Premium pagado.
+        if (!PRODUCT_ID_MAP[subscription.items.data[0]?.price?.product as string]) {
+          logStep("Cancelacion de otra app, se ignora", {
+            subscriptionId: subscription.id,
+            productId: subscription.items.data[0]?.price?.product,
+          });
+          break;
+        }
 
         const customer = await stripe.customers.retrieve(customerId);
         if (customer.deleted) break;
