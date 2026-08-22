@@ -107,6 +107,43 @@ serve(async (req) => {
     // en el peor momento posible.
     const origin = req.headers.get("origin") || "https://evofinz.com";
 
+    // GUARDIA CONTRA EL COBRO DOBLE (mismo arreglo que en Fokuspark, 22-ago-2026).
+    //
+    // Abajo se crea SIEMPRE una suscripcion nueva. Quien ya tiene Premium y elige
+    // Pro terminaba con las dos vivas, pagando las dos. Y el webhook guarda solo
+    // el id de la ultima, asi que la primera quedaba huerfana: invisible para la
+    // app y cobrando igual aunque el cliente creyera haber cancelado.
+    //
+    // Cuando ya hay una suscripcion viva devolvemos la URL del PORTAL, donde
+    // Stripe MODIFICA la existente y prorratea. El frontend abre `url` igual.
+    if (customerId) {
+      const existentes = await stripe.subscriptions.list({
+        customer: customerId,
+        status: "all",
+        limit: 20,
+      });
+      const VIVAS = ["active", "trialing", "past_due", "unpaid"];
+      const viva = existentes.data.find((sub) => VIVAS.includes(sub.status));
+
+      if (viva) {
+        logStep("Ya tiene suscripcion viva: se redirige al portal en vez de crear otra", {
+          subscriptionId: viva.id,
+          status: viva.status,
+        });
+        const portal = await stripe.billingPortal.sessions.create({
+          customer: customerId,
+          return_url: `${origin}/dashboard`,
+        });
+        return new Response(
+          JSON.stringify({ url: portal.url, redirectedToPortal: true }),
+          {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 200,
+          },
+        );
+      }
+    }
+
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
