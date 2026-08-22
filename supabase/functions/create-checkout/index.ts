@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { esSuscripcionDeEvoFinz } from "../_shared/productos-evofinz.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -123,7 +124,17 @@ serve(async (req) => {
         limit: 20,
       });
       const VIVAS = ["active", "trialing", "past_due", "unpaid"];
-      const viva = existentes.data.find((sub) => VIVAS.includes(sub.status));
+
+      // OJO CON EL ALCANCE: solo cuentan las suscripciones DE EVOFINZ.
+      //
+      // Las tres apps comparten cuenta de Stripe y a menudo el mismo customer, asi que
+      // "ya tiene una suscripcion viva" no quiere decir "ya tiene EvoFinz": puede ser su
+      // Fokuspark. Sin este filtro, alguien con Fokuspark que ademas quiere EvoFinz
+      // terminaba en el portal, donde no puede contratar nada — o sea, la guardia contra
+      // el cobro doble se comia una venta buena.
+      const viva = existentes.data.find(
+        (sub) => VIVAS.includes(sub.status) && esSuscripcionDeEvoFinz(sub as any),
+      );
 
       if (viva) {
         logStep("Ya tiene suscripcion viva: se redirige al portal en vez de crear otra", {
