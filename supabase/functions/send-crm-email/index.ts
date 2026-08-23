@@ -45,7 +45,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { recipientEmail, recipientName, subject, htmlBody, textBody, leadId, ruleName, leadSource, isFollowUp, stepNumber, templateType, templateName: requestedTemplate, ctaText, ctaUrl } = await req.json();
+    const { recipientEmail, recipientName, subject, htmlBody, textBody, leadId, ruleName, leadSource, isFollowUp, stepNumber, templateType, templateName: requestedTemplate, ctaText, ctaUrl, codigo, idioma } = await req.json();
 
     if (!recipientEmail) {
       return new Response(
@@ -109,6 +109,13 @@ Deno.serve(async (req) => {
             stepNumber: stepNumber || 1,
             ctaText: ctaText || '',
             ctaUrl: ctaUrl || '',
+            // Campos nuevos y OPCIONALES (23-ago-2026), para el aula de Future Lab:
+            // `codigo` deja pintar el codigo de acceso como protagonista en vez de
+            // dejarlo perdido dentro del parrafo, e `idioma` marca el correo en el
+            // idioma en que se compro. Las plantillas que no los usan los ignoran,
+            // asi que ningun correo que hoy funciona cambia en nada.
+            codigo: codigo || '',
+            idioma: idioma || 'es',
           },
         }),
       });
@@ -153,8 +160,15 @@ Deno.serve(async (req) => {
         return new Response(
           JSON.stringify({
             success: false,
-            status: 'not_configured',
-            error: 'Email infrastructure not yet configured. Complete email domain setup in Cloud → Emails.',
+            status: 'template_not_found',
+            // OJO: este 404 NO significa que falte configurar el dominio. Comprobado en
+            // vivo el 23-ago-2026: el UNICO 404 que devuelve send-transactional-email es
+            // «Template not found in registry». El mensaje viejo decia «Complete email
+            // domain setup in Cloud -> Emails» y mandaba a revisar una configuracion que
+            // esta perfecta — la misma carga con una plantilla existente devolvia
+            // {"success":true,"status":"sent","queued":true}. Un error que apunta al
+            // lugar equivocado cuesta mas que no tener error.
+            error: errText || "Template not found. Check the template name against the registry.",
           }),
           { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );

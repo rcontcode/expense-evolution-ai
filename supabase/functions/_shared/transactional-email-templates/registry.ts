@@ -24,6 +24,7 @@ import { template as crmEvofinzOffer } from './crm-evofinz-offer.tsx'
 import { template as crmFokusparkOffer } from './crm-fokuspark-offer.tsx'
 import { template as crmUniversmindOffer } from './crm-universmind-offer.tsx'
 import { template as crmUniversmindLittleNurture } from './crm-universmind-little-nurture.tsx'
+import { template as crmUniversmindFuturelab } from './crm-universmind-futurelab.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'crm-lead-outreach': crmLeadOutreach,
@@ -42,4 +43,8 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'crm-fokuspark-offer': crmFokusparkOffer,
   'crm-universmind-offer': crmUniversmindOffer,
   'crm-universmind-little-nurture': crmUniversmindLittleNurture,
+  /* Los correos del aula de Future Lab (codigo de acceso y recuperacion). El prefijo
+     `crm-universmind-` es obligatorio: es lo que hace que salgan desde
+     noreply@universmind.com y no desde evofinz.com. */
+  'crm-universmind-futurelab': crmUniversmindFuturelab,
 }
