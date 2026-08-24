@@ -7,7 +7,7 @@ import type { TemplateEntry } from './registry.ts'
 // Marca: crianza con ciencia, sin culpa. Renderiza el copy FIJO (subject + body)
 // que le pasa el ejecutor, más un botón CTA opcional (ctaText/ctaUrl).
 const SITE_NAME = 'Universmind Little'
-const LOGO_URL = 'https://oxrfslyuzcgxacomgzgw.supabase.co/storage/v1/object/public/email-assets/universmind-email-logo.png'
+const LOGO_URL = 'https://oxrfslyuzcgxacomgzgw.supabase.co/storage/v1/object/public/email-assets/universmind-logo.png'
 const BRAND = '#8b5cf6'
 
 interface Props {

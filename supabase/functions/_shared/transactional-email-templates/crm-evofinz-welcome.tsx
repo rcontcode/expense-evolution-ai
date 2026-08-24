@@ -4,7 +4,7 @@ import { Body, Container, Head, Heading, Html, Img, Preview, Section, Text, Hr, 
 import type { TemplateEntry } from './registry.ts'
 
 const SITE_NAME = 'EvoFinz'
-const LOGO_URL = 'https://oxrfslyuzcgxacomgzgw.supabase.co/storage/v1/object/public/email-assets/evofinz-phoenix-logo.png'
+const LOGO_URL = 'https://oxrfslyuzcgxacomgzgw.supabase.co/storage/v1/object/public/email-assets/phoenix-clean-logo.png'
 
 interface Props { recipientName?: string; body?: string; ruleName?: string }
 

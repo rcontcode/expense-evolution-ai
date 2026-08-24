@@ -18,8 +18,8 @@ import type { TemplateEntry } from './registry.ts'
 
 const LOGOS: Record<string, string> = {
   EvoFinz: 'https://oxrfslyuzcgxacomgzgw.supabase.co/storage/v1/object/public/email-assets/phoenix-clean-logo.png',
-  Fokuspark: 'https://oxrfslyuzcgxacomgzgw.supabase.co/storage/v1/object/public/email-assets/fokuspark-email-logo.png',
-  UniversMind: 'https://oxrfslyuzcgxacomgzgw.supabase.co/storage/v1/object/public/email-assets/universmind-email-logo.png',
+  Fokuspark: 'https://oxrfslyuzcgxacomgzgw.supabase.co/storage/v1/object/public/email-assets/fokuspark-logo.png',
+  UniversMind: 'https://oxrfslyuzcgxacomgzgw.supabase.co/storage/v1/object/public/email-assets/universmind-logo.png',
 }
 
 const BRAND_COLORS: Record<string, string> = {

@@ -313,7 +313,19 @@ Deno.serve(async (req) => {
   // - El resto (EvoFinz, Fokuspark, etc.) → notify.evofinz.com
   const isUniversmind =
     templateName.startsWith('universmind-') || templateName.startsWith('crm-universmind-')
-  const fromName = isUniversmind ? 'Universmind Little' : SITE_NAME
+  // Universmind NO es una sola marca: bajo ese dominio conviven Little (crianza de bebés
+  // 0-12 meses) y Future Lab (curso para padres de hijos de 10 a 17 años). El remitente es
+  // lo PRIMERO que se lee en la bandeja, antes que el asunto y mucho antes que el cuerpo.
+  // La plantilla de Future Lab ya se había cuidado de no firmar como la app de bebés en su
+  // título y en su pie —está escrito en su propio comentario— pero el remitente se quedó
+  // clavado aquí, así que el código de un curso de US$67 llegaba firmado «Universmind
+  // Little». Verificado el 2026-08-24 en el correo que recibió Rudy.
+  const MARCA_POR_PLANTILLA: Record<string, string> = {
+    'crm-universmind-futurelab': 'Future Lab',
+  }
+  const fromName = isUniversmind
+    ? (MARCA_POR_PLANTILLA[templateName] || 'Universmind Little')
+    : SITE_NAME
   const senderDomain = isUniversmind ? 'notify.universmind.com' : SENDER_DOMAIN
   const fromDomain = isUniversmind ? 'universmind.com' : FROM_DOMAIN
 

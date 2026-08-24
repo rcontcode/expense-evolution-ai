@@ -19,7 +19,7 @@ import type { TemplateEntry } from './registry.ts'
 // noreply@universmind.com; sin él, desde evofinz.com — y nadie se daría cuenta hasta que un
 // comprador lo comentara.
 const SITE_NAME = 'Future Lab'
-const LOGO_URL = 'https://oxrfslyuzcgxacomgzgw.supabase.co/storage/v1/object/public/email-assets/universmind-email-logo.png'
+const LOGO_URL = 'https://oxrfslyuzcgxacomgzgw.supabase.co/storage/v1/object/public/email-assets/universmind-logo.png'
 const BRAND = '#7c3aed'
 const ORO = '#fbbf24'
 
