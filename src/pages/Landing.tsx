@@ -336,12 +336,6 @@ const getPricingTiers = (language: string) => [
   }
 ];
 
-const getStats = (language: string) => [
-  { value: '12', label: language === 'es' ? 'Módulos' : 'Modules', icon: Sparkles },
-  { value: '🎤', label: language === 'es' ? 'Asistente de Voz' : 'Voice Assistant', icon: Zap },
-  { value: '🇨🇦🇨🇱', label: language === 'es' ? 'Multi-país' : 'Multi-country', icon: Shield },
-  { value: '24/7', label: language === 'es' ? 'Acceso' : 'Access', icon: Star },
-];
 
 export default function Landing() {
   const navigate = useNavigate();
@@ -370,7 +364,6 @@ export default function Landing() {
 
   const features = getFeatures(language);
   const pricingTiers = getPricingTiers(language);
-  const stats = getStats(language);
 
   // Calculate prices based on billing period - fixed prices matching Stripe
   const getPrice = (monthlyPrice: number, _isBundle?: boolean) => {
@@ -684,19 +677,47 @@ export default function Landing() {
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="flex flex-col items-center mb-8 relative"
+              className="flex flex-col items-center mb-4 relative"
             >
-              {/* Unified Phoenix Logo with hero variant */}
-              <PhoenixLogo variant="hero" showText={true} />
+              {/* Logo chico, y sin el nombre debajo.
+                  POR QUE. Antes iba en la variante `hero` (160-192 px) con el nombre debajo, y
+                  entre las dos empujaban el titular hasta los 352 px de altura: el visitante
+                  llegaba a la primera pantalla y lo primero que leia era un logo, no una razon
+                  para quedarse. El nombre ya aparece dos veces mas arriba —en la barra superior y
+                  en el propio titular («EvoFinz hace el resto»)— asi que aqui solo hace falta el
+                  ave, y chica. */}
+              <PhoenixLogo variant="sidebar" showText={false} />
             </motion.div>
 
-            {/* Main headline with animated gradient */}
+            {/* EL TITULAR — cambiado el 1-sep-2026 con el OK de Rudy.
+                Antes decia «Evoluciona tus Finanzas» + «La plataforma de gestion financiera mas
+                completa para profesionales y freelancers». Dos frases que no hacen que nadie siga
+                leyendo: un lema de marca y una afirmacion de categoria que ademas no se puede
+                comprobar y que dice cualquiera.
+
+                POR QUE ESTE. Se probaron tres titulares y Rudy los descarto con razon: cada uno le
+                hablaba a UN solo publico —al independiente, al que declara impuestos, al que
+                factura— y esta pagina atiende a tres (independientes, empleados y familias).
+                Despues pidio que «lo entienda tambien un nino». De ahi sale este: una accion que
+                cualquiera se imagina, palabras cortas y ninguna metafora.
+
+                POR QUE SE REPARTE EN TRES RENGLONES. Un titular carga UNA idea; el subtitulo carga
+                lo que la app hace; la tercera linea nombra a los tres publicos. Pedirle las tres
+                cosas a una sola frase fue el error de las versiones anteriores.
+
+                Todo lo que promete existe y esta verificado contra el codigo: la captura por foto,
+                el detector de suscripciones fantasma, y la ruta fiscal con reglas reales de Canada
+                y de Chile. No promete dinero ni ahorro, a proposito. */}
             <motion.h1 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.5 }}
-              className="text-5xl md:text-7xl lg:text-8xl font-black mb-6 leading-tight"
+              className="text-4xl md:text-6xl lg:text-7xl font-black mb-6 leading-[1.1]"
             >
+              <span className="bg-gradient-to-r from-slate-700 via-slate-800 to-slate-900 bg-clip-text text-transparent">
+                {language === 'es' ? 'Le tomas una foto a tu recibo.' : 'You take a photo of your receipt.'}
+              </span>
+              <br />
               <motion.span 
                 className="bg-clip-text text-transparent inline-block"
                 animate={{
@@ -708,23 +729,36 @@ export default function Landing() {
                 }}
                 transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
               >
-                {language === 'es' ? 'Evoluciona' : 'Evolve'}
+                {language === 'es' ? 'EvoFinz hace el resto.' : 'EvoFinz does the rest.'}
               </motion.span>
-              <br />
-              <span className="bg-gradient-to-r from-slate-700 via-slate-800 to-slate-900 bg-clip-text text-transparent">
-                {language === 'es' ? 'tus Finanzas' : 'your Finances'}
-              </span>
             </motion.h1>
             
             <motion.p 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.6 }}
-              className="text-xl md:text-2xl text-slate-600 mb-10 max-w-3xl mx-auto leading-relaxed"
+              className="text-xl md:text-2xl text-slate-600 mb-4 max-w-3xl mx-auto leading-relaxed"
             >
               {language === 'es' 
-                ? <>La plataforma de gestión financiera más completa para <span className="text-cyan-600 font-semibold">profesionales</span> y <span className="text-teal-600 font-semibold">freelancers</span> en Canadá y Latinoamérica.</>
-                : <>The most complete financial management platform for <span className="text-cyan-600 font-semibold">professionals</span> and <span className="text-teal-600 font-semibold">freelancers</span> in Canada and Latin America.</>
+                ? <>Ordena tus gastos, te avisa <span className="text-cyan-600 font-semibold">lo que estás pagando de más</span> y deja <span className="text-teal-600 font-semibold">tus impuestos listos</span>.</>
+                : <>It sorts your expenses, warns you <span className="text-cyan-600 font-semibold">what you are overpaying for</span>, and gets <span className="text-teal-600 font-semibold">your taxes ready</span>.</>
+              }
+            </motion.p>
+
+            {/* La linea de los tres publicos. Va aparte del subtitulo a proposito: es la que
+                impide que el titular vuelva a hablarle a uno solo. Reemplaza a la fila de
+                «12 Modulos · Asistente de Voz · Multi-pais · 24/7 Acceso», que Rudy mando sacar:
+                nadie compra «modulos» —es vocabulario nuestro— y el acceso permanente lo tiene
+                cualquier pagina web. El asistente de voz no se pierde: baja a las insignias. */}
+            <motion.p
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.65 }}
+              className="text-base md:text-lg text-slate-500 mb-8 max-w-2xl mx-auto"
+            >
+              {language === 'es'
+                ? 'Trabajes por tu cuenta, tengas un empleo o lleves las cuentas de tu casa. Con las reglas fiscales reales de Canadá y de Chile.'
+                : 'Whether you work for yourself, have a job, or run your household. With the real tax rules of Canada and Chile.'
               }
             </motion.p>
 
@@ -741,36 +775,13 @@ export default function Landing() {
               <Badge className="px-3 py-1.5 bg-blue-500/10 text-blue-600 border-blue-500/30">
                 🇨🇱 Chile
               </Badge>
+              <Badge className="px-3 py-1.5 bg-cyan-500/10 text-cyan-700 border-cyan-500/30">
+                🎤 {language === 'es' ? 'Asistente de voz' : 'Voice assistant'}
+              </Badge>
               <span className="text-slate-400 text-sm flex items-center gap-1">
                 <Globe className="w-4 h-4" />
                 {language === 'es' ? '+ países próximamente' : '+ more countries soon'}
               </span>
-            </motion.div>
-
-            {/* Stats bar */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.7 }}
-              className="flex flex-wrap items-center justify-center gap-4 md:gap-8 mb-12"
-            >
-              {stats.map((stat, index) => {
-                const Icon = stat.icon;
-                return (
-                  <motion.div 
-                    key={stat.label}
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.8 + index * 0.1 }}
-                    whileHover={{ scale: 1.05, y: -2 }}
-                    className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white shadow-lg shadow-slate-200/50 border border-slate-100 cursor-default"
-                  >
-                    <Icon className="h-4 w-4 text-cyan-500" />
-                    <span className="font-bold text-slate-800">{stat.value}</span>
-                    <span className="text-slate-500 text-sm">{stat.label}</span>
-                  </motion.div>
-                );
-              })}
             </motion.div>
 
             {/* CTA Buttons */}
@@ -793,6 +804,21 @@ export default function Landing() {
                 </span>
               </Button>
             </motion.div>
+
+            {/* La linea que quita el miedo. Fokuspark ya la tiene y funciona: dice cuanto
+                cuesta en tiempo, que no piden tarjeta y que se empieza gratis, justo donde el
+                visitante duda antes de apretar. Antes aqui no habia nada entre el boton y la
+                prueba social. */}
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5, delay: 1.0 }}
+              className="text-sm text-slate-500 mb-8"
+            >
+              {language === 'es'
+                ? '2 minutos · Sin tarjeta · Empieza gratis'
+                : '2 minutes · No card · Start free'}
+            </motion.p>
 
             {/* Live Social Proof - after CTAs */}
             <motion.div
