@@ -179,12 +179,12 @@ const getPricingTiers = (language: string) => [
       '2 clientes / 2 proyectos',
       'Analytics básicos de tendencia',
       'Tags predefinidos',
-      'Asistente de voz (voz del navegador)',
+      'Voz premium: 5 min de regalo, luego voz del navegador',
     ] : [
       '2 clients / 2 projects',
       'Basic trend analytics',
       'Predefined tags',
-      'Voice assistant (browser voice)',
+      'Premium voice: 5 free min, then browser voice',
     ],
     valueNote: language === 'es' 
       ? '💡 La mayoría de apps "free" no incluyen OCR ni voz. EvoFinz sí.'

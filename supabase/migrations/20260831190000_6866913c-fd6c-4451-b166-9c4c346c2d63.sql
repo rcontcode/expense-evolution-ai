@@ -99,12 +99,23 @@ $function$;
 -- 4. Los numeros de cada plan
 -- ---------------------------------------------------------------------------
 
--- GRATIS. Deja de gastar ElevenLabs: pasa a la voz del navegador, que no cuesta nada y ya estaba
--- implementada como respaldo. Sigue teniendo asistente de voz, solo que no la voz premium. Con
--- los topes de abajo, un usuario gratis pasa de costar ~$0,40 al mes (mas cuatro funciones que
--- no tenian ningun techo) a unos $0,10 en el peor caso.
+-- GRATIS. Los 3 minutos de voz premium AL MES se cambian por una PRUEBA de 5 minutos que se
+-- gasta UNA SOLA VEZ; al agotarse la persona pasa a la voz del navegador, que no cuesta nada y ya
+-- estaba implementada como respaldo. El plan gratis nunca se queda sin asistente de voz.
+--
+-- OJO: la columna se llama `_per_month`, pero para el plan gratis NO es mensual. El que decide es
+-- el servidor, que para este plan suma el uso de TODOS los periodos y no solo el del mes. El 5 se
+-- deja aqui para que el cliente no bloquee la llamada antes de intentarla.
+--
+-- Por que una prueba y no un regalo mensual: 3 minutos al mes son ~$4 al ano POR USUARIO y no
+-- paran nunca, mientras que la prueba cuesta ~$0,60 una vez. Y un regalo que se renueva el 1 le
+-- ensena a la persona a esperar el proximo mes en vez de pagar; una prueba que se acaba la deja
+-- con la voz peor justo despues de conocer la buena, que es cuando mas ganas tiene de comprar.
+--
+-- Con esto un usuario gratis pasa de costar ~$0,40 al mes para siempre (mas cuatro funciones que
+-- no tenian ningun techo) a ~$0,60 una vez y ~$0,10 al mes en el peor caso.
 UPDATE public.plan_configurations SET
-  voice_minutes_per_month  = 0,
+  voice_minutes_per_month  = 5,
   ai_credits_per_month     = 20,
   predictions_per_month    = 5,
   autopilot_runs_per_month = 5,
