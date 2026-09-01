@@ -342,6 +342,48 @@ export default function Landing() {
   const location = useLocation();
   const { language } = useLanguage();
   const { user, loading } = useAuth();
+
+  // La portada se declara pagina publica que SI se puede deslizar.
+  // -------------------------------------------------------------------------
+  // POR QUE. Rudy reporto que en el celular solo ve la primera pantalla y la
+  // pagina no baja. La aplicacion ya tiene un remedio propio para esto y esta
+  // escrito para paginas publicas: la clase `public-scroll-page` de index.css,
+  // que fuerza `height:auto`, `overflow-y:auto`, `overscroll-behavior-y:auto`
+  // y —la parte que importa en un telefono— `touch-action: pan-y`. Sin
+  // `pan-y`, un dedo sobre la portada puede quedarse sin efecto aunque la
+  // pagina se pueda desplazar por codigo.
+  //
+  // Ese remedio existia y lo usaba UNA sola pagina, `FinancialQuiz.tsx`. Nadie
+  // escribe una clase asi salvo que el problema le haya pasado: o sea que a
+  // otra pagina publica ya le habia ocurrido y se parcho ahi, sin extenderlo a
+  // las demas. La portada, que es la pagina publica mas visitada, se quedo sin
+  // el.
+  //
+  // Tambien se quita `app-mobile-scroll-lock` por si acaso: esa clase pone
+  // `height:100dvh` y `overflow:hidden`, la ponen otras pantallas de la
+  // aplicacion y su limpieza depende de que el componente que la puso se
+  // desmonte bien. Quitarla aqui cuesta nada y cierra ese camino.
+  //
+  // HONESTO: no pude reproducir la falla con mis herramientas. El navegador de
+  // pruebas no logra deslizar NINGUNA pagina a 375 px —lo comprobe contra otro
+  // sitio como control—, asi que mi medicion no sirve ni para confirmar ni
+  // para descartar. Esto se apoya en lo que Rudy ve en su telefono y en que el
+  // remedio ya existe en esta misma aplicacion. La prueba de verdad es su
+  // dedo, no mi consola.
+  useEffect(() => {
+    const root = document.documentElement;
+    const body = document.body;
+
+    root.classList.remove('app-mobile-scroll-lock');
+    body.classList.remove('app-mobile-scroll-lock');
+    root.classList.add('public-scroll-page');
+    body.classList.add('public-scroll-page');
+
+    return () => {
+      root.classList.remove('public-scroll-page');
+      body.classList.remove('public-scroll-page');
+    };
+  }, []);
   const [isAnnual, setIsAnnual] = useState(false);
   const [showStickyBar, setShowStickyBar] = useState(false);
 
