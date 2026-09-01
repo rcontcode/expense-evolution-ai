@@ -137,6 +137,9 @@ Para cada idea incluye:
     
     if (toolCall?.function?.arguments) {
       const suggestions = JSON.parse(toolCall.function.arguments);
+      // Se descuenta la cuota solo cuando la IA respondio bien.
+      await guard.recordUsage();
+
       return new Response(JSON.stringify(suggestions), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });

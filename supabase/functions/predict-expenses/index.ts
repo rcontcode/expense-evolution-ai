@@ -211,6 +211,10 @@ Respond with this exact JSON:
       parsedPredictions = generateFallbackPredictions(historicalData, allCategories, isSpanish);
     }
 
+    // Se descuenta la cuota solo cuando la IA respondio bien: no se le cobra al usuario
+    // una llamada que fallo. Sin esta linea el contador nunca sube y el tope no muerde.
+    await guard.recordUsage();
+
     return new Response(JSON.stringify(parsedPredictions), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

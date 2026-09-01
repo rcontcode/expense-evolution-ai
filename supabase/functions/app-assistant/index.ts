@@ -1215,10 +1215,14 @@ serve(async (req) => {
   try {
     // Plan-guard for non-admin users (admins bypass automatically).
     // Soft-fail: if anything goes wrong we still let the request through.
+    // Se guarda solo el descontador: el guard vive dentro de este try y afuera se pierde el
+    // estrechamiento de tipos. Sin descontar, el contador nunca sube y el tope no muerde.
+    let descontarCuota: (() => Promise<void>) | null = null;
     try {
       const { checkPlanAccess } = await import('../_shared/plan-guard.ts');
       const guard = await checkPlanAccess(req, 'ai_credits');
       if (!guard.allowed) return guard.response;
+      descontarCuota = guard.recordUsage;
     } catch (e) {
       console.warn('[app-assistant] plan-guard skipped:', e);
     }
@@ -1560,7 +1564,8 @@ ${conversationHistory.slice(-5).map((msg: { role: string; content: string }) =>
         : "\n\nMy response was cut short. Want me to continue or summarize it shorter?";
       
       if (userId) await incrementVoiceUsage(userId);
-      
+      await descontarCuota?.();
+
       return new Response(
         JSON.stringify({ message: choice.message.content + truncationNote }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -1575,6 +1580,7 @@ ${conversationHistory.slice(-5).map((msg: { role: string; content: string }) =>
     if (userId) {
       await incrementVoiceUsage(userId);
     }
+    await descontarCuota?.();
 
     return new Response(
       JSON.stringify({ message: assistantMessage }),

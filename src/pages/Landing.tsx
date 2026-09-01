@@ -179,12 +179,12 @@ const getPricingTiers = (language: string) => [
       '2 clientes / 2 proyectos',
       'Analytics básicos de tendencia',
       'Tags predefinidos',
-      'Asistente de voz (3 min/mes)',
+      'Voz premium: 5 min de regalo, luego voz del navegador',
     ] : [
       '2 clients / 2 projects',
       'Basic trend analytics',
       'Predefined tags',
-      'Voice assistant (3 min/mo)',
+      'Premium voice: 5 free min, then browser voice',
     ],
     valueNote: language === 'es' 
       ? '💡 La mayoría de apps "free" no incluyen OCR ni voz. EvoFinz sí.'
@@ -201,11 +201,11 @@ const getPricingTiers = (language: string) => [
     tagline: language === 'es' ? '🔥 De desorden → Control total' : '🔥 From chaos → Total control',
     heroFeatures: language === 'es' ? [
       { text: 'Gastos e ingresos ILIMITADOS', icon: '♾️' },
-      { text: '50 escaneos OCR/mes (~1h/sem ahorrada)', icon: '📷' },
+      { text: '300 escaneos OCR/mes (~1h/sem ahorrada)', icon: '📷' },
       { text: 'Net Worth + Calendario fiscal', icon: '💰' },
     ] : [
       { text: 'UNLIMITED expenses & income', icon: '♾️' },
-      { text: '50 OCR scans/mo (~1h/wk saved)', icon: '📷' },
+      { text: '300 OCR scans/mo (~1h/wk saved)', icon: '📷' },
       { text: 'Net Worth + Tax calendar', icon: '💰' },
     ],
     features: language === 'es' ? [
@@ -217,6 +217,8 @@ const getPricingTiers = (language: string) => [
       'Centro de Pagos Fijos + Calendario',
       '9+ gráficos: heatmaps, correlaciones',
       'Alertas inteligentes',
+      'Análisis de contratos con IA (20/mes)',
+      'Análisis bancario con IA (20/mes)',
       '4 módulos de mentoría',
       'Asistente de voz (30 min/mes)',
       'Educación financiera completa',
@@ -229,6 +231,8 @@ const getPricingTiers = (language: string) => [
       'Bills Center + Calendar',
       '9+ charts: heatmaps, correlations',
       'Smart alerts',
+      'AI contract analysis (20/mo)',
+      'AI bank analysis (20/mo)',
       '4 mentorship modules',
       'Voice assistant (30 min/mo)',
       'Complete financial education',
@@ -249,18 +253,18 @@ const getPricingTiers = (language: string) => [
     heroFeatures: language === 'es' ? [
       { text: 'OCR ILIMITADO — escanea todo', icon: '📷' },
       { text: 'Contratos analizados automáticamente', icon: '📋' },
-      { text: 'Asistente de voz 120 min/mes', icon: '🎤' },
+      { text: 'Asistente de voz 60 min/mes', icon: '🎤' },
     ] : [
       { text: 'UNLIMITED OCR — scan everything', icon: '📷' },
       { text: 'Smart contract analysis', icon: '📋' },
-      { text: 'Voice assistant 120 min/mo', icon: '🎤' },
+      { text: 'Voice assistant 60 min/mo', icon: '🎤' },
     ],
     features: language === 'es' ? [
       '👑 Todo lo de Premium incluido',
       'Optimizador fiscal inteligente — paga menos',
       'Optimizador RRSP/TFSA/APV',
       'FIRE Calculator — ¿cuándo me retiro?',
-      'Análisis bancario + anomalías',
+      'Análisis bancario y de contratos ILIMITADO',
       'Detector suscripciones fantasma',
       'Reconciliación bancaria automática',
       '8 módulos de mentoría completos',
@@ -272,7 +276,7 @@ const getPricingTiers = (language: string) => [
       'Smart tax optimizer — pay less, legally',
       'RRSP/TFSA/APV optimizer',
       'FIRE Calculator — when can I retire?',
-      'Bank analysis + anomaly detection',
+      'UNLIMITED bank & contract analysis',
       'Ghost subscription detector',
       'Automatic bank reconciliation',
       '8 complete mentorship modules',

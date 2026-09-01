@@ -8,11 +8,21 @@ const corsHeaders = {
 
 const DEFAULT_VOICE_ID = "cgSgspJ2msm6clMCkdW9";
 
+// ElevenLabs cobra por CARACTER, asi que la voz es el unico costo que se acerca al precio de la
+// suscripcion: los 120 minutos que traia Pro costaban $11,90-$14,40 al mes contra $14,26 que
+// quedan de los $14,99. Estos son los topes MENSUALES de los planes de pago.
 const PLAN_LIMITS: Record<string, number> = {
-  free: 3,
   premium: 30,
-  pro: 120,
+  pro: 60,
 };
+
+// El plan gratis no recibe minutos todos los meses: recibe una PRUEBA de la voz buena que se
+// gasta UNA SOLA VEZ. La diferencia cuenta en las dos direcciones. En el dinero: 3 minutos
+// mensuales por usuario gratis son ~$4 al ano cada uno y no paran nunca; una prueba de 5 minutos
+// cuesta ~$0,60 una vez. Y en la venta: un regalo que se renueva el 1 le ENSENA a la persona a
+// esperar el proximo mes en vez de pagar. Al agotarse pasa a la voz del navegador, que es gratis
+// y ya existia como respaldo: el plan gratis nunca se queda sin asistente de voz.
+const VOICE_TRIAL_MINUTES = 5;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -78,18 +88,30 @@ Deno.serve(async (req) => {
       .maybeSingle();
     
     const planType = subscription?.plan_type || "free";
-    const monthlyLimit = isAdmin ? Infinity : (PLAN_LIMITS[planType] || 3);
+    // Sin plan de pago, lo que hay es la prueba de una sola vez.
+    const isTrial = PLAN_LIMITS[planType] === undefined;
+    const monthlyLimit = isAdmin
+      ? Infinity
+      : (isTrial ? VOICE_TRIAL_MINUTES : PLAN_LIMITS[planType]);
 
-    // Get current month's usage
-    const currentPeriod = new Date().toISOString().slice(0, 7) + "-01";
-    const { data: usageData } = await supabase
+    // La prueba se cuenta desde SIEMPRE (todos los periodos); el tope de un plan de pago, solo
+    // desde el 1. Si la prueba se leyera por mes se renovaria sola y dejaria de ser una prueba.
+    let usageQuery = supabase
       .from("usage_tracking")
       .select("voice_minutes_used")
-      .eq("user_id", user.id)
-      .eq("period_start", currentPeriod)
-      .maybeSingle();
+      .eq("user_id", user.id);
 
-    const currentUsage = Number(usageData?.voice_minutes_used || 0);
+    if (!isTrial) {
+      const currentPeriod = new Date().toISOString().slice(0, 7) + "-01";
+      usageQuery = usageQuery.eq("period_start", currentPeriod);
+    }
+
+    const { data: usageRows } = await usageQuery;
+    const currentUsage = (usageRows ?? []).reduce(
+      (total: number, row: { voice_minutes_used?: number | null }) =>
+        total + Number(row.voice_minutes_used || 0),
+      0,
+    );
 
     if (!isAdmin && currentUsage >= monthlyLimit) {
       const reset = new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth() + 1, 1)).toISOString();
@@ -99,7 +121,10 @@ Deno.serve(async (req) => {
           feature: "voice_premium",
           currentPlan: planType,
           requiredPlan: planType === "free" ? "premium" : (planType === "premium" ? "pro" : undefined),
-          message: `Has usado ${currentUsage}/${monthlyLimit} minutos de voz este mes. Se renueva el ${reset.slice(0, 10)}.`,
+          isTrial,
+          message: isTrial
+            ? `Usaste tus ${monthlyLimit} minutos de regalo de la voz premium. Desde ahora escuchas la voz del navegador; con Premium recuperas la voz buena.`
+            : `Has usado ${currentUsage}/${monthlyLimit} minutos de voz este mes. Se renueva el ${reset.slice(0, 10)}.`,
           currentUsage,
           limit: monthlyLimit,
           resetDate: reset,
@@ -120,7 +145,10 @@ Deno.serve(async (req) => {
             feature: "voice_premium",
             currentPlan: planType,
             requiredPlan: planType === "free" ? "premium" : "pro",
-            message: "Has alcanzado tu límite de voz premium este mes",
+            isTrial,
+            message: isTrial
+              ? "Se acabó tu prueba de voz premium"
+              : "Has alcanzado tu límite de voz premium este mes",
             currentUsage,
             limit: monthlyLimit,
             useFallback: true
@@ -210,6 +238,7 @@ Deno.serve(async (req) => {
         "X-Voice-Minutes-Used": String(estimatedMinutes.toFixed(2)),
         "X-Voice-Minutes-Total": String((currentUsage + estimatedMinutes).toFixed(2)),
         "X-Voice-Minutes-Limit": String(monthlyLimit),
+        "X-Voice-Trial": String(isTrial),
       },
     });
   } catch (error) {

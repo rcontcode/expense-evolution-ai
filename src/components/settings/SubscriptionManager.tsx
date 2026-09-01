@@ -128,7 +128,7 @@ const planConfig: Record<string, {
     color: 'from-emerald-500 via-teal-500 to-cyan-600',
     features: [
       'EvoFinz Pro completo',
-      'Fokuspark Premium completo',
+      'Fokuspark Pro completo',
       'Datos cruzados entre apps',
       'Insights de correlación enfoque↔finanzas',
       'Frases unificadas del ecosistema',
@@ -137,7 +137,7 @@ const planConfig: Record<string, {
     ],
     featuresEn: [
       'Full EvoFinz Pro',
-      'Full Fokuspark Premium',
+      'Full Fokuspark Pro',
       'Cross-app data integration',
       'Focus↔finance correlation insights',
       'Unified ecosystem quotes',

@@ -7,6 +7,7 @@
  */
 
 import { useState, useCallback, useRef } from 'react';
+import { toast } from 'sonner';
 import { usePlanLimits } from '@/hooks/data/usePlanLimits';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
@@ -184,6 +185,8 @@ export function useElevenLabsTTS(options: UseElevenLabsTTSOptions = {}): UseElev
   const [currentText, setCurrentText] = useState('');
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioUrlRef = useRef<string | null>(null);
+  // El aviso de "se acabo la prueba" se muestra una vez por sesion, no en cada frase.
+  const trialNoticeShown = useRef(false);
 
   const cleanupAudio = useCallback(() => {
     if (audioRef.current) {
@@ -295,8 +298,19 @@ export function useElevenLabsTTS(options: UseElevenLabsTTSOptions = {}): UseElev
         const errorData = await response.json().catch(() => ({}));
         console.log('[ElevenLabsTTS] API error:', errorData);
         
-        // Map voice_limit_exceeded to 'not_eligible' so fallback kicks in
-        if (errorData.error === 'voice_limit_exceeded') {
+        // Sin voz premium disponible no es una falla: el que llama habla con la voz del
+        // navegador. Solo cuando se acaba la PRUEBA de regalo se avisa, porque ahi la persona
+        // nota el cambio de voz y merece saber por que — y es el mejor momento para ofrecerle
+        // Premium, justo despues de haber escuchado la voz buena.
+        if (errorData.error === 'voice_limit_exceeded' || errorData.error === 'quota_exceeded') {
+          if (errorData.isTrial && !trialNoticeShown.current) {
+            trialNoticeShown.current = true;
+            toast('Se acabó tu prueba de voz premium', {
+              description: errorData.message ||
+                'Desde ahora escuchas la voz del navegador. Con Premium recuperas la voz buena.',
+              duration: 8000,
+            });
+          }
           return { success: false, error: 'not_eligible' };
         }
         
@@ -304,6 +318,20 @@ export function useElevenLabsTTS(options: UseElevenLabsTTSOptions = {}): UseElev
       }
 
       // Get audio blob and play it
+      // Mientras la prueba de regalo esta corriendo se avisa cuanto queda, para que el cambio
+      // de voz no llegue de sorpresa.
+      if (response.headers.get('X-Voice-Trial') === 'true' && !trialNoticeShown.current) {
+        const quedan = Number(response.headers.get('X-Voice-Minutes-Limit') || 0) -
+          Number(response.headers.get('X-Voice-Minutes-Total') || 0);
+        if (quedan > 0 && quedan <= 1) {
+          trialNoticeShown.current = true;
+          toast('Te queda menos de un minuto de voz premium', {
+            description: 'Es una prueba de regalo. Cuando se acabe pasas a la voz del navegador; con Premium te quedas con la buena.',
+            duration: 8000,
+          });
+        }
+      }
+
       const audioBlob = await response.blob();
       const audioUrl = URL.createObjectURL(audioBlob);
       audioUrlRef.current = audioUrl;

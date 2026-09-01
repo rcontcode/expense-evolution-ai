@@ -49,7 +49,17 @@ interface FeatureSpec {
   /** Counter column on usage_tracking. */
   usageCol?: string;
   /** Type string for increment_usage RPC. */
-  usageType?: 'expense' | 'income' | 'ocr' | 'contract' | 'bank' | 'voice';
+  usageType?:
+    | 'expense'
+    | 'income'
+    | 'ocr'
+    | 'contract'
+    | 'bank'
+    | 'voice'
+    | 'ai_credits'
+    | 'predictions'
+    | 'autopilot'
+    | 'coaching';
   /** Default required plan suggested to the user. */
   defaultRequiredPlan: PlanType;
   /** Friendly key passed to the upgrade prompt (matches UpgradeFeatureKey). */
@@ -85,8 +95,13 @@ const FEATURE_SPEC: Record<FeatureName, FeatureSpec> = {
     defaultRequiredPlan: 'premium',
     promptFeature: 'voice_premium',
   },
+  // Estas cuatro tenian `limitCol: null` y ningun `boolCol`, asi que caian al final de
+  // checkPlanAccess y devolvian `allowed: true` SIEMPRE — tambien para cuentas gratuitas. Cada
+  // llamada cuesta centavos (Gemini Flash), pero no tenian techo de ninguna clase.
   ai_credits: {
-    limitCol: null,
+    limitCol: 'ai_credits_per_month',
+    usageCol: 'ai_credits_count',
+    usageType: 'ai_credits',
     defaultRequiredPlan: 'pro',
     promptFeature: 'ai_credits',
   },
@@ -103,17 +118,23 @@ const FEATURE_SPEC: Record<FeatureName, FeatureSpec> = {
     promptFeature: 'ai_credits',
   },
   predictions: {
-    limitCol: null,
+    limitCol: 'predictions_per_month',
+    usageCol: 'predictions_count',
+    usageType: 'predictions',
     defaultRequiredPlan: 'pro',
     promptFeature: 'predictions',
   },
   autopilot: {
-    limitCol: null,
+    limitCol: 'autopilot_runs_per_month',
+    usageCol: 'autopilot_runs_count',
+    usageType: 'autopilot',
     defaultRequiredPlan: 'pro',
     promptFeature: 'autopilot',
   },
   coaching: {
-    limitCol: null,
+    limitCol: 'coaching_per_month',
+    usageCol: 'coaching_count',
+    usageType: 'coaching',
     defaultRequiredPlan: 'pro',
     promptFeature: 'coaching',
   },

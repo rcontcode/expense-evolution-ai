@@ -38,11 +38,11 @@ const PRODUCT_DESCRIPTIONS: Record<string, { name: string; description: string }
   },
   bundle_monthly: {
     name: "Evo Bundle Mensual",
-    description: "EvoFinz Pro + Fokuspark Premium: acceso completo a ambas apps, datos cruzados, insights de correlación enfoque↔finanzas, dashboard del ecosistema, soporte prioritario.",
+    description: "EvoFinz Pro + Fokuspark Pro: acceso completo a ambas apps, datos cruzados, insights de correlación enfoque↔finanzas, dashboard del ecosistema, soporte prioritario.",
   },
   bundle_annual: {
     name: "Evo Bundle Anual",
-    description: "EvoFinz Pro + Fokuspark Premium: acceso completo, datos cruzados, correlación enfoque↔finanzas, dashboard ecosistema. $15.99/mes facturado anualmente.",
+    description: "EvoFinz Pro + Fokuspark Pro: acceso completo, datos cruzados, correlación enfoque↔finanzas, dashboard ecosistema. $15.99/mes facturado anualmente.",
   },
 };
 
