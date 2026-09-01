@@ -83,7 +83,7 @@ export const EcosystemSettingsCard = memo(() => {
               </span>
             </CardTitle>
             <CardDescription className="text-xs">
-              EvoFinz Pro + Fokuspark Premium
+              EvoFinz Pro + Fokuspark Pro
             </CardDescription>
           </div>
         </div>

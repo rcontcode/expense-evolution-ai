@@ -295,8 +295,10 @@ export function useElevenLabsTTS(options: UseElevenLabsTTSOptions = {}): UseElev
         const errorData = await response.json().catch(() => ({}));
         console.log('[ElevenLabsTTS] API error:', errorData);
         
-        // Map voice_limit_exceeded to 'not_eligible' so fallback kicks in
-        if (errorData.error === 'voice_limit_exceeded') {
+        // Sin voz premium disponible no es una falla: el que llama habla con la voz del
+        // navegador. `quota_exceeded` es lo que responde el servidor cuando el plan trae 0
+        // minutos (el gratis) o cuando ya se gastaron los del mes.
+        if (errorData.error === 'voice_limit_exceeded' || errorData.error === 'quota_exceeded') {
           return { success: false, error: 'not_eligible' };
         }
         

@@ -43,8 +43,8 @@ export const BundleActiveBadge = memo(({ variant = 'compact' }: { variant?: 'com
         </p>
         <p className="text-xs text-muted-foreground truncate">
           {language === 'es'
-            ? 'EvoFinz Pro + Fokuspark Premium'
-            : 'EvoFinz Pro + Fokuspark Premium'}
+            ? 'EvoFinz Pro + Fokuspark Pro'
+            : 'EvoFinz Pro + Fokuspark Pro'}
         </p>
       </div>
       <Sparkles className="h-4 w-4 text-primary/60 shrink-0" />

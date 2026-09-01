@@ -8,10 +8,14 @@ const corsHeaders = {
 
 const DEFAULT_VOICE_ID = "cgSgspJ2msm6clMCkdW9";
 
+// Respaldo si no se puede leer `plan_configurations`. ElevenLabs cobra por CARACTER, asi que la
+// voz es el unico costo que se acerca al precio de la suscripcion: los 120 minutos que traia Pro
+// costaban $11,90-$14,40 al mes contra $14,26 que quedan de los $14,99. El plan gratis pasa a la
+// voz del navegador (0 minutos premium), que no cuesta nada y ya existia como respaldo.
 const PLAN_LIMITS: Record<string, number> = {
-  free: 3,
+  free: 0,
   premium: 30,
-  pro: 120,
+  pro: 60,
 };
 
 Deno.serve(async (req) => {
@@ -78,7 +82,8 @@ Deno.serve(async (req) => {
       .maybeSingle();
     
     const planType = subscription?.plan_type || "free";
-    const monthlyLimit = isAdmin ? Infinity : (PLAN_LIMITS[planType] || 3);
+    // `??` y no `||`: con `||`, un tope de 0 (el plan gratis) caia al respaldo y regalaba voz.
+    const monthlyLimit = isAdmin ? Infinity : (PLAN_LIMITS[planType] ?? 0);
 
     // Get current month's usage
     const currentPeriod = new Date().toISOString().slice(0, 7) + "-01";

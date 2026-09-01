@@ -121,6 +121,10 @@ Generate insights of type: opportunity (savings), warning (risk), achievement (a
       insights = parsed.insights || [];
     }
 
+    // Se descuenta la cuota solo cuando la IA respondio bien: no se le cobra al usuario
+    // una llamada que fallo. Sin esta linea el contador nunca sube y el tope no muerde.
+    await guard.recordUsage();
+
     return new Response(JSON.stringify({ insights }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
