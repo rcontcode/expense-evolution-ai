@@ -525,6 +525,21 @@ export default function Landing() {
                 {language === 'es' ? 'Ver planes' : 'View plans'}
               </Button>
               
+              {/* Iniciar sesión, también aquí: al bajar, la barra superior del hero desaparece y
+                  esta la reemplaza. Si el enlace no viviera en las dos, el cliente que vuelve lo
+                  perdería de vista apenas empieza a leer.
+                  `hidden sm:inline-flex` por lo mismo que "Diagnóstico gratis" de arriba: bajo ese
+                  ancho el espacio se acaba y los botones se montan unos sobre otros. En móvil la
+                  puerta es la barra del hero, que ahí sí está visible. */}
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => navigate('/auth')}
+                className="hidden sm:inline-flex font-medium text-sm text-white/80 hover:bg-white/10 hover:text-white"
+              >
+                {language === 'es' ? 'Iniciar sesión' : 'Sign in'}
+              </Button>
+
               {/* CTA Button - Enhanced */}
               <motion.div className="relative" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }}>
                 <motion.div
@@ -610,9 +625,49 @@ export default function Landing() {
 
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center py-20">
-        {/* Language Selector */}
-        <div className="absolute top-4 right-4 z-30">
-          <LanguageSelector />
+        {/* Barra superior de la PRIMERA pantalla.
+
+            POR QUÉ EXISTE (31-ago-2026, orden de Rudy). Hasta hoy la portada no tenia nada arriba:
+            aquí solo vivía el selector de idioma. La barra de precios de más arriba en este mismo
+            archivo aparece recién después de bajar 600 px, asi que en la primera pantalla no había
+            logo que llevara al inicio ni puerta para entrar a la cuenta, y el único "Iniciar Sesión"
+            estaba en el pie, a más de 12.000 px de scroll. Un cliente que ya paga y vuelve con la
+            sesión vencida tenía que recorrer la portada entera para encontrar donde entrar.
+            (Con la sesión viva no se nota: el useEffect de arriba lo manda directo al panel. El
+            caso roto es el otro, que es justo el del cliente que vuelve después de un tiempo.)
+
+            POR QUÉ NO ES `fixed`. Se queda dentro del hero y desaparece al bajar, que es exactamente
+            cuando entra la barra de precios. Dos barras fijas a la vez se pisan una sobre otra.
+
+            POR QUÉ COLORES CLAROS FIJOS Y NO TOKENS DE TEMA. Comprobado en el build: el contenedor
+            de esta portada pinta su propio fondo claro (`from-slate-50 via-white to-slate-100`) y no
+            lo cambia con el tema, así que la página se ve clara también en modo oscuro. Con
+            `bg-background` el botón se volvía una pastilla OSCURA sobre una página CLARA. Si algún
+            día el contenedor pasa a seguir el tema, este botón hay que cambiarlo junto con él. */}
+        <div className="absolute top-0 left-0 right-0 z-30 flex items-center justify-between gap-3 px-4 py-4 sm:px-6">
+          <Link to="/" className="group flex items-center gap-2" aria-label="EvoFinz">
+            <img
+              src={phoenixLogo}
+              alt=""
+              aria-hidden="true"
+              className="h-9 w-9 rounded-full shadow-md transition-transform group-hover:scale-105"
+            />
+            <span className="bg-gradient-to-r from-cyan-600 via-blue-600 to-teal-500 bg-clip-text text-lg font-black tracking-tight text-transparent">
+              EvoFinz
+            </span>
+          </Link>
+
+          <div className="flex items-center gap-2">
+            <LanguageSelector />
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => navigate('/auth')}
+              className="border-slate-300 bg-white/80 font-medium text-slate-700 backdrop-blur-sm hover:bg-white hover:text-slate-900"
+            >
+              {language === 'es' ? 'Iniciar sesión' : 'Sign in'}
+            </Button>
+          </div>
         </div>
         {/* Floating Stars Background */}
         <FloatingStars />
