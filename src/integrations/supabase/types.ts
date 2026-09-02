@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "13.0.5"
+    PostgrestVersion: "14.5"
   }
   public: {
     Tables: {
@@ -3276,8 +3276,11 @@ export type Database = {
       }
       plan_configurations: {
         Row: {
+          ai_credits_per_month: number | null
+          autopilot_runs_per_month: number | null
           bank_analyses_per_month: number
           clients_limit: number
+          coaching_per_month: number | null
           contract_analyses_per_month: number
           created_at: string
           description: string | null
@@ -3294,6 +3297,7 @@ export type Database = {
           net_worth_enabled: boolean
           ocr_scans_per_month: number
           plan_type: string
+          predictions_per_month: number | null
           projects_limit: number
           rrsp_tfsa_optimizer_enabled: boolean
           sort_order: number
@@ -3307,8 +3311,11 @@ export type Database = {
           voice_requests_per_month: number
         }
         Insert: {
+          ai_credits_per_month?: number | null
+          autopilot_runs_per_month?: number | null
           bank_analyses_per_month?: number
           clients_limit?: number
+          coaching_per_month?: number | null
           contract_analyses_per_month?: number
           created_at?: string
           description?: string | null
@@ -3325,6 +3332,7 @@ export type Database = {
           net_worth_enabled?: boolean
           ocr_scans_per_month?: number
           plan_type: string
+          predictions_per_month?: number | null
           projects_limit?: number
           rrsp_tfsa_optimizer_enabled?: boolean
           sort_order?: number
@@ -3338,8 +3346,11 @@ export type Database = {
           voice_requests_per_month?: number
         }
         Update: {
+          ai_credits_per_month?: number | null
+          autopilot_runs_per_month?: number | null
           bank_analyses_per_month?: number
           clients_limit?: number
+          coaching_per_month?: number | null
           contract_analyses_per_month?: number
           created_at?: string
           description?: string | null
@@ -3356,6 +3367,7 @@ export type Database = {
           net_worth_enabled?: boolean
           ocr_scans_per_month?: number
           plan_type?: string
+          predictions_per_month?: number | null
           projects_limit?: number
           rrsp_tfsa_optimizer_enabled?: boolean
           sort_order?: number
@@ -4255,7 +4267,10 @@ export type Database = {
       }
       usage_tracking: {
         Row: {
+          ai_credits_count: number
+          autopilot_runs_count: number
           bank_analyses_count: number
+          coaching_count: number
           contract_analyses_count: number
           created_at: string
           expenses_count: number
@@ -4263,13 +4278,17 @@ export type Database = {
           incomes_count: number
           ocr_scans_count: number
           period_start: string
+          predictions_count: number
           updated_at: string
           user_id: string
           voice_minutes_used: number | null
           voice_requests_count: number
         }
         Insert: {
+          ai_credits_count?: number
+          autopilot_runs_count?: number
           bank_analyses_count?: number
+          coaching_count?: number
           contract_analyses_count?: number
           created_at?: string
           expenses_count?: number
@@ -4277,13 +4296,17 @@ export type Database = {
           incomes_count?: number
           ocr_scans_count?: number
           period_start?: string
+          predictions_count?: number
           updated_at?: string
           user_id: string
           voice_minutes_used?: number | null
           voice_requests_count?: number
         }
         Update: {
+          ai_credits_count?: number
+          autopilot_runs_count?: number
           bank_analyses_count?: number
+          coaching_count?: number
           contract_analyses_count?: number
           created_at?: string
           expenses_count?: number
@@ -4291,6 +4314,7 @@ export type Database = {
           incomes_count?: number
           ocr_scans_count?: number
           period_start?: string
+          predictions_count?: number
           updated_at?: string
           user_id?: string
           voice_minutes_used?: number | null
@@ -4785,7 +4809,10 @@ export type Database = {
       get_or_create_monthly_usage: {
         Args: { p_user_id: string }
         Returns: {
+          ai_credits_count: number
+          autopilot_runs_count: number
           bank_analyses_count: number
+          coaching_count: number
           contract_analyses_count: number
           created_at: string
           expenses_count: number
@@ -4793,6 +4820,7 @@ export type Database = {
           incomes_count: number
           ocr_scans_count: number
           period_start: string
+          predictions_count: number
           updated_at: string
           user_id: string
           voice_minutes_used: number | null
