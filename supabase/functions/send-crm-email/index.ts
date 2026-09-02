@@ -44,6 +44,14 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Guardia de llamador (1-sep-2026): esta funcion corre con `verify_jwt = false`, asi que la
+  // plataforma no rechaza a nadie. Sin esto respondia a cualquiera que supiera la direccion.
+  {
+    const { requireInternalCaller } = await import('../_shared/caller-guard.ts');
+    const denied = await requireInternalCaller(req, corsHeaders);
+    if (denied) return denied;
+  }
+
   try {
     const { recipientEmail, recipientName, subject, htmlBody, textBody, leadId, ruleName, leadSource, isFollowUp, stepNumber, templateType, templateName: requestedTemplate, ctaText, ctaUrl, codigo, idioma } = await req.json();
 

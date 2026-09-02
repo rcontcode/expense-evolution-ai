@@ -9,6 +9,14 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Guardia de llamador (1-sep-2026): esta funcion corre con `verify_jwt = false`, asi que la
+  // plataforma no rechaza a nadie. Sin esto respondia a cualquiera que supiera la direccion.
+  {
+    const { requireInternalCaller } = await import('../_shared/caller-guard.ts');
+    const denied = await requireInternalCaller(req, corsHeaders);
+    if (denied) return denied;
+  }
+
   try {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
