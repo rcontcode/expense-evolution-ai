@@ -798,9 +798,18 @@ export default function Landing() {
               transition={{ duration: 0.5, delay: 0.65 }}
               className="text-base md:text-lg text-slate-500 mb-8 max-w-2xl mx-auto"
             >
+              {/* 2-sep-2026: antes esta linea decia «Con las reglas fiscales reales de Canadá y de
+                  Chile», y junto a la insignia «+ países próximamente» le cerraba la puerta a
+                  cualquiera que no viva en esos dos paises: se leia como «esta app es para Canadá
+                  y Chile». Y es falso. Lo unico atado al pais es la capa de impuestos (calendario,
+                  deducciones, tramos, reportes propios). Todo lo demas —gastos, ingresos, lectura
+                  de recibos, presupuesto, patrimonio, cuentas por pagar, clientes y proyectos—
+                  funciona igual en cualquier parte, en espanol o en ingles, y la moneda ya se
+                  elige entre CAD, CLP, USD y EUR. Ahora se dice al reves: universal primero, la
+                  profundidad fiscal como un extra. */}
               {language === 'es'
-                ? 'Trabajes por tu cuenta, tengas un empleo o lleves las cuentas de tu casa. Con las reglas fiscales reales de Canadá y de Chile.'
-                : 'Whether you work for yourself, have a job, or run your household. With the real tax rules of Canada and Chile.'
+                ? 'Trabajes por tu cuenta, tengas un empleo o lleves las cuentas de tu casa. Funciona en cualquier país, en español o en inglés, y en tu moneda.'
+                : 'Whether you work for yourself, have a job, or run your household. It works in any country, in English or Spanish, and in your currency.'
               }
             </motion.p>
 
@@ -811,19 +820,21 @@ export default function Landing() {
               transition={{ duration: 0.5, delay: 0.65 }}
               className="flex items-center justify-center gap-3 mb-8"
             >
-              <Badge className="px-3 py-1.5 bg-red-500/10 text-red-600 border-red-500/30">
-                🇨🇦 Canada
+              <Badge className="px-3 py-1.5 bg-slate-500/10 text-slate-700 border-slate-400/40">
+                <Globe className="w-3.5 h-3.5 mr-1.5" />
+                {language === 'es' ? 'En cualquier país' : 'In any country'}
               </Badge>
-              <Badge className="px-3 py-1.5 bg-blue-500/10 text-blue-600 border-blue-500/30">
-                🇨🇱 Chile
+              <Badge className="px-3 py-1.5 bg-slate-500/10 text-slate-700 border-slate-400/40">
+                {language === 'es' ? 'CAD · CLP · USD · EUR' : 'CAD · CLP · USD · EUR'}
               </Badge>
               <Badge className="px-3 py-1.5 bg-cyan-500/10 text-cyan-700 border-cyan-500/30">
                 🎤 {language === 'es' ? 'Asistente de voz' : 'Voice assistant'}
               </Badge>
-              <span className="text-slate-400 text-sm flex items-center gap-1">
-                <Globe className="w-4 h-4" />
-                {language === 'es' ? '+ países próximamente' : '+ more countries soon'}
-              </span>
+              <Badge className="px-3 py-1.5 bg-emerald-500/10 text-emerald-700 border-emerald-500/30">
+                {language === 'es'
+                  ? '🇨🇦 🇨🇱 Impuestos a fondo'
+                  : '🇨🇦 🇨🇱 Taxes in depth'}
+              </Badge>
             </motion.div>
 
             {/* CTA Buttons */}
