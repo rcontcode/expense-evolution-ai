@@ -6,6 +6,14 @@ const corsHeaders = {
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
 
+  // Guardia de llamador (1-sep-2026): esta funcion corre con `verify_jwt = false`, asi que la
+  // plataforma no rechaza a nadie. Sin esto respondia a cualquiera que supiera la direccion.
+  {
+    const { requireInternalCaller } = await import('../_shared/caller-guard.ts');
+    const denied = await requireInternalCaller(req, corsHeaders);
+    if (denied) return denied;
+  }
+
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;

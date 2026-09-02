@@ -118,7 +118,29 @@ serve(async (req) => {
       limit: 10,
     });
 
-    const activeSubscription = subscriptions.data.find((sub) => VALID_SUBSCRIPTION_STATUSES.has(sub.status));
+    // FIX 5 (1-sep-2026): antes se tomaba la PRIMERA suscripcion viva de la cuenta de cobro,
+    // fuera de la app que fuera. Stripe devuelve primero la mas reciente, asi que un cliente de
+    // EvoFinz que despues se suscribia a Fokuspark quedaba con la de Fokuspark en primer lugar:
+    // su producto no esta en PRODUCT_ID_MAP, el plan caia a "free", y ese "free" se escribia
+    // ENCIMA de su suscripcion real de EvoFinz. Ahora solo cuentan las suscripciones cuyo
+    // producto es de EvoFinz — el mismo guardia por producto que ya tienen el webhook de cobro
+    // (desde el 22-ago) y el checkout. Si la persona solo tiene suscripciones de otras apps, el
+    // plan de EvoFinz queda en gratis, que es lo correcto, pero se deja constancia en el log.
+    const productIdOf = (sub: Stripe.Subscription): string | undefined =>
+      (sub.items?.data?.[0]?.price?.product as string | undefined) ?? undefined;
+
+    const liveSubscriptions = subscriptions.data.filter((sub) => VALID_SUBSCRIPTION_STATUSES.has(sub.status));
+    const activeSubscription = liveSubscriptions.find((sub) => {
+      const productId = productIdOf(sub);
+      return !!productId && !!PRODUCT_ID_MAP[productId];
+    });
+
+    if (!activeSubscription && liveSubscriptions.length > 0) {
+      logStep("Live subscriptions found, but none belongs to EvoFinz — leaving plan as free", {
+        count: liveSubscriptions.length,
+        products: liveSubscriptions.map(productIdOf),
+      });
+    }
     const hasActiveSub = !!activeSubscription;
     let planType = "free";
     let billingPeriod: string | null = null;
