@@ -10,7 +10,8 @@ export type UpgradeFeatureKey =
   // Extended (defined in UpgradePrompt friendlyMessages or fall back to closest)
   | 'voice_premium' | 'bank_analysis' | 'ai_reconcile'
   | 'predictions' | 'autopilot' | 'coaching' | 'ai_credits'
-  | 'tax_optimizer' | 'rrsp_tfsa_optimizer';
+  | 'tax_optimizer' | 'rrsp_tfsa_optimizer'
+  | 'export_excel' | 't2125_export' | 'tax_calendar' | 'tags_unlimited';
 
 interface OpenOptions {
   feature: UpgradeFeatureKey;

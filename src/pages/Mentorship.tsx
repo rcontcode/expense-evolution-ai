@@ -29,6 +29,8 @@ import { Target, Sparkles, GraduationCap, Brain, Coins, Atom, BookOpen, ChevronD
 import { LegalDisclaimer } from '@/components/ui/legal-disclaimer';
 import { MentorQuoteBanner } from '@/components/MentorQuoteBanner';
 import { Layout } from '@/components/Layout';
+import { usePlanLimits } from '@/hooks/data/usePlanLimits';
+import { FeatureGate } from '@/components/FeatureGate';
 import { PageHeader } from '@/components/PageHeader';
 import { motion } from 'framer-motion';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -250,6 +252,10 @@ function TabBanner({ tab, isMobile }: { tab: string; isMobile: boolean }) {
 
 export default function Mentorship() {
   const { language } = useLanguage();
+  // 1-sep-2026: los modulos de mentoria se venden por plan (`mentorship_components`: 0 en gratis,
+  // 4 en premium, 8 en pro) y ninguna pantalla lo consultaba: una cuenta gratuita entraba entera.
+  const { hasFeature, isGodMode, isLoading: planLoading } = usePlanLimits();
+  const hasAccess = isGodMode || hasFeature('mentorship_components');
   const isMobile = useIsMobile();
   const { isEnabled } = useFeatureFlags();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -269,6 +275,26 @@ export default function Mentorship() {
       setSearchParams({ tab: value }, { replace: true });
     }
   };
+
+  if (!planLoading && !hasAccess) {
+    return (
+      <Layout>
+        <div className="container mx-auto p-4 sm:p-8">
+          <FeatureGate
+            feature="mentorship_components"
+            promptFeature="mentorship"
+            requiredPlan="premium"
+            title={language === 'es' ? 'Mentoría Financiera' : 'Financial Mentorship'}
+            description={language === 'es'
+              ? 'Hábitos, metas, activos y biblioteca: las herramientas para que tu dinero crezca, no solo se ordene.'
+              : 'Habits, goals, assets and library: the tools that make your money grow, not just get organized.'}
+          >
+            <div />
+          </FeatureGate>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>

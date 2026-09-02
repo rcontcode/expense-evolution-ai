@@ -77,6 +77,10 @@ const featureIcons: Record<string, typeof Camera> = {
   contracts: FileText,
   mentorship: Brain,
   fire_calculator: Calculator,
+  export_excel: FileText,
+  tax_calendar: Clock,
+  tags_unlimited: Target,
+  t2125_export: Receipt,
   voice_assistant: Mic,
   voice_premium: Mic,
   bank_analysis: Banknote,
@@ -96,7 +100,9 @@ const friendlyMessages: Record<string, {
   whatYouDid: string;
   valueUnlocked: string;
   missedOpportunity: string;
-  testimonial: { text: string; author: string; result: string };
+  /** Ya no se pinta: el render lo reemplazo por un aviso educativo. Opcional desde el 1-sep-2026
+   *  para no tener que inventar un testimonio al agregar una funcion nueva. */
+  testimonial?: { text: string; author: string; result: string };
   quickWin: string;
   benefits: { icon: typeof DollarSign; title: string; description: string; value: string }[];
   fomo: string;
@@ -299,6 +305,74 @@ const friendlyMessages: Record<string, {
     ],
     fomo: '🏖️ Los usuarios Pro planifican su libertad mientras otros solo sueñan.',
     urgency: '⏰ Cada año que pasa sin plan FIRE es un año más trabajando.',
+  },
+  export_excel: {
+    celebration: 'Tus números, listos para tu contador. 📊',
+    achievement: '🏆 Función Premium: "Exportar a Excel"',
+    encouragement: 'Ya tienes los datos ordenados. Sacarlos en una planilla es lo que convierte tu registro en algo que otra persona puede usar.',
+    keepGoing: 'Un archivo bien armado le ahorra horas a quien te hace la declaración.',
+    whatYouDid: 'Llegaste hasta la pantalla de reportes: eso es más de lo que hace la mayoría.',
+    valueUnlocked: 'Premium exporta todos tus reportes en Excel, con las columnas y los totales ya calculados.',
+    missedOpportunity: 'Sin Excel, cada reporte hay que rehacerlo a mano cuando alguien te lo pide en otro formato.',
+    quickWin: '💡 El PDF sigue siendo gratis: te sirve para mirar, y el Excel para trabajar.',
+    benefits: [
+      { icon: FileText, title: 'Todos los reportes en Excel', description: 'Gastos, ingresos, presupuesto, pagos, kilometraje y más', value: 'Sin rehacer nada' },
+      { icon: Coins, title: 'Totales ya calculados', description: 'Las sumas y los subtotales vienen hechos en la planilla', value: 'Listo para enviar' },
+      { icon: Shield, title: 'Respaldo tuyo', description: 'Tus datos en un archivo que abres con o sin la app', value: 'Sin encierro' },
+    ],
+    fomo: '📊 Quien exporta en Excel le entrega a su contador algo que puede usar directo.',
+    urgency: '🗂️ Mientras más meses pasen, más caro sale ordenarlo después.',
+  },
+  t2125_export: {
+    celebration: 'Tu declaración de trabajador independiente, armada sola. 🧾',
+    achievement: '🏆 Función Pro: "Reporte T2125"',
+    encouragement: 'Este es el formulario que la agencia tributaria espera de quien trabaja por su cuenta, y sale de los gastos que ya tienes cargados.',
+    keepGoing: 'Cada gasto que registraste este año ya está contando para este reporte.',
+    whatYouDid: 'Tienes los gastos del año cargados: la parte lenta ya la hiciste.',
+    valueUnlocked: 'Pro arma el reporte con tus gastos clasificados en las líneas que corresponden.',
+    missedOpportunity: 'Sin este reporte, hay que ir gasto por gasto acomodándolos a mano en el formulario.',
+    quickWin: '💡 Revisa que tus gastos estén bien clasificados antes de exportar: el reporte es tan bueno como la clasificación.',
+    benefits: [
+      { icon: Receipt, title: 'Gastos en su línea', description: 'Cada categoría cae donde corresponde en el formulario', value: 'Sin acomodar a mano' },
+      { icon: Calculator, title: 'Totales del año', description: 'Los subtotales que pide el formulario, ya sumados', value: 'Menos errores' },
+      { icon: FileText, title: 'Excel o PDF', description: 'Para trabajarlo tú o para entregarlo tal cual', value: 'Los dos formatos' },
+    ],
+    fomo: '🧾 Los que trabajan por su cuenta pierden deducciones por no tener los gastos ordenados en el formulario.',
+    urgency: '📅 En temporada de impuestos, tenerlo listo es la diferencia entre una tarde y una semana.',
+  },
+  tax_calendar: {
+    celebration: 'Todas tus fechas de impuestos en un solo lugar. 📅',
+    achievement: '🏆 Función Premium: "Calendario Fiscal"',
+    encouragement: 'Las multas por atraso no son por no tener el dinero: son por no haberse acordado.',
+    keepGoing: 'Ya estás ordenando tus números; las fechas son la otra mitad.',
+    whatYouDid: 'Entraste a mirar tus vencimientos, que es más de lo que hace la mayoría antes de que sea tarde.',
+    valueUnlocked: 'Premium te muestra cada vencimiento de tu país con lo que hay que presentar, y un estimador de lo que vas a pagar.',
+    missedOpportunity: 'Sin el calendario, la fecha se recuerda cuando ya pasó.',
+    quickWin: '💡 El estimador te dice cuánto apartar cada mes para no juntar el susto al final.',
+    benefits: [
+      { icon: Clock, title: 'Cada vencimiento a la vista', description: 'Las fechas de tu país, con cuántos días faltan', value: 'Sin sorpresas' },
+      { icon: Calculator, title: 'Estimador de pago', description: 'Cuánto te va a tocar pagar, antes de que llegue', value: 'Para ir apartando' },
+      { icon: Lightbulb, title: 'Qué presentar en cada una', description: 'Qué formulario toca y dónde se presenta', value: 'Sin buscar' },
+    ],
+    fomo: '📅 Las multas por presentar tarde se cobran igual aunque no debas nada.',
+    urgency: '⏰ Los vencimientos no se mueven; lo único que se mueve es cuándo te enteras.',
+  },
+  tags_unlimited: {
+    celebration: 'Llegaste al tope de etiquetas del plan gratuito. 🏷️',
+    achievement: '🏆 Función Premium: "Etiquetas ilimitadas"',
+    encouragement: 'Que hayas llegado al tope significa que estás clasificando de verdad, no por encima.',
+    keepGoing: 'Las etiquetas son lo que después te deja responder "cuánto gasté en esto".',
+    whatYouDid: 'Armaste tu propio sistema de clasificación, que es justo lo que hace útil un registro de gastos.',
+    valueUnlocked: 'Premium te deja crear todas las que necesites, sin pensar en cuál borrar.',
+    missedOpportunity: 'Con el tope lleno, cada etiqueta nueva obliga a sacar una que ya usabas.',
+    quickWin: '💡 Antes de subir de plan, revisa si tienes etiquetas repetidas: la pantalla te las marca.',
+    benefits: [
+      { icon: Target, title: 'Todas las que necesites', description: 'Sin elegir cuál borrar para crear una nueva', value: 'Sin tope' },
+      { icon: BarChart3, title: 'Reportes más finos', description: 'Mientras mejor clasificas, mejores respuestas obtienes', value: 'Más detalle' },
+      { icon: Sparkles, title: 'Sugerencias automáticas', description: 'La app propone la etiqueta según el gasto', value: 'Menos trabajo' },
+    ],
+    fomo: '🏷️ Un gasto sin etiqueta es un gasto que no aparece cuando lo buscas.',
+    urgency: '🧹 Reetiquetar meses viejos cuesta mucho más que etiquetar al día.',
   },
   mentorship: {
     celebration: '¡La SABIDURÍA FINANCIERA de los grandes te espera! 🧠📚',

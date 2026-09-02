@@ -3,6 +3,8 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/hooks/data/useProfile';
+import { usePlanLimits } from '@/hooks/data/usePlanLimits';
+import { useUpgradePrompt } from '@/contexts/UpgradePromptContext';
 import { useExpenses } from '@/hooks/data/useExpenses';
 import { useIncome } from '@/hooks/data/useIncome';
 import { useRecurringBills, useBillPayments } from '@/hooks/data/useRecurringBills';
@@ -148,6 +150,11 @@ interface PreviewData {
 function ReportsAdvanced() {
   const { language } = useLanguage();
   const l = language === 'es';
+  // 1-sep-2026: la exportacion a Excel y el reporte del trabajador independiente (T2125) se venden
+  // por plan (`export_excel_enabled` desde Premium, `t2125_export_enabled` solo en Pro) y ninguna
+  // pantalla lo consultaba: una cuenta gratuita los descargaba igual.
+  const { hasFeature, isGodMode } = usePlanLimits();
+  const upgrade = useUpgradePrompt();
   const { formatCurrency: fc } = useFormatCurrency();
   const { user } = useAuth();
   const { data: profile } = useProfile();
@@ -397,6 +404,15 @@ function ReportsAdvanced() {
   };
 
   const handleExport = async (reportId: string, format: 'pdf' | 'excel') => {
+    if (!isGodMode && format === 'excel' && !hasFeature('export_excel')) {
+      upgrade.open({ feature: 'export_excel', requiredPlan: 'premium' });
+      return;
+    }
+    if (!isGodMode && reportId === 'tax' && !hasFeature('t2125_export')) {
+      upgrade.open({ feature: 't2125_export', requiredPlan: 'pro' });
+      return;
+    }
+
     const key = `${reportId}-${format}`;
     setExporting(key);
     try {

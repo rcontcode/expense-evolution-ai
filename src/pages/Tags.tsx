@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Plus, Tag as TagIcon, Edit, Trash2, Sparkles, Filter, Receipt, Search, BarChart3, Lightbulb, ArrowRight, AlertCircle, Plane, RefreshCw, Star, Briefcase, User, ChartPie, Bot, ExternalLink, AlertTriangle } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTagsWithExpenseCount, useDeleteTag, useSeedDefaultTags } from '@/hooks/data/useTags';
+import { usePlanLimits } from '@/hooks/data/usePlanLimits';
+import { useUpgradePrompt } from '@/contexts/UpgradePromptContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { TagDialog } from '@/components/dialogs/TagDialog';
@@ -159,6 +161,11 @@ function findDuplicatePairs(tags: { name: string }[]): [string, string][] {
   return pairs;
 }
 
+// 1-sep-2026: "etiquetas ilimitadas" se vende desde Premium (`tags_unlimited`), pero el plan
+// gratuito nunca tuvo tope, asi que la funcion se regalaba. No existe ninguna columna con el tope
+// del plan gratis, asi que el numero se fija aqui, en un solo lugar, para poder cambiarlo facil.
+const TOPE_ETIQUETAS_PLAN_GRATIS = 10;
+
 export default function Tags() {
   const { t, language } = useLanguage();
   const { data: tags, isLoading } = useTagsWithExpenseCount();
@@ -167,6 +174,8 @@ export default function Tags() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const deleteMutation = useDeleteTag();
   const seedDefaultTags = useSeedDefaultTags();
+  const { hasFeature, isGodMode } = usePlanLimits();
+  const upgrade = useUpgradePrompt();
   const navigate = useNavigate();
 
   const duplicatePairs = useMemo(() => {
@@ -185,6 +194,16 @@ export default function Tags() {
   };
 
   const handleCreate = () => {
+    const sinTope = isGodMode || hasFeature('tags_unlimited');
+    if (!sinTope && (tags?.length ?? 0) >= TOPE_ETIQUETAS_PLAN_GRATIS) {
+      upgrade.open({
+        feature: 'tags_unlimited',
+        requiredPlan: 'premium',
+        currentUsage: tags?.length ?? 0,
+        limit: TOPE_ETIQUETAS_PLAN_GRATIS,
+      });
+      return;
+    }
     setSelectedTag(undefined);
     setDialogOpen(true);
   };
