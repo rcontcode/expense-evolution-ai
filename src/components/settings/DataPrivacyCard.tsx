@@ -18,6 +18,74 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 
+
+// Las 61 tablas que guardan datos de la persona (todas las que tienen columna `user_id`).
+// Es la misma lista que borra la funcion `delete-my-account`: si se agrega una tabla nueva con
+// datos de usuario, va en las dos.
+const TABLAS_DE_LA_PERSONA = [
+  'audit_log',
+  'feature_usage_logs',
+  'bank_import_sessions',
+  'beta_bug_reports',
+  'beta_feedback',
+  'beta_goal_completions',
+  'beta_reward_redemptions',
+  'beta_tester_points',
+  'beta_referral_codes',
+  'bill_payments',
+  'budget_rollovers',
+  'budget_alert_rules',
+  'savings_contributions',
+  'financial_focus_sessions',
+  'financial_worry_entries',
+  'mission_control_history',
+  'ecosystem_leaderboard',
+  'ecosystem_notifications',
+  'ecosystem_streaks',
+  'notification_preferences',
+  'tax_knowledge_assessment',
+  'user_library_favorites',
+  'user_life_profile',
+  'education_daily_logs',
+  'education_practice_logs',
+  'financial_habit_logs',
+  'financial_habits',
+  'financial_journal',
+  'financial_education',
+  'user_achievements',
+  'user_financial_level',
+  'user_financial_profile',
+  'pay_yourself_first_settings',
+  'notifications',
+  'net_worth_snapshots',
+  'export_logs',
+  'ai_usage_logs',
+  'usage_tracking',
+  'bank_transactions',
+  'documents',
+  'expenses',
+  'income',
+  'mileage',
+  'contracts',
+  'projects',
+  'clients',
+  'assets',
+  'liabilities',
+  'savings_goals',
+  'investment_goals',
+  'category_budgets',
+  'tags',
+  'settings',
+  'user_roles',
+  'scan_sessions',
+  'user_addresses',
+  'decoded_codes',
+  'cross_border_transfers',
+  'recurring_bills',
+  'fiscal_entities',
+  'user_subscriptions',
+] as const;
+
 export function DataPrivacyCard() {
   const { language } = useLanguage();
   const { user, signOut } = useAuth();
@@ -33,33 +101,31 @@ export function DataPrivacyCard() {
     
     setExporting(true);
     try {
-      const [
-        { data: profile },
-        { data: expenses },
-        { data: income },
-        { data: clients },
-        { data: projects },
-        { data: contracts },
-        { data: mileage },
-        { data: assets },
-        { data: liabilities },
-        { data: savingsGoals },
-        { data: investmentGoals },
-        { data: tags },
-      ] = await Promise.all([
-        supabase.from('profiles').select('*').eq('id', user.id).maybeSingle(),
-        supabase.from('expenses').select('*').eq('user_id', user.id),
-        supabase.from('income').select('*').eq('user_id', user.id),
-        supabase.from('clients').select('*').eq('user_id', user.id),
-        supabase.from('projects').select('*').eq('user_id', user.id),
-        supabase.from('contracts').select('*').eq('user_id', user.id),
-        supabase.from('mileage').select('*').eq('user_id', user.id),
-        supabase.from('assets').select('*').eq('user_id', user.id),
-        supabase.from('liabilities').select('*').eq('user_id', user.id),
-        supabase.from('savings_goals').select('*').eq('user_id', user.id),
-        supabase.from('investment_goals').select('*').eq('user_id', user.id),
-        supabase.from('tags').select('*').eq('user_id', user.id),
-      ]);
+      // 1-sep-2026: la exportacion entregaba 12 tablas de las 61 que guardan datos de la
+      // persona. Ahora recorre las 61 (la misma lista que borra `delete-my-account`) y deja
+      // constancia de las que no se pudieron leer, en vez de callarlas.
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      const tablas: Record<string, unknown[]> = {};
+      const sinLeer: string[] = [];
+
+      await Promise.all(
+        TABLAS_DE_LA_PERSONA.map(async (tabla) => {
+          const { data, error } = await supabase
+            .from(tabla as any)
+            .select('*')
+            .eq('user_id', user.id);
+          if (error) {
+            sinLeer.push(tabla);
+            return;
+          }
+          tablas[tabla] = (data as unknown[]) ?? [];
+        }),
+      );
 
       const exportData = {
         exportDate: new Date().toISOString(),
@@ -68,17 +134,8 @@ export function DataPrivacyCard() {
           email: user.email,
         },
         profile,
-        expenses: expenses || [],
-        income: income || [],
-        clients: clients || [],
-        projects: projects || [],
-        contracts: contracts || [],
-        mileage: mileage || [],
-        assets: assets || [],
-        liabilities: liabilities || [],
-        savingsGoals: savingsGoals || [],
-        investmentGoals: investmentGoals || [],
-        tags: tags || [],
+        ...tablas,
+        ...(sinLeer.length > 0 ? { _tablasQueNoSePudieronLeer: sinLeer.sort() } : {}),
       };
 
       const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
@@ -113,56 +170,23 @@ export function DataPrivacyCard() {
     
     setDeleting(true);
     try {
-      const tablesToDelete = [
-        'expense_tags',
-        'education_daily_logs',
-        'education_practice_logs',
-        'financial_habit_logs',
-        'financial_habits',
-        'financial_journal',
-        'financial_education',
-        'user_achievements',
-        'user_financial_level',
-        'user_financial_profile',
-        'pay_yourself_first_settings',
-        'notifications',
-        'net_worth_snapshots',
-        'export_logs',
-        'ai_usage_logs',
-        'usage_tracking',
-        'bank_transactions',
-        'documents',
-        'expenses',
-        'income',
-        'mileage',
-        'contracts',
-        'project_clients',
-        'projects',
-        'clients',
-        'assets',
-        'liabilities',
-        'savings_goals',
-        'investment_goals',
-        'category_budgets',
-        'tags',
-        'settings',
-        'user_roles',
-        'scan_sessions',
-        'user_addresses',
-        'decoded_codes',
-        'beta_code_uses',
-      ];
-
-      for (const table of tablesToDelete) {
-        try {
-          await supabase.from(table as any).delete().eq('user_id', user.id);
-        } catch {
-          // Continue even if some tables fail
-        }
+      // 1-sep-2026: el borrado ya no se hace desde aqui. Vivia en el navegador, recorria 37
+      // tablas de las 61 que guardan datos de la persona, tres de esas 37 fallaban por columna
+      // inexistente, cada fallo caia en un `catch {}` vacio, y el usuario de autenticacion nunca
+      // se borraba. Ahora lo hace la funcion `delete-my-account` con la llave de servicio, y si
+      // algo queda sin borrar responde con error en vez de felicitar a nadie.
+      const { data, error } = await supabase.functions.invoke('delete-my-account');
+      if (error || !data?.ok) {
+        throw new Error(data?.message || error?.message || 'delete failed');
       }
 
-      await supabase.from('profiles').delete().eq('id', user.id);
-      await signOut();
+      // El usuario de autenticacion ya no existe, asi que cerrar sesion puede fallar; que falle
+      // no significa que el borrado no se hiciera.
+      try {
+        await signOut();
+      } catch {
+        // sin ruido: la cuenta ya esta eliminada
+      }
 
       toast.success(
         language === 'es' 
