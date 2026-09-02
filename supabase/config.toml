@@ -59,6 +59,8 @@ project_id = "oxrfslyuzcgxacomgzgw"
     verify_jwt = false
   [functions.send-crm-email]
     verify_jwt = false
+  [functions.delete-my-account]
+    verify_jwt = true
   [functions.dispatch-outgoing-webhook]
     verify_jwt = false
   [functions.send-weekly-report]
