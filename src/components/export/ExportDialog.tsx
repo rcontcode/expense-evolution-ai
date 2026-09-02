@@ -10,6 +10,8 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { ExpenseWithRelations } from '@/types/expense.types';
 import { exportExpenses, ExportOptions } from '@/lib/export/expense-export';
 import { exportT2125Report } from '@/lib/export/t2125-export';
+import { usePlanLimits } from '@/hooks/data/usePlanLimits';
+import { useUpgradePrompt } from '@/contexts/UpgradePromptContext';
 import { exportT2125ToPDF, exportExpensesToPDF, PDFExportOptions } from '@/lib/export/pdf-export';
 import { exportTaxReport } from '@/lib/export/tax-report-export';
 import { useToast } from '@/hooks/use-toast';
@@ -33,6 +35,10 @@ export function ExportDialog({ open, onClose, expenses, initialTab }: ExportDial
   const { data: profile } = useProfile();
   const { user } = useAuth();
   const { currentCountry } = useCountryContext();
+  // 1-sep-2026: esta es la segunda puerta a las mismas descargas de pago (la otra es Reportes).
+  // Se cierra igual, o el candado seria decorativo.
+  const { hasFeature, isGodMode } = usePlanLimits();
+  const upgrade = useUpgradePrompt();
   const [exportType, setExportType] = useState<'general' | 't2125' | 'tax_report'>(initialTab || 'general');
 
   // Sync with initialTab when dialog opens
@@ -66,6 +72,18 @@ export function ExportDialog({ open, onClose, expenses, initialTab }: ExportDial
   const currentYear = new Date().getFullYear();
 
   const handleExport = async () => {
+    const pideExcel =
+      (exportType === 't2125' && t2125Format === 'xlsx') ||
+      (exportType === 'general' && format === 'xlsx');
+    if (!isGodMode && pideExcel && !hasFeature('export_excel')) {
+      upgrade.open({ feature: 'export_excel', requiredPlan: 'premium' });
+      return;
+    }
+    if (!isGodMode && exportType === 't2125' && !hasFeature('t2125_export')) {
+      upgrade.open({ feature: 't2125_export', requiredPlan: 'pro' });
+      return;
+    }
+
     setIsExporting(true);
     try {
       let filteredExpenses = expenses;

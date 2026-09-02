@@ -12,6 +12,8 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Calendar, CalendarDays, Clock, AlertTriangle, CheckCircle2, Info, ExternalLink, Building2, User, Briefcase, HelpCircle, BookOpen, Calculator, Lightbulb, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 import { useProfile } from "@/hooks/data/useProfile";
+import { usePlanLimits } from "@/hooks/data/usePlanLimits";
+import { FeatureGate } from "@/components/FeatureGate";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { format, addMonths, differenceInDays, isAfter } from "date-fns";
 import { es, enCA } from "date-fns/locale";
@@ -33,6 +35,10 @@ import { cn } from "@/lib/utils";
 export default function TaxCalendar() {
   const { data: profile } = useProfile();
   const { language } = useLanguage();
+  // 1-sep-2026: el calendario fiscal se vende como funcion de pago (`tax_calendar_enabled` en
+  // plan_configurations) pero ninguna pantalla lo consultaba: una cuenta gratuita entraba igual.
+  const { hasFeature, isGodMode, isLoading: planLoading } = usePlanLimits();
+  const hasAccess = isGodMode || hasFeature('tax_calendar');
   const locale = language === 'es' ? es : enCA;
   
   // Use country context for multi-country support
@@ -80,6 +86,26 @@ export default function TaxCalendar() {
     : (language === 'es'
       ? "Calendario, estimador, recordatorios y guía completa para tus obligaciones fiscales"
       : "Calendar, estimator, reminders and complete guide for your tax obligations");
+
+  if (!planLoading && !hasAccess) {
+    return (
+      <Layout>
+        <div className="page-container section-gap p-4 sm:p-8">
+          <FeatureGate
+            feature="tax_calendar"
+            promptFeature="tax_calendar"
+            requiredPlan="premium"
+            title={language === 'es' ? 'Calendario Fiscal' : 'Tax Calendar'}
+            description={language === 'es'
+              ? 'Todas tus fechas de impuestos en un solo lugar, con avisos antes de cada vencimiento y estimador de lo que vas a pagar.'
+              : 'Every tax date in one place, with reminders before each deadline and an estimator of what you will owe.'}
+          >
+            <div />
+          </FeatureGate>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
