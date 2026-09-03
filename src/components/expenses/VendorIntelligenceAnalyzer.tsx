@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -105,6 +105,20 @@ export function VendorIntelligenceAnalyzer() {
     return profiles;
   }, [expenses, l]);
 
+  // Cuantos meses cubre la data que se esta mostrando. El numero grande de cada fila es el
+  // ACUMULADO del periodo; sin decir el periodo, junto al distintivo "Mensual" se leia como si
+  // fuera el gasto de un solo mes (un colegio de $320.000 aparecia como $3.840.000 al mes).
+  const mesesDelRango = useMemo(() => {
+    if (vendors.length === 0) return 0;
+    let inicio = vendors[0].firstSeen;
+    let fin = vendors[0].lastSeen;
+    vendors.forEach(v => {
+      if (v.firstSeen < inicio) inicio = v.firstSeen;
+      if (v.lastSeen > fin) fin = v.lastSeen;
+    });
+    return Math.max(1, Math.round(differenceInDays(fin, inicio) / 30) || 1);
+  }, [vendors]);
+
   if (vendors.length === 0) return null;
 
   const topSavings = vendors.reduce((s, v) => s + v.savingPotential, 0);
@@ -123,6 +137,11 @@ export function VendorIntelligenceAnalyzer() {
             {l ? 'Ahorro potencial:' : 'Savings potential:'} {fc(topSavings)}
           </Badge>
         </div>
+        <CardDescription className="text-xs">
+          {l
+            ? `Gasto acumulado en ${mesesDelRango} ${mesesDelRango === 1 ? 'mes' : 'meses'}`
+            : `Total spent over ${mesesDelRango} ${mesesDelRango === 1 ? 'month' : 'months'}`}
+        </CardDescription>
       </CardHeader>
 
       <CardContent className="space-y-2">
@@ -148,7 +167,12 @@ export function VendorIntelligenceAnalyzer() {
                     <Badge variant="outline" className="text-[9px] px-1 py-0 shrink-0">{vendor.frequency}</Badge>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
-                    <span className="text-sm font-bold">{fc(vendor.totalSpend)}</span>
+                    <div className="text-right leading-tight">
+                      <span className="text-sm font-bold block">{fc(vendor.totalSpend)}</span>
+                      <span className="text-[10px] text-muted-foreground block">
+                        {fc(vendor.totalSpend / mesesDelRango)}{l ? '/mes' : '/mo'}
+                      </span>
+                    </div>
                     {vendor.trend !== 0 && (
                       <div className={cn("flex items-center text-[10px]", vendor.trend > 0 ? 'text-destructive' : 'text-emerald-600')}>
                         {vendor.trend > 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
