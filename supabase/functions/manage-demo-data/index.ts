@@ -79,7 +79,7 @@ const TIPO_DE_GASTO_POR_ESCENARIO: Record<string, string> = {
   constructora_ca: "cra_deductible",
   familia_rodriguez: "personal",
   ecolavanderia_spa: "cra_deductible",
-  pareja_millennial: "personal",
+  pareja_primera_casa: "personal",
   contador_independiente: "cra_deductible",
   expat_multipais: "personal",
   jubilado_inversiones: "personal",
@@ -98,7 +98,7 @@ type Scenario =
   | "constructora_ca"
   | "familia_rodriguez"
   | "ecolavanderia_spa"
-  | "pareja_millennial"
+  | "pareja_primera_casa"
   | "contador_independiente"
   | "expat_multipais"
   | "jubilado_inversiones"
@@ -582,10 +582,10 @@ function buildScenarioEcoLavanderia(userId: string) {
 }
 
 // ======================================================================
-// SCENARIO F: Pareja Millennial (Chile, sin hijos) — FOCALIZADO
+// SCENARIO F: Pareja ahorrando su primera casa (Chile, sin hijos) — FOCALIZADO
 // Daniela (29) + Joaquin (31), ahorrando casa propia
 // ======================================================================
-function buildScenarioParejaMillennial(userId: string) {
+function buildScenarioParejaPrimeraCasa(userId: string) {
   const expenses = [
     { vendor: "Arriendo Depto", amount: 720000, category: "vivienda", date: daysAgo(28), description: "Arriendo compartido" },
     { vendor: "Jumbo", amount: 195000, category: "alimentacion", date: daysAgo(25), description: "Compra mensual" },
@@ -993,7 +993,7 @@ const CONSTRUCTORES = [
   buildScenarioConstructoraCA,
   buildScenarioFamiliaRodriguez,
   buildScenarioEcoLavanderia,
-  buildScenarioParejaMillennial,
+  buildScenarioParejaPrimeraCasa,
   buildScenarioContadorIndependiente,
   buildScenarioExpatMultipais,
   buildScenarioJubiladoInversiones,
@@ -1175,7 +1175,7 @@ async function seedDemo(supabase: any, userId: string, scenario: Scenario) {
     case "constructora_ca": data = buildScenarioConstructoraCA(userId); break;
     case "familia_rodriguez": data = buildScenarioFamiliaRodriguez(userId); break;
     case "ecolavanderia_spa": data = buildScenarioEcoLavanderia(userId); break;
-    case "pareja_millennial": data = buildScenarioParejaMillennial(userId); break;
+    case "pareja_primera_casa": data = buildScenarioParejaPrimeraCasa(userId); break;
     case "contador_independiente": data = buildScenarioContadorIndependiente(userId); break;
     case "expat_multipais": data = buildScenarioExpatMultipais(userId); break;
     case "jubilado_inversiones": data = buildScenarioJubiladoInversiones(userId); break;

@@ -102,8 +102,8 @@ const SCENARIOS: Record<Scenario, ScenarioMeta> = {
     estRecords: '~30 registros',
     covers: ['Tax Hub CRA', 'Mileage', 'Demo CA'],
   },
-  pareja_millennial: {
-    title: 'Pareja Millennial (CL)',
+  pareja_primera_casa: {
+    title: 'Pareja ahorrando su primera casa (CL)',
     subtitle: 'Sin hijos, ahorrando casa propia',
     description: 'Daniela + Joaquín. 12 gastos, 2 sueldos, 2 metas (casa $45M, viaje), 4 tags compartidos.',
     tier: 'focused',
@@ -122,7 +122,7 @@ const SCENARIO_LABEL: Record<DemoScriptScenario, string> = {
   maria_profesional: 'María',
   carlos_caos: 'Carlos',
   constructora_ca: 'Lopez',
-  pareja_millennial: 'Pareja',
+  pareja_primera_casa: 'Pareja',
 };
 
 export default function DemoStudio() {
