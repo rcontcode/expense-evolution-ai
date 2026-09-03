@@ -10,7 +10,7 @@ import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { useRecurringBills } from '@/hooks/data/useRecurringBills';
 import { useDashboardStats } from '@/hooks/data/useDashboardStats';
 import { BILL_CATEGORY_CONFIG, type BillCategory, getMonthlyEquivalent } from '@/lib/constants/bill-categories';
-import { differenceInDays, parseISO, startOfMonth, endOfMonth, isWithinInterval, getDaysInMonth, getDate, format } from 'date-fns';
+import { differenceInDays, parseISO, startOfMonth, endOfMonth, isWithinInterval, getDaysInMonth, getDate, format, differenceInCalendarDays} from 'date-fns';
 import { es } from 'date-fns/locale';
 import {
   Receipt, AlertTriangle, CheckCircle2, ArrowRight, Wallet,
@@ -54,23 +54,23 @@ export function MonthlyBillsWidget({ className }: { className?: string }) {
     });
 
     // Overdue
-    const overdue = active.filter(b => differenceInDays(parseISO(b.next_due_date), now) < 0);
+    const overdue = active.filter(b => differenceInCalendarDays(parseISO(b.next_due_date), now) < 0);
 
     // Due in next 7 days (not overdue)
     const dueSoon = active.filter(b => {
-      const days = differenceInDays(parseISO(b.next_due_date), now);
+      const days = differenceInCalendarDays(parseISO(b.next_due_date), now);
       return days >= 0 && days <= 7;
     }).sort((a, b) => a.next_due_date.localeCompare(b.next_due_date));
 
     // Due today
     const dueToday = active.filter(b => {
-      const days = differenceInDays(parseISO(b.next_due_date), now);
+      const days = differenceInCalendarDays(parseISO(b.next_due_date), now);
       return days === 0;
     });
 
     // Bills within their reminder window (reminder_days_before)
     const inReminderWindow = active.filter(b => {
-      const days = differenceInDays(parseISO(b.next_due_date), now);
+      const days = differenceInCalendarDays(parseISO(b.next_due_date), now);
       const reminderDays = b.reminder_days_before || 3;
       return days > 0 && days <= reminderDays && !dueToday.some(d => d.id === b.id);
     }).sort((a, b) => a.next_due_date.localeCompare(b.next_due_date));
@@ -182,7 +182,7 @@ export function MonthlyBillsWidget({ className }: { className?: string }) {
               <ShieldAlert className="h-4 w-4 shrink-0" />
               <div className="flex-1">
                 <p className="text-xs font-bold">
-                  🚨 {analysis.overdueCount} {l ? 'pago(s) vencido(s)' : 'overdue payment(s)'}
+                  🚨 {analysis.overdueCount} {l ? (analysis.overdueCount === 1 ? 'pago vencido' : 'pagos vencidos') : (analysis.overdueCount === 1 ? 'overdue payment' : 'overdue payments')}
                   {' · '}{formatCurrency(analysis.overdueAmount)}
                 </p>
                 <div className="flex gap-1 mt-0.5 flex-wrap">
@@ -219,7 +219,9 @@ export function MonthlyBillsWidget({ className }: { className?: string }) {
               <Clock className="h-4 w-4 text-amber-600 shrink-0" />
               <div className="flex-1">
                 <p className="text-xs font-semibold text-amber-700 dark:text-amber-400">
-                  {l ? `¡${analysis.dueTodayCount} pago(s) vence(n) HOY!` : `${analysis.dueTodayCount} payment(s) due TODAY!`}
+                  {l
+                    ? (analysis.dueTodayCount === 1 ? '¡1 pago vence HOY!' : `¡${analysis.dueTodayCount} pagos vencen HOY!`)
+                    : (analysis.dueTodayCount === 1 ? '1 payment due TODAY!' : `${analysis.dueTodayCount} payments due TODAY!`)}
                 </p>
                 <div className="flex gap-1.5 mt-0.5 flex-wrap">
                   {analysis.dueToday.map(b => (
@@ -247,11 +249,13 @@ export function MonthlyBillsWidget({ className }: { className?: string }) {
               <PiggyBank className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0" />
               <div className="flex-1">
                 <p className="text-xs font-semibold text-blue-700 dark:text-blue-300">
-                  🔔 {analysis.inReminderWindow.length} {l ? 'pago(s) próximo(s) dentro del periodo de recordatorio' : 'payment(s) within reminder window'}
+                  🔔 {analysis.inReminderWindow.length} {l
+                    ? (analysis.inReminderWindow.length === 1 ? 'pago próximo dentro del periodo de recordatorio' : 'pagos próximos dentro del periodo de recordatorio')
+                    : (analysis.inReminderWindow.length === 1 ? 'payment within reminder window' : 'payments within reminder window')}
                 </p>
                 <div className="flex gap-1.5 mt-0.5 flex-wrap">
                   {analysis.inReminderWindow.slice(0, 3).map(b => {
-                    const days = differenceInDays(parseISO(b.next_due_date), now);
+                    const days = differenceInCalendarDays(parseISO(b.next_due_date), now);
                     return (
                       <Badge key={b.id} className="text-[10px] h-4 bg-blue-500/20 text-blue-700 dark:text-blue-300 border-blue-500/30">
                         {BILL_CATEGORY_CONFIG[b.category as BillCategory]?.icon} {b.name}: {days}d
@@ -380,7 +384,7 @@ export function MonthlyBillsWidget({ className }: { className?: string }) {
             </p>
             {analysis.topUpcoming.map((bill, i) => {
               const cat = BILL_CATEGORY_CONFIG[bill.category as BillCategory];
-              const days = differenceInDays(parseISO(bill.next_due_date), now);
+              const days = differenceInCalendarDays(parseISO(bill.next_due_date), now);
               const isToday = days === 0;
               const isTomorrow = days === 1;
               const balanceNegative = bill.balanceAfterPayment < 0;

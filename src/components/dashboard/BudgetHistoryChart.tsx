@@ -37,7 +37,7 @@ export function BudgetHistoryChart() {
 
   const { data: expenses, isLoading } = useExpenses({
     dateRange: { start: sixMonthsAgo, end: endOfMonth(now) },
-    entityId: budgetEntityId ?? undefined,
+    entityId: budgetEntityId,
     showAllEntities: budgetEntityId === undefined,
   });
 

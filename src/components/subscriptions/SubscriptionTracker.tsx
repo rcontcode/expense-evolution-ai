@@ -344,7 +344,13 @@ export function SubscriptionTracker() {
     );
   }
 
-  const bankCount = subscriptions.filter(s => s.source === 'bank' || s.source === 'both').length;
+  // Antes esta cuenta juntaba "solo banco" con "en los dos lados", asi que debajo del numero
+  // grande de detectados aparecia el MISMO numero otra vez ("19" y "19 desde banco"), como si
+  // todo viniera de la cartola cuando la mayoria estaba confirmada en los dos lados. Se separan:
+  // lo confirmado en ambos es la buena noticia, y lo que solo esta en la cartola es lo que
+  // todavia no tiene un gasto propio que lo respalde.
+  const confirmados = subscriptions.filter(s => s.source === 'both').length;
+  const soloBanco = subscriptions.filter(s => s.source === 'bank').length;
 
   // Los dos grupos: lo que se puede dar de baja manana, y lo que no.
   const suscripciones = subscriptions.filter(s => tipoDePagoRecurrente(s.vendor, s.category) === 'suscripcion');
@@ -383,9 +389,11 @@ export function SubscriptionTracker() {
             <CardContent>
               <div className="text-4xl font-black text-amber-700 dark:text-amber-300">{subscriptions.length}</div>
               <p className="text-xs text-muted-foreground mt-1">
-                {bankCount > 0
-                  ? (isEs ? `${bankCount} desde banco` : `${bankCount} from bank`)
-                  : (isEs ? 'Pagos que se repiten' : 'Repeating payments')
+                {confirmados > 0
+                  ? (isEs ? `${confirmados} confirmados con tu cartola` : `${confirmados} confirmed with your statement`)
+                  : soloBanco > 0
+                    ? (isEs ? `${soloBanco} vistos solo en la cartola` : `${soloBanco} seen only in your statement`)
+                    : (isEs ? 'Pagos que se repiten' : 'Repeating payments')
                 }
               </p>
             </CardContent>

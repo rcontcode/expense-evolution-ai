@@ -1,7 +1,7 @@
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useFormatCurrency } from "@/hooks/utils/useFormatCurrency";
 import { useRecurringBills } from "@/hooks/data/useRecurringBills";
-import { differenceInDays, parseISO, format } from "date-fns";
+import { differenceInDays, parseISO, format, differenceInCalendarDays} from "date-fns";
 import { es, enUS } from "date-fns/locale";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -20,7 +20,11 @@ export function UpcomingReminders() {
   const upcoming = activeBills
     .map(b => {
       const due = parseISO(b.next_due_date);
-      const daysUntil = differenceInDays(due, now);
+      // Dias de CALENDARIO, no de reloj. Con `differenceInDays`, una cuenta que vence el sabado
+      // vista un jueves a las 15:55 daba 1 dia y 8 horas, que se truncan a 1: el aviso decia
+      // "MAÑANA" para algo que vencia en dos dias. El mismo error estaba en las trece pantallas
+      // que cuentan dias hasta un vencimiento.
+      const daysUntil = differenceInCalendarDays(due, now);
       return { ...b, due, daysUntil };
     })
     .filter(b => b.daysUntil >= -7 && b.daysUntil <= 14) // include 7 days overdue

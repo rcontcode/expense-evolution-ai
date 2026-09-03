@@ -20,7 +20,7 @@ import {
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { useRecurringBills, useBillPayments, useCreateBill, useUpdateBill, useDeleteBill, useMarkBillPaid, type RecurringBill, type BillInsert } from '@/hooks/data/useRecurringBills';
 import { BILL_CATEGORY_CONFIG, PAYMENT_METHOD_CONFIG, type BillCategory, type PaymentMethodType, getBillCategoryLabel, getBillFrequencyLabel, getPaymentMethodLabel } from '@/lib/constants/bill-categories';
-import { differenceInDays, parseISO, format } from 'date-fns';
+import { differenceInDays, parseISO, format, differenceInCalendarDays} from 'date-fns';
 import { es } from 'date-fns/locale';
 import { BillFormDialog } from './BillFormDialog';
 import { BillSparkline } from './BillSparkline';
@@ -28,7 +28,7 @@ import { BillSparkline } from './BillSparkline';
 function BillStatusBadge({ bill }: { bill: RecurringBill }) {
   const { language } = useLanguage();
   const l = language === 'es';
-  const daysUntil = differenceInDays(parseISO(bill.next_due_date), new Date());
+  const daysUntil = differenceInCalendarDays(parseISO(bill.next_due_date), new Date());
 
   if (daysUntil < 0)
     return <Badge variant="destructive" className="text-xs">⚠️ {l ? 'Vencido' : 'Overdue'}</Badge>;

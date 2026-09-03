@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Plus, Trash2, PiggyBank, Target, Calendar } from "lucide-react";
-import { format, differenceInDays, parseISO } from "date-fns";
+import { format, differenceInDays, parseISO, differenceInCalendarDays} from "date-fns";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -82,7 +82,7 @@ export function SavingsGoalsWidget() {
         {activeGoals.map((goal) => {
           const pct = goal.target_amount > 0 ? (Number(goal.current_amount) / Number(goal.target_amount)) * 100 : 0;
           const remaining = Math.max(0, Number(goal.target_amount) - Number(goal.current_amount));
-          const daysLeft = goal.deadline ? differenceInDays(parseISO(goal.deadline), new Date()) : null;
+          const daysLeft = goal.deadline ? differenceInCalendarDays(parseISO(goal.deadline), new Date()) : null;
 
           return (
             <motion.div

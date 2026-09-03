@@ -61,6 +61,9 @@ export function useIncome(filters?: IncomeFilters) {
       }
       if (filters?.entityId) {
         query = query.eq('entity_id', filters.entityId);
+      } else if (filters?.entityId === null && !filters?.showAllEntities) {
+        // Ver la nota en useExpenses: `null` es la vista "Familia", no "todas las entidades".
+        query = query.is('entity_id', null);
       }
 
       const { data, error } = await query;

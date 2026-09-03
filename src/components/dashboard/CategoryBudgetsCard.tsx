@@ -51,7 +51,7 @@ export function CategoryBudgetsCard() {
 
   const { data: expenses } = useExpenses({
     dateRange: { start: monthStart, end: monthEnd },
-    entityId: budgetEntityId ?? undefined,
+    entityId: budgetEntityId,
     showAllEntities: budgetEntityId === undefined,
   });
 

@@ -9,7 +9,7 @@ import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { useRecurringBills } from '@/hooks/data/useRecurringBills';
 import { useIncomeSummary } from '@/hooks/data/useIncome';
 import { getMonthlyEquivalent, BILL_CATEGORY_CONFIG, type BillCategory } from '@/lib/constants/bill-categories';
-import { differenceInDays, parseISO, format } from 'date-fns';
+import { differenceInDays, parseISO, format, differenceInCalendarDays} from 'date-fns';
 import { es } from 'date-fns/locale';
 import {
   Brain, Lightbulb, TrendingDown, Shield, AlertTriangle,
@@ -54,7 +54,7 @@ export function BillSmartInsights() {
     const ratio = avgIncome > 0 ? (monthlyTotal / avgIncome) * 100 : 0;
 
     // 1. Overdue alerts
-    const overdue = active.filter(b => differenceInDays(parseISO(b.next_due_date), now) < 0);
+    const overdue = active.filter(b => differenceInCalendarDays(parseISO(b.next_due_date), now) < 0);
     if (overdue.length > 0) {
       const totalOverdue = overdue.reduce((s, b) => s + Number(b.amount), 0);
       results.push({
@@ -73,7 +73,7 @@ export function BillSmartInsights() {
 
     // 2. Upcoming 48hrs
     const urgent = active.filter(b => {
-      const d = differenceInDays(parseISO(b.next_due_date), now);
+      const d = differenceInCalendarDays(parseISO(b.next_due_date), now);
       return d >= 0 && d <= 2;
     });
     if (urgent.length > 0) {

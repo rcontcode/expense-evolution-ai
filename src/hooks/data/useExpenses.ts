@@ -72,6 +72,14 @@ export function useExpenses(filters?: ExpenseFilters) {
       }
       if (filters?.entityId) {
         query = query.eq('entity_id', filters.entityId);
+      } else if (filters?.entityId === null && !filters?.showAllEntities) {
+        // `null` es la vista "Familia": lo compartido de la casa, que es justo lo que no cuelga
+        // de ninguna entidad fiscal. Esta rama faltaba —y `showAllEntities` estaba declarado en
+        // el tipo pero no se usaba en ninguna parte—, asi que la pestaña Familia sumaba los
+        // gastos de TODAS las entidades mientras sus pagos fijos si venian filtrados: la misma
+        // pantalla mostraba ingresos de una entidad y cuentas fijas de otra. `useCategoryBudgets`
+        // ya lo hacia bien; solo faltaba propagarlo aca.
+        query = query.is('entity_id', null);
       }
       if (filters?.onlyIncomplete) {
         query = query.or(
