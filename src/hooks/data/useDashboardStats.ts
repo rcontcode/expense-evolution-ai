@@ -2,6 +2,8 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { startOfMonth, endOfMonth, subMonths, format } from 'date-fns';
+import { es, enUS } from 'date-fns/locale';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { ExpenseStatus, ExpenseCategory } from '@/types/expense.types';
 
 interface DashboardFilters {
@@ -41,9 +43,12 @@ interface DashboardStats {
 
 export const useDashboardStats = (filters?: DashboardFilters) => {
   const { user } = useAuth();
+  const { language } = useLanguage();
 
   return useQuery({
-    queryKey: ['dashboard-stats', user?.id, filters],
+    // El idioma entra en la llave: las etiquetas de los meses se arman aca dentro, asi que al
+    // cambiar de idioma hay que rehacerlas y no servir las del idioma anterior desde la cache.
+    queryKey: ['dashboard-stats', user?.id, filters, language],
     queryFn: async (): Promise<DashboardStats> => {
       if (!user) throw new Error('No user');
 
@@ -213,32 +218,31 @@ export const useDashboardStats = (filters?: DashboardFilters) => {
         return acc;
       }, [] as ClientStats[]) || [];
 
-      // Process monthly trends from single query result
+      // Process monthly trends from single query result.
+      // Se agrupa por 'yyyy-MM' (que es unico) y recien al final se arma la etiqueta con el
+      // idioma. Antes se agrupaba Y se etiquetaba con 'MMM' sin idioma, asi que el grafico de
+      // gastos de una app en espanol decia "Apr May Jun Jul Aug Sep".
+      const etiquetaMes = (d: Date) =>
+        format(d, 'MMM', { locale: language === 'es' ? es : enUS });
+
       const monthlyTrendsMap = new Map<string, number>();
-      
-      // Initialize all 6 months with 0
+
       for (let i = 5; i >= 0; i--) {
-        const monthDate = subMonths(now, i);
-        const monthKey = format(monthDate, 'MMM');
-        monthlyTrendsMap.set(monthKey, 0);
+        monthlyTrendsMap.set(format(subMonths(now, i), 'yyyy-MM'), 0);
       }
-      
-      // Aggregate expenses by month
+
       trendsExpensesResult.data?.forEach((exp) => {
-        const expDate = new Date(exp.date);
-        const monthKey = format(expDate, 'MMM');
-        const current = monthlyTrendsMap.get(monthKey) || 0;
-        monthlyTrendsMap.set(monthKey, current + parseFloat(exp.amount.toString()));
+        const monthKey = format(new Date(exp.date), 'yyyy-MM');
+        if (!monthlyTrendsMap.has(monthKey)) return;
+        monthlyTrendsMap.set(monthKey, (monthlyTrendsMap.get(monthKey) || 0) + parseFloat(exp.amount.toString()));
       });
-      
-      // Convert to array maintaining order
+
       const monthlyTrends: MonthlyTrend[] = [];
       for (let i = 5; i >= 0; i--) {
         const monthDate = subMonths(now, i);
-        const monthKey = format(monthDate, 'MMM');
         monthlyTrends.push({
-          month: monthKey,
-          total: monthlyTrendsMap.get(monthKey) || 0,
+          month: etiquetaMes(monthDate),
+          total: monthlyTrendsMap.get(format(monthDate, 'yyyy-MM')) || 0,
         });
       }
 
