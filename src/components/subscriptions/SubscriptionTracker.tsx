@@ -48,6 +48,7 @@ import { useEntity } from '@/contexts/EntityContext';
 import { useBankTransactions } from '@/hooks/data/useBankTransactions';
 import { useRecurringBills } from '@/hooks/data/useRecurringBills';
 import { useSubscriptionDetector, DetectedSubscription } from '@/hooks/data/useSubscriptionDetector';
+import { getCategoryLabelByLanguage } from '@/lib/constants/expense-categories';
 import { useCreateBill } from '@/hooks/data/useRecurringBills';
 import { toast } from 'sonner';
 import { format, parseISO, addMonths } from 'date-fns';
@@ -446,8 +447,10 @@ export function SubscriptionTracker() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between text-xs mb-1">
-                          <span className="font-semibold capitalize truncate">{cat.replace(/_/g, ' ')}</span>
-                          <span className="font-bold">{formatCurrency(data.monthly)}/mo</span>
+                          <span className="font-semibold capitalize truncate">
+                            {getCategoryLabelByLanguage(cat, isEs ? 'es' : 'en').replace(/_/g, ' ')}
+                          </span>
+                          <span className="font-bold">{formatCurrency(data.monthly)}{isEs ? '/mes' : '/mo'}</span>
                         </div>
                         <div className="h-1.5 rounded-full bg-muted overflow-hidden">
                           <motion.div

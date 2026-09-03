@@ -22,6 +22,7 @@ interface VendorProfile {
   trend: number; // % change last 3 months vs prior 3
   categories: string[];
   loyaltyMonths: number;
+  mesesConGasto: number; // en cuantos meses distintos hubo gasto con este proveedor
   savingPotential: number; // estimated negotiation savings
 }
 
@@ -82,6 +83,14 @@ export function VendorIntelligenceAnalyzer() {
           ? Math.round(differenceInDays(sorted[sorted.length - 1], sorted[0]) / 30)
           : 0;
 
+        // En cuantos meses distintos hubo gasto con este proveedor. Es el divisor correcto para
+        // el promedio mensual: usar el rango global diluia a los proveedores que solo aparecen
+        // en parte del periodo (un colegio de 6 meses dividido por 8 daba $480.000 en vez de
+        // $640.000). Contar meses del calendario tampoco se equivoca por el redondeo de dias.
+        const mesesConGasto = new Set(
+          sorted.map(d => `${d.getFullYear()}-${d.getMonth()}`)
+        ).size;
+
         // Saving potential (5-15% for frequent, high-spend vendors)
         const savingRate = avgDaysBetween <= 35 && totalSpend > 500 ? 0.12 : avgDaysBetween <= 35 ? 0.08 : 0.05;
         const savingPotential = totalSpend * savingRate;
@@ -97,6 +106,7 @@ export function VendorIntelligenceAnalyzer() {
           trend,
           categories: Array.from(data.categories),
           loyaltyMonths,
+          mesesConGasto,
           savingPotential,
         };
       })
@@ -170,7 +180,7 @@ export function VendorIntelligenceAnalyzer() {
                     <div className="text-right leading-tight">
                       <span className="text-sm font-bold block">{fc(vendor.totalSpend)}</span>
                       <span className="text-[10px] text-muted-foreground block">
-                        {fc(vendor.totalSpend / mesesDelRango)}{l ? '/mes' : '/mo'}
+                        {fc(vendor.totalSpend / Math.max(1, vendor.mesesConGasto))}{l ? '/mes' : '/mo'}
                       </span>
                     </div>
                     {vendor.trend !== 0 && (
