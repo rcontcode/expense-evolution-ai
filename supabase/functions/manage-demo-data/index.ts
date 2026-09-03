@@ -267,6 +267,16 @@ function buildScenarioFamiliaRodriguez(userId: string) {
     expenses.push({ vendor: "Spotify Familiar", amount: 8990, category: "suscripciones", date: daysAgo(baseDay + 8), description: "Plan familiar" });
   }
 
+  // Gastos de los ultimos dos dias. El gasto mas nuevo del bloque de arriba es de hace 3 dias,
+  // asi que si el escenario se carga el dia 1, 2 o 3 de un mes, TODA la data cae en el mes
+  // anterior y cada vista "de este mes" (Presupuesto, Analisis, el resumen del tablero) sale
+  // vacia aunque haya medio ano cargado. Estos gastos aseguran que el mes en curso nunca este
+  // vacio, cualquiera sea el dia en que se cargue el escenario.
+  expenses.push({ vendor: "Jumbo", amount: 62450, category: "alimentacion", date: daysAgo(0), description: "Compra de la semana" });
+  expenses.push({ vendor: "Copec", amount: 48200, category: "transporte", date: daysAgo(1), description: "Bencina" });
+  expenses.push({ vendor: "Farmacia Cruz Verde", amount: 18900, category: "salud", date: daysAgo(1), description: "Remedios de la casa" });
+  expenses.push({ vendor: "Uber", amount: 7800, category: "transporte", date: daysAgo(2), description: "Viaje al colegio" });
+
   // Ingresos: 2 sueldos x 6 meses
   const incomes: any[] = [];
   for (let m = 0; m < 6; m++) {
