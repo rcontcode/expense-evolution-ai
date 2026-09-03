@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useRecMode } from '@/hooks/useRecMode';
 import { toast } from 'sonner';
 import { Database } from '@/integrations/supabase/types';
 
@@ -25,11 +26,48 @@ export interface ProfileFormData {
   tax_regime?: string | null;
 }
 
+/**
+ * REC Mode enmascara la identidad en el perfil MISMO, no en cada pantalla.
+ *
+ * POR QUE SE HIZO ASI (2-sep-2026). El Demo Studio promete, textualmente, «Oculta tu nombre,
+ * email e identidad EN TODA LA APP». No lo cumplia. La mascara estaba hecha solo con CSS sobre
+ * `[data-pii="name"]`, y ese atributo esta puesto en dos archivos —`Layout.tsx` y
+ * `ProfileCard.tsx`—, mientras que `full_name` se lee en unos veinticinco lugares. Resultado: la
+ * barra lateral decia «Demo User» y al mismo tiempo el tablero saludaba con el nombre real
+ * («¡Excelente Rudy! Estas ahorrando el 36 % de tus ingresos»), y lo mismo pasaba en los avisos
+ * de gastos, el mentor, los reportes exportados y el contexto que se le manda al asistente.
+ *
+ * Marcar los veinticinco sitios que faltan no arregla nada de fondo: el sitio numero veintiseis
+ * que alguien escriba manana vuelve a filtrar el nombre. Por eso la mascara baja aca, al unico
+ * lugar por donde pasan todos: si REC Mode esta activo, el perfil que entrega este hook YA viene
+ * con nombre y correo de demostracion. Quien lo consuma no tiene que saber que existe REC Mode.
+ *
+ * El CSS de `.rec-mode [data-pii]` se deja como esta: sigue sirviendo para el avatar y para
+ * cualquier dato que no venga del perfil.
+ */
+const PERFIL_DEMO = {
+  full_name: 'Demo User',
+  email: 'demo@evofinz.com',
+  nickname: 'Demo',
+  business_name: 'Demo Studio',
+  business_number: null,
+  rut: null,
+  phone: null,
+} as const;
+
+function enmascararSiGrabando(perfil: Profile | null): Profile | null {
+  if (!perfil) return perfil;
+  if (typeof document === 'undefined') return perfil;
+  if (!document.body.classList.contains('rec-mode')) return perfil;
+  return { ...perfil, ...PERFIL_DEMO } as Profile;
+}
+
 export function useProfile() {
   const { user } = useAuth();
+  const { active: grabando } = useRecMode();
 
   return useQuery({
-    queryKey: ['profile', user?.id],
+    queryKey: ['profile', user?.id, grabando ? 'rec' : 'real'],
     queryFn: async () => {
       if (!user) return null;
       
@@ -40,7 +78,7 @@ export function useProfile() {
         .maybeSingle();
 
       if (error) throw error;
-      return data as Profile;
+      return enmascararSiGrabando(data as Profile);
     },
     enabled: !!user,
   });

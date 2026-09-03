@@ -1,3 +1,4 @@
+import { useLocation } from 'react-router-dom';
 import { useRecMode } from '@/hooks/useRecMode';
 import { useIsAdmin } from '@/hooks/data/useIsAdmin';
 import { Video, VideoOff } from 'lucide-react';
@@ -8,14 +9,23 @@ import { Video, VideoOff } from 'lucide-react';
  */
 export function RecModeFab() {
   const { data: isAdmin } = useIsAdmin();
-  const { active, quietMode, toggle } = useRecMode();
+  const { active, quietMode, captureMode, toggle } = useRecMode();
+  const { pathname } = useLocation();
 
   if (!isAdmin) return null;
+
+  /**
+   * 2-sep-2026: en «modo captura» el distintivo se esconde para que no salga en la foto.
+   * El boton se sigue mostrando dentro del propio Demo Studio, que es donde se apaga: si se
+   * escondiera en todas partes, quedaria la app enmascarada sin ninguna forma visible de volver.
+   */
+  const enDemoStudio = pathname.startsWith('/admin/demo-studio');
+  const ocultarDistintivo = active && captureMode && !enDemoStudio;
 
   return (
     <>
       {/* Viewport overlay when REC active */}
-      {active && (
+      {active && !ocultarDistintivo && (
         <div
           aria-hidden="true"
           className="pointer-events-none fixed inset-0 z-[9998] border-2 border-destructive/70 rounded-sm"
@@ -30,6 +40,7 @@ export function RecModeFab() {
       )}
 
       {/* Toggle FAB */}
+      {!ocultarDistintivo && (
       <button
         onClick={toggle}
         title={active ? 'Desactivar REC Mode' : 'Activar REC Mode (oculta tu identidad para grabaciones)'}
@@ -43,6 +54,7 @@ export function RecModeFab() {
         {active ? <Video className="h-4 w-4" /> : <VideoOff className="h-4 w-4" />}
         {active ? '● REC' : 'REC OFF'}
       </button>
+      )}
     </>
   );
 }

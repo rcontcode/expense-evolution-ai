@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import {
-  Loader2, Database, Trash2, Sparkles, Video, FileText, Copy, ChevronDown, ChevronRight, VolumeX, Star,
+  Loader2, Database, Trash2, Sparkles, Video, FileText, Copy, ChevronDown, ChevronRight, VolumeX, Star, Camera,
 } from 'lucide-react';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -127,7 +127,7 @@ const SCENARIO_LABEL: Record<DemoScriptScenario, string> = {
 
 export default function DemoStudio() {
   const { toast } = useToast();
-  const { active: recActive, quietMode, setMode: setRecMode, setQuiet } = useRecMode();
+  const { active: recActive, quietMode, captureMode, setMode: setRecMode, setQuiet, setCapture } = useRecMode();
   const [status, setStatus] = useState<Record<string, number> | null>(null);
   const [loading, setLoading] = useState<'status' | 'seed' | 'reset' | null>(null);
   const [selectedScenario, setSelectedScenario] = useState<Scenario>('familia_rodriguez');
@@ -279,7 +279,10 @@ export default function DemoStudio() {
             <Video className="h-5 w-5" /> REC Mode
           </CardTitle>
           <CardDescription>
-            Oculta tu nombre, email e identidad en toda la app. Cuando está activo verás un borde rojo y la etiqueta "DEMO MODE" arriba a la izquierda.
+            Reemplaza tu nombre y tu correo por los de demostración en toda la app —los saludos, los
+            avisos, el mentor y los reportes incluidos—, y difumina tu avatar. Cuando está activo verás
+            un borde rojo y la etiqueta "DEMO MODE" arriba a la izquierda; para fotos de pantalla,
+            apágalos con el modo captura de abajo.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -302,6 +305,20 @@ export default function DemoStudio() {
               </p>
             </div>
             <Switch checked={quietMode} onCheckedChange={setQuiet} disabled={!recActive} />
+          </div>
+          {/* 2-sep-2026: tercer interruptor. El borde rojo y las dos etiquetas son utiles para
+              GRABAR VIDEO, pero salen dentro de cualquier FOTO de pantalla y la arruinan. */}
+          <div className="flex items-center justify-between border-t pt-4">
+            <div>
+              <p className="font-medium flex items-center gap-2">
+                <Camera className="h-4 w-4" /> Modo captura (para fotos de pantalla)
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Esconde el borde rojo, la etiqueta "DEMO MODE" y el botón flotante, sin quitar la
+                máscara de identidad. El botón se sigue viendo en esta página, para volver.
+              </p>
+            </div>
+            <Switch checked={captureMode} onCheckedChange={setCapture} disabled={!recActive} />
           </div>
         </CardContent>
       </Card>
