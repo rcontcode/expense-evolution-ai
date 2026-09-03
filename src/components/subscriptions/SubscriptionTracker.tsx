@@ -34,6 +34,15 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useLanguage } from '@/contexts/LanguageContext';
+/**
+ * 2-sep-2026: esta pantalla escribia los montos a mano —un signo `$` fijo pegado a
+ * `.toFixed(2)`— en trece lugares, sin separador de miles y sin mirar la moneda de la persona.
+ * Con pesos chilenos el total del mes salia «$7225219.14», que no hay forma de leer, y a un
+ * usuario en euros le mostraba `$`. La app ya tiene el formateador correcto —`useFormatCurrency`,
+ * que lee la moneda de la entidad fiscal y usa el separador del pais (en Chile, punto para los
+ * miles y sin decimales: $7.225.219)— y lo usan 123 archivos. Este era de los que no.
+ */
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { useExpenses } from '@/hooks/data/useExpenses';
 import { useEntity } from '@/contexts/EntityContext';
 import { useBankTransactions } from '@/hooks/data/useBankTransactions';
@@ -131,6 +140,7 @@ interface SubscriptionCardProps {
 
 function SubscriptionCard({ subscription, language, index, getFrequencyLabel, onConvertToBill, isConverted }: SubscriptionCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const { formatCurrency, formatCompact } = useFormatCurrency();
   const gradient = getCategoryGradient(subscription.category);
 
   return (
@@ -163,9 +173,9 @@ function SubscriptionCard({ subscription, language, index, getFrequencyLabel, on
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="text-right">
-                    <div className="font-bold text-base">${subscription.averageAmount.toFixed(2)}</div>
+                    <div className="font-bold text-base">{formatCurrency(subscription.averageAmount)}</div>
                     <div className="text-[10px] text-muted-foreground font-medium">
-                      ${subscription.annualizedCost.toFixed(0)}/{language === 'es' ? 'año' : 'yr'}
+                      {formatCompact(subscription.annualizedCost)}/{language === 'es' ? 'año' : 'yr'}
                     </div>
                   </div>
                   <div className={`p-1 rounded-md transition-colors ${isExpanded ? 'bg-primary/10' : 'bg-muted/50'}`}>
@@ -195,7 +205,7 @@ function SubscriptionCard({ subscription, language, index, getFrequencyLabel, on
                     <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider block">
                       {language === 'es' ? 'Total gastado' : 'Total spent'}
                     </span>
-                    <span className="text-sm font-semibold">${subscription.totalSpent.toFixed(2)}</span>
+                    <span className="text-sm font-semibold">{formatCurrency(subscription.totalSpent)}</span>
                   </div>
                 </div>
 
@@ -209,9 +219,9 @@ function SubscriptionCard({ subscription, language, index, getFrequencyLabel, on
                     <div className="flex items-center gap-2 text-xs bg-background/80 rounded-lg p-2.5 border border-border/30">
                       <Percent className="h-3.5 w-3.5 text-muted-foreground" />
                       <span className="text-muted-foreground">{language === 'es' ? 'Rango' : 'Range'}:</span>
-                      <span className="font-semibold">${min.toFixed(2)} — ${max.toFixed(2)}</span>
+                      <span className="font-semibold">{formatCurrency(min)} — {formatCurrency(max)}</span>
                       <Badge variant="outline" className="text-[10px] ml-auto">
-                        {language === 'es' ? 'Prom' : 'Avg'}: ${subscription.averageAmount.toFixed(2)}
+                        {language === 'es' ? 'Prom' : 'Avg'}: {formatCurrency(subscription.averageAmount)}
                       </Badge>
                     </div>
                   );
@@ -266,6 +276,7 @@ function SubscriptionCard({ subscription, language, index, getFrequencyLabel, on
 // ──────────────────────────────────────────────
 export function SubscriptionTracker() {
   const { language } = useLanguage();
+  const { formatCurrency, formatCompact } = useFormatCurrency();
   const { data: expenses, isLoading: expensesLoading } = useExpenses();
   const { data: bankTransactions, isLoading: bankLoading } = useBankTransactions();
   const { data: recurringBills } = useRecurringBills();
@@ -385,7 +396,7 @@ export function SubscriptionTracker() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-4xl font-black text-blue-700 dark:text-blue-300">${totalMonthlySubscriptionCost.toFixed(2)}</div>
+              <div className="text-4xl font-black text-blue-700 dark:text-blue-300">{formatCurrency(totalMonthlySubscriptionCost)}</div>
               <p className="text-xs text-muted-foreground mt-1">
                 {isEs ? 'Promedio mensual' : 'Monthly average'}
               </p>
@@ -404,7 +415,7 @@ export function SubscriptionTracker() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-4xl font-black text-emerald-700 dark:text-emerald-300">${totalAnnualSubscriptionCost.toFixed(0)}</div>
+              <div className="text-4xl font-black text-emerald-700 dark:text-emerald-300">{formatCompact(totalAnnualSubscriptionCost)}</div>
               <p className="text-xs text-muted-foreground mt-1">
                 {isEs ? 'Proyección anual' : 'Annual projection'}
               </p>
@@ -436,7 +447,7 @@ export function SubscriptionTracker() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between text-xs mb-1">
                           <span className="font-semibold capitalize truncate">{cat.replace(/_/g, ' ')}</span>
-                          <span className="font-bold">${data.monthly.toFixed(2)}/mo</span>
+                          <span className="font-bold">{formatCurrency(data.monthly)}/mo</span>
                         </div>
                         <div className="h-1.5 rounded-full bg-muted overflow-hidden">
                           <motion.div
@@ -478,7 +489,7 @@ export function SubscriptionTracker() {
                       </p>
                       <p className="text-xs text-muted-foreground">
                         <span className="font-bold text-foreground">{topSubscription.vendor}</span>
-                        {' → '}${topSubscription.annualizedCost.toFixed(0)}/{isEs ? 'año' : 'yr'}
+                        {' → '}{formatCompact(topSubscription.annualizedCost)}/{isEs ? 'año' : 'yr'}
                       </p>
                     </div>
                   </div>
@@ -494,8 +505,8 @@ export function SubscriptionTracker() {
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {isEs
-                          ? `Gastas $${totalAnnualSubscriptionCost.toFixed(0)}/año en recurrentes. Revisa cuáles usas.`
-                          : `You spend $${totalAnnualSubscriptionCost.toFixed(0)}/yr on recurring. Review which you use.`}
+                          ? `Gastas ${formatCompact(totalAnnualSubscriptionCost)}/año en recurrentes. Revisa cuáles usas.`
+                          : `You spend ${formatCompact(totalAnnualSubscriptionCost)}/yr on recurring. Review which you use.`}
                       </p>
                     </div>
                   </div>
