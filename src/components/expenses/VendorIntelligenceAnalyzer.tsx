@@ -87,9 +87,17 @@ export function VendorIntelligenceAnalyzer() {
         // el promedio mensual: usar el rango global diluia a los proveedores que solo aparecen
         // en parte del periodo (un colegio de 6 meses dividido por 8 daba $480.000 en vez de
         // $640.000). Contar meses del calendario tampoco se equivoca por el redondeo de dias.
-        const mesesConGasto = new Set(
+        // Contar meses distintos falla cuando dos cobros del mismo ciclo caen en el mismo mes
+        // del calendario (uno el 31 y el siguiente el 1). Por eso se toma tambien el largo del
+        // tramo en meses y se usa el mayor de los dos: asi un dividendo de 6 cuotas siempre se
+        // divide por 6, aunque dos hayan caido en mayo.
+        const mesesDistintos = new Set(
           sorted.map(d => `${d.getFullYear()}-${d.getMonth()}`)
         ).size;
+        const mesesDelTramo = sorted.length >= 2
+          ? Math.round(differenceInDays(sorted[sorted.length - 1], sorted[0]) / 30.44) + 1
+          : 1;
+        const mesesConGasto = Math.max(mesesDistintos, mesesDelTramo);
 
         // Saving potential (5-15% for frequent, high-spend vendors)
         const savingRate = avgDaysBetween <= 35 && totalSpend > 500 ? 0.12 : avgDaysBetween <= 35 ? 0.08 : 0.05;

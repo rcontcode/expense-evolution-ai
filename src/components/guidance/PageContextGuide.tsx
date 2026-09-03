@@ -450,7 +450,7 @@ export const PAGE_GUIDES = {
     ],
     crossReferences: [
       { path: '/reconciliation', title: { es: 'Conciliación', en: 'Reconciliation' }, relationship: { es: 'Las transacciones importadas aquí se emparejan con tus gastos registrados en Conciliación', en: 'Transactions imported here are matched with your recorded expenses in Reconciliation' } },
-      { path: '/subscriptions', title: { es: 'Suscripciones', en: 'Subscriptions' }, relationship: { es: 'Los pagos recurrentes detectados aquí aparecen automáticamente en Suscripciones', en: 'Recurring payments detected here automatically appear in Subscriptions' } },
+      { path: '/subscriptions', title: { es: 'Pagos recurrentes', en: 'Recurring payments' }, relationship: { es: 'Los pagos recurrentes detectados aquí aparecen automáticamente en Pagos recurrentes', en: 'Recurring payments detected here automatically appear in Recurring payments' } },
     ]
   },
   reconciliation: {
@@ -564,7 +564,7 @@ export const PAGE_GUIDES = {
     crossReferences: [
       { path: '/expenses', title: { es: 'Gastos', en: 'Expenses' }, relationship: { es: 'Los pagos fijos también se detectan automáticamente al registrar gastos recurrentes', en: 'Recurring bills are also auto-detected when you record recurring expenses' } },
       { path: '/banking', title: { es: 'Análisis Bancario', en: 'Banking Analysis' }, relationship: { es: 'Al importar extractos bancarios, se detectan cobros recurrentes que pueden convertirse en pagos fijos', en: 'When importing bank statements, recurring charges are detected that can become recurring bills' } },
-      { path: '/subscriptions', title: { es: 'Suscripciones', en: 'Subscriptions' }, relationship: { es: 'Las suscripciones detectadas automáticamente pueden convertirse en pagos fijos aquí', en: 'Auto-detected subscriptions can be converted to recurring bills here' } },
+      { path: '/subscriptions', title: { es: 'Pagos recurrentes', en: 'Recurring payments' }, relationship: { es: 'Los pagos recurrentes detectados automáticamente pueden convertirse en pagos fijos aquí', en: 'Auto-detected recurring payments can be converted to recurring bills here' } },
     ]
   },
   contracts: {
