@@ -201,7 +201,7 @@ const getNavSections = (language: string, isBetaTester: boolean = false) => {
         ],
       },
       { icon: CalendarCheck, label: language === 'es' ? 'Pagos Fijos' : 'Bills', path: '/bills', badge: null, tooltipKey: 'bills' as const },
-      { icon: RefreshCw, label: language === 'es' ? 'Suscripciones' : 'Subscriptions', path: '/subscriptions', badge: null, tooltipKey: 'subscriptions' as const },
+      { icon: RefreshCw, label: language === 'es' ? 'Pagos recurrentes' : 'Recurring payments', path: '/subscriptions', badge: null, tooltipKey: 'subscriptions' as const },
       { icon: Inbox, label: 'nav.chaos', path: '/chaos', badge: null, tooltipKey: 'chaosInbox' as const },
       { icon: Camera, label: language === 'es' ? 'Captura Rápida' : 'Quick Capture', path: '/capture', badge: null, tooltipKey: 'quickCaptureNav' as const },
     ]

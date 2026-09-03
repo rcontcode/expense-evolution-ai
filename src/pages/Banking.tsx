@@ -62,7 +62,7 @@ function BankingAdvanced() {
               { icon: Upload, title: { es: 'Importar Estado', en: 'Import Statement' }, description: { es: 'CSV o foto', en: 'CSV or photo' }, action: openImport },
               { icon: Search, title: { es: 'Buscar', en: 'Search' }, description: { es: 'En transacciones', en: 'In transactions' }, action: () => document.querySelector('[data-section="smart-search"]')?.scrollIntoView({ behavior: 'smooth' }) },
               { icon: AlertTriangle, title: { es: 'Ver Anomalías', en: 'View Anomalies' }, description: { es: 'Cobros sospechosos', en: 'Suspicious charges' }, action: () => document.querySelector('[data-highlight="bank-analysis-dashboard"]')?.scrollIntoView({ behavior: 'smooth' }) },
-              { icon: TrendingDown, title: { es: 'Suscripciones', en: 'Subscriptions' }, description: { es: 'Detectadas', en: 'Detected' }, path: '/subscriptions' }
+              { icon: TrendingDown, title: { es: 'Pagos recurrentes', en: 'Recurring payments' }, description: { es: 'Detectados', en: 'Detected' }, path: '/subscriptions' }
             ]}
           />
         )}

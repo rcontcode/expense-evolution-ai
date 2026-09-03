@@ -41,7 +41,7 @@ export default function Subscriptions() {
             </motion.div>
             <div className="flex-1">
               <h1 className="text-lg sm:text-2xl font-bold flex items-center gap-2">
-                {isEs ? 'Suscripciones' : 'Subscriptions'}
+                {isEs ? 'Pagos recurrentes' : 'Recurring payments'}
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-warning/15 text-warning text-xs font-semibold">
                   <Zap className="h-3 w-3" />
                   Smart
@@ -49,8 +49,8 @@ export default function Subscriptions() {
               </h1>
               <p className="hidden sm:block text-sm text-muted-foreground mt-1 max-w-lg">
                 {isEs
-                  ? 'Detecta, rastrea y optimiza todos tus pagos recurrentes automáticamente. Identifica oportunidades de ahorro y toma control de tu dinero.'
-                  : 'Detect, track, and optimize all your recurring payments automatically. Identify savings opportunities and take control of your money.'}
+                  ? 'Todo lo que se te repite mes a mes, detectado solo: las suscripciones que puedes dar de baja y las cuentas que no. Separadas, para que sepas cuánto de eso sí puedes soltar.'
+                  : 'Everything that repeats month after month, detected on its own: the subscriptions you can cancel and the bills you cannot. Separated, so you know how much of it you can actually let go.'}
               </p>
               <div className="hidden sm:flex items-center gap-3 mt-3">
                 <div className="flex items-center gap-1.5 text-xs text-muted-foreground bg-background/60 px-2.5 py-1 rounded-full border border-border/50">

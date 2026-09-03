@@ -49,6 +49,7 @@ import { useBankTransactions } from '@/hooks/data/useBankTransactions';
 import { useRecurringBills } from '@/hooks/data/useRecurringBills';
 import { useSubscriptionDetector, DetectedSubscription } from '@/hooks/data/useSubscriptionDetector';
 import { getCategoryLabelByLanguage } from '@/lib/constants/expense-categories';
+import { tipoDePagoRecurrente } from '@/lib/recurrentes/tipo-de-pago-recurrente';
 import { useCreateBill } from '@/hooks/data/useRecurringBills';
 import { toast } from 'sonner';
 import { format, parseISO, addMonths } from 'date-fns';
@@ -344,6 +345,11 @@ export function SubscriptionTracker() {
   }
 
   const bankCount = subscriptions.filter(s => s.source === 'bank' || s.source === 'both').length;
+
+  // Los dos grupos: lo que se puede dar de baja manana, y lo que no.
+  const suscripciones = subscriptions.filter(s => tipoDePagoRecurrente(s.vendor, s.category) === 'suscripcion');
+  const compromisos = subscriptions.filter(s => tipoDePagoRecurrente(s.vendor, s.category) === 'compromiso');
+  const mensualSuscripciones = suscripciones.reduce((sum, s) => sum + s.annualizedCost, 0) / 12;
   const topSubscription = subscriptions.length > 0
     ? subscriptions.reduce((a, b) => a.annualizedCost > b.annualizedCost ? a : b)
     : null;
@@ -371,7 +377,7 @@ export function SubscriptionTracker() {
             <CardHeader className="pb-1">
               <CardTitle className="text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400 flex items-center gap-2">
                 <RefreshCw className="h-3.5 w-3.5" />
-                {isEs ? 'Detectadas' : 'Detected'}
+                {isEs ? 'Detectados' : 'Detected'}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -379,7 +385,7 @@ export function SubscriptionTracker() {
               <p className="text-xs text-muted-foreground mt-1">
                 {bankCount > 0
                   ? (isEs ? `${bankCount} desde banco` : `${bankCount} from bank`)
-                  : (isEs ? 'Gastos recurrentes' : 'Recurring expenses')
+                  : (isEs ? 'Pagos que se repiten' : 'Repeating payments')
                 }
               </p>
             </CardContent>
@@ -393,13 +399,17 @@ export function SubscriptionTracker() {
             <CardHeader className="pb-1">
               <CardTitle className="text-xs font-bold uppercase tracking-wider text-blue-700 dark:text-blue-400 flex items-center gap-2">
                 <DollarSign className="h-3.5 w-3.5" />
-                {isEs ? 'Costo Mensual' : 'Monthly Cost'}
+                {isEs ? 'Total Mensual' : 'Monthly Total'}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-4xl font-black text-blue-700 dark:text-blue-300">{formatCurrency(totalMonthlySubscriptionCost)}</div>
               <p className="text-xs text-muted-foreground mt-1">
-                {isEs ? 'Promedio mensual' : 'Monthly average'}
+                {suscripciones.length > 0
+                  ? (isEs
+                      ? `${formatCurrency(mensualSuscripciones)} son suscripciones`
+                      : `${formatCurrency(mensualSuscripciones)} are subscriptions`)
+                  : (isEs ? 'Promedio mensual' : 'Monthly average')}
               </p>
             </CardContent>
           </Card>
@@ -582,7 +592,7 @@ export function SubscriptionTracker() {
                   <FileSearch className="h-10 w-10 text-amber-500/60" />
                 </div>
                 <h3 className="font-bold text-lg mb-2">
-                  {isEs ? 'No se detectaron suscripciones' : 'No subscriptions detected'}
+                  {isEs ? 'No se detectaron pagos recurrentes' : 'No recurring payments detected'}
                 </h3>
                 <p className="text-sm text-muted-foreground max-w-md mx-auto mb-4">
                   {isEs
@@ -631,20 +641,42 @@ export function SubscriptionTracker() {
                 </p>
               </div>
             ) : (
-              <div className="space-y-3">
-                {subscriptions.map((subscription, index) => (
-                  <SubscriptionCard
-                    key={`${subscription.vendor}-${index}`}
-                    subscription={subscription}
-                    language={language}
-                    index={index}
-                    getFrequencyLabel={getFrequencyLabel}
-                    onConvertToBill={handleConvertToBill}
-                    isConverted={
-                      convertedVendors.has(subscription.vendor) ||
-                      trackedVendors.has(subscription.vendor.toLowerCase().replace(/[^a-z0-9]/g, ''))
-                    }
-                  />
+              <div className="space-y-6">
+                {[
+                  {
+                    clave: 'suscripcion',
+                    titulo: isEs ? 'Suscripciones' : 'Subscriptions',
+                    ayuda: isEs ? 'Servicios que puedes dar de baja cuando quieras' : 'Services you can cancel anytime',
+                    lista: suscripciones,
+                  },
+                  {
+                    clave: 'compromiso',
+                    titulo: isEs ? 'Cuentas y compromisos' : 'Bills and commitments',
+                    ayuda: isEs ? 'Se repiten, pero no se cancelan con un boton' : 'They repeat, but no button cancels them',
+                    lista: compromisos,
+                  },
+                ].filter(grupo => grupo.lista.length > 0).map(grupo => (
+                  <div key={grupo.clave} className="space-y-3">
+                    <div className="flex items-baseline gap-2 flex-wrap">
+                      <h3 className="text-sm font-bold">{grupo.titulo}</h3>
+                      <Badge variant="secondary" className="text-[10px]">{grupo.lista.length}</Badge>
+                      <span className="text-xs text-muted-foreground">{grupo.ayuda}</span>
+                    </div>
+                    {grupo.lista.map((subscription, index) => (
+                      <SubscriptionCard
+                        key={`${grupo.clave}-${subscription.vendor}-${index}`}
+                        subscription={subscription}
+                        language={language}
+                        index={index}
+                        getFrequencyLabel={getFrequencyLabel}
+                        onConvertToBill={handleConvertToBill}
+                        isConverted={
+                          convertedVendors.has(subscription.vendor) ||
+                          trackedVendors.has(subscription.vendor.toLowerCase().replace(/[^a-z0-9]/g, ''))
+                        }
+                      />
+                    ))}
+                  </div>
                 ))}
               </div>
             )}
