@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { paginatedFetch } from '@/lib/utils/paginatedQuery';
@@ -9,6 +10,8 @@ import { useInvalidateRelated } from './useInvalidateRelated';
 import { insertAuditLog } from './useAuditLog';
 import { useLocalizedToast } from '@/hooks/utils/useLocalizedToast';
 import { useUndoableDelete } from '@/hooks/utils/useUndoableAction';
+import { useRecMode } from '@/hooks/useRecMode';
+import { enmascararCliente } from '@/lib/rec/enmascarar-identidad';
 
 export interface IncomeFilters {
   year?: number;
@@ -20,6 +23,16 @@ export interface IncomeFilters {
 
 export function useIncome(filters?: IncomeFilters) {
   const { user } = useAuth();
+  const { active: grabando } = useRecMode();
+
+  // Al grabar, el cliente asociado a cada ingreso se muestra con nombre inventado.
+  const aplicarMascara = useCallback(
+    (filas: IncomeWithRelations[]) =>
+      grabando
+        ? filas.map((f) => ({ ...f, client: enmascararCliente(f.client as any, true) })) as IncomeWithRelations[]
+        : filas,
+    [grabando],
+  );
 
   return useQuery({
     queryKey: ['income', user?.id, filters],
@@ -54,6 +67,7 @@ export function useIncome(filters?: IncomeFilters) {
       if (error) throw error;
       return data as IncomeWithRelations[];
     },
+    select: aplicarMascara,
     enabled: !!user,
   });
 }

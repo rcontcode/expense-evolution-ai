@@ -53,18 +53,23 @@ export function useSampleDataCounts() {
 
       // For each section we query: total count + sample count.
       // user count = total - sample.
-      type SectionDef = { key: string; table: string; field: string };
+      // `enPapelera` marca las tablas que borran en blando (dejan `deleted_at` en vez de borrar la
+      // fila). Sin excluirlas, el panel contaba como "de ejemplo" registros que ya estaban en la
+      // papelera: los clientes de ejemplo se borran en blando, asi que el contador se quedaba
+      // pegado en "2 registros de ejemplo" con su aviso naranja, y el boton de eliminar no podia
+      // bajarlo de ahi nunca. Se veia como si la limpieza no funcionara.
+      type SectionDef = { key: string; table: string; field: string; enPapelera?: boolean };
       const sections: SectionDef[] = [
-        { key: 'clients',           table: 'clients',             field: 'name' },
-        { key: 'projects',          table: 'projects',            field: 'name' },
-        { key: 'expenses',          table: 'expenses',            field: 'description' },
-        { key: 'income',            table: 'income',              field: 'description' },
-        { key: 'mileage',           table: 'mileage',             field: 'route' },
+        { key: 'clients',           table: 'clients',             field: 'name',        enPapelera: true },
+        { key: 'projects',          table: 'projects',            field: 'name',        enPapelera: true },
+        { key: 'expenses',          table: 'expenses',            field: 'description', enPapelera: true },
+        { key: 'income',            table: 'income',              field: 'description', enPapelera: true },
+        { key: 'mileage',           table: 'mileage',             field: 'route',       enPapelera: true },
         { key: 'assets',            table: 'assets',              field: 'name' },
         { key: 'liabilities',       table: 'liabilities',         field: 'name' },
         { key: 'investment_goals',  table: 'investment_goals',    field: 'name' },
         { key: 'savings_goals',     table: 'savings_goals',       field: 'name' },
-        { key: 'contracts',         table: 'contracts',           field: 'file_name' },
+        { key: 'contracts',         table: 'contracts',           field: 'file_name',   enPapelera: true },
         { key: 'notifications',     table: 'notifications',       field: 'title' },
         { key: 'education',         table: 'financial_education', field: 'title' },
         { key: 'bank_transactions', table: 'bank_transactions',   field: 'description' },
@@ -72,9 +77,13 @@ export function useSampleDataCounts() {
         { key: 'recurring_bills',   table: 'recurring_bills',     field: 'name' },
       ];
 
+      const vivos = (s: SectionDef) => {
+        const q = supabase.from(s.table as any).select('id', { count: 'exact', head: true }).eq('user_id', uid);
+        return s.enPapelera ? q.is('deleted_at', null) : q;
+      };
       const queries = sections.flatMap(s => [
-        supabase.from(s.table as any).select('id', { count: 'exact', head: true }).eq('user_id', uid),
-        supabase.from(s.table as any).select('id', { count: 'exact', head: true }).eq('user_id', uid).like(s.field, `%${m}%`),
+        vivos(s),
+        vivos(s).like(s.field, `%${m}%`),
       ]);
       const results = await Promise.all(queries);
 

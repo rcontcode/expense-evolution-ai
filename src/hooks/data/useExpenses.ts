@@ -1,4 +1,7 @@
+import { useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useRecMode } from '@/hooks/useRecMode';
+import { enmascararCliente } from '@/lib/rec/enmascarar-identidad';
 import { supabase } from '@/integrations/supabase/client';
 import { ExpenseWithRelations, ExpenseInsert, ExpenseUpdate, ExpenseFilters } from '@/types/expense.types';
 import { useMissionTracker } from './useMissions';
@@ -14,6 +17,16 @@ const QUERY_LIMIT = 500;
 
 export function useExpenses(filters?: ExpenseFilters) {
   const { user } = useAuth();
+  const { active: grabando } = useRecMode();
+
+  // Al grabar, el cliente asociado a cada gasto se muestra con nombre inventado.
+  const aplicarMascara = useCallback(
+    (filas: ExpenseWithRelations[]) =>
+      grabando
+        ? (filas.map((f) => ({ ...f, client: enmascararCliente(f.client as any, true) })) as ExpenseWithRelations[])
+        : filas,
+    [grabando],
+  );
 
   return useQuery({
     queryKey: ['expenses', user?.id, filters],
@@ -109,6 +122,7 @@ export function useExpenses(filters?: ExpenseFilters) {
         tags: expense.expense_tags?.map((et: any) => et.tag).filter(Boolean) || [],
       })) as ExpenseWithRelations[];
     },
+    select: aplicarMascara,
     enabled: !!user,
   });
 }

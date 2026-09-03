@@ -69,6 +69,23 @@ const CATEGORIA_DE_DEUDA: Record<string, string> = {
   auto_loan: "car_loan",
 };
 
+// Que es cada gasto para efectos de impuestos. La app marca como INCOMPLETO todo gasto sin
+// clasificar, y los escenarios no la traian: el listado de gastos abria diciendo "116/120
+// incompletos" y cada fila con una alerta amarilla "Falta: Clasificacion". Un tablero de
+// demostracion no puede abrir en rojo.
+const TIPO_DE_GASTO_POR_ESCENARIO: Record<string, string> = {
+  maria_profesional: "personal",
+  carlos_caos: "personal",
+  constructora_ca: "cra_deductible",
+  familia_rodriguez: "personal",
+  ecolavanderia_spa: "cra_deductible",
+  pareja_millennial: "personal",
+  contador_independiente: "cra_deductible",
+  expat_multipais: "personal",
+  jubilado_inversiones: "personal",
+  emprendedor_digital: "cra_deductible",
+};
+
 function traducir(mapa: Record<string, string>, categoria: unknown): string | undefined {
   if (typeof categoria !== "string") return categoria as undefined;
   return mapa[categoria] ?? categoria;
@@ -1181,9 +1198,18 @@ async function seedDemo(supabase: any, userId: string, scenario: Scenario) {
 
   // 2. Expenses (con entity_id si aplica)
   if (data.expenses.length) {
+    // Los tres gastos mas recientes quedan "pendientes" a proposito: es lo que hace que el Centro
+    // de Revision tenga algo que mostrar. El resto entra ya clasificado, como estaria la cuenta
+    // de alguien que viene usando la app hace meses.
+    const porFecha = [...data.expenses].sort((a: any, b: any) => (a.date < b.date ? 1 : -1));
+    const pendientes = new Set(porFecha.slice(0, 3));
+    const tipoPorDefecto = TIPO_DE_GASTO_POR_ESCENARIO[scenario] || "personal";
     const withEntity = data.expenses.map((e: any) => ({
       ...e,
       category: traducir(CATEGORIA_DE_GASTO, e.category),
+      reimbursement_type: e.reimbursement_type
+        ?? (e.client_id ? "client_reimbursable" : tipoPorDefecto),
+      status: pendientes.has(e) ? "pending" : "classified",
       ...(entityId ? { entity_id: entityId } : {}),
     }));
     const { data: ins, error } = await supabase.from("expenses").insert(withEntity).select("id");
