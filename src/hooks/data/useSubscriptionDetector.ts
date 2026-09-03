@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { ExpenseWithRelations } from '@/types/expense.types';
 import { BankTransaction } from '@/hooks/data/useBankTransactions';
 import { differenceInDays, format, parseISO } from 'date-fns';
+import { esSalidaDeDinero } from '@/lib/banking/direccion-del-movimiento';
 
 export interface DetectedSubscription {
   vendor: string;
@@ -120,6 +121,9 @@ export function useSubscriptionDetector(expenses: ExpenseWithRelations[], bankTr
 
       bankTransactions.forEach((tx) => {
         if (!tx.description) return;
+        // Una suscripcion es dinero que SALE. Sin esta linea, cada sueldo, transferencia recibida
+        // o devolucion que se repitiera entraba a la lista como si fuera un cobro.
+        if (!esSalidaDeDinero(tx)) return;
         const key = tx.description.toLowerCase().trim();
         if (!bankGrouped[key]) {
           bankGrouped[key] = { description: tx.description, amounts: [], dates: [] };
