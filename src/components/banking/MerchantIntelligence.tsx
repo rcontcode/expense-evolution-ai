@@ -12,6 +12,7 @@ import { parseISO, differenceInDays, format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { Store, TrendingUp, TrendingDown, Clock, ChevronDown, ChevronUp, AlertTriangle } from 'lucide-react';
+import { plural } from '@/lib/plural';
 
 interface MerchantProfile {
   name: string;
@@ -144,7 +145,7 @@ export function MerchantIntelligence() {
               <p className="text-xs text-muted-foreground">
                 {merchants.length} {l ? 'comercios frecuentes' : 'frequent merchants'}
                 {priceAlerts.length > 0 && (
-                  <span className="text-destructive font-medium"> · {priceAlerts.length} {l ? 'alerta(s)' : 'alert(s)'}</span>
+                  <span className="text-destructive font-medium"> · {priceAlerts.length} {l ? plural(priceAlerts.length, 'alerta', 'alertas') : plural(priceAlerts.length, 'alert', 'alerts')}</span>
                 )}
               </p>
             </div>

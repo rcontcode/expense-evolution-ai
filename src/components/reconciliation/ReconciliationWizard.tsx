@@ -43,6 +43,7 @@ import { es } from 'date-fns/locale';
 import { toast } from 'sonner';
 import { useCelebrationSound } from '@/hooks/utils/useCelebrationSound';
 import { useEntity } from '@/contexts/EntityContext';
+import { plural } from '@/lib/plural';
 
 interface Flow {
   id: string;
@@ -615,8 +616,8 @@ export function ReconciliationWizard({ onExitWizard }: { onExitWizard: () => voi
                   <PartyPopper className="h-5 w-5 text-success" />
                   <span className="font-medium text-success">
                     {language === 'es' 
-                      ? `¡Genial! Has conciliado ${matchedCount} transacción(es) 🎉`
-                      : `Great! You have reconciled ${matchedCount} transaction(s) 🎉`}
+                      ? `¡Genial! Has conciliado ${matchedCount} ${plural(matchedCount, 'transacción', 'transacciones')} 🎉`
+                      : `Great! You have reconciled ${matchedCount} ${plural(matchedCount, 'transaction', 'transactions')} 🎉`}
                   </span>
                 </div>
               </div>
@@ -712,8 +713,8 @@ export function ReconciliationWizard({ onExitWizard }: { onExitWizard: () => voi
                     <Plus className="h-5 w-5 text-success" />
                     <span className="font-medium text-success">
                       {language === 'es' 
-                        ? `Has creado ${createdExpensesCount} gasto(s) nuevo(s)`
-                        : `You have created ${createdExpensesCount} new expense(s)`}
+                        ? `Has creado ${createdExpensesCount} ${plural(createdExpensesCount, 'gasto nuevo', 'gastos nuevos')}`
+                        : `You have created ${createdExpensesCount} ${plural(createdExpensesCount, 'new expense', 'new expenses')}`}
                     </span>
                   </div>
                 )}
@@ -722,8 +723,8 @@ export function ReconciliationWizard({ onExitWizard }: { onExitWizard: () => voi
                     <AlertTriangle className="h-5 w-5 text-warning" />
                     <span className="font-medium">
                       {language === 'es' 
-                        ? `Has marcado ${discrepancyCount} discrepancia(s) para revisar después`
-                        : `You have marked ${discrepancyCount} discrepancy(ies) to review later`}
+                        ? `Has marcado ${discrepancyCount} ${plural(discrepancyCount, 'discrepancia', 'discrepancias')} para revisar después`
+                        : `You have marked ${discrepancyCount} ${plural(discrepancyCount, 'discrepancy', 'discrepancies')} to review later`}
                     </span>
                   </div>
                 )}

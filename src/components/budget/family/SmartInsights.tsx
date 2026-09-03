@@ -1,6 +1,7 @@
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useFormatCurrency } from "@/hooks/utils/useFormatCurrency";
 import { motion } from "framer-motion";
+import { plural } from '@/lib/plural';
 
 interface InsightData {
   totalIncome: number;
@@ -121,8 +122,8 @@ export function SmartInsights({ data }: { data: InsightData }) {
     insights.push({
       icon: "🔴",
       text: l
-        ? `¡Tienes ${data.overdueBills} pago(s) vencido(s)! Evita cargos por mora.`
-        : `You have ${data.overdueBills} overdue payment(s)! Avoid late fees.`,
+        ? `¡Tienes ${data.overdueBills} ${plural(data.overdueBills, 'pago vencido', 'pagos vencidos')}! Evita cargos por mora.`
+        : `You have ${data.overdueBills} ${plural(data.overdueBills, 'overdue payment', 'overdue payments')}! Avoid late fees.`,
       type: "danger",
     });
   }
@@ -132,8 +133,8 @@ export function SmartInsights({ data }: { data: InsightData }) {
     insights.push({
       icon: "📊",
       text: l
-        ? `${data.categoriesOverBudget} categoría(s) excedieron su presupuesto. Ajusta o redistribuye.`
-        : `${data.categoriesOverBudget} category(ies) over budget. Adjust or redistribute.`,
+        ? `${data.categoriesOverBudget} ${plural(data.categoriesOverBudget, 'categoría excedió', 'categorías excedieron')} su presupuesto. Ajusta o redistribuye.`
+        : `${data.categoriesOverBudget} ${plural(data.categoriesOverBudget, 'category', 'categories')} over budget. Adjust or redistribute.`,
       type: "warning",
     });
   }

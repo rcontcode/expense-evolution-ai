@@ -38,6 +38,7 @@ import { CaptureHub } from './CaptureHub';
 import { DataCompletenessPrompt } from '@/components/dashboard/DataCompletenessPrompt';
 import { useExpenseCompleteness } from '@/hooks/utils/useExpenseCompleteness';
  import { getCategoryLabel, ExpenseCategory } from '@/lib/constants/expense-categories';
+import { plural } from '@/lib/plural';
  
  interface FinancialHealthScore {
    score: number;
@@ -191,7 +192,7 @@ import { useExpenseCompleteness } from '@/hooks/utils/useExpenseCompleteness';
      if (overCategories.length > 0) {
        recs.push({
          icon: AlertTriangle,
-         title: l ? `${overCategories.length} categoría(s) excedida(s)` : `${overCategories.length} category(ies) exceeded`,
+         title: l ? `${overCategories.length} ${plural(overCategories.length, 'categoría excedida', 'categorías excedidas')}` : `${overCategories.length} ${plural(overCategories.length, 'category', 'categories')} exceeded`,
          description: l
            ? `${overCategories.map(c => getCategoryLabel(c.category as ExpenseCategory)).join(', ')} necesitan atención`
            : `${overCategories.map(c => getCategoryLabel(c.category as ExpenseCategory)).join(', ')} need attention`,

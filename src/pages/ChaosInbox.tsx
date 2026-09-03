@@ -45,6 +45,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { useIsMobile } from '@/hooks/use-mobile';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { plural } from '@/lib/plural';
 
 function DocumentImageWrapper({ document, onApprove, onReject, onAddComment, onDelete, onCheckDuplicates, isLoading, onDataExtracted }: {
   document: ReceiptDocument;
@@ -425,8 +426,8 @@ export default function ChaosInbox() {
 
       toast.success(
         language === 'es' 
-          ? `${files.length} recibo(s) subido(s) - revisa los datos extraídos`
-          : `${files.length} receipt(s) uploaded - review extracted data`
+          ? `${files.length} ${plural(files.length, 'recibo subido', 'recibos subidos')} - revisa los datos extraídos`
+          : `${files.length} ${plural(files.length, 'receipt', 'receipts')} uploaded - review extracted data`
       );
       refetch();
       
@@ -652,8 +653,8 @@ export default function ChaosInbox() {
 
       toast.success(
         language === 'es' 
-          ? `${photos.length} foto(s) procesada(s) - ${receiptsCount} recibo(s) detectado(s)`
-          : `${photos.length} photo(s) processed - ${receiptsCount} receipt(s) detected`
+          ? `${photos.length} ${plural(photos.length, 'foto procesada', 'fotos procesadas')} - ${receiptsCount} ${plural(receiptsCount, 'recibo detectado', 'recibos detectados')}`
+          : `${photos.length} ${plural(photos.length, 'photo', 'photos')} processed - ${receiptsCount} ${plural(receiptsCount, 'receipt', 'receipts')} detected`
       );
       refetch();
       

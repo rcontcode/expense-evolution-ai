@@ -34,6 +34,7 @@ import { useBetaGamification, TIER_CONFIG, REWARDS_CONFIG } from '@/hooks/data/u
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useProfile } from '@/hooks/data/useProfile';
 import { BetaExpirationBadge } from './BetaExpirationBadge';
+import { plural } from '@/lib/plural';
 
 export const BetaGamificationCard = () => {
   const { language } = useLanguage();
@@ -234,8 +235,8 @@ export const BetaGamificationCard = () => {
                   {betaQuota.quota_met 
                     ? (language === 'es' ? '✅ ¡Cuota cumplida! Tu acceso Pro Beta está activo.' : '✅ Quota met! Your Pro Beta access is active.')
                     : (language === 'es' 
-                        ? `⚠️ Necesitas ${betaQuota.required - betaQuota.contributions_14d} contribución(es) más en 14 días para mantener tu acceso.`
-                        : `⚠️ You need ${betaQuota.required - betaQuota.contributions_14d} more contribution(s) in 14 days to keep your access.`
+                        ? `⚠️ Necesitas ${betaQuota.required - betaQuota.contributions_14d} ${plural(betaQuota.required - betaQuota.contributions_14d, 'contribución más', 'contribuciones más')} en 14 días para mantener tu acceso.`
+                        : `⚠️ You need ${betaQuota.required - betaQuota.contributions_14d} more ${plural(betaQuota.required - betaQuota.contributions_14d, 'contribution', 'contributions')} in 14 days to keep your access.`
                       )
                   }
                 </p>

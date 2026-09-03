@@ -6,6 +6,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useEntity } from '@/contexts/EntityContext';
 import { useMileage, useMileageSummary, getCRAMileageRates, getSIIMileageRates } from '@/hooks/data/useMileage';
 import { Car, DollarSign, CalendarDays, TrendingUp, Lightbulb, Route } from 'lucide-react';
+import { plural } from '@/lib/plural';
 
 export function MileageDeductionMaximizer() {
   const { language } = useLanguage();
@@ -75,8 +76,8 @@ export function MileageDeductionMaximizer() {
     const tips: string[] = [];
     if (tripsWithoutPurpose > 0) {
       tips.push(isEs 
-        ? `${tripsWithoutPurpose} viaje(s) sin propósito registrado. Agrega la razón para fortalecer tu registro`
-        : `${tripsWithoutPurpose} trip(s) missing purpose. Add the reason to strengthen your records`);
+        ? `${tripsWithoutPurpose} ${plural(tripsWithoutPurpose, 'viaje sin propósito registrado', 'viajes sin propósito registrado')}. Agrega la razón para fortalecer tu registro`
+        : `${tripsWithoutPurpose} ${plural(tripsWithoutPurpose, 'trip is', 'trips are')} missing purpose. Add the reason to strengthen your records`);
     }
     if (missingMonths.length > 0) {
       tips.push(isEs 

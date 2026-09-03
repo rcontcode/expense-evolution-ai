@@ -27,6 +27,7 @@ import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PostUploadWizard } from './PostUploadWizard';
 import { toast } from 'sonner';
+import { plural } from '@/lib/plural';
 
 function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
@@ -559,8 +560,8 @@ function BatchSummary({ stats, onClear, language }: { stats: any; onClear: () =>
             <div>
               <p className="text-sm font-medium">
                 {language === 'es' 
-                  ? `${stats.processed} documento(s) procesado(s)` 
-                  : `${stats.processed} document(s) processed`}
+                  ? `${stats.processed} ${plural(stats.processed, 'documento procesado', 'documentos procesados')}` 
+                  : `${stats.processed} ${plural(stats.processed, 'document', 'documents')} processed`}
               </p>
               <p className="text-xs text-muted-foreground">
                 {language === 'es' 
@@ -814,7 +815,7 @@ export function UnifiedChaosInboxPanel() {
               {stats.errors > 0 && (
                 <Badge variant="destructive" className="text-xs gap-1">
                   <AlertTriangle className="h-3 w-3" />
-                  {stats.errors} {language === 'es' ? 'error(es)' : 'error(s)'}
+                  {stats.errors} {language === 'es' ? plural(stats.errors, 'error', 'errores') : plural(stats.errors, 'error', 'errors')}
                 </Badge>
               )}
               {hasPendingDirection && (

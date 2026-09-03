@@ -19,6 +19,7 @@ import { es, enUS } from "date-fns/locale";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { plural } from '@/lib/plural';
 
 export function CategoryBudgetsCard() {
   const { language } = useLanguage();
@@ -358,7 +359,7 @@ export function CategoryBudgetsCard() {
                   <div className="text-xs text-amber-700 dark:text-amber-300">
                     <p className="font-medium">
                       {l 
-                        ? `${undersized.length} categoría(s) con presupuesto insuficiente según tu historial`
+                        ? `${undersized.length} ${plural(undersized.length, 'categoría', 'categorías')} con presupuesto insuficiente según tu historial`
                         : `${undersized.length} categor${undersized.length > 1 ? 'ies' : 'y'} under-budgeted based on history`}
                     </p>
                     <p className="text-amber-600/80 dark:text-amber-400/80">

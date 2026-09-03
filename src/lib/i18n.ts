@@ -1134,7 +1134,7 @@ export const translations = {
       clientOptional: 'Cliente (opcional)',
       noClient: 'Sin cliente',
       addAnotherExpense: 'Agregar otro gasto',
-      createExpenses: 'Crear gasto(s)',
+      createExpenses: 'Crear gastos',
       saving: 'Guardando...',
       // Sound
       enableSound: 'Sonidos de celebración',
@@ -2102,7 +2102,7 @@ export const translations = {
       clientOptional: 'Client (optional)',
       noClient: 'No client',
       addAnotherExpense: 'Add another expense',
-      createExpenses: 'Create expense(s)',
+      createExpenses: 'Create expenses',
       saving: 'Saving...',
       // Sound
       enableSound: 'Celebration sounds',

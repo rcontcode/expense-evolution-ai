@@ -216,7 +216,7 @@ export function TaxSituationWizard({ onClose, onComplete }: TaxSituationWizardPr
             {knowsSituation === true && (
               <div className="space-y-4">
                 <Label className="text-base font-semibold">
-                  {isEs ? "Selecciona tu(s) situación(es):" : "Select your situation(s):"}
+                  {isEs ? "Selecciona tu situación (puedes marcar más de una):" : "Select your situation (you can pick more than one):"}
                 </Label>
                 <div className="grid gap-3">
                   <WorkTypeOption

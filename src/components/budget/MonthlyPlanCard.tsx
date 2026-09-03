@@ -12,6 +12,7 @@ import { es, enUS } from "date-fns/locale";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
+import { plural } from '@/lib/plural';
 import {
   BarChart,
   Bar,
@@ -215,7 +216,7 @@ export function MonthlyPlanCard() {
               {plan.alerts.filter((a) => a.type === "danger" || a.type === "warning").length > 0 && (
                 <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
               )}
-              {l ? `${plan.alerts.length} alerta(s)` : `${plan.alerts.length} alert(s)`}
+              {l ? `${plan.alerts.length} ${plural(plan.alerts.length, 'alerta', 'alertas')}` : `${plan.alerts.length} ${plural(plan.alerts.length, 'alert', 'alerts')}`}
             </button>
             <AnimatePresence>
               {showAlerts && (

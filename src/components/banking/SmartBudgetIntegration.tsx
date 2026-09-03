@@ -32,6 +32,7 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
+import { plural } from '@/lib/plural';
 
 export function SmartBudgetIntegration() {
   const { language } = useLanguage();
@@ -173,7 +174,7 @@ export function SmartBudgetIntegration() {
               <p className="text-xs text-muted-foreground font-normal flex items-center gap-1.5">
                 {problemCount > 0 && (
                   <Badge variant="destructive" className="text-[9px] px-1.5 py-0">
-                    {problemCount} {l ? 'ajuste(s)' : 'fix(es)'}
+                    {problemCount} {l ? plural(problemCount, 'ajuste', 'ajustes') : plural(problemCount, 'fix', 'fixes')}
                   </Badge>
                 )}
                 {l ? 'Integrado con datos bancarios' : 'Integrated with bank data'}

@@ -25,6 +25,7 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 import { useQueryClient } from '@tanstack/react-query';
+import { plural } from '@/lib/plural';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -714,8 +715,8 @@ export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCe
                   <div className="text-xs text-emerald-700 dark:text-emerald-400 leading-relaxed">
                     <p className="font-medium mb-0.5">
                       {language === 'es' 
-                        ? `💰 ${pendingIncome.length} factura(s) de ingreso pendientes de aprobación`
-                        : `💰 ${pendingIncome.length} income invoice(s) pending approval`}
+                        ? `💰 ${pendingIncome.length} ${plural(pendingIncome.length, 'factura de ingreso pendiente', 'facturas de ingreso pendientes')} de aprobación`
+                        : `💰 ${pendingIncome.length} ${plural(pendingIncome.length, 'income invoice', 'income invoices')} pending approval`}
                     </p>
                     <p className="text-emerald-600 dark:text-emerald-500">
                       {language === 'es'
@@ -1038,7 +1039,7 @@ export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCe
                   <Clock className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />
                   <div className="text-xs text-blue-700 dark:text-blue-400 leading-relaxed">
                     <p className="font-medium mb-0.5">
-                      {language === 'es' ? `⏳ ${pendingDocs.length} recibo(s) pendientes de aprobación` : `⏳ ${pendingDocs.length} receipt(s) pending approval`}
+                      {language === 'es' ? `⏳ ${pendingDocs.length} ${plural(pendingDocs.length, 'recibo pendiente', 'recibos pendientes')} de aprobación` : `⏳ ${pendingDocs.length} ${plural(pendingDocs.length, 'receipt', 'receipts')} pending approval`}
                     </p>
                     <p className="text-blue-600 dark:text-blue-500">
                       {language === 'es'
@@ -1100,8 +1101,8 @@ export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCe
                   <div className="p-3 rounded-lg bg-amber-50/80 dark:bg-amber-950/20 border border-amber-200/40 mb-3">
                     <p className="text-xs text-amber-700 dark:text-amber-400">
                       {language === 'es'
-                        ? `⚠️ Aún tienes ${totalIssues} punto(s) por resolver. Puedes generar un reporte parcial con los ${readyExpenses.length} gastos listos, o resolver todo primero para un reporte completo.`
-                        : `⚠️ You still have ${totalIssues} item(s) to resolve. You can generate a partial report with the ${readyExpenses.length} ready expenses, or resolve everything first for a complete report.`}
+                        ? `⚠️ Aún tienes ${totalIssues} ${plural(totalIssues, 'punto', 'puntos')} por resolver. Puedes generar un reporte parcial con los ${readyExpenses.length} gastos listos, o resolver todo primero para un reporte completo.`
+                        : `⚠️ You still have ${totalIssues} ${plural(totalIssues, 'item', 'items')} to resolve. You can generate a partial report with the ${readyExpenses.length} ready expenses, or resolve everything first for a complete report.`}
                     </p>
                   </div>
                 )}

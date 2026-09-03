@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { getCategoryLabel } from '@/lib/constants/expense-categories';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
+import { plural } from '@/lib/plural';
 
 interface ExpenseSummaryProps {
   expenses: ExtractedExpenseData[];
@@ -152,7 +153,7 @@ export function ExpenseSummary({ expenses, hasClients = false, clientCount = 0 }
           <Alert className="border-green-200 bg-green-50 text-green-800">
             <Building2 className="h-4 w-4" />
             <AlertDescription className="text-xs">
-              <strong>✓ {clientCount} cliente(s) configurado(s):</strong> Los gastos reembolsables se pueden asociar a tus clientes para generar reportes de facturación.
+              <strong>✓ {clientCount} {plural(clientCount, 'cliente configurado', 'clientes configurados')}:</strong> Los gastos reembolsables se pueden asociar a tus clientes para generar reportes de facturación.
             </AlertDescription>
           </Alert>
         )}

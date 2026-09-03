@@ -34,6 +34,7 @@ import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { startOfMonth, endOfMonth, subMonths } from 'date-fns';
 import { toast } from 'sonner';
+import { plural } from '@/lib/plural';
 
 interface PostUploadWizardProps {
   open: boolean;
@@ -360,7 +361,7 @@ export function PostUploadWizard({ open, onClose, processedHistory }: PostUpload
                       {(income?.length ?? 0) === 0
                         ? (l ? 'No hemos detectado ingresos registrados. Sin ingresos, las proyecciones no serán precisas.'
                              : 'We haven\'t detected any registered income. Without income, projections won\'t be accurate.')
-                        : (l ? `Tienes ${income?.length} ingreso(s) registrado(s).` : `You have ${income?.length} income(s) registered.`)}
+                        : (l ? `Tienes ${income?.length} ${plural(income?.length ?? 0, 'ingreso registrado', 'ingresos registrados')}.` : `You have ${income?.length} ${plural(income?.length ?? 0, 'income entry', 'income entries')} recorded.`)}
                     </p>
                   </div>
                   
@@ -396,8 +397,8 @@ export function PostUploadWizard({ open, onClose, processedHistory }: PostUpload
                     <h3 className="text-lg font-bold">{l ? 'Pagos Recurrentes' : 'Recurring Payments'}</h3>
                     <p className="text-sm text-muted-foreground">
                       {(recurringBills?.length ?? 0) > 0
-                        ? (l ? `Tienes ${recurringBills?.length} pago(s) fijo(s) configurado(s).` 
-                             : `You have ${recurringBills?.length} fixed payment(s) configured.`)
+                        ? (l ? `Tienes ${recurringBills?.length} ${plural(recurringBills?.length ?? 0, 'pago fijo configurado', 'pagos fijos configurados')}.` 
+                             : `You have ${recurringBills?.length} ${plural(recurringBills?.length ?? 0, 'fixed payment', 'fixed payments')} configured.`)
                         : (l ? 'No hay pagos fijos configurados aún. Si subiste boletas de servicios, revísalas en Pagos Fijos.'
                              : 'No fixed payments configured yet. If you uploaded utility bills, review them in Fixed Payments.')}
                     </p>
@@ -407,8 +408,8 @@ export function PostUploadWizard({ open, onClose, processedHistory }: PostUpload
                     <Card className="border-chart-1/30 bg-chart-1/5">
                       <CardContent className="p-4 space-y-2">
                         <p className="text-sm font-medium">
-                          {l ? `Se procesaron ${analysis.billsProcessed.length} boleta(s) de servicio:` 
-                             : `${analysis.billsProcessed.length} utility bill(s) were processed:`}
+                          {l ? `Se ${plural(analysis.billsProcessed.length, 'procesó', 'procesaron')} ${analysis.billsProcessed.length} ${plural(analysis.billsProcessed.length, 'boleta', 'boletas')} de servicio:` 
+                             : `${analysis.billsProcessed.length} ${plural(analysis.billsProcessed.length, 'utility bill was', 'utility bills were')} processed:`}
                         </p>
                         <div className="flex flex-wrap gap-1">
                           {analysis.billsProcessed.map((name, i) => (
@@ -561,7 +562,7 @@ export function PostUploadWizard({ open, onClose, processedHistory }: PostUpload
                     <Card className="border-chart-4/30 bg-chart-4/5">
                       <CardContent className="p-4 text-center">
                         <p className="text-sm text-chart-4">
-                          ✅ {l ? `Tienes ${savingsGoals?.length} meta(s) activa(s)` : `You have ${savingsGoals?.length} active goal(s)`}
+                          ✅ {l ? `Tienes ${savingsGoals?.length} ${plural(savingsGoals?.length ?? 0, 'meta activa', 'metas activas')}` : `You have ${savingsGoals?.length} ${plural(savingsGoals?.length ?? 0, 'active goal', 'active goals')}`}
                         </p>
                       </CardContent>
                     </Card>

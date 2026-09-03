@@ -15,6 +15,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import type { QuizLead } from '@/hooks/admin/useLeadsManagement';
 import { calculateLeadScore, getLeadPriority, getPriorityColors } from '@/hooks/admin/useLeadScoring';
 import { format } from 'date-fns';
+import { plural } from '@/lib/plural';
 
 interface Props {
   open: boolean;
@@ -117,7 +118,7 @@ export function LeadMergeDialog({ open, onOpenChange, allLeads }: Props) {
       }
 
       queryClient.invalidateQueries({ queryKey: ['admin-leads'] });
-      toast.success(es ? `${secondaryIds.length} lead(s) fusionados en el registro principal` : `${secondaryIds.length} lead(s) merged into primary record`);
+      toast.success(es ? `${secondaryIds.length} ${plural(secondaryIds.length, 'lead fusionado', 'leads fusionados')} en el registro principal` : `${secondaryIds.length} ${plural(secondaryIds.length, 'lead', 'leads')} merged into primary record`);
       setStep('search');
       setPrimaryId(null);
       setSearchEmail('');
@@ -277,7 +278,7 @@ export function LeadMergeDialog({ open, onOpenChange, allLeads }: Props) {
               disabled={!primaryId || merging}
               className="bg-amber-600 hover:bg-amber-700"
             >
-              {merging ? 'Fusionando...' : `Fusionar ${(selectedGroup?.leads.length || 2) - 1} registro(s)`}
+              {merging ? 'Fusionando...' : `Fusionar ${(selectedGroup?.leads.length || 2) - 1} ${plural((selectedGroup?.leads.length || 2) - 1, 'registro', 'registros')}`}
             </Button>
           </DialogFooter>
         )}

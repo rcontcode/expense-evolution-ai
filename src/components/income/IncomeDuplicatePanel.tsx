@@ -11,6 +11,7 @@ import { AlertTriangle, Trash2, ShieldCheck, ChevronDown, ChevronUp, Sparkles, C
 import { format } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 import { toast } from 'sonner';
+import { plural } from '@/lib/plural';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -65,7 +66,7 @@ export function IncomeDuplicatePanel({ incomes }: Props) {
       }
     }
     setSelectedIds(new Set());
-    toast.success(l ? `${deleted} duplicado(s) eliminado(s)` : `${deleted} duplicate(s) removed`);
+    toast.success(l ? `${deleted} ${plural(deleted, 'duplicado eliminado', 'duplicados eliminados')}` : `${deleted} ${plural(deleted, 'duplicate removed', 'duplicates removed')}`);
   };
 
   return (
@@ -76,7 +77,7 @@ export function IncomeDuplicatePanel({ incomes }: Props) {
             <AlertTriangle className="h-5 w-5 text-amber-500" />
             <CardTitle className="text-base">
               <Copy className="inline h-4 w-4 mr-1 text-amber-500" />
-              {l ? `${count} posible(s) duplicado(s) detectado(s)` : `${count} possible duplicate(s) detected`}
+              {l ? `${count} ${plural(count, 'posible duplicado detectado', 'posibles duplicados detectados')}` : `${count} ${plural(count, 'possible duplicate detected', 'possible duplicates detected')}`}
             </CardTitle>
             <Badge variant="outline" className="border-amber-500 text-amber-500">
               <Sparkles className="h-3 w-3 mr-1" />
@@ -127,7 +128,7 @@ export function IncomeDuplicatePanel({ incomes }: Props) {
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle>
-                  {l ? `¿Eliminar ${selectedIds.size} registro(s)?` : `Delete ${selectedIds.size} record(s)?`}
+                  {l ? `¿Eliminar ${selectedIds.size} ${plural(selectedIds.size, 'registro', 'registros')}?` : `Delete ${selectedIds.size} ${plural(selectedIds.size, 'record', 'records')}?`}
                 </AlertDialogTitle>
                 <AlertDialogDescription>
                   {l

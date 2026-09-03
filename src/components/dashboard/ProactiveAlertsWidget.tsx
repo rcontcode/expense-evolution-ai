@@ -18,6 +18,7 @@ import { differenceInDays, startOfMonth, endOfMonth, format } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useExpenseCompleteness } from '@/hooks/utils/useExpenseCompleteness';
+import { plural } from '@/lib/plural';
 
 interface SmartAlert {
   id: string;
@@ -120,7 +121,7 @@ export function ProactiveAlertsWidget() {
           id: 'bills-due',
           type: 'warning',
           icon: Calendar,
-          title: l ? `📅 ${upcomingBills.length} pago(s) próximo(s)` : `📅 ${upcomingBills.length} upcoming payment(s)`,
+          title: l ? `📅 ${upcomingBills.length} ${plural(upcomingBills.length, 'pago próximo', 'pagos próximos')}` : `📅 ${upcomingBills.length} ${plural(upcomingBills.length, 'upcoming payment', 'upcoming payments')}`,
           description: l
             ? `${upcomingBills.map(b => b.name).join(', ')} — Total: ${formatCompact(totalDue)}`
             : `${upcomingBills.map(b => b.name).join(', ')} — Total: ${formatCompact(totalDue)}`,
@@ -148,7 +149,7 @@ export function ProactiveAlertsWidget() {
           id: 'over-budget',
           type: 'warning',
           icon: Target,
-          title: l ? `🎯 ${overBudget.length} categoría(s) sobre límite` : `🎯 ${overBudget.length} category(ies) over limit`,
+          title: l ? `🎯 ${overBudget.length} ${plural(overBudget.length, 'categoría', 'categorías')} sobre límite` : `🎯 ${overBudget.length} ${plural(overBudget.length, 'category', 'categories')} over limit`,
           description: overBudget.map(b => {
             const spent = categorySpending[b.category] || 0;
             const pct = ((spent / b.monthly_budget) * 100).toFixed(0);

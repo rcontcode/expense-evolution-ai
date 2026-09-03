@@ -284,7 +284,7 @@ export function SplitTransactionDialog({
             >
               {isLoading 
                 ? t('reconciliation.saving')
-                : `${t('reconciliation.createExpenses').replace('(s)', `(${items.length})`)}`}
+                : `${t(items.length === 1 ? 'reconciliation.createExpense' : 'reconciliation.createExpenses')} (${items.length})`}
             </Button>
           </div>
         </div>

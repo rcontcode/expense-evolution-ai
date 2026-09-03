@@ -11,6 +11,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
+import { plural } from '@/lib/plural';
 
 interface NetWorthChartProps {
   snapshots: NetWorthSnapshot[];
@@ -279,7 +280,7 @@ export function NetWorthChart({ snapshots, currentNetWorth, currentAssets, curre
                   <div className="grid gap-3">
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-muted-foreground">Puntos de datos históricos:</span>
-                      <Badge variant="outline">{stats.dataPoints} registro(s)</Badge>
+                      <Badge variant="outline">{stats.dataPoints} {plural(stats.dataPoints, 'registro', 'registros')}</Badge>
                     </div>
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-muted-foreground">Tasa de crecimiento mensual calculada:</span>

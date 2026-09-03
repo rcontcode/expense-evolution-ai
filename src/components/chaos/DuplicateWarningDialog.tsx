@@ -10,6 +10,7 @@ import { getDocumentBlobUrl } from '@/hooks/data/useDocumentUrl';
 import { DocumentPreviewRenderer } from '@/components/shared/DocumentPreviewRenderer';
 import { toast } from 'sonner';
 import { useState, useEffect } from 'react';
+import { plural } from '@/lib/plural';
 
 type Selection = 'new' | 'existing' | null;
 interface DuplicateWarningDialogProps {
@@ -323,8 +324,8 @@ export function DuplicateWarningDialog({
               <div className="space-y-2">
                 <p className="text-xs font-medium text-muted-foreground">
                   {isEs
-                    ? `+${matches.length - 1} coincidencia(s) más:`
-                    : `+${matches.length - 1} more match(es):`}
+                    ? `+${matches.length - 1} ${plural(matches.length - 1, 'coincidencia más', 'coincidencias más')}:`
+                    : `+${matches.length - 1} ${plural(matches.length - 1, 'more match', 'more matches')}:`}
                 </p>
                 {matches.slice(1).map((m, i) => (
                   <div key={i} className="flex items-center gap-2 text-xs text-muted-foreground rounded border p-2">

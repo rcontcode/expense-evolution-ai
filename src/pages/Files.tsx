@@ -30,6 +30,7 @@ import {
 import { format, isAfter, isBefore, startOfDay, endOfDay } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 import { toast } from 'sonner';
+import { plural } from '@/lib/plural';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -259,7 +260,7 @@ export default function FilesPage() {
         count++;
       } catch { /* continue */ }
     }
-    toast.success(language === 'es' ? `${count} archivo(s) eliminado(s)` : `${count} file(s) deleted`);
+    toast.success(language === 'es' ? `${count} ${plural(count, 'archivo eliminado', 'archivos eliminados')}` : `${count} ${plural(count, 'file', 'files')} deleted`);
     setSelected(new Set());
     setBulkDeleting(false);
     queryClient.invalidateQueries({ queryKey: ['all-files'] });
@@ -380,8 +381,8 @@ export default function FilesPage() {
             </AlertDialogTitle>
             <AlertDialogDescription>
               {language === 'es'
-                ? `Se eliminarán ${selectedFiles.length} archivo(s). Esta acción no se puede deshacer.`
-                : `${selectedFiles.length} file(s) will be deleted. This cannot be undone.`}
+                ? `Se ${plural(selectedFiles.length, 'eliminará', 'eliminarán')} ${selectedFiles.length} ${plural(selectedFiles.length, 'archivo', 'archivos')}. Esta acción no se puede deshacer.`
+                : `${selectedFiles.length} ${plural(selectedFiles.length, 'file', 'files')} will be deleted. This cannot be undone.`}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

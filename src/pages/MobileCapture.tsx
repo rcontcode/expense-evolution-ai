@@ -31,6 +31,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { MobileCaptureStats } from '@/components/capture/MobileCaptureStats';
 import { QuickEditPanel } from '@/components/capture/QuickEditPanel';
 import { RecurringBillConfirmDialog, type RecurringBillCandidate } from '@/components/bills/RecurringBillConfirmDialog';
+import { plural } from '@/lib/plural';
 export default function MobileCapture() {
   const { language } = useLanguage();
   const { user } = useAuth();
@@ -264,8 +265,8 @@ export default function MobileCapture() {
 
         toast.success(
           language === 'es'
-            ? `✅ ${savedCount} gasto(s) guardado(s) con documento`
-            : `✅ ${savedCount} expense(s) saved with document`
+            ? `✅ ${savedCount} ${plural(savedCount, 'gasto guardado', 'gastos guardados')} con documento`
+            : `✅ ${savedCount} ${plural(savedCount, 'expense', 'expenses')} saved with document`
         );
 
         // Show recurring bill confirmation dialog after save

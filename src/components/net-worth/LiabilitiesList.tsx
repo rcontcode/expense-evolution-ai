@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Liability, LIABILITY_CATEGORIES, useDeleteLiability } from '@/hooks/data/useNetWorth';
 import { Plus, Pencil, Trash2, Home, Car, GraduationCap, CreditCard, HandCoins, Banknote, Building2, Receipt, AlertTriangle } from 'lucide-react';
+import { plural } from '@/lib/plural';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -68,7 +69,7 @@ export function LiabilitiesList({ liabilities, onAdd, onEdit }: LiabilitiesListP
             {highInterestDebt.length > 0 && (
               <Badge variant="destructive" className="mt-2">
                 <AlertTriangle className="h-3 w-3 mr-1" />
-                {highInterestDebt.length} deuda(s) con interés alto (&gt;15%)
+                {highInterestDebt.length} {plural(highInterestDebt.length, 'deuda', 'deudas')} con interés alto (&gt;15%)
               </Badge>
             )}
           </div>

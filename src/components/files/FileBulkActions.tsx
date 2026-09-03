@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Download, Trash2, X } from 'lucide-react';
+import { plural } from '@/lib/plural';
 
 interface FileBulkActionsProps {
   selectedCount: number;
@@ -17,7 +18,7 @@ export function FileBulkActions({ selectedCount, onBulkDelete, onBulkDownload, o
   return (
     <div className="flex items-center gap-2 mb-3 p-2 rounded-lg bg-primary/5 border border-primary/20">
       <span className="text-sm font-medium text-primary">
-        {selectedCount} {language === 'es' ? 'seleccionado(s)' : 'selected'}
+        {selectedCount} {language === 'es' ? plural(selectedCount, 'seleccionado', 'seleccionados') : 'selected'}
       </span>
       <div className="flex gap-1 ml-auto">
         <Button variant="outline" size="sm" onClick={onBulkDownload} className="h-7 text-xs">

@@ -52,6 +52,7 @@ import { SmartReconciliationPanel } from '@/components/reconciliation/SmartRecon
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
+import { plural } from '@/lib/plural';
 
 function MatchScoreBadge({ score, matchType }: { score: number; matchType: string }) {
   const { language } = useLanguage();
@@ -165,7 +166,7 @@ function TransactionWithSuggestions({
                 </p>
                 {hasMatches && (
                   <Badge variant="secondary" className="bg-primary/10 text-primary text-xs">
-                    {transaction.suggestedMatches.length} {language === 'es' ? 'sugerencia(s)' : 'suggestion(s)'}
+                    {transaction.suggestedMatches.length} {language === 'es' ? plural(transaction.suggestedMatches.length, 'sugerencia', 'sugerencias') : plural(transaction.suggestedMatches.length, 'suggestion', 'suggestions')}
                   </Badge>
                 )}
               </div>
