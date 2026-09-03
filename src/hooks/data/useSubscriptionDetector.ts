@@ -57,6 +57,21 @@ function calculateFrequency(dates: Date[]): { frequency: DetectedSubscription['f
   return { frequency: null, confidence: 0 };
 }
 
+// Un mismo pago aparece dos veces cuando la persona registra el gasto Y ademas importa la
+// cartola del banco: una vez como gasto y otra como linea bancaria. Los nombres nunca calzan
+// exacto ("Jumbo" contra "JUMBO 1234 SANTIAGO"), asi que compararlos por texto no sirve de nada.
+// Se comparan por lo unico que es igual de los dos lados: el monto y la fecha.
+const TOLERANCIA_DIAS = 3;
+
+interface PagoSuelto { monto: number; fecha: Date }
+
+function esElMismoPago(monto: number, fecha: Date, pagos: PagoSuelto[]): boolean {
+  return pagos.some(p =>
+    Math.abs(p.monto - monto) <= Math.max(1, monto * 0.01) &&
+    Math.abs(differenceInDays(p.fecha, fecha)) <= TOLERANCIA_DIAS
+  );
+}
+
 function calculateAnnualizedCost(amount: number, frequency: DetectedSubscription['frequency']): number {
   switch (frequency) {
     case 'weekly': return amount * 52;
@@ -135,6 +150,12 @@ export function useSubscriptionDetector(expenses: ExpenseWithRelations[], bankTr
       // Check which vendors are already detected from expenses
       const existingVendors = new Set(detected.map(d => d.vendor.toLowerCase().trim()));
 
+      // Los pagos que ya se contaron desde los gastos, para no contarlos otra vez desde el banco.
+      const yaContados = detected.map(d => ({
+        entrada: d,
+        pagos: d.expenses.map(e => ({ monto: Math.abs(Number(e.amount)), fecha: parseISO(e.date) })),
+      })).filter(c => c.pagos.length > 0);
+
       Object.values(bankGrouped).forEach((group) => {
         if (group.amounts.length < 2) return;
         // Skip if already found in expenses
@@ -144,6 +165,21 @@ export function useSubscriptionDetector(expenses: ExpenseWithRelations[], bankTr
           if (existing) existing.source = 'both';
           return;
         }
+        // Si la mayoria de las lineas de este grupo calza en monto y fecha con un pago que ya
+        // entro desde los gastos, es el mismo pago visto dos veces: se marca la entrada que ya
+        // existe como vista tambien en el banco, y esta no se agrega. Sin esto, quien registra
+        // sus gastos Y importa la cartola —que es justo el flujo que la app recomienda— veia el
+        // total mensual al doble.
+        const minimoParaSerElMismo = Math.ceil(group.amounts.length * 0.6);
+        const yaEstaba = yaContados.find(cand =>
+          group.amounts.filter((monto, i) => esElMismoPago(monto, group.dates[i], cand.pagos)).length
+            >= minimoParaSerElMismo
+        );
+        if (yaEstaba) {
+          yaEstaba.entrada.source = 'both';
+          return;
+        }
+
         const avgAmount = group.amounts.reduce((a, b) => a + b, 0) / group.amounts.length;
         const amountVariance = group.amounts.every((amt) => Math.abs(amt - avgAmount) / avgAmount <= 0.15);
         if (!amountVariance) return;
