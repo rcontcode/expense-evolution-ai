@@ -384,7 +384,7 @@ export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCe
         .eq('user_id', user.id);
 
       queryClient.invalidateQueries({ queryKey: ['documents-review'] });
-      toast.success(language === 'es' ? `✅ Ingreso de $${amount.toLocaleString()} aprobado y registrado` : `✅ Income of $${amount.toLocaleString()} approved and recorded`);
+      toast.success(language === 'es' ? `✅ Ingreso de ${fmtCurr(amount)} aprobado y registrado` : `✅ Income of ${fmtCurr(amount)} approved and recorded`);
       setEditingIncomeId(null);
     } catch (error: any) {
       console.error('Error approving income:', error);

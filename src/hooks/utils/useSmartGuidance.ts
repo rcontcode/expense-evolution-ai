@@ -7,6 +7,7 @@ import { useIncome } from '@/hooks/data/useIncome';
 import { useClients } from '@/hooks/data/useClients';
 import { useProjects } from '@/hooks/data/useProjects';
 import { useDashboardStats } from '@/hooks/data/useDashboardStats';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 
 // Tutorial definitions for each feature
 interface TutorialStep {
@@ -926,6 +927,7 @@ const ERROR_RECOVERIES: ErrorRecovery[] = [
 ];
 
 export function useSmartGuidance() {
+  const { formatCurrency } = useFormatCurrency();
   const { language } = useLanguage();
   const location = useLocation();
   const { data: profile } = useProfile();
@@ -1040,8 +1042,8 @@ export function useSmartGuidance() {
         id: 'negative_balance',
         priority: 'high',
         message: {
-          es: `Tu balance anual es negativo por $${Math.abs(balance).toFixed(2)}. ¿Quieres revisar tus gastos?`,
-          en: `Your yearly balance is negative by $${Math.abs(balance).toFixed(2)}. Would you like to review your expenses?`
+          es: `Tu balance anual es negativo por ${formatCurrency(Math.abs(balance))}. ¿Quieres revisar tus gastos?`,
+          en: `Your yearly balance is negative by ${formatCurrency(Math.abs(balance))}. Would you like to review your expenses?`
         },
         action: { es: 'Analizar Gastos', en: 'Analyze Expenses' },
         route: '/expenses'

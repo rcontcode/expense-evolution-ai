@@ -456,7 +456,7 @@ export function useGenerateSampleData() {
       // ============================================
       const liabilities = [
         { name: `${SAMPLE_MARKER} Business Line of Credit`, category: 'business_loan', original_amount: 50000, current_balance: 32000, interest_rate: 7.5, minimum_payment: 800, notes: 'RBC business LOC for operations' },
-        { name: `${SAMPLE_MARKER} Vehicle Loan`, category: 'auto_loan', original_amount: 38000, current_balance: 22500, interest_rate: 4.9, minimum_payment: 580, notes: 'Honda Financial for CRV' },
+        { name: `${SAMPLE_MARKER} Vehicle Loan`, category: 'car_loan', original_amount: 38000, current_balance: 22500, interest_rate: 4.9, minimum_payment: 580, notes: 'Honda Financial for CRV' },
         { name: `${SAMPLE_MARKER} Business Credit Card`, category: 'credit_card', original_amount: 10000, current_balance: 3800, interest_rate: 19.99, minimum_payment: 120, notes: 'TD Business Visa' },
         { name: `${SAMPLE_MARKER} Equipment Financing`, category: 'personal_loan', original_amount: 15000, current_balance: 8200, interest_rate: 6.5, minimum_payment: 320, notes: 'Office equipment lease-to-own' },
         { name: `${SAMPLE_MARKER} Student Loan`, category: 'student_loan', original_amount: 28000, current_balance: 12500, interest_rate: 5.0, minimum_payment: 250, notes: 'Canada Student Loan' },
@@ -1402,7 +1402,7 @@ export function useGenerateSampleDataBySection() {
           
           const liabilities = [
             { name: `${SAMPLE_MARKER} Mortgage`, category: 'mortgage', current_balance: 380000, original_amount: 400000, interest_rate: 4.5, debt_type: 'good' },
-            { name: `${SAMPLE_MARKER} Car Loan`, category: 'auto_loan', current_balance: 15000, original_amount: 25000, interest_rate: 5.9, debt_type: 'bad' },
+            { name: `${SAMPLE_MARKER} Car Loan`, category: 'car_loan', current_balance: 15000, original_amount: 25000, interest_rate: 5.9, debt_type: 'bad' },
           ];
           await supabase.from('liabilities').insert(liabilities.map(l => ({ ...l, user_id: userId })));
           break;

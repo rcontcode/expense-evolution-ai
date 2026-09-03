@@ -4,8 +4,10 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useInvalidateRelated } from './useInvalidateRelated';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 
 export function useExpensesRealtime() {
+  const { formatCurrency } = useFormatCurrency();
   const { afterExpense } = useInvalidateRelated();
   const { user } = useAuth();
   const { language } = useLanguage();
@@ -32,8 +34,8 @@ export function useExpensesRealtime() {
           const expense = payload.new as any;
           toast.success(
             language === 'es' 
-              ? `Nuevo gasto: ${expense.vendor || 'Sin proveedor'} - $${expense.amount}`
-              : `New expense: ${expense.vendor || 'Unknown vendor'} - $${expense.amount}`,
+              ? `Nuevo gasto: ${expense.vendor || 'Sin proveedor'} - ${formatCurrency(Number(expense.amount))}`
+              : `New expense: ${expense.vendor || 'Unknown vendor'} - ${formatCurrency(Number(expense.amount))}`,
             {
               description: language === 'es' 
                 ? 'Sincronizado desde otro dispositivo'

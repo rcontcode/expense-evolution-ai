@@ -59,8 +59,22 @@ export function useFinancialFreedom(language: 'es' | 'en' = 'es'): FinancialFree
       });
     }
 
-    // Calculate monthly averages (based on months elapsed this year)
-    const monthsElapsed = currentMonth + 1;
+    // El promedio se divide por los meses que TIENEN movimiento, no por los meses que lleva el
+    // año. Dividiendo por los meses transcurridos, alguien que empieza en agosto ve su ingreso
+    // pasivo repartido entre ocho meses y el porcentaje de libertad financiera sale a un octavo
+    // de lo real. Se toma el tramo desde el primer mes con movimiento hasta hoy, asi un mes
+    // intermedio sin nada sigue contando y baja el promedio, que es lo correcto.
+    const mesesConMovimiento = new Set<number>();
+    for (const inc of incomeData || []) {
+      const d = new Date(inc.date);
+      if (d.getFullYear() === currentYear) mesesConMovimiento.add(d.getMonth());
+    }
+    for (const exp of expensesData || []) {
+      const d = new Date(exp.date);
+      if (d.getFullYear() === currentYear) mesesConMovimiento.add(d.getMonth());
+    }
+    const primerMes = mesesConMovimiento.size ? Math.min(...mesesConMovimiento) : currentMonth;
+    const monthsElapsed = Math.max(1, currentMonth - primerMes + 1);
     const passiveIncomeMonthly = passiveIncomeTotal / monthsElapsed;
     const activeIncomeMonthly = activeIncomeTotal / monthsElapsed;
     const totalIncomeMonthly = passiveIncomeMonthly + activeIncomeMonthly;

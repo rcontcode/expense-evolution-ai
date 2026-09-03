@@ -7,6 +7,7 @@ import { format, startOfMonth, endOfMonth, subMonths, isSameMonth, isWithinInter
 import { es, enUS } from 'date-fns/locale';
 import { TrendingUp, TrendingDown, Minus, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 
 interface Expense {
   id: string;
@@ -32,6 +33,7 @@ const CATEGORIES: ExpenseCategory[] = [
 
 export const MonthComparisonChart = memo(({ expenses, isLoading }: MonthComparisonChartProps) => {
   const { language } = useLanguage();
+  const { formatCurrency, formatAxis } = useFormatCurrency();
   const locale = language === 'es' ? es : enUS;
   
   const { chartData, totals, monthNames } = useMemo(() => {
@@ -196,7 +198,7 @@ export const MonthComparisonChart = memo(({ expenses, isLoading }: MonthComparis
               <XAxis 
                 type="number"
                 tick={{ fontSize: 11 }}
-                tickFormatter={(value) => `$${value}`}
+                tickFormatter={(value) => formatAxis(Number(value))}
                 className="text-muted-foreground"
               />
               <YAxis 
@@ -212,7 +214,7 @@ export const MonthComparisonChart = memo(({ expenses, isLoading }: MonthComparis
                   border: '1px solid hsl(var(--border))',
                   borderRadius: '8px'
                 }}
-                formatter={(value: number, name: string) => [`$${value.toFixed(2)}`, name]}
+                formatter={(value: number, name: string) => [formatCurrency(value), name]}
               />
               <Legend />
               <Bar 

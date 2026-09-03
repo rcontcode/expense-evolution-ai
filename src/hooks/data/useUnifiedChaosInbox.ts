@@ -6,6 +6,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useEntity } from '@/contexts/EntityContext';
 import { compareDuplicateCandidate, DuplicateMatch } from '@/hooks/data/useContentDuplicateDetector';
 import { useAIErrorHandler } from '@/hooks/utils/useAIErrorHandler';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 
 export type DocumentClassificationType = 
   | 'receipt' | 'utility_bill' | 'bank_statement' | 'income_proof'
@@ -76,6 +77,7 @@ const TYPE_LABELS: Record<DocumentClassificationType, { es: string; en: string; 
 export { TYPE_LABELS };
 
 export function useUnifiedChaosInbox() {
+  const { formatCurrency } = useFormatCurrency();
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const { currentEntity } = useEntity();
@@ -412,7 +414,7 @@ export function useUnifiedChaosInbox() {
 
             processedResult = { type: 'invoice_income', amount: totalAmount, currency: ep.currency || userCurrency, docId: dbDoc?.id };
             queryClient.invalidateQueries({ queryKey: ['documents-review'] });
-            toast.success(`📋 Ingreso de $${totalAmount.toLocaleString()} enviado al Centro de Revisión`);
+            toast.success(`📋 Ingreso de ${formatCurrency(totalAmount)} enviado al Centro de Revisión`);
 
           } else {
             const extractedData = {

@@ -13,6 +13,7 @@ import {
   Calculator
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 
 interface Suggestion {
   id: string;
@@ -49,6 +50,7 @@ export const SmartSuggestions: React.FC<SmartSuggestionsProps> = ({
   isVisible,
   recentQueries,
 }) => {
+  const { formatCurrency } = useFormatCurrency();
   const suggestions = useMemo(() => {
     const suggestions: Suggestion[] = [];
     const isSpanish = language === 'es';
@@ -118,8 +120,8 @@ export const SmartSuggestions: React.FC<SmartSuggestionsProps> = ({
           ? 'Optimiza tus impuestos' 
           : 'Optimize your taxes',
         description: isSpanish 
-          ? `Tienes $${(financialData.deductibleTotal || 0).toLocaleString()} deducibles` 
-          : `You have $${(financialData.deductibleTotal || 0).toLocaleString()} in deductibles`,
+          ? `Tienes ${formatCurrency(financialData.deductibleTotal || 0)} deducibles` 
+          : `You have ${formatCurrency(financialData.deductibleTotal || 0)} in deductibles`,
         command: isSpanish ? 'muéstrame resumen fiscal' : 'show me tax summary',
         priority: 7,
       });
@@ -192,7 +194,7 @@ export const SmartSuggestions: React.FC<SmartSuggestionsProps> = ({
     return suggestions
       .sort((a, b) => b.priority - a.priority)
       .slice(0, 3);
-  }, [financialData, currentRoute, language]);
+  }, [financialData, currentRoute, language, formatCurrency]);
 
   if (!isVisible || suggestions.length === 0) return null;
 

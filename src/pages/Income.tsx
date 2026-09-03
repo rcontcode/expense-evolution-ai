@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Layout } from '@/components/Layout';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -74,6 +75,7 @@ import {
 
 function IncomeAdvanced() {
   const { t, language } = useLanguage();
+  const { formatCurrency } = useFormatCurrency();
   const isMobile = useIsMobile();
   const dateLocale = language === 'es' ? es : enUS;
   const currentYear = new Date().getFullYear();
@@ -508,7 +510,7 @@ function IncomeAdvanced() {
                             {project.description && <p className="text-muted-foreground line-clamp-2">{project.description}</p>}
                             <div className="flex justify-between">
                               <span className="text-muted-foreground">{t('income.budget')}:</span>
-                              <span className="font-medium">{project.budget ? `$${Number(project.budget).toFixed(2)}` : '-'}</span>
+                              <span className="font-medium">{project.budget ? formatCurrency(Number(project.budget)) : '-'}</span>
                             </div>
                             <Badge variant={project.status === 'active' ? 'default' : 'secondary'}>{project.status}</Badge>
                           </div>

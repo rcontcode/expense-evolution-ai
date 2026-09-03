@@ -34,6 +34,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useExpenses } from '@/hooks/data/useExpenses';
 import { useIncome } from '@/hooks/data/useIncome';
 import { ProjectFinancialOverview } from './ProjectFinancialOverview';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 
 interface ProjectDetailDialogProps {
   open: boolean;
@@ -43,6 +44,7 @@ interface ProjectDetailDialogProps {
 
 export function ProjectDetailDialog({ open, onClose, project }: ProjectDetailDialogProps) {
   const { language } = useLanguage();
+  const { formatCurrency, formatAxis } = useFormatCurrency();
   const { data: allExpenses } = useExpenses();
   const { data: allIncome } = useIncome();
 
@@ -248,9 +250,9 @@ export function ProjectDetailDialog({ open, onClose, project }: ProjectDetailDia
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                       <XAxis dataKey="month" className="text-xs" />
-                      <YAxis className="text-xs" tickFormatter={(v) => `$${v.toLocaleString()}`} />
+                      <YAxis className="text-xs" tickFormatter={(v) => formatAxis(Number(v))} />
                       <Tooltip 
-                        formatter={(value: number) => `$${value.toLocaleString()}`}
+                        formatter={(value: number) => formatCurrency(value)}
                         labelFormatter={(label, payload) => payload?.[0]?.payload?.fullMonth || label}
                         contentStyle={{ 
                           backgroundColor: 'hsl(var(--background))', 
@@ -303,10 +305,10 @@ export function ProjectDetailDialog({ open, onClose, project }: ProjectDetailDia
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={categoryData} layout="vertical">
                         <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                        <XAxis type="number" tickFormatter={(v) => `$${v.toLocaleString()}`} className="text-xs" />
+                        <XAxis type="number" tickFormatter={(v) => formatAxis(Number(v))} className="text-xs" />
                         <YAxis dataKey="name" type="category" className="text-xs" width={100} />
                         <Tooltip 
-                          formatter={(value: number) => `$${value.toLocaleString()}`}
+                          formatter={(value: number) => formatCurrency(value)}
                           contentStyle={{ 
                             backgroundColor: 'hsl(var(--background))', 
                             border: '1px solid hsl(var(--border))',

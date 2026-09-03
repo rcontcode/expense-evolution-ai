@@ -19,6 +19,7 @@ import {
   Info, PieChart, BarChart3, Sparkles, FileText, Building2, Briefcase
 } from "lucide-react";
 import { LegalDisclaimer } from "@/components/ui/legal-disclaimer";
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 
 // Canadian provinces with tax brackets
 const PROVINCES_CA = [
@@ -64,6 +65,7 @@ const CHILE_PRIMERA_CATEGORIA = {
 
 export function TaxEstimator() {
   const { language } = useLanguage();
+  const { formatCurrency } = useFormatCurrency();
   const { data: profile } = useProfile();
   const { data: expenses } = useExpenses();
   const { data: income } = useIncome();
@@ -236,8 +238,8 @@ export function TaxEstimator() {
                 <AlertDescription className="flex items-center justify-between">
                   <span className="text-sm">
                     {isEs 
-                      ? `Detectamos datos en tu app: $${appTotals.totalIncome.toLocaleString()} ingresos, $${appTotals.deductibleExpenses.toLocaleString()} deducciones`
-                      : `We detected app data: $${appTotals.totalIncome.toLocaleString()} income, $${appTotals.deductibleExpenses.toLocaleString()} deductions`
+                      ? `Detectamos datos en tu app: ${formatCurrency(appTotals.totalIncome)} ingresos, ${formatCurrency(appTotals.deductibleExpenses)} deducciones`
+                      : `We detected app data: ${formatCurrency(appTotals.totalIncome)} income, ${formatCurrency(appTotals.deductibleExpenses)} deductions`
                     }
                   </span>
                   <Button 

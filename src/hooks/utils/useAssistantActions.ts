@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 
 interface ActionResult {
   success: boolean;
@@ -98,6 +99,7 @@ const ROUTE_MAP: Record<string, string> = {
 };
 
 export function useAssistantActions(options: UseAssistantActionsOptions) {
+  const { formatCurrency } = useFormatCurrency();
   const {
     language,
     onNavigate,
@@ -246,8 +248,8 @@ export function useAssistantActions(options: UseAssistantActionsOptions) {
                 onCreateExpense(expenseData);
               }
               const msg = language === 'es'
-                ? `Gasto de $${expenseData.amount} registrado${expenseData.vendor ? ` en ${expenseData.vendor}` : ''}`
-                : `Expense of $${expenseData.amount} recorded${expenseData.vendor ? ` at ${expenseData.vendor}` : ''}`;
+                ? `Gasto de ${formatCurrency(Number(expenseData.amount))} registrado${expenseData.vendor ? ` en ${expenseData.vendor}` : ''}`
+                : `Expense of ${formatCurrency(Number(expenseData.amount))} recorded${expenseData.vendor ? ` at ${expenseData.vendor}` : ''}`;
               // Don't toast here — onCreateExpense hook already toasts on success/error
               result = { success: true, message: action.message, data: expenseData };
             } catch (err) {
