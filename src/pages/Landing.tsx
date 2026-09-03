@@ -11,7 +11,6 @@ import {
   Star, Flame, Target, Crown, Globe, MessageSquare, Layers
 } from 'lucide-react';
 import phoenixLogo from '@/assets/phoenix-clean-logo.png';
-import { FloatingStars } from '@/components/landing/FloatingStars';
 import { PhoenixLogo } from '@/components/ui/phoenix-logo';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -457,15 +456,8 @@ export default function Landing() {
         transition={{ duration: 0.3, ease: "easeOut" }}
         className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 backdrop-blur-xl border-b border-white/10 shadow-2xl shadow-black/50"
       >
-        {/* Animated glow line at bottom */}
-        <motion.div 
-          className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-emerald-500 via-amber-400 to-violet-500"
-          animate={{ 
-            opacity: [0.5, 1, 0.5],
-            backgroundPosition: ['0% 50%', '100% 50%', '0% 50%']
-          }}
-          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-        />
+        {/* 2-sep-2026: aqui iba una linea verde-ambar-violeta que latia cada tres segundos
+            bajo la barra. El borde inferior de la barra ya separa lo que hay que separar. */}
         
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between gap-4">
@@ -495,10 +487,6 @@ export default function Landing() {
                 <motion.div 
                   className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-500/20 border border-amber-400/40"
                   whileHover={{ scale: 1.05 }}
-                  animate={{
-                    borderColor: ['rgba(251,191,36,0.4)', 'rgba(251,191,36,0.7)', 'rgba(251,191,36,0.4)']
-                  }}
-                  transition={{ duration: 2, repeat: Infinity }}
                 >
                   <Star className="w-4 h-4 text-amber-400" />
                   <span className="text-amber-300 font-semibold text-sm">Premium</span>
@@ -510,10 +498,6 @@ export default function Landing() {
                 <motion.div 
                   className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-violet-500/20 border border-violet-400/40"
                   whileHover={{ scale: 1.05 }}
-                  animate={{
-                    borderColor: ['rgba(139,92,246,0.4)', 'rgba(139,92,246,0.7)', 'rgba(139,92,246,0.4)']
-                  }}
-                  transition={{ duration: 2, repeat: Infinity, delay: 1 }}
                 >
                   <Crown className="w-4 h-4 text-violet-400" />
                   <span className="text-violet-300 font-semibold text-sm">Pro</span>
@@ -576,22 +560,16 @@ export default function Landing() {
               </Button>
 
               {/* CTA Button - Enhanced */}
-              <motion.div className="relative" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }}>
-                <motion.div
-                  className="absolute -inset-0.5 rounded-lg bg-gradient-to-r from-amber-400 via-orange-500 to-amber-400 opacity-60 blur-sm"
-                  animate={{ opacity: [0.4, 0.8, 0.4] }}
-                  transition={{ duration: 1.5, repeat: Infinity }}
-                />
+              {/* 2-sep-2026: este boton tenia un halo naranja que latia cada segundo y medio y
+                  un brillo blanco que lo barria de lado a lado sin parar. Ahora es un boton
+                  naranja liso. El naranja se queda —es el color de la accion en todo el sitio y
+                  eso si esta bien—; lo que se va es el parpadeo. */}
+              <motion.div className="relative" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
                 <Button
                   size="sm"
                   onClick={() => navigate('/auth')}
-                  className="relative bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-bold text-sm shadow-lg overflow-hidden"
+                  className="relative bg-orange-600 hover:bg-orange-700 text-white font-semibold text-sm shadow-sm"
                 >
-                  <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
-                    animate={{ x: ['-100%', '200%'] }}
-                    transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 0.5 }}
-                  />
                   <span className="relative z-10 flex items-center">
                     {language === 'es' ? 'Comenzar Gratis' : 'Start Free'}
                     <ArrowRight className="w-4 h-4 ml-1" />
@@ -606,43 +584,34 @@ export default function Landing() {
       {/* Animated Background with parallax layers */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         {/* Parallax gradient orbs - different speeds for depth */}
+        {/* EL FONDO DE TODA LA PAGINA — rehecho el 2-sep-2026.
+
+            LO QUE HABIA. Dos manchas de 600 y 500 px de diametro, fijas detras de todo el sitio,
+            que cambiaban de paleta cada ocho segundos: de cyan-azul-turquesa a naranja-rojo-ambar
+            y de vuelta, en bucle, una desfasada cuatro segundos de la otra. Debajo, otras cuatro
+            manchas de color en cyan, naranja, violeta y verde. En total seis colores distintos
+            respirando detras del texto, para siempre.
+
+            POR QUE SE VA. Se comparo la portada con las cinco aplicaciones contra las que compite
+            —Monarch, YNAB, Rocket Money, Wave y FreshBooks—: ninguna tiene nada moviendose detras
+            del contenido. Un fondo que cambia de color obliga al ojo a revisar cada pocos segundos
+            si paso algo, y eso cansa antes de que la persona termine de leer. Ademas es la senal
+            mas fuerte de pagina hecha en casa que tenia el sitio.
+
+            LO QUE QUEDA. Dos lavados del azul de la marca, quietos y muy tenues, que dan
+            profundidad sin llamar la atencion. Un solo tono, ninguna animacion. */}
         <DecorativeLayer className="absolute inset-0">
-          <motion.div 
-            className="absolute top-0 left-1/4 w-[600px] h-[600px] rounded-full opacity-40 blur-[120px]"
-            animate={{
-              background: [
-                'linear-gradient(to bottom right, rgb(34, 211, 238, 0.4), rgb(59, 130, 246, 0.3), rgb(20, 184, 166, 0.4))',
-                'linear-gradient(to bottom right, rgb(251, 146, 60, 0.4), rgb(239, 68, 68, 0.3), rgb(245, 158, 11, 0.4))',
-                'linear-gradient(to bottom right, rgb(34, 211, 238, 0.4), rgb(59, 130, 246, 0.3), rgb(20, 184, 166, 0.4))'
-              ]
-            }}
-            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-          />
-        </DecorativeLayer>
-        
-        <DecorativeLayer className="absolute inset-0">
-          <motion.div 
-            className="absolute bottom-0 right-1/4 w-[500px] h-[500px] rounded-full opacity-30 blur-[100px]"
-            animate={{
-              background: [
-                'linear-gradient(to bottom right, rgb(251, 191, 36, 0.3), rgb(249, 115, 22, 0.2), rgb(254, 240, 138, 0.3))',
-                'linear-gradient(to bottom right, rgb(34, 211, 238, 0.3), rgb(99, 102, 241, 0.2), rgb(139, 92, 246, 0.3))',
-                'linear-gradient(to bottom right, rgb(251, 191, 36, 0.3), rgb(249, 115, 22, 0.2), rgb(254, 240, 138, 0.3))'
-              ]
-            }}
-            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 4 }}
+          <div
+            className="absolute top-0 left-1/4 w-[600px] h-[600px] rounded-full blur-[120px]"
+            style={{ background: 'radial-gradient(circle, hsl(217 91% 50% / 0.16), transparent 70%)' }}
           />
         </DecorativeLayer>
 
-        {/* Additional parallax decorative elements */}
         <DecorativeLayer className="absolute inset-0">
-          <div className="absolute top-1/3 right-10 w-32 h-32 bg-cyan-400/10 rounded-full blur-2xl" />
-          <div className="absolute top-2/3 left-20 w-48 h-48 bg-orange-400/10 rounded-full blur-2xl" />
-        </DecorativeLayer>
-        
-        <DecorativeLayer className="absolute inset-0">
-          <div className="absolute top-1/2 left-1/3 w-24 h-24 bg-violet-400/15 rounded-full blur-xl" />
-          <div className="absolute bottom-1/4 right-1/3 w-40 h-40 bg-emerald-400/10 rounded-full blur-2xl" />
+          <div
+            className="absolute bottom-0 right-1/4 w-[500px] h-[500px] rounded-full blur-[100px]"
+            style={{ background: 'radial-gradient(circle, hsl(199 89% 48% / 0.12), transparent 70%)' }}
+          />
         </DecorativeLayer>
         
         {/* Grid pattern - slower parallax */}
@@ -687,7 +656,10 @@ export default function Landing() {
               aria-hidden="true"
               className="h-9 w-9 rounded-full shadow-md transition-transform group-hover:scale-105"
             />
-            <span className="bg-gradient-to-r from-cyan-600 via-blue-600 to-teal-500 bg-clip-text text-lg font-black tracking-tight text-transparent">
+            {/* 2-sep-2026: el nombre de la marca iba en un degradado de tres colores. Un
+                nombre que cambia de color a lo largo de sus siete letras no se lee como marca.
+                Azul de la marca, liso. */}
+            <span className="text-lg font-black tracking-tight" style={{ color: 'hsl(217 91% 42%)' }}>
               EvoFinz
             </span>
           </Link>
@@ -704,8 +676,13 @@ export default function Landing() {
             </Button>
           </div>
         </div>
-        {/* Floating Stars Background */}
-        <FloatingStars />
+        {/* 2-sep-2026: aqui iba <FloatingStars />, catorce simbolos de moneda de seis colores
+            distintos flotando y rotando detras del titular. Se saca por decision de Rudy despues
+            de comparar la portada con las cinco con las que compite —Monarch, YNAB, Rocket Money,
+            Wave y FreshBooks—: ninguna tiene adorno animado detras del texto, todas ponen un solo
+            color de acento y una captura del producto. El adorno era lo que hacia ver la pagina
+            hecha en casa, no las palabras. El componente se deja en el repositorio por si se
+            quiere en otra parte. */}
         <div className="container mx-auto px-4 relative z-10"
         >
           <motion.div 
@@ -756,23 +733,17 @@ export default function Landing() {
               transition={{ duration: 0.6, delay: 0.5 }}
               className="text-4xl md:text-6xl lg:text-7xl font-black mb-6 leading-[1.1]"
             >
-              <span className="bg-gradient-to-r from-slate-700 via-slate-800 to-slate-900 bg-clip-text text-transparent">
+              <span className="text-slate-900">
                 {language === 'es' ? 'Le tomas una foto a tu recibo.' : 'You take a photo of your receipt.'}
               </span>
               <br />
-              <motion.span 
-                className="bg-clip-text text-transparent inline-block"
-                animate={{
-                  backgroundImage: [
-                    'linear-gradient(to right, rgb(8, 145, 178), rgb(37, 99, 235), rgb(20, 184, 166))',
-                    'linear-gradient(to right, rgb(234, 88, 12), rgb(220, 38, 38), rgb(245, 158, 11))',
-                    'linear-gradient(to right, rgb(8, 145, 178), rgb(37, 99, 235), rgb(20, 184, 166))'
-                  ]
-                }}
-                transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-              >
+              {/* 2-sep-2026: este renglon cambiaba de color solo cada seis segundos, pasando de
+                  azul-turquesa a rojo-naranja y de vuelta. Ahora es el azul de la marca, fijo. Un
+                  titular que se mueve pide que lo mires a el; el trabajo del titular es que mires
+                  lo que dice. */}
+              <span className="inline-block" style={{ color: 'hsl(217 91% 42%)' }}>
                 {language === 'es' ? 'EvoFinz hace el resto.' : 'EvoFinz does the rest.'}
-              </motion.span>
+              </span>
             </motion.h1>
             
             <motion.p 
@@ -782,8 +753,8 @@ export default function Landing() {
               className="text-xl md:text-2xl text-slate-600 mb-4 max-w-3xl mx-auto leading-relaxed"
             >
               {language === 'es' 
-                ? <>Ordena tus gastos, te avisa <span className="text-cyan-600 font-semibold">lo que estás pagando de más</span> y deja <span className="text-teal-600 font-semibold">tus impuestos listos</span>.</>
-                : <>It sorts your expenses, warns you <span className="text-cyan-600 font-semibold">what you are overpaying for</span>, and gets <span className="text-teal-600 font-semibold">your taxes ready</span>.</>
+                ? <>Ordena tus gastos, te avisa <span className="font-semibold text-slate-900">lo que estás pagando de más</span> y deja <span className="font-semibold text-slate-900">tus impuestos listos</span>.</>
+                : <>It sorts your expenses, warns you <span className="font-semibold text-slate-900">what you are overpaying for</span>, and gets <span className="font-semibold text-slate-900">your taxes ready</span>.</>
               }
             </motion.p>
 
@@ -827,10 +798,15 @@ export default function Landing() {
               <Badge className="px-3 py-1.5 bg-slate-500/10 text-slate-700 border-slate-400/40">
                 {language === 'es' ? 'CAD · CLP · USD · EUR' : 'CAD · CLP · USD · EUR'}
               </Badge>
-              <Badge className="px-3 py-1.5 bg-cyan-500/10 text-cyan-700 border-cyan-500/30">
-                🎤 {language === 'es' ? 'Asistente de voz' : 'Voice assistant'}
+              {/* 2-sep-2026: estas cuatro insignias venian en cuatro colores distintos (dos
+                  grises, una cyan, una verde). Ahora las cuatro son iguales: son cuatro datos del
+                  mismo rango, no cuatro cosas de importancia distinta, y el color no significaba
+                  nada. El microfono dibujado reemplaza al emoji 🎤. */}
+              <Badge className="px-3 py-1.5 bg-slate-500/10 text-slate-700 border-slate-400/40">
+                <Mic className="w-3.5 h-3.5 mr-1.5" />
+                {language === 'es' ? 'Asistente de voz' : 'Voice assistant'}
               </Badge>
-              <Badge className="px-3 py-1.5 bg-emerald-500/10 text-emerald-700 border-emerald-500/30">
+              <Badge className="px-3 py-1.5 bg-slate-500/10 text-slate-700 border-slate-400/40">
                 {language === 'es'
                   ? '🇨🇦 🇨🇱 Impuestos a fondo'
                   : '🇨🇦 🇨🇱 Taxes in depth'}
@@ -847,10 +823,12 @@ export default function Landing() {
               <Button 
                 size="lg" 
                 onClick={() => navigate('/auth')}
-                className="relative text-lg px-10 py-7 bg-gradient-to-r from-amber-400 via-orange-500 to-orange-600 hover:from-amber-500 hover:via-orange-600 hover:to-orange-700 text-white font-bold shadow-2xl shadow-orange-500/40 border-0 group overflow-hidden"
+                className="relative text-lg px-10 py-7 bg-orange-600 hover:bg-orange-700 text-white font-semibold shadow-lg shadow-orange-600/20 border-0 group"
               >
-                {/* Shine effect */}
-                <div className="absolute inset-0 -translate-x-full animate-[shimmer_3s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+                {/* 2-sep-2026: el boton era un degradado de tres naranjas con un brillo blanco
+                    que lo barria cada tres segundos y una sombra naranja del 40 %. Naranja liso,
+                    sombra discreta y sin barrido. El boton mas importante de la pagina no
+                    necesita moverse para que lo encuentren: es el unico que hay. */}
                 <span className="relative z-10 flex items-center">
                   {language === 'es' ? 'Comenzar Gratis' : 'Start Free'}
                   <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
@@ -894,71 +872,53 @@ export default function Landing() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.5 }}
-        className="relative py-6 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 border-y border-amber-500/20"
+        className="relative py-6 bg-slate-900 border-y border-white/10"
       >
-        {/* Animated glow line */}
-        <motion.div 
-          className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-amber-400 to-transparent"
-          animate={{ opacity: [0.3, 0.6, 0.3] }}
-          transition={{ duration: 2, repeat: Infinity }}
-        />
+        {/* 2-sep-2026: la franja era un degradado de tres grises con borde ambar y una linea
+            ambar que latia abajo. Gris liso y un borde normal. */}
         
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center justify-center gap-6">
             {/* Plans with visual hierarchy */}
             <div className="flex items-center gap-4 flex-wrap justify-center">
-              {/* Free */}
-              <motion.div 
-                whileHover={{ scale: 1.05, y: -2 }}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500/20 to-green-500/20 border border-emerald-400/40 shadow-lg shadow-emerald-500/10"
-              >
-                <Gift className="w-5 h-5 text-emerald-400" />
-                <span className="font-bold text-emerald-300">Free</span>
-                <span className="font-black text-white text-lg">$0</span>
-              </motion.div>
-              
-              {/* Premium - highlighted */}
-              <motion.div 
-                whileHover={{ scale: 1.05, y: -2 }}
-                animate={{ boxShadow: ['0 0 10px rgba(251,191,36,0.2)', '0 0 20px rgba(251,191,36,0.4)', '0 0 10px rgba(251,191,36,0.2)'] }}
-                transition={{ duration: 2, repeat: Infinity }}
-                className="relative flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500/30 to-orange-500/30 border border-amber-400/50"
-              >
-                <Star className="w-5 h-5 text-amber-400" />
-                <span className="font-bold text-amber-300">Premium</span>
-                <span className="font-black text-white text-lg">${isAnnual ? '6.49' : '7.99'}</span>
-                <span className="text-amber-200/70 text-xs">{language === 'es' ? '/mes' : '/mo'}</span>
-              </motion.div>
-              
-              {/* Pro - crown */}
-              <motion.div 
-                whileHover={{ scale: 1.05, y: -2 }}
-                animate={{ boxShadow: ['0 0 10px rgba(139,92,246,0.2)', '0 0 20px rgba(139,92,246,0.4)', '0 0 10px rgba(139,92,246,0.2)'] }}
-                transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-violet-500/30 to-purple-500/30 border border-violet-400/50"
-              >
-                <Crown className="w-5 h-5 text-violet-400" />
-                <span className="font-bold text-violet-300">Pro</span>
-                <span className="font-black text-white text-lg">${isAnnual ? '11.99' : '14.99'}</span>
-                <span className="text-violet-200/70 text-xs">{language === 'es' ? '/mes' : '/mo'}</span>
-              </motion.div>
+              {/* LAS CUATRO PASTILLAS DE PRECIO — rehechas el 2-sep-2026.
 
-              {/* Bundle */}
-              <motion.div 
-                whileHover={{ scale: 1.05, y: -2 }}
-                animate={{ boxShadow: ['0 0 10px rgba(20,184,166,0.2)', '0 0 20px rgba(20,184,166,0.4)', '0 0 10px rgba(20,184,166,0.2)'] }}
-                transition={{ duration: 2, repeat: Infinity, delay: 1 }}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-teal-500/30 to-cyan-500/30 border border-teal-400/50"
-              >
-                <Layers className="w-5 h-5 text-teal-400" />
-                <span className="font-bold text-teal-300">Bundle</span>
-                <span className="font-black text-white text-lg">${isAnnual ? '15.99' : '19.99'}</span>
-                <span className="text-teal-200/70 text-xs">{language === 'es' ? '/mes' : '/mo'}</span>
-              </motion.div>
+                  LO QUE HABIA: cada una con su propio degradado de dos colores (verde, ambar,
+                  violeta, turquesa) y tres de las cuatro con un halo que crecia y se encogia sin
+                  parar, desfasadas medio segundo entre si. Cuatro precios latiendo en cuatro
+                  colores es la estetica de una maquina tragamonedas, y son justamente los numeros
+                  con los que uno quiere que le crean.
+
+                  LO QUE HAY: las cuatro iguales, quietas, en gris. Una sola —Premium, la que se
+                  quiere vender— lleva el naranja de la accion. El color vuelve a significar algo:
+                  naranja es lo que queremos que elijas. */}
+              {[
+                { icon: Gift,   nombre: 'Free',    precio: '$0', sufijo: null, destacada: false },
+                { icon: Star,   nombre: 'Premium', precio: `$${isAnnual ? '6.49' : '7.99'}`,   sufijo: language === 'es' ? '/mes' : '/mo', destacada: true },
+                { icon: Crown,  nombre: 'Pro',     precio: `$${isAnnual ? '11.99' : '14.99'}`, sufijo: language === 'es' ? '/mes' : '/mo', destacada: false },
+                { icon: Layers, nombre: 'Bundle',  precio: `$${isAnnual ? '15.99' : '19.99'}`, sufijo: language === 'es' ? '/mes' : '/mo', destacada: false },
+              ].map((plan) => {
+                const Icono = plan.icon;
+                return (
+                  <motion.div
+                    key={plan.nombre}
+                    whileHover={{ y: -2 }}
+                    className={`flex items-center gap-2 px-5 py-2.5 rounded-xl border ${
+                      plan.destacada
+                        ? 'bg-orange-500/15 border-orange-400/50'
+                        : 'bg-white/5 border-white/15'
+                    }`}
+                  >
+                    <Icono className={`w-5 h-5 ${plan.destacada ? 'text-orange-400' : 'text-slate-400'}`} />
+                    <span className={`font-semibold ${plan.destacada ? 'text-orange-200' : 'text-slate-300'}`}>{plan.nombre}</span>
+                    <span className="font-bold text-white text-lg">{plan.precio}</span>
+                    {plan.sufijo && <span className="text-slate-400 text-xs">{plan.sufijo}</span>}
+                  </motion.div>
+                );
+              })}
             </div>
 
-            {/* Divider with glow */}
-            <div className="hidden md:block w-px h-10 bg-gradient-to-b from-transparent via-amber-400/50 to-transparent" />
+            <div className="hidden md:block w-px h-10 bg-white/15" />
             
             {/* CTAs - improved */}
             <div className="flex items-center gap-3">
@@ -979,15 +939,12 @@ export default function Landing() {
                 <Button
                   size="sm"
                   onClick={() => navigate('/auth')}
-                  className="relative text-sm bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-bold shadow-lg shadow-orange-500/30 overflow-hidden"
+                  className="relative text-sm bg-orange-600 hover:bg-orange-700 text-white font-semibold shadow-sm"
                 >
-                  <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent"
-                    animate={{ x: ['-100%', '200%'] }}
-                    transition={{ duration: 2, repeat: Infinity, repeatDelay: 1 }}
-                  />
+                  {/* 2-sep-2026: sin el barrido de brillo, y sin el signo de exclamacion. El
+                      boton dice lo que hace; la exclamacion no agrega nada y suena a rebaja. */}
                   <span className="relative z-10 flex items-center">
-                    {language === 'es' ? '¡Comenzar Gratis!' : 'Start Free!'}
+                    {language === 'es' ? 'Comenzar gratis' : 'Start free'}
                     <ArrowRight className="w-4 h-4 ml-1.5" />
                   </span>
                 </Button>
@@ -1041,18 +998,11 @@ export default function Landing() {
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.4 }}
           >
-            <motion.div 
-              className="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center shadow-lg shadow-cyan-500/30"
-              animate={{ boxShadow: ['0 10px 25px -5px rgba(6, 182, 212, 0.3)', '0 10px 35px -5px rgba(6, 182, 212, 0.5)', '0 10px 25px -5px rgba(6, 182, 212, 0.3)'] }}
-              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-            >
-              <motion.div
-                animate={{ y: [0, 3, 0] }}
-                transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
-              >
-                <ArrowRight className="w-5 h-5 text-white rotate-90" />
-              </motion.div>
-            </motion.div>
+            {/* 2-sep-2026: este circulo latia y la flecha de adentro rebotaba, las dos cosas a
+                la vez y sin parar. Ahora es un circulo quieto: sigue diciendo «sigue bajando». */}
+            <div className="w-12 h-12 rounded-full flex items-center justify-center shadow-md" style={{ backgroundColor: 'hsl(217 91% 50%)' }}>
+              <ArrowRight className="w-5 h-5 text-white rotate-90" />
+            </div>
           </motion.div>
         </div>
       </div>
@@ -1074,7 +1024,7 @@ export default function Landing() {
               </Badge>
               <h2 className="text-3xl md:text-4xl font-black mb-4 text-slate-800">
                 {language === 'es' ? 'Mira cómo ' : 'See how it '}
-                <span className="bg-gradient-to-r from-cyan-500 to-blue-600 bg-clip-text text-transparent">
+                <span style={{ color: 'hsl(217 91% 42%)' }}>
                   {language === 'es' ? 'funciona' : 'works'}
                 </span>
               </h2>
@@ -1126,7 +1076,7 @@ export default function Landing() {
             </Badge>
             <h2 className="text-4xl md:text-5xl font-black mb-4">
               <span className="text-white">{language === 'es' ? '12 Herramientas ' : '12 Transformation '}</span>
-              <span className="bg-gradient-to-r from-orange-400 via-amber-400 to-yellow-400 bg-clip-text text-transparent">{language === 'es' ? 'de Transformación' : 'Tools'}</span>
+              <span className="text-orange-400">{language === 'es' ? 'de Transformación' : 'Tools'}</span>
             </h2>
             <p className="text-slate-300 text-lg max-w-3xl mx-auto">
               {language === 'es' 
@@ -1355,7 +1305,9 @@ export default function Landing() {
                       <p className="text-[10px] text-slate-500 mb-1.5 font-medium uppercase tracking-wide">{tier.subtitle}</p>
                     )}
                     <div className="flex items-baseline justify-center gap-1">
-                      <span className={`text-4xl font-black bg-gradient-to-r ${tier.gradient} bg-clip-text text-transparent`}>
+                      {/* 2-sep-2026: cada precio se pintaba con el degradado de dos colores de
+                          su plan. Un numero de precio se lee, no se decora: blanco y listo. */}
+                      <span className="text-4xl font-black text-white">
                         {priceInfo.display}
                       </span>
                       <span className="text-slate-400 text-xs">USD{priceInfo.period}</span>
@@ -1488,87 +1440,28 @@ export default function Landing() {
               {language === 'es' ? 'Únete a cientos de profesionales que ya están optimizando sus finanzas con EvoFinz.' : 'Join hundreds of professionals already optimizing their finances with EvoFinz.'}
             </p>
             
-            {/* SUPER LLAMATIVO CTA BUTTON */}
-            <motion.div
-              className="relative inline-block"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              {/* Outer glow rings */}
-              <motion.div
-                className="absolute inset-0 rounded-full bg-white/30 blur-2xl"
-                animate={{
-                  scale: [1, 1.5, 1],
-                  opacity: [0.3, 0.1, 0.3]
-                }}
-                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-              />
-              
-              {/* Pulsing ring */}
-              <motion.div
-                className="absolute -inset-2 rounded-2xl border-2 border-white/50"
-                animate={{
-                  scale: [1, 1.1, 1],
-                  opacity: [0.5, 0, 0.5]
-                }}
-                transition={{ duration: 1.5, repeat: Infinity }}
-              />
-              
-              {/* Sparkle particles */}
-              {[...Array(6)].map((_, i) => (
-                <motion.div
-                  key={i}
-                  className="absolute w-2 h-2 bg-white rounded-full"
-                  style={{
-                    left: `${10 + i * 16}%`,
-                    top: i % 2 === 0 ? '-10px' : 'auto',
-                    bottom: i % 2 === 1 ? '-10px' : 'auto',
-                  }}
-                  animate={{
-                    y: i % 2 === 0 ? [-5, -15, -5] : [5, 15, 5],
-                    opacity: [0, 1, 0],
-                    scale: [0.5, 1, 0.5]
-                  }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    delay: i * 0.3
-                  }}
-                />
-              ))}
-              
-              <Button 
-                size="lg" 
+            {/* EL BOTON DEL CIERRE — rehecho el 2-sep-2026.
+
+                LO QUE HABIA. El comentario del codigo lo llamaba, textualmente, «SUPER LLAMATIVO
+                CTA BUTTON», y cumplia: un halo blanco que crecia y encogia, un anillo que se
+                expandia hasta desaparecer, seis chispas blancas subiendo y bajando alrededor, un
+                brillo ambar que barria el boton, una estrella girando sin parar y una flecha que
+                se corria de lado. Siete animaciones a la vez, en el ultimo boton de la pagina.
+
+                POR QUE SE VA. Un boton que se agita tanto no se lee como «esto es importante», se
+                lee como «esto me quiere vender algo». Es la diferencia entre una tienda y un
+                pregonero. En las cinco aplicaciones con las que competimos el boton final es
+                liso, de un color, sin nada moviendose. */}
+            <motion.div className="relative inline-block" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
+              <Button
+                size="lg"
                 onClick={() => navigate('/auth')}
-                className="relative bg-gradient-to-r from-white via-slate-100 to-white text-slate-900 text-lg px-12 py-8 shadow-2xl font-bold group overflow-hidden border-2 border-white/50 hover:from-amber-50 hover:to-orange-50"
+                className="relative bg-white text-slate-900 hover:bg-slate-100 text-lg px-12 py-8 shadow-xl font-semibold"
               >
-                {/* Inner shine effect */}
-                <motion.div
-                  className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-200/40 to-transparent"
-                  animate={{ x: ['-100%', '200%'] }}
-                  transition={{ duration: 2, repeat: Infinity, repeatDelay: 1 }}
-                />
-                
-                {/* Star sparkle icon */}
-                <motion.span
-                  animate={{ rotate: [0, 360] }}
-                  transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-                  className="mr-2"
-                >
-                  <Sparkles className="h-5 w-5 text-amber-500" />
-                </motion.span>
-                
-                <span className="relative z-10 text-slate-900 font-black">
-                  {language === 'es' ? 'Crear Cuenta Gratis' : 'Create Free Account'}
+                <span className="relative z-10 flex items-center">
+                  {language === 'es' ? 'Crear cuenta gratis' : 'Create free account'}
+                  <ArrowRight className="h-5 w-5 ml-2" />
                 </span>
-                
-                <motion.span
-                  animate={{ x: [0, 5, 0] }}
-                  transition={{ duration: 1, repeat: Infinity }}
-                  className="ml-2"
-                >
-                  <ArrowRight className="h-5 w-5 text-slate-900" />
-                </motion.span>
               </Button>
             </motion.div>
             
