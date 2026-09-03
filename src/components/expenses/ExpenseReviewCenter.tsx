@@ -630,8 +630,8 @@ export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCe
 
                               <p className="text-xs text-muted-foreground leading-relaxed">
                                 {language === 'es' 
-                                  ? `📊 Diferencia: $${item.difference.toFixed(2)} (${item.percentDiff.toFixed(0)}%) — ${item.expenseAmount < item.receiptAmount ? 'Puede ser un ítem parcial de una compra mayor.' : 'El monto del sistema es mayor al del recibo.'}`
-                                  : `📊 Difference: $${item.difference.toFixed(2)} (${item.percentDiff.toFixed(0)}%) — ${item.expenseAmount < item.receiptAmount ? 'May be a partial item from a larger purchase.' : 'System amount is higher than receipt.'}`}
+                                  ? `📊 Diferencia: ${fmtCurr(item.difference)} (${item.percentDiff.toFixed(0)}%) — ${item.expenseAmount < item.receiptAmount ? 'Puede ser un ítem parcial de una compra mayor.' : 'El monto del sistema es mayor al del recibo.'}`
+                                  : `📊 Difference: ${fmtCurr(item.difference)} (${item.percentDiff.toFixed(0)}%) — ${item.expenseAmount < item.receiptAmount ? 'May be a partial item from a larger purchase.' : 'System amount is higher than receipt.'}`}
                               </p>
 
                               {/* Actions */}
@@ -666,7 +666,7 @@ export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCe
                                       }}
                                     >
                                       <Edit3 className="h-3.5 w-3.5 mr-1.5" />
-                                      {language === 'es' ? `Corregir a $${item.receiptAmount.toFixed(2)}` : `Fix to $${item.receiptAmount.toFixed(2)}`}
+                                      {language === 'es' ? `Corregir a ${fmtCurr(item.receiptAmount)}` : `Fix to ${fmtCurr(item.receiptAmount)}`}
                                     </Button>
                                     <Button
                                       size="sm"

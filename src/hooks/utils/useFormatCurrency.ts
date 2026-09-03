@@ -42,5 +42,23 @@ export function useFormatCurrency() {
     [currentCurrency, locale],
   );
 
-  return { formatCurrency, formatCompact, currentCurrency };
+  /**
+   * Para ejes de graficos: abreviado de verdad ("$1,5 M"), con el simbolo y los separadores
+   * del pais. Antes cada grafico armaba su propia etiqueta dividiendo por mil y pegando una "k"
+   * a mano, con un signo de dolar fijo: en pesos chilenos eso salia mal en todos.
+   */
+  const formatAxis = useCallback(
+    (amount: number, opts?: { currency?: string }) => {
+      const curr = opts?.currency || currentCurrency;
+      return new Intl.NumberFormat(locale, {
+        style: 'currency',
+        currency: curr,
+        notation: 'compact',
+        maximumFractionDigits: 1,
+      }).format(amount);
+    },
+    [currentCurrency, locale],
+  );
+
+  return { formatCurrency, formatCompact, formatAxis, currentCurrency };
 }

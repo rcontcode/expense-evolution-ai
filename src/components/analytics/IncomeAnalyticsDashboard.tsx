@@ -832,7 +832,7 @@ export function IncomeAnalyticsDashboard({ year, month }: IncomeAnalyticsDashboa
                   <ResponsiveContainer width="100%" height="100%">
                     <ComposedChart data={monthlyTrends}>
                       <XAxis dataKey="month" tick={{ fontSize: 10 }} />
-                      <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => `$${(v/1000).toFixed(0)}k`} />
+                      <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => `${formatCurrency((v/1000))}k`} />
                       <RechartsTooltip 
                         formatter={(value: number, name: string) => [formatCurrency(value), name === 'passive' ? (language === 'es' ? 'Pasivo' : 'Passive') : (language === 'es' ? 'Activo' : 'Active')]}
                       />

@@ -1252,7 +1252,7 @@ export function FamilyMonthlyAnalysis({ year, month }: FamilyMonthlyAnalysisProp
                         </linearGradient>
                       </defs>
                       <XAxis dataKey="day" tick={{ fontSize: 8 }} tickLine={false} axisLine={false} />
-                      <YAxis tick={{ fontSize: 8 }} tickFormatter={v => `$${(v/1000).toFixed(0)}k`} tickLine={false} axisLine={false} />
+                      <YAxis tick={{ fontSize: 8 }} tickFormatter={v => `${formatCurrency((v/1000))}k`} tickLine={false} axisLine={false} />
                       <ReferenceLine y={0} stroke="hsl(var(--destructive))" strokeDasharray="2 2" strokeOpacity={0.5} />
                       <Area 
                         type="monotone" 
@@ -1386,7 +1386,7 @@ export function FamilyMonthlyAnalysis({ year, month }: FamilyMonthlyAnalysisProp
                   return item?.isWeekend ? `🌙${v}` : v;
                 }}
               />
-              <YAxis tick={{ fontSize: 9 }} tickFormatter={v => `$${(v/1000).toFixed(0)}k`} />
+              <YAxis tick={{ fontSize: 9 }} tickFormatter={v => `${formatCurrency((v/1000))}k`} />
               <RechartsTooltip content={<CustomTooltip />} />
               
               {/* Week separators */}
@@ -1578,7 +1578,7 @@ export function FamilyMonthlyAnalysis({ year, month }: FamilyMonthlyAnalysisProp
                       </linearGradient>
                     </defs>
                     <XAxis dataKey="day" tick={{ fontSize: 9 }} />
-                    <YAxis tick={{ fontSize: 9 }} tickFormatter={v => `$${(v/1000).toFixed(0)}k`} />
+                    <YAxis tick={{ fontSize: 9 }} tickFormatter={v => `${formatCurrency((v/1000))}k`} />
                     <RechartsTooltip 
                       formatter={(value: number, name: string) => [formatCurrency(value), name]}
                       labelFormatter={(label) => `${language === 'es' ? 'Día' : 'Day'} ${label}`}

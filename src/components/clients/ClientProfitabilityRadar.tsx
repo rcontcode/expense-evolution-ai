@@ -98,8 +98,8 @@ export function ClientProfitabilityRadar() {
 
   const formatCurrency = (n: number) => {
     const abs = Math.abs(n);
-    if (abs >= 1000) return `$${(n / 1000).toFixed(1)}k`;
-    return `$${n.toFixed(0)}`;
+    if (abs >= 1000) return `${formatCurrency((n / 1000))}k`;
+    return `${formatCurrency(n)}`;
   };
 
   const TrendIcon = ({ trend }: { trend: string }) => {

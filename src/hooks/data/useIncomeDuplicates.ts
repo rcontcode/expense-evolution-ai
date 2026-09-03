@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { IncomeWithRelations } from '@/types/income.types';
 
 export interface IncomeDuplicateGroup {
@@ -88,6 +89,7 @@ function buildSuggestion(keep: IncomeWithRelations, remove: IncomeWithRelations[
 }
 
 export function useIncomeDuplicates(incomes: IncomeWithRelations[]) {
+  const { formatCurrency } = useFormatCurrency();
   return useMemo(() => {
     const groups: IncomeDuplicateGroup[] = [];
     const usedIds = new Set<string>();
@@ -127,8 +129,8 @@ export function useIncomeDuplicates(incomes: IncomeWithRelations[]) {
           keep,
           duplicates: remove,
           confidence,
-          reason: `Mismo monto ($${Number(keep.amount).toFixed(2)}), fecha (${keep.date}), tipo y fuente "${keep.source || '-'}" — ${cluster.length} registros`,
-          reasonEn: `Same amount ($${Number(keep.amount).toFixed(2)}), date (${keep.date}), type and source "${keep.source || '-'}" — ${cluster.length} records`,
+          reason: `Mismo monto (${formatCurrency(Number(keep.amount))}), fecha (${keep.date}), tipo y fuente "${keep.source || '-'}" — ${cluster.length} registros`,
+          reasonEn: `Same amount (${formatCurrency(Number(keep.amount))}), date (${keep.date}), type and source "${keep.source || '-'}" — ${cluster.length} records`,
           suggestion: buildSuggestion(keep, remove, 'es'),
           suggestionEn: buildSuggestion(keep, remove, 'en'),
         });

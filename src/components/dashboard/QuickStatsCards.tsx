@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { 
   FileText, 
   Receipt, 
@@ -27,6 +28,7 @@ export function QuickStatsCards({
   isLoading
 }: QuickStatsCardsProps) {
   const { t, language } = useLanguage();
+  const { formatCurrency } = useFormatCurrency();
   const navigate = useNavigate();
 
   const stats = [
@@ -59,7 +61,7 @@ export function QuickStatsCards({
     {
       id: 'monthly',
       label: language === 'es' ? 'Este mes' : 'This month',
-      value: `$${monthlyTotal?.toFixed(0) || 0}`,
+      value: formatCurrency(monthlyTotal || 0),
       icon: DollarSign,
       path: '/income',
       hasAction: false,

@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 export function YearComparisonChart() {
   const { language } = useLanguage();
   const l = language === "es";
-  const { formatCurrency: fc } = useFormatCurrency();
+  const { formatCurrency: fc, formatAxis } = useFormatCurrency();
   const now = new Date();
 
   // Get last 6 months of current year and same months last year
@@ -108,7 +108,7 @@ export function YearComparisonChart() {
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={chartData} margin={{ top: 0, right: 5, left: 0, bottom: 0 }}>
             <XAxis dataKey="name" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
-            <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} tickFormatter={v => `$${(v/1000).toFixed(0)}k`} width={45} />
+            <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} tickFormatter={v => `${formatAxis(v)}`} width={45} />
             <Tooltip content={<CustomTooltip />} />
             <Bar dataKey="lastYear" fill="hsl(var(--muted))" radius={[2, 2, 0, 0]} barSize={12} name={l ? "Año anterior" : "Last year"} />
             <Bar dataKey="thisYear" fill="hsl(var(--primary))" radius={[2, 2, 0, 0]} barSize={12} name={l ? "Este año" : "This year"} />

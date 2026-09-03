@@ -1,4 +1,5 @@
 import { useEffect, useRef, useCallback } from 'react';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEntity } from '@/contexts/EntityContext';
@@ -43,6 +44,7 @@ function isWithinPreferredHour(preferredHour: number | null): boolean {
  * Respects user preferences from `notification_preferences`.
  */
 export function useAutoReminders() {
+  const { formatCurrency } = useFormatCurrency();
   const { user } = useAuth();
   const { currentEntity } = useEntity();
   const { language } = useLanguage();
@@ -170,8 +172,8 @@ export function useAutoReminders() {
           await insertNotification(
             userId, 'bill_reminder', `💳 ${bill.name}`,
             isEs
-              ? `Vence en ${daysUntilDue} día(s) — $${bill.amount} ${bill.currency}`
-              : `Due in ${daysUntilDue} day(s) — $${bill.amount} ${bill.currency}`,
+              ? `Vence en ${daysUntilDue} día(s) — ${formatCurrency(Number(bill.amount), { currency: bill.currency })}`
+              : `Due in ${daysUntilDue} day(s) — ${formatCurrency(Number(bill.amount), { currency: bill.currency })}`,
             '/budget', 'bill', bill.id
           );
         }
@@ -185,8 +187,8 @@ export function useAutoReminders() {
           await insertNotification(
             userId, 'bill_reminder', `🚨 ${bill.name}`,
             isEs
-              ? `¡Vencido hace ${overdueDays} día(s)! — $${bill.amount} ${bill.currency}`
-              : `Overdue by ${overdueDays} day(s)! — $${bill.amount} ${bill.currency}`,
+              ? `¡Vencido hace ${overdueDays} día(s)! — ${formatCurrency(Number(bill.amount), { currency: bill.currency })}`
+              : `Overdue by ${overdueDays} day(s)! — ${formatCurrency(Number(bill.amount), { currency: bill.currency })}`,
             '/budget', 'bill', bill.id
           );
         }
@@ -357,8 +359,8 @@ export function useAutoReminders() {
           await insertNotification(
             userId, 'budget_alert', `⚠️ ${rule.name}`,
             isEs
-              ? `${rule.category || 'Total'}: $${spent.toFixed(0)} / $${rule.threshold_amount} presupuesto`
-              : `${rule.category || 'Total'}: $${spent.toFixed(0)} / $${rule.threshold_amount} budget`,
+              ? `${rule.category || 'Total'}: ${formatCurrency(spent)} / ${formatCurrency(Number(rule.threshold_amount))} presupuesto`
+              : `${rule.category || 'Total'}: ${formatCurrency(spent)} / ${formatCurrency(Number(rule.threshold_amount))} budget`,
             '/budget', 'budget_rule', rule.id
           );
           await supabase

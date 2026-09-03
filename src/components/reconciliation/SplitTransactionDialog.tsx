@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -40,6 +41,7 @@ export function SplitTransactionDialog({
   onSave,
   isLoading 
 }: SplitTransactionDialogProps) {
+  const { formatCurrency } = useFormatCurrency();
   const { t, language } = useLanguage();
   const { data: clients = [] } = useClients();
   
@@ -164,8 +166,8 @@ export function SplitTransactionDialog({
             {!isBalanced && (
               <span className={`text-sm font-medium ${remainingAmount > 0 ? 'text-warning' : 'text-destructive'}`}>
                 {remainingAmount > 0 
-                  ? `${t('reconciliation.remaining')}: $${remainingAmount.toFixed(2)}`
-                  : `${t('reconciliation.exceeds')}: $${Math.abs(remainingAmount).toFixed(2)}`}
+                  ? `${t('reconciliation.remaining')}: ${formatCurrency(remainingAmount)}`
+                  : `${t('reconciliation.exceeds')}: ${formatCurrency(Math.abs(remainingAmount))}`}
               </span>
             )}
           </div>

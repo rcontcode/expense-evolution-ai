@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useIncome } from './useIncome';
@@ -18,6 +19,7 @@ export interface PayYourselfFirstData {
 }
 
 export function usePayYourselfFirst(): PayYourselfFirstData {
+  const { formatCurrency } = useFormatCurrency();
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const currentYear = new Date().getFullYear();
@@ -50,9 +52,9 @@ export function usePayYourselfFirst(): PayYourselfFirstData {
   const recommendations: string[] = [];
   if (!hasPaidThisMonth && incomeThisMonth > 0) {
     recommendations.push(`"No gastes lo que queda después de ahorrar; ahorra primero"`);
-    recommendations.push(`Deberías apartar $${targetSavedThisMonth.toFixed(0)} este mes (${targetPercentage}% de tu ingreso)`);
+    recommendations.push(`Deberías apartar ${formatCurrency(targetSavedThisMonth)} este mes (${targetPercentage}% de tu ingreso)`);
   } else if (hasPaidThisMonth && !isOnTrack) {
-    recommendations.push(`Te faltan $${(targetSavedThisMonth - actualSavedThisMonth).toFixed(0)} para alcanzar tu meta`);
+    recommendations.push(`Te faltan ${formatCurrency((targetSavedThisMonth - actualSavedThisMonth))} para alcanzar tu meta`);
   } else if (hasPaidThisMonth && isOnTrack) {
     recommendations.push('¡Excelente! Ya te pagaste primero este mes');
     if (settings?.streak_months && settings.streak_months > 1) {

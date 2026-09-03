@@ -38,8 +38,8 @@ export function NetWorthSummary({ totalAssets, totalLiabilities, snapshots }: Ne
   const { formatCompact, currentCurrency } = useFormatCurrency();
   const formatCurrency = (value: number) => {
     if (isMobile && Math.abs(value) >= 1000) {
-      if (Math.abs(value) >= 1000000) return `$${(value / 1000000).toFixed(1)}M`;
-      return `$${(value / 1000).toFixed(0)}K`;
+      if (Math.abs(value) >= 1000000) return `${formatCurrency((value / 1000000))}M`;
+      return `${formatCurrency((value / 1000))}K`;
     }
     return formatCompact(value);
   };

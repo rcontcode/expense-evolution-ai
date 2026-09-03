@@ -516,7 +516,7 @@ export function ClientReimbursementReport({ expenses }: ClientReimbursementRepor
                   <XAxis 
                     type="number" 
                     stroke="hsl(var(--muted-foreground))" 
-                    tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+                    tickFormatter={(value) => `${formatCurrency((value / 1000))}k`}
                     fontSize={12}
                   />
                   <YAxis 

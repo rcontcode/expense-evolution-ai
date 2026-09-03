@@ -31,7 +31,7 @@ export function FamilyIncomeDialog({ open, onClose }: FamilyIncomeDialogProps) {
   const l = language === "es";
   const { user } = useAuth();
   const { toast } = useToast();
-  const { currentCurrency } = useFormatCurrency();
+  const { currentCurrency, formatCurrency } = useFormatCurrency();
   
   const createIncome = useCreateIncome();
 
@@ -75,7 +75,7 @@ export function FamilyIncomeDialog({ open, onClose }: FamilyIncomeDialogProps) {
 
       toast({
         title: l ? "✅ ¡Ingreso registrado!" : "✅ Income recorded!",
-        description: `${typeInfo?.icon} $${amount}`,
+        description: `${typeInfo?.icon} ${formatCurrency(Number(amount))}`,
       });
       handleClose();
     } catch {

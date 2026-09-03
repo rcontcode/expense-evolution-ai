@@ -1,4 +1,5 @@
 import { useEffect, useRef, useCallback } from 'react';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { toast } from 'sonner';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useUnlockAchievement } from './useGamification';
@@ -93,6 +94,7 @@ async function createNotification(userId: string, title: string, message: string
 }
 
 export function useGoalNotifications({ savingsGoals, investmentGoals, userLevel }: GoalNotificationsProps) {
+  const { formatCurrency } = useFormatCurrency();
   const { t, language } = useLanguage();
   const { user } = useAuth();
   const unlockAchievement = useUnlockAchievement();
@@ -125,8 +127,8 @@ export function useGoalNotifications({ savingsGoals, investmentGoals, userLevel 
             ? `¡Casi llegas a "${goal.name}"!` 
             : `Almost there for "${goal.name}"!`;
           const message = language === 'es'
-            ? `Te falta solo $${remaining.toLocaleString()} (${(100 - progress).toFixed(0)}%) para alcanzar tu meta.`
-            : `Only $${remaining.toLocaleString()} (${(100 - progress).toFixed(0)}%) left to reach your goal.`;
+            ? `Te falta solo ${formatCurrency(remaining)} (${(100 - progress).toFixed(0)}%) para alcanzar tu meta.`
+            : `Only ${formatCurrency(remaining)} (${(100 - progress).toFixed(0)}%) left to reach your goal.`;
           
           // Create persistent notification
           await createNotification(
@@ -166,8 +168,8 @@ export function useGoalNotifications({ savingsGoals, investmentGoals, userLevel 
               ? `⏰ ${days} ${days === 1 ? 'día' : 'días'} para "${goal.name}"`
               : `⏰ ${days} ${days === 1 ? 'day' : 'days'} left for "${goal.name}"`;
             const message = language === 'es'
-              ? `Te falta $${remaining.toLocaleString()} para cumplir tu meta a tiempo.`
-              : `$${remaining.toLocaleString()} remaining to meet your goal on time.`;
+              ? `Te falta ${formatCurrency(remaining)} para cumplir tu meta a tiempo.`
+              : `${formatCurrency(remaining)} remaining to meet your goal on time.`;
             
             await createNotification(
               user.id,
@@ -254,7 +256,7 @@ export function useGoalNotifications({ savingsGoals, investmentGoals, userLevel 
               toast.success(
                 `🎯 ${goal.name}: ${milestone}% ${t('gamification.completed')}!`,
                 {
-                  description: `$${currentAmount.toLocaleString()} / $${targetAmount.toLocaleString()}`,
+                  description: `${formatCurrency(currentAmount)} / ${formatCurrency(targetAmount)}`,
                   duration: 4000,
                 }
               );

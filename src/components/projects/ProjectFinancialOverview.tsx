@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -69,6 +70,7 @@ interface ProjectFinancialOverviewProps {
 }
 
 export function ProjectFinancialOverview({ projectId, projectName }: ProjectFinancialOverviewProps) {
+  const { formatCurrency } = useFormatCurrency();
   const { language } = useLanguage();
   const { data: allExpenses } = useExpenses();
   const { data: contracts } = useContracts();
@@ -220,8 +222,8 @@ export function ProjectFinancialOverview({ projectId, projectName }: ProjectFina
             <Progress value={Math.min(recoveryRate, 100)} className="h-3" />
             <p className="text-xs text-muted-foreground mt-1">
               {language === 'es' 
-                ? `De $${totalExpenses.toFixed(2)} en gastos, recuperas ~$${financialSummary.totalBenefit.toFixed(2)} entre reembolsos y beneficios fiscales`
-                : `Of $${totalExpenses.toFixed(2)} in expenses, you recover ~$${financialSummary.totalBenefit.toFixed(2)} between reimbursements and tax benefits`}
+                ? `De ${formatCurrency(totalExpenses)} en gastos, recuperas ~${formatCurrency(financialSummary.totalBenefit)} entre reembolsos y beneficios fiscales`
+                : `Of ${formatCurrency(totalExpenses)} in expenses, you recover ~${formatCurrency(financialSummary.totalBenefit)} between reimbursements and tax benefits`}
             </p>
           </div>
 
@@ -297,8 +299,8 @@ export function ProjectFinancialOverview({ projectId, projectName }: ProjectFina
           </AlertTitle>
           <AlertDescription className="text-red-600">
             {language === 'es' 
-              ? `Tienes ${unassignedExpenses.length} gastos ($${unassignedExpenses.reduce((s, e) => s + Number(e.amount), 0).toFixed(2)}) que no están asignados a ningún proyecto o cliente. Ve a Gastos para asignarlos.`
-              : `You have ${unassignedExpenses.length} expenses ($${unassignedExpenses.reduce((s, e) => s + Number(e.amount), 0).toFixed(2)}) not assigned to any project or client. Go to Expenses to assign them.`}
+              ? `Tienes ${unassignedExpenses.length} gastos (${formatCurrency(unassignedExpenses.reduce((s, e) => s + Number(e.amount), 0))}) que no están asignados a ningún proyecto o cliente. Ve a Gastos para asignarlos.`
+              : `You have ${unassignedExpenses.length} expenses (${formatCurrency(unassignedExpenses.reduce((s, e) => s + Number(e.amount), 0))}) not assigned to any project or client. Go to Expenses to assign them.`}
           </AlertDescription>
         </Alert>
       )}
@@ -312,8 +314,8 @@ export function ProjectFinancialOverview({ projectId, projectName }: ProjectFina
           </AlertTitle>
           <AlertDescription className="text-amber-600">
             {language === 'es' 
-              ? `Tienes ${financialSummary.pendingCount} gastos ($${financialSummary.pendingTotal.toFixed(2)}) sin clasificar. Clasifícalos para ver los beneficios correctamente.`
-              : `You have ${financialSummary.pendingCount} expenses ($${financialSummary.pendingTotal.toFixed(2)}) unclassified. Classify them to see benefits correctly.`}
+              ? `Tienes ${financialSummary.pendingCount} gastos (${formatCurrency(financialSummary.pendingTotal)}) sin clasificar. Clasifícalos para ver los beneficios correctamente.`
+              : `You have ${financialSummary.pendingCount} expenses (${formatCurrency(financialSummary.pendingTotal)}) unclassified. Classify them to see benefits correctly.`}
           </AlertDescription>
         </Alert>
       )}

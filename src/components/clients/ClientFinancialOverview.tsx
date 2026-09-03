@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -57,6 +58,7 @@ interface ClientFinancialOverviewProps {
 }
 
 export function ClientFinancialOverview({ clientId, clientName }: ClientFinancialOverviewProps) {
+  const { formatCurrency } = useFormatCurrency();
   const { language } = useLanguage();
   const { data: allExpenses } = useExpenses();
   const { data: contracts } = useContracts();
@@ -189,8 +191,8 @@ export function ClientFinancialOverview({ clientId, clientName }: ClientFinancia
             <Progress value={Math.min(recoveryRate, 100)} className="h-3" />
             <p className="text-xs text-muted-foreground mt-1">
               {language === 'es' 
-                ? `De $${totalExpenses.toFixed(2)} en gastos, recuperas ~$${financialSummary.totalBenefit.toFixed(2)} entre reembolsos y beneficios fiscales`
-                : `Of $${totalExpenses.toFixed(2)} in expenses, you recover ~$${financialSummary.totalBenefit.toFixed(2)} between reimbursements and tax benefits`}
+                ? `De ${formatCurrency(totalExpenses)} en gastos, recuperas ~${formatCurrency(financialSummary.totalBenefit)} entre reembolsos y beneficios fiscales`
+                : `Of ${formatCurrency(totalExpenses)} in expenses, you recover ~${formatCurrency(financialSummary.totalBenefit)} between reimbursements and tax benefits`}
             </p>
           </div>
 
@@ -298,8 +300,8 @@ export function ClientFinancialOverview({ clientId, clientName }: ClientFinancia
           </AlertTitle>
           <AlertDescription className="text-amber-600">
             {language === 'es' 
-              ? `Tienes ${financialSummary.pendingCount} gastos ($${financialSummary.pendingTotal.toFixed(2)}) sin clasificar.`
-              : `You have ${financialSummary.pendingCount} expenses ($${financialSummary.pendingTotal.toFixed(2)}) unclassified.`}
+              ? `Tienes ${financialSummary.pendingCount} gastos (${formatCurrency(financialSummary.pendingTotal)}) sin clasificar.`
+              : `You have ${financialSummary.pendingCount} expenses (${formatCurrency(financialSummary.pendingTotal)}) unclassified.`}
           </AlertDescription>
         </Alert>
       )}

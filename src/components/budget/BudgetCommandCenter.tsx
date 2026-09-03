@@ -179,8 +179,8 @@ import { useExpenseCompleteness } from '@/hooks/utils/useExpenseCompleteness';
          icon: Wallet,
          title: l ? 'Establece tu presupuesto global' : 'Set your global budget',
          description: l 
-           ? `Basado en tu historial, te sugerimos $${budgetSuggestions.globalSuggestion.toFixed(0)}/mes`
-           : `Based on your history, we suggest $${budgetSuggestions.globalSuggestion.toFixed(0)}/mo`,
+           ? `Basado en tu historial, te sugerimos ${formatCurrency(budgetSuggestions.globalSuggestion)}/mes`
+           : `Based on your history, we suggest ${formatCurrency(budgetSuggestions.globalSuggestion)}/mo`,
          priority: 'high',
          action: l ? 'Configurar ahora' : 'Set up now',
        });

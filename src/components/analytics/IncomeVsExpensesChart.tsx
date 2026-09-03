@@ -91,7 +91,7 @@ export function IncomeVsExpensesChart() {
     return { totalIncome, totalExpenses, avgIncome, avgExpenses, savingsRate };
   }, [chartData]);
 
-  const { formatCompact: formatCurrency } = useFormatCurrency();
+  const { formatCompact: formatCurrency, formatAxis } = useFormatCurrency();
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
@@ -203,7 +203,7 @@ export function IncomeVsExpensesChart() {
               />
               <YAxis 
                 tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
-                tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+                tickFormatter={(value) => `${formatAxis(value)}`}
               />
               <Tooltip content={<CustomTooltip />} />
               <Legend />

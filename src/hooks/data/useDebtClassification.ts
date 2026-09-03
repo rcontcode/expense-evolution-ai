@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -32,6 +33,7 @@ export interface DebtClassificationData {
 }
 
 export function useDebtClassification(language: 'es' | 'en' = 'es'): DebtClassificationData {
+  const { formatCurrency } = useFormatCurrency();
   const { user } = useAuth();
 
   const { data: liabilities, isLoading } = useQuery({
@@ -132,8 +134,8 @@ export function useDebtClassification(language: 'es' | 'en' = 'es'): DebtClassif
 
     if (goodDebt.length > 0 && totalMonthlyFromGoodDebt > 0) {
       recommendations.push(language === 'es'
-        ? `Tu deuda buena genera $${totalMonthlyFromGoodDebt.toFixed(0)}/mes en ingresos`
-        : `Your good debt generates $${totalMonthlyFromGoodDebt.toFixed(0)}/mo in income`);
+        ? `Tu deuda buena genera ${formatCurrency(totalMonthlyFromGoodDebt)}/mes en ingresos`
+        : `Your good debt generates ${formatCurrency(totalMonthlyFromGoodDebt)}/mo in income`);
     }
 
     if (goodDebtRatio < 50 && totalDebt > 0) {
@@ -144,8 +146,8 @@ export function useDebtClassification(language: 'es' | 'en' = 'es'): DebtClassif
 
     if (netMonthlyCostBadDebt > 0) {
       recommendations.push(language === 'es'
-        ? `Estás pagando $${netMonthlyCostBadDebt.toFixed(0)}/mes en deuda que no genera ingresos`
-        : `You're paying $${netMonthlyCostBadDebt.toFixed(0)}/mo on non-income-generating debt`);
+        ? `Estás pagando ${formatCurrency(netMonthlyCostBadDebt)}/mes en deuda que no genera ingresos`
+        : `You're paying ${formatCurrency(netMonthlyCostBadDebt)}/mo on non-income-generating debt`);
     }
 
     return {

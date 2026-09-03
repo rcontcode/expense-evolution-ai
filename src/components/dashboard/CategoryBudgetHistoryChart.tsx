@@ -102,7 +102,7 @@ export function CategoryBudgetHistoryChart() {
     return { chartData: months, categoryStats: stats };
   }, [expenses, budgetedCategories]);
 
-  const { formatCompact: formatCurrency } = useFormatCurrency();
+  const { formatCompact: formatCurrency, formatAxis } = useFormatCurrency();
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
@@ -192,7 +192,7 @@ export function CategoryBudgetHistoryChart() {
               />
               <YAxis 
                 tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
-                tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+                tickFormatter={(value) => `${formatAxis(value)}`}
               />
               <Tooltip content={<CustomTooltip />} />
               <Legend />

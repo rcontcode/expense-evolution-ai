@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { ExpenseWithRelations } from '@/types/expense.types';
 
 export interface DuplicateGroup {
@@ -24,6 +25,7 @@ function vendorSimilarity(a: string | null, b: string | null): number {
 }
 
 export function useExpenseDuplicates(expenses: ExpenseWithRelations[]) {
+  const { formatCurrency } = useFormatCurrency();
   return useMemo(() => {
     const groups: DuplicateGroup[] = [];
     const seen = new Set<string>();
@@ -43,8 +45,8 @@ export function useExpenseDuplicates(expenses: ExpenseWithRelations[]) {
               original: a,
               duplicate: b,
               similarity: sim,
-              reason: `Mismo monto ($${Number(a.amount).toFixed(2)}), fecha (${a.date}) y proveedor similar`,
-              reasonEn: `Same amount ($${Number(a.amount).toFixed(2)}), date (${a.date}) and similar vendor`,
+              reason: `Mismo monto (${formatCurrency(Number(a.amount))}), fecha (${a.date}) y proveedor similar`,
+              reasonEn: `Same amount (${formatCurrency(Number(a.amount))}), date (${a.date}) and similar vendor`,
             });
           }
         }

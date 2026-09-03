@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { useIncome } from './useIncome';
 import { useExpenses } from './useExpenses';
 import { useAuth } from '@/contexts/AuthContext';
@@ -29,6 +30,7 @@ const PASSIVE_INCOME_TYPES = [
 ];
 
 export function useFinancialFreedom(language: 'es' | 'en' = 'es'): FinancialFreedomResult {
+  const { formatCurrency } = useFormatCurrency();
   const { user } = useAuth();
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth();
@@ -133,8 +135,8 @@ export function useFinancialFreedom(language: 'es' | 'en' = 'es'): FinancialFree
         ? '¡Casi libre! Mantén el rumbo y no aumentes tus gastos'
         : 'Almost free! Stay on course and don\'t increase your expenses');
       recommendations.push(language === 'es'
-        ? `Te faltan $${gapToFreedom.toFixed(0)} mensuales en ingresos pasivos`
-        : `You need $${gapToFreedom.toFixed(0)} more monthly in passive income`);
+        ? `Te faltan ${formatCurrency(gapToFreedom)} mensuales en ingresos pasivos`
+        : `You need ${formatCurrency(gapToFreedom)} more monthly in passive income`);
     } else {
       recommendations.push(language === 'es'
         ? '¡FELICIDADES! Has alcanzado la libertad financiera'

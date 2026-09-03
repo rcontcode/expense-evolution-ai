@@ -73,7 +73,7 @@ export function NetWorthVelocityTracker({ snapshots, currentNetWorth }: Props) {
         
         return {
           target,
-          label: target >= 1000000 ? `$${(target / 1000000).toFixed(0)}M` : `$${(target / 1000).toFixed(0)}k`,
+          label: target >= 1000000 ? `${formatCurrency((target / 1000000))}M` : `${formatCurrency((target / 1000))}k`,
           eta: reached 
             ? (isEs ? '✅ Alcanzado' : '✅ Reached') 
             : etaDate 
@@ -111,8 +111,8 @@ export function NetWorthVelocityTracker({ snapshots, currentNetWorth }: Props) {
 
   const formatCurrency = (n: number) => {
     const abs = Math.abs(n);
-    if (abs >= 1000) return `${n >= 0 ? '+' : ''}$${(n / 1000).toFixed(1)}k`;
-    return `${n >= 0 ? '+' : ''}$${n.toFixed(0)}`;
+    if (abs >= 1000) return `${n >= 0 ? '+' : ''}${formatCurrency((n / 1000))}k`;
+    return `${n >= 0 ? '+' : ''}${formatCurrency(n)}`;
   };
 
   const gradeColors: Record<string, string> = {
