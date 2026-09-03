@@ -241,13 +241,21 @@ export function YearOverYearComparison() {
             </CardTitle>
             <CardDescription>{t.description}</CardDescription>
           </div>
-          <Badge 
-            variant="outline" 
-            className={stats.percentChange > 0 ? 'text-red-500 border-red-500/30' : 'text-green-500 border-green-500/30'}
-          >
-            {stats.percentChange > 0 ? <TrendingUp className="h-3 w-3 mr-1" /> : <TrendingDown className="h-3 w-3 mr-1" />}
-            {stats.percentChange > 0 ? '+' : ''}{stats.percentChange.toFixed(1)}% {t.vsLastYear}
-          </Badge>
+          {/* Sin base del año pasado no hay porcentaje: mostraba "0.0%" con flecha verde hacia
+              abajo, o sea "vas mejorando", cuando en realidad no habia con que comparar. */}
+          {stats.previousYearTotal > 0 ? (
+            <Badge
+              variant="outline"
+              className={stats.percentChange > 0 ? 'text-red-500 border-red-500/30' : 'text-green-500 border-green-500/30'}
+            >
+              {stats.percentChange > 0 ? <TrendingUp className="h-3 w-3 mr-1" /> : <TrendingDown className="h-3 w-3 mr-1" />}
+              {stats.percentChange > 0 ? '+' : ''}{stats.percentChange.toFixed(1)}% {t.vsLastYear}
+            </Badge>
+          ) : (
+            <Badge variant="outline" className="text-muted-foreground">
+              {language === 'es' ? 'Primer año con datos' : 'First year with data'}
+            </Badge>
+          )}
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -321,7 +329,16 @@ export function YearOverYearComparison() {
           <div className="flex items-start gap-2">
             <Percent className="h-4 w-4 mt-0.5 text-muted-foreground" />
             <p className="text-sm">
-              {language === 'es' 
+              {/*
+                Sin gastos el año pasado no hay porcentaje que calcular. Antes salia "0.0%" y la
+                frase decia "has gastado 0.0% MENOS que el año pasado" justo debajo de un cambio
+                de +$12.406.851: el numero de al lado desmentia la frase.
+              */}
+              {stats.previousYearTotal <= 0
+                ? (language === 'es'
+                    ? 'No hay gastos del año pasado en este mismo período, así que todavía no hay con qué comparar.'
+                    : "There are no expenses from last year in this same period, so there's nothing to compare against yet.")
+                : language === 'es'
                 ? `Este año has gastado ${Math.abs(stats.percentChange).toFixed(1)}% ${stats.percentChange > 0 ? 'más' : 'menos'} que el año pasado en el mismo período.`
                 : `This year you've spent ${Math.abs(stats.percentChange).toFixed(1)}% ${stats.percentChange > 0 ? 'more' : 'less'} than last year in the same period.`
               }

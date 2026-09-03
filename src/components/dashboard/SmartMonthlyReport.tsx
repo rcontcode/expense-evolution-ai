@@ -107,17 +107,23 @@ export function SmartMonthlyReport() {
 
     // Achievements
     const achievements: { icon: typeof Trophy; text: string; type: 'success' | 'info' | 'warning' }[] = [];
-    if (savingsRate > 20) achievements.push({ icon: Trophy, text: l ? `¡Tasa de ahorro del ${savingsRate.toFixed(0)}%! Excelente.` : `${savingsRate.toFixed(0)}% savings rate! Excellent.`, type: 'success' });
-    if (totalExpCurrent < totalExpPrev && totalExpPrev > 0) achievements.push({ icon: TrendingDown, text: l ? `Redujiste gastos un ${((1 - totalExpCurrent / totalExpPrev) * 100).toFixed(0)}% vs mes anterior` : `Cut spending by ${((1 - totalExpCurrent / totalExpPrev) * 100).toFixed(0)}% vs last month`, type: 'success' });
+    // Un mes sin gastos registrados no es un logro: es un mes que recien empieza. Antes, el dia
+    // 3 del mes y con cero gastos, el reporte felicitaba con "¡Tasa de ahorro del 100%!" y
+    // "Redujiste gastos un 100%", y ponia el puntaje en 85 sobre 100.
+    const hayGastosEsteMes = totalExpCurrent > 0;
+    if (hayGastosEsteMes && savingsRate > 20) achievements.push({ icon: Trophy, text: l ? `¡Tasa de ahorro del ${savingsRate.toFixed(0)}%! Excelente.` : `${savingsRate.toFixed(0)}% savings rate! Excellent.`, type: 'success' });
+    if (hayGastosEsteMes && totalExpCurrent < totalExpPrev && totalExpPrev > 0) achievements.push({ icon: TrendingDown, text: l ? `Redujiste gastos un ${((1 - totalExpCurrent / totalExpPrev) * 100).toFixed(0)}% vs mes anterior` : `Cut spending by ${((1 - totalExpCurrent / totalExpPrev) * 100).toFixed(0)}% vs last month`, type: 'success' });
     if (totalIncCurrent > totalIncPrev && totalIncPrev > 0) achievements.push({ icon: TrendingUp, text: l ? `Ingresos subieron ${(((totalIncCurrent - totalIncPrev) / totalIncPrev) * 100).toFixed(0)}%` : `Income up ${(((totalIncCurrent - totalIncPrev) / totalIncPrev) * 100).toFixed(0)}%`, type: 'success' });
     if (totalExpCurrent > totalIncCurrent && totalIncCurrent > 0) achievements.push({ icon: AlertTriangle, text: l ? 'Gastas más de lo que ganas este mes' : 'Spending exceeds income this month', type: 'warning' });
 
     // Score (0-100)
     let score = 50;
-    if (savingsRate > 30) score += 20;
-    else if (savingsRate > 15) score += 10;
-    else if (savingsRate < 0) score -= 15;
-    if (totalExpCurrent < totalExpPrev) score += 15;
+    if (hayGastosEsteMes) {
+      if (savingsRate > 30) score += 20;
+      else if (savingsRate > 15) score += 10;
+      else if (savingsRate < 0) score -= 15;
+      if (totalExpCurrent < totalExpPrev) score += 15;
+    }
     if (totalIncCurrent > totalIncPrev) score += 10;
     if (netWorth > 0) score += 5;
     score = Math.max(0, Math.min(100, score));
