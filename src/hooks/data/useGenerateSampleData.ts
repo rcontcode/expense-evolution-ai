@@ -315,22 +315,22 @@ export function useGenerateSampleData() {
         // CRA deductible expenses
         { vendor: 'Microsoft 365', category: 'software', amount: 16.99, status: 'deductible', reimbursement_type: 'cra_deductible', clientIdx: null, projectIdx: null, daysAgo: 1 },
         { vendor: 'Bell Canada', category: 'utilities', amount: 145.00, status: 'deductible', reimbursement_type: 'cra_deductible', clientIdx: null, projectIdx: null, daysAgo: 15 },
-        { vendor: 'Restaurant ABC', category: 'meals_entertainment', amount: 87.50, status: 'classified', reimbursement_type: 'cra_deductible', clientIdx: 0, projectIdx: 0, daysAgo: 8 },
+        { vendor: 'Restaurant ABC', category: 'meals', amount: 87.50, status: 'classified', reimbursement_type: 'cra_deductible', clientIdx: 0, projectIdx: 0, daysAgo: 8 },
         { vendor: 'Google Ads', category: 'advertising', amount: 350.00, status: 'deductible', reimbursement_type: 'cra_deductible', clientIdx: null, projectIdx: null, daysAgo: 25 },
         { vendor: 'Accountant Services', category: 'professional_services', amount: 500.00, status: 'deductible', reimbursement_type: 'cra_deductible', clientIdx: null, projectIdx: null, daysAgo: 45 },
         // Pending expenses (need review)
         { vendor: 'Amazon', category: 'office_supplies', amount: 67.89, status: 'pending', reimbursement_type: 'pending_classification', clientIdx: null, projectIdx: null, daysAgo: 2 },
         { vendor: 'Gas Station', category: 'fuel', amount: 85.00, status: 'pending', reimbursement_type: 'pending_classification', clientIdx: null, projectIdx: null, daysAgo: 4 },
-        { vendor: 'Coffee Shop Meeting', category: 'meals_entertainment', amount: 24.50, status: 'pending', reimbursement_type: 'pending_classification', clientIdx: 0, projectIdx: null, daysAgo: 1 },
+        { vendor: 'Coffee Shop Meeting', category: 'meals', amount: 24.50, status: 'pending', reimbursement_type: 'pending_classification', clientIdx: 0, projectIdx: null, daysAgo: 1 },
         // Personal expenses
-        { vendor: 'Personal Lunch', category: 'meals_entertainment', amount: 18.99, status: 'non_deductible', reimbursement_type: 'personal', clientIdx: null, projectIdx: null, daysAgo: 7 },
+        { vendor: 'Personal Lunch', category: 'meals', amount: 18.99, status: 'non_deductible', reimbursement_type: 'personal', clientIdx: null, projectIdx: null, daysAgo: 7 },
         { vendor: 'Gym Membership', category: 'other', amount: 49.99, status: 'non_deductible', reimbursement_type: 'personal', clientIdx: null, projectIdx: null, daysAgo: 30 },
         // More varied expenses for charts
         { vendor: 'AWS Services', category: 'software', amount: 234.56, status: 'deductible', reimbursement_type: 'cra_deductible', clientIdx: 0, projectIdx: 1, daysAgo: 35 },
         { vendor: 'Home Depot', category: 'materials', amount: 189.00, status: 'classified', reimbursement_type: 'client_reimbursable', clientIdx: 1, projectIdx: 2, daysAgo: 40 },
-        { vendor: 'FedEx Shipping', category: 'shipping', amount: 45.00, status: 'deductible', reimbursement_type: 'cra_deductible', clientIdx: 0, projectIdx: 0, daysAgo: 22 },
-        { vendor: 'Insurance Premium', category: 'insurance', amount: 325.00, status: 'deductible', reimbursement_type: 'cra_deductible', clientIdx: null, projectIdx: null, daysAgo: 60 },
-        { vendor: 'Training Course', category: 'education', amount: 199.00, status: 'classified', reimbursement_type: 'cra_deductible', clientIdx: null, projectIdx: null, daysAgo: 50 },
+        { vendor: 'FedEx Shipping', category: 'other', amount: 45.00, status: 'deductible', reimbursement_type: 'cra_deductible', clientIdx: 0, projectIdx: 0, daysAgo: 22 },
+        { vendor: 'Insurance Premium', category: 'insurance_business', amount: 325.00, status: 'deductible', reimbursement_type: 'cra_deductible', clientIdx: null, projectIdx: null, daysAgo: 60 },
+        { vendor: 'Training Course', category: 'education_training', amount: 199.00, status: 'classified', reimbursement_type: 'cra_deductible', clientIdx: null, projectIdx: null, daysAgo: 50 },
       ];
 
       const expenses = expenseData.map((e, i) => {
@@ -676,7 +676,7 @@ export function useGenerateSampleData() {
                 notes: 'Business class for flights over 4 hours'
               },
               {
-                category: 'meals_entertainment',
+                category: 'meals',
                 reimbursable: true,
                 percentage: 100,
                 requires_approval: false,
@@ -759,7 +759,7 @@ export function useGenerateSampleData() {
                 notes: 'Only for approved photo shoots and events'
               },
               {
-                category: 'meals_entertainment',
+                category: 'meals',
                 reimbursable: false,
                 notes: 'Not covered except during client events'
               }
@@ -1314,7 +1314,7 @@ export function useGenerateSampleDataBySection() {
             { vendor: 'Best Buy', category: 'equipment', amount: 1299.99, status: 'deductible' as const, daysAgo: 30 },
             { vendor: 'Microsoft 365', category: 'software', amount: 16.99, status: 'deductible' as const, daysAgo: 1 },
             { vendor: 'Bell Canada', category: 'utilities', amount: 145.00, status: 'deductible' as const, daysAgo: 15 },
-            { vendor: 'Restaurant ABC', category: 'meals_entertainment', amount: 87.50, status: 'classified' as const, daysAgo: 8 },
+            { vendor: 'Restaurant ABC', category: 'meals', amount: 87.50, status: 'classified' as const, daysAgo: 8 },
             { vendor: 'Amazon', category: 'office_supplies', amount: 67.89, status: 'pending' as const, daysAgo: 2 },
           ];
           
