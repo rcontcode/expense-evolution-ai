@@ -113,16 +113,32 @@ export function useSubscriptionDetector(expenses: ExpenseWithRelations[], bankTr
 
       Object.values(grouped).forEach((group) => {
         if (group.expenses.length < 2) return;
-        const avgAmount = group.amounts.reduce((a, b) => a + b, 0) / group.amounts.length;
-        const amountVariance = group.amounts.every((amt) => Math.abs(amt - avgAmount) / avgAmount <= 0.1);
+
+        // Dos cobros del mismo comercio el mismo dia son UN pago, no dos. Sin juntarlos, un
+        // colegio que cobra la mensualidad de dos hijos el mismo dia daba intervalos de 0 y 30
+        // dias alternados: el promedio quedaba en 15 y no caia en ninguna frecuencia conocida,
+        // asi que el colegio no se detectaba nunca desde los gastos propios.
+        const porDia = new Map<string, number>();
+        group.dates.forEach((fecha, i) => {
+          const dia = format(fecha, 'yyyy-MM-dd');
+          porDia.set(dia, (porDia.get(dia) || 0) + group.amounts[i]);
+        });
+        const diasOrdenados = Array.from(porDia.keys()).sort();
+        const fechasDePago = diasOrdenados.map(d => parseISO(d));
+        const montosDePago = diasOrdenados.map(d => porDia.get(d) as number);
+
+        if (fechasDePago.length < 2) return;
+
+        const avgAmount = montosDePago.reduce((a, b) => a + b, 0) / montosDePago.length;
+        const amountVariance = montosDePago.every((amt) => Math.abs(amt - avgAmount) / avgAmount <= 0.1);
         if (!amountVariance) return;
-        const { frequency, confidence } = calculateFrequency(group.dates);
+        const { frequency, confidence } = calculateFrequency(fechasDePago);
         if (!frequency || confidence < 50) return;
-        const totalSpent = group.amounts.reduce((a, b) => a + b, 0);
-        const sortedDates = group.dates.sort((a, b) => b.getTime() - a.getTime());
+        const totalSpent = montosDePago.reduce((a, b) => a + b, 0);
+        const sortedDates = fechasDePago.sort((a, b) => b.getTime() - a.getTime());
         detected.push({
           vendor: group.vendor, averageAmount: avgAmount, frequency,
-          occurrences: group.expenses.length, lastDate: format(sortedDates[0], 'yyyy-MM-dd'),
+          occurrences: montosDePago.length, lastDate: format(sortedDates[0], 'yyyy-MM-dd'),
           totalSpent, annualizedCost: calculateAnnualizedCost(avgAmount, frequency),
           category: group.expenses[0]?.category || null, expenses: group.expenses,
           confidence, source: 'expenses',

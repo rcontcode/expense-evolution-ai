@@ -65,8 +65,15 @@ export const DashboardCharts = memo(({
             {isLoading ? (
               <Skeleton className="h-[300px] w-full" />
             ) : categoryBreakdown.length === 0 ? (
-              <div className="h-[300px] flex items-center justify-center text-muted-foreground">
-                {t('taxAnalysis.noDataAvailable')}
+              <div className="h-[300px] flex flex-col items-center justify-center text-center text-muted-foreground px-6">
+                <p className="text-sm font-medium">
+                  {language === 'es' ? 'Aún no hay gastos este mes' : 'No expenses yet this month'}
+                </p>
+                <p className="text-xs mt-1 max-w-[260px]">
+                  {language === 'es'
+                    ? 'Este gráfico se arma con los gastos del mes en curso. Los meses anteriores siguen en la tendencia de abajo.'
+                    : 'This chart is built from the current month. Previous months are still in the trend below.'}
+                </p>
               </div>
             ) : (
               <ChartContainer config={categoryChartConfig} className="h-[300px] w-full">
@@ -107,8 +114,15 @@ export const DashboardCharts = memo(({
             {isLoading ? (
               <Skeleton className="h-[300px] w-full" />
             ) : !clientBreakdown || clientBreakdown.length === 0 ? (
-              <div className="h-[300px] flex items-center justify-center text-muted-foreground">
-                {t('taxAnalysis.noDataAvailable')}
+              <div className="h-[300px] flex flex-col items-center justify-center text-center text-muted-foreground px-6">
+                <p className="text-sm font-medium">
+                  {language === 'es' ? 'Aún no hay gastos este mes' : 'No expenses yet this month'}
+                </p>
+                <p className="text-xs mt-1 max-w-[260px]">
+                  {language === 'es'
+                    ? 'Este gráfico se arma con los gastos del mes en curso. Los meses anteriores siguen en la tendencia de abajo.'
+                    : 'This chart is built from the current month. Previous months are still in the trend below.'}
+                </p>
               </div>
             ) : (
               <ChartContainer config={clientChartConfig} className="h-[300px] w-full">
