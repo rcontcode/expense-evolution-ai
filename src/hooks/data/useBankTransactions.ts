@@ -90,14 +90,16 @@ export function useBankTransactionsWithMatches() {
 
       if (txError) throw txError;
 
-      // Fetch expenses for matching (exclude deleted, limit for performance)
+      // Gastos contra los que se busca calce. Son seis columnas, asi que el tope
+      // puede ser holgado: con 500 no se encontraba el calce de un extracto
+      // antiguo, porque los gastos de esa fecha quedaban fuera del corte.
       const { data: expenses, error: expError } = await supabase
         .from('expenses')
         .select('id, date, amount, vendor, description, category')
         .eq('user_id', user!.id)
         .is('deleted_at', null)
         .order('date', { ascending: false })
-        .limit(500);
+        .limit(2000);
 
       if (expError) throw expError;
 

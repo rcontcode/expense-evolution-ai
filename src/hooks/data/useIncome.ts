@@ -44,7 +44,10 @@ export function useIncome(filters?: IncomeFilters) {
         .eq('user_id', user!.id)
         .is('deleted_at', null)
         .order('date', { ascending: false })
-        .limit(500);
+        // El resumen anual de mas abajo trae hasta 2000 filas. Con 500 aqui, un
+        // usuario con muchos ingresos veia dos totales distintos para los mismos
+        // datos: el de la lista se quedaba corto y el del resumen no.
+        .limit(2000);
 
       if (filters?.year) {
         const startDate = `${filters.year}-01-01`;

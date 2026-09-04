@@ -1972,7 +1972,7 @@ export const translations = {
       totalReimbursable: 'Total Reimbursable',
       nonDeductible: 'Non-Deductible',
       fiscalAnalysis: 'Tax Analysis by Category',
-      basedOnCRA: 'Based on CRA (Canada Revenue Agency) rules',
+      basedOnCRA: 'Based on the tax rules of your country (CRA/SII)',
       deductionRate: 'Deduction rate',
       importantInfo: 'Important Information',
       estimatedDeductions: '• Deductions shown are estimated according to general CRA rules for contractors.',

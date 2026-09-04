@@ -209,8 +209,15 @@ export default function MobileCapture() {
         let lastId: string | null = null;
         let isFirst = true;
 
+        // Lo que la lectura no alcanzo a completar no se puede guardar. Antes se
+        // descartaba en silencio: de tres gastos leidos se guardaba uno, salia
+        // el confeti y nadie se enteraba de los otros dos.
+        const omitidos: string[] = [];
         for (const exp of result.expenses) {
-          if (!exp.vendor || !exp.amount) continue;
+          if (!exp.vendor || !exp.amount) {
+            omitidos.push(exp.vendor || exp.description || (language === 'es' ? 'sin nombre' : 'unnamed'));
+            continue;
+          }
 
           // Create expense
           const docId = isFirst ? savedDocumentId : null;
@@ -254,7 +261,7 @@ export default function MobileCapture() {
         }
         
         recordCapture(savedCount);
-        triggerSuccessConfetti();
+        if (savedCount > 0) triggerSuccessConfetti();
         
         // Show quick edit panel
         if (lastExpense) {
@@ -263,11 +270,21 @@ export default function MobileCapture() {
           setShowQuickEdit(true);
         }
 
-        toast.success(
-          language === 'es'
-            ? `✅ ${savedCount} ${plural(savedCount, 'gasto guardado', 'gastos guardados')} con documento`
-            : `✅ ${savedCount} ${plural(savedCount, 'expense', 'expenses')} saved with document`
-        );
+        if (savedCount > 0) {
+          toast.success(
+            language === 'es'
+              ? `✅ ${savedCount} ${plural(savedCount, 'gasto guardado', 'gastos guardados')} con documento`
+              : `✅ ${savedCount} ${plural(savedCount, 'expense', 'expenses')} saved with document`
+          );
+        }
+        if (omitidos.length > 0) {
+          toast.warning(
+            language === 'es'
+              ? `Quedaron ${omitidos.length} sin guardar porque no se pudo leer el proveedor o el monto: ${omitidos.join(', ')}. Agrégalos a mano desde Gastos.`
+              : `${omitidos.length} were left out because the vendor or amount could not be read: ${omitidos.join(', ')}. Add them by hand from Expenses.`,
+            { duration: 8000 },
+          );
+        }
 
         // Show recurring bill confirmation dialog after save
         if (pendingBillCandidate) {
