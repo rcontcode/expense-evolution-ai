@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { getCategoryLabel } from '@/lib/constants/expense-categories';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
+import { plural } from '@/lib/plural';
 
 interface ExpenseSummaryProps {
   expenses: ExtractedExpenseData[];
@@ -34,7 +35,8 @@ const CATEGORY_ICONS: Record<string, React.ElementType> = {
 };
 
 // Savings tips based on expense patterns
-const getSavingsTips = (expenses: ExtractedExpenseData[], totals: any): string[] => {
+// Recibe el formateador porque esto no es un componente y no puede llamar al hook.
+const getSavingsTips = (expenses: ExtractedExpenseData[], totals: any, formatCurrency: (n: number) => string): string[] => {
   const tips: string[] = [];
   
   const mealExpenses = expenses.filter(e => e.category === 'meals');
@@ -65,7 +67,7 @@ const getSavingsTips = (expenses: ExtractedExpenseData[], totals: any): string[]
   }
   
   if (totals.hstClaimable > 10) {
-    tips.push(`🧾 No olvides reclamar el ITC de $${totals.hstClaimable.toFixed(2)} en tu próxima declaración de HST/GST.`);
+    tips.push(`🧾 No olvides reclamar el ITC de ${formatCurrency(totals.hstClaimable)} en tu próxima declaración de HST/GST.`);
   }
   
   if (totals.personal > totals.total * 0.5 && totals.total > 100) {
@@ -122,10 +124,10 @@ export function ExpenseSummary({ expenses, hasClients = false, clientCount = 0 }
     hstClaimable: 0,
   });
 
-  const savingsTips = getSavingsTips(expenses, totals);
-  const hasReimbursableExpenses = expenses.some(e => e.typically_reimbursable);
-
   const { formatCurrency } = useFormatCurrency();
+
+  const savingsTips = getSavingsTips(expenses, totals, formatCurrency);
+  const hasReimbursableExpenses = expenses.some(e => e.typically_reimbursable);
 
   return (
     <Card className="bg-muted/30 border-dashed">
@@ -151,7 +153,7 @@ export function ExpenseSummary({ expenses, hasClients = false, clientCount = 0 }
           <Alert className="border-green-200 bg-green-50 text-green-800">
             <Building2 className="h-4 w-4" />
             <AlertDescription className="text-xs">
-              <strong>✓ {clientCount} cliente(s) configurado(s):</strong> Los gastos reembolsables se pueden asociar a tus clientes para generar reportes de facturación.
+              <strong>✓ {clientCount} {plural(clientCount, 'cliente configurado', 'clientes configurados')}:</strong> Los gastos reembolsables se pueden asociar a tus clientes para generar reportes de facturación.
             </AlertDescription>
           </Alert>
         )}

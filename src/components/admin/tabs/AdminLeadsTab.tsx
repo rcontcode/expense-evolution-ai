@@ -14,6 +14,7 @@ import { motion } from 'framer-motion';
 import { calculateLeadScore, getLeadPriority, getPriorityColors } from '@/hooks/admin/useLeadScoring';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { plural } from '@/lib/plural';
 
 interface Props {
   language: 'es' | 'en';
@@ -119,7 +120,7 @@ export const AdminLeadsTab = ({ language, sourceFilter, onClearFilter }: Props) 
   const handleBulkDelete = () => {
     const count = selectedIds.size;
     if (count === 0) return;
-    if (!confirm(isEs ? `¿Eliminar ${count} lead(s) seleccionado(s)? Esta acción no se puede deshacer.` : `Delete ${count} selected lead(s)? This cannot be undone.`)) return;
+    if (!confirm(isEs ? `¿Eliminar ${count} ${plural(count, 'lead seleccionado', 'leads seleccionados')}? Esta acción no se puede deshacer.` : `Delete ${count} selected ${plural(count, 'lead', 'leads')}? This cannot be undone.`)) return;
     bulkDelete.mutate(Array.from(selectedIds));
   };
 
@@ -205,7 +206,7 @@ export const AdminLeadsTab = ({ language, sourceFilter, onClearFilter }: Props) 
           className="flex items-center gap-3 p-3 rounded-lg bg-destructive/10 border border-destructive/20"
         >
           <span className="text-sm font-medium">
-            {selectedIds.size} {isEs ? 'seleccionado(s)' : 'selected'}
+            {selectedIds.size} {isEs ? plural(selectedIds.size, 'seleccionado', 'seleccionados') : 'selected'}
           </span>
           <Button
             size="sm"

@@ -23,6 +23,7 @@
  import { cn } from '@/lib/utils';
  import { toast } from 'sonner';
  import { Link } from 'react-router-dom';
+import { plural } from '@/lib/plural';
  
  interface QuickAction {
    id: string;
@@ -154,8 +155,8 @@
        icon: AlertTriangle,
        title: { es: 'Revisar excedidos', en: 'Review exceeded' },
        description: { 
-         es: `${exceededBudgets.length} presupuesto(s) excedido(s)`,
-         en: `${exceededBudgets.length} budget(s) exceeded`
+         es: `${exceededBudgets.length} ${plural(exceededBudgets.length, 'presupuesto excedido', 'presupuestos excedidos')}`,
+         en: `${exceededBudgets.length} ${plural(exceededBudgets.length, 'budget', 'budgets')} exceeded`
        },
        color: 'from-red-500 to-rose-500',
        action: () => document.querySelector('[data-section="budget-list"]')?.scrollIntoView({ behavior: 'smooth' }),

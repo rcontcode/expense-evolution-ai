@@ -1,5 +1,6 @@
 import { useMemo, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 
 interface FinancialData {
   monthlyExpenses: number;
@@ -37,6 +38,7 @@ export function useSmartContext(
   language: 'es' | 'en'
 ): SmartContextResult {
   const location = useLocation();
+  const { formatCurrency } = useFormatCurrency();
   const isSpanish = language === 'es';
 
   // Generate insights based on financial data
@@ -106,15 +108,15 @@ export function useSmartContext(
       insights.push({
         type: 'opportunity',
         message: isSpanish
-          ? `Tienes $${financialData.deductibleTotal?.toLocaleString()} en gastos deducibles.`
-          : `You have $${financialData.deductibleTotal?.toLocaleString()} in deductible expenses.`,
+          ? `Tienes ${formatCurrency(financialData.deductibleTotal || 0)} en gastos deducibles.`
+          : `You have ${formatCurrency(financialData.deductibleTotal || 0)} in deductible expenses.`,
         priority: 7,
         actionCommand: isSpanish ? 'optimizador de impuestos' : 'tax optimizer',
       });
     }
 
     return insights.sort((a, b) => b.priority - a.priority);
-  }, [financialData, isSpanish]);
+  }, [financialData, isSpanish, formatCurrency]);
 
   // Time-based greeting
   const getTimeBasedGreeting = useCallback(() => {

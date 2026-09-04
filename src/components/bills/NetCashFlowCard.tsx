@@ -10,7 +10,7 @@ import { useIncomeSummary } from '@/hooks/data/useIncome';
 import { useDashboardStats } from '@/hooks/data/useDashboardStats';
 import { getMonthlyEquivalent, BILL_CATEGORY_CONFIG, type BillCategory, BILL_PRIORITIES } from '@/lib/constants/bill-categories';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceLine, Bar, ComposedChart } from 'recharts';
-import { addMonths, format, getDaysInMonth, getDate, differenceInDays, parseISO, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
+import { addMonths, format, getDaysInMonth, getDate, differenceInDays, parseISO, startOfMonth, endOfMonth, isWithinInterval, differenceInCalendarDays} from 'date-fns';
 import { es } from 'date-fns/locale';
 import {
   ArrowDownCircle, ArrowUpCircle, PiggyBank, TrendingDown, Scale,
@@ -105,9 +105,9 @@ export function NetCashFlowCard({ selectedMonth }: NetCashFlowCardProps) {
 
     // Next payment
     const nextBill = activeBills
-      .filter(b => differenceInDays(parseISO(b.next_due_date), now) >= 0)
+      .filter(b => differenceInCalendarDays(parseISO(b.next_due_date), now) >= 0)
       .sort((a, b) => a.next_due_date.localeCompare(b.next_due_date))[0] || null;
-    const daysToNext = nextBill ? differenceInDays(parseISO(nextBill.next_due_date), now) : null;
+    const daysToNext = nextBill ? differenceInCalendarDays(parseISO(nextBill.next_due_date), now) : null;
 
     // 6-month projection with variable expenses included
     const projection = Array.from({ length: 6 }, (_, i) => {

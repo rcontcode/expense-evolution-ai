@@ -12,6 +12,7 @@ import { FileText, Calendar, Building2, DollarSign, Loader2, ChevronLeft, Chevro
 import { FullScreenDialog } from '@/components/mobile/FullScreenDialog';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 
 interface ContractDetailDialogProps {
   open: boolean;
@@ -246,6 +247,7 @@ function ContractTermsPanel({
   onContractUpdate,
   isMobile,
 }: TermsPanelProps) {
+  const { formatCurrency } = useFormatCurrency();
   return (
     <ScrollArea className={isMobile ? '' : 'h-full'}>
       <div className="space-y-4 pr-2 lg:pr-4">
@@ -265,7 +267,7 @@ function ContractTermsPanel({
                 <DollarSign className="h-4 w-4" />
                 {language === 'es' ? 'Valor' : 'Value'}
               </div>
-              <p className="font-medium text-sm">${contract.value.toLocaleString()}</p>
+              <p className="font-medium text-sm">{formatCurrency(contract.value, { decimals: 0 })}</p>
             </div>
           )}
           {contract.start_date && (

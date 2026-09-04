@@ -12,9 +12,11 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { toast } from 'sonner';
 import { EcosystemErrorFallback } from './EcosystemErrorFallback';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 
 export const EcosystemMonthlyReport = memo(() => {
   const { language } = useLanguage();
+  const { formatCurrency, formatAxis } = useFormatCurrency();
   const { hasBundleAccess, isEnabled, isLoading: flagsLoading } = useFeatureFlags();
   const { data: dashData, isLoading, isError, refetch } = useEcosystemData();
   const isEs = language === 'es';
@@ -60,7 +62,7 @@ export const EcosystemMonthlyReport = memo(() => {
       doc.setTextColor(30, 30, 30);
       doc.text(isEs ? 'Resumen Financiero' : 'Financial Summary', 20, 48);
 
-      const fmtCurrency = (n: number) => `$${n.toLocaleString(isEs ? 'es-ES' : 'en-US', { minimumFractionDigits: 2 })}`;
+      const fmtCurrency = (n: number) => formatCurrency(n);
 
       autoTable(doc, {
         startY: 52,
@@ -137,11 +139,11 @@ export const EcosystemMonthlyReport = memo(() => {
           <p className="text-[11px] text-muted-foreground capitalize">{report.month}</p>
           <div className="grid grid-cols-4 gap-1.5">
             <div className="p-1.5 rounded-lg bg-primary/5 text-center">
-              <p className="text-[10px] font-bold text-foreground">${(report.totalIncome / 1000).toFixed(1)}k</p>
+              <p className="text-[10px] font-bold text-foreground">{formatAxis(report.totalIncome)}</p>
               <p className="text-[8px] text-muted-foreground">{isEs ? 'Ingr.' : 'Inc.'}</p>
             </div>
             <div className="p-1.5 rounded-lg bg-destructive/5 text-center">
-              <p className="text-[10px] font-bold text-foreground">${(report.totalExpenses / 1000).toFixed(1)}k</p>
+              <p className="text-[10px] font-bold text-foreground">{formatAxis(report.totalExpenses)}</p>
               <p className="text-[8px] text-muted-foreground">{isEs ? 'Gast.' : 'Exp.'}</p>
             </div>
             <div className="p-1.5 rounded-lg bg-accent/5 text-center">

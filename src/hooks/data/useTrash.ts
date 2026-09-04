@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useInvalidateRelated } from './useInvalidateRelated';
 import { insertAuditLog } from './useAuditLog';
 import { useLocalizedToast } from '@/hooks/utils/useLocalizedToast';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 
 export type TrashItemType = 'expense' | 'income' | 'client' | 'project' | 'contract' | 'mileage';
 
@@ -12,6 +13,7 @@ export interface TrashItem {
 }
 
 export function useTrashItems() {
+  const { formatCurrency } = useFormatCurrency();
   const { user } = useAuth();
 
   return useQuery({
@@ -21,11 +23,11 @@ export function useTrashItems() {
 
       const { data: expenses } = await supabase.from('expenses').select('id, vendor, amount, date, deleted_at')
         .eq('user_id', user!.id).not('deleted_at', 'is', null).order('deleted_at', { ascending: false });
-      expenses?.forEach(e => items.push({ id: e.id, type: 'expense', name: e.vendor || 'Sin vendedor', details: `$${e.amount} — ${e.date}`, deleted_at: e.deleted_at! }));
+      expenses?.forEach(e => items.push({ id: e.id, type: 'expense', name: e.vendor || 'Sin vendedor', details: `${formatCurrency(Number(e.amount))} — ${e.date}`, deleted_at: e.deleted_at! }));
 
       const { data: incomeData } = await supabase.from('income').select('id, source, amount, date, deleted_at')
         .eq('user_id', user!.id).not('deleted_at', 'is', null).order('deleted_at', { ascending: false });
-      incomeData?.forEach(i => items.push({ id: i.id, type: 'income', name: i.source || 'Sin fuente', details: `$${i.amount} — ${i.date}`, deleted_at: i.deleted_at! }));
+      incomeData?.forEach(i => items.push({ id: i.id, type: 'income', name: i.source || 'Sin fuente', details: `${formatCurrency(Number(i.amount))} — ${i.date}`, deleted_at: i.deleted_at! }));
 
       const { data: clients } = await supabase.from('clients').select('id, name, deleted_at')
         .eq('user_id', user!.id).not('deleted_at', 'is', null).order('deleted_at', { ascending: false });

@@ -360,7 +360,7 @@ export function FIRECalculatorCard() {
                   />
                   <YAxis 
                     tick={{ fontSize: 12 }}
-                    tickFormatter={(value) => `$${(value / 1000000).toFixed(1)}M`}
+                    tickFormatter={(value) => `${formatCurrency((value / 1000000))}M`}
                   />
                   <Tooltip 
                     content={({ active, payload }) => {

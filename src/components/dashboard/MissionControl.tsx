@@ -10,6 +10,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useMissionControl, CategoryMetrics, CategoryStatus, FeatureRequirement, FeatureReadiness, NextAction, ProgressSnapshot, InactivityNudge } from '@/hooks/utils/useMissionControl';
 import { ChevronDown, ChevronRight, ArrowRight, AlertTriangle, AlertCircle, CheckCircle2, Rocket, Fuel, Zap, Lock, CircleDot, Info, Clock, TrendingUp, Flame } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 
 interface MissionControlProps {
   compact?: boolean;
@@ -302,6 +303,7 @@ function FeatureReadinessCard({ feature, language }: { feature: FeatureRequireme
 
 export function MissionControl({ compact = false, onExpandedChange }: MissionControlProps) {
   const { language } = useLanguage();
+  const { formatCurrency } = useFormatCurrency();
   const l = language === 'es';
   const data = useMissionControl();
   const [panelOpen, setPanelOpen] = useState(() => {
@@ -626,7 +628,7 @@ export function MissionControl({ compact = false, onExpandedChange }: MissionCon
                     {data.unapprovedInUse.slice(0, 5).map(item => (
                       <div key={item.id} className="text-xs text-muted-foreground flex items-center justify-between">
                         <span>{item.vendor}</span>
-                        <span className="font-mono">${item.amount.toFixed(2)}</span>
+                        <span className="font-mono">{formatCurrency(item.amount)}</span>
                       </div>
                     ))}
                     {data.unapprovedInUse.length > 5 && (

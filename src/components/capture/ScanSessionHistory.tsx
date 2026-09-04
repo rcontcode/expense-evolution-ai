@@ -21,6 +21,7 @@ import {
 import { format, formatDistanceToNow, parseISO } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import {
   AreaChart,
   Area,
@@ -65,6 +66,7 @@ function ChangeIndicator({ value, label }: ChangeIndicatorProps) {
 
 export function ScanSessionHistory({ className }: ScanSessionHistoryProps) {
   const { language, t } = useLanguage();
+  const { formatCurrency } = useFormatCurrency();
   const { sessions, dailyStats, weeklyComparison, isLoading } = useScanSessions();
   const [open, setOpen] = useState(false);
 
@@ -133,7 +135,7 @@ export function ScanSessionHistory({ className }: ScanSessionHistoryProps) {
                     <div className="flex justify-between items-center">
                       <span className="text-xs">{t('scanHistory.amount')}</span>
                       <div className="flex items-center gap-2">
-                        <span className="font-semibold">${weeklyComparison.currentWeek.amount.toFixed(0)}</span>
+                        <span className="font-semibold">{formatCurrency(weeklyComparison.currentWeek.amount, { decimals: 0 })}</span>
                         <ChangeIndicator value={weeklyComparison.changes.amount} label="amount" />
                       </div>
                     </div>
@@ -154,7 +156,7 @@ export function ScanSessionHistory({ className }: ScanSessionHistoryProps) {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-xs text-muted-foreground">{t('scanHistory.amount')}</span>
-                      <span className="text-muted-foreground">${weeklyComparison.previousWeek.amount.toFixed(0)}</span>
+                      <span className="text-muted-foreground">{formatCurrency(weeklyComparison.previousWeek.amount, { decimals: 0 })}</span>
                     </div>
                   </div>
                 </div>
@@ -185,7 +187,7 @@ export function ScanSessionHistory({ className }: ScanSessionHistoryProps) {
             <Card>
               <CardContent className="p-3 text-center">
                 <TrendingUp className="h-5 w-5 mx-auto text-warning mb-1" />
-                <p className="text-xl font-bold">${totalAmount.toFixed(0)}</p>
+                <p className="text-xl font-bold">{formatCurrency(totalAmount, { decimals: 0 })}</p>
                 <p className="text-xs text-muted-foreground">
                   {t('scanHistory.totalAmount')}
                 </p>
@@ -315,7 +317,7 @@ export function ScanSessionHistory({ className }: ScanSessionHistoryProps) {
                             )}
                             {session.total_amount > 0 && (
                               <Badge variant="outline" className="text-xs">
-                                ${Number(session.total_amount).toFixed(0)}
+                                {formatCurrency(Number(session.total_amount), { decimals: 0 })}
                               </Badge>
                             )}
                             {!session.ended_at && (

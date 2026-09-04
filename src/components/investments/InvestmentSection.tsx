@@ -22,6 +22,7 @@ import { ProgressCharts } from './ProgressCharts';
 import { AchievementBadges } from './AchievementBadges';
 import { MissionsCard } from './MissionsCard';
 import { RewardsShop } from './RewardsShop';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -35,6 +36,7 @@ import {
 
 export function InvestmentSection() {
   const { t, language } = useLanguage();
+  const { formatCurrency } = useFormatCurrency();
   const { data: goals, isLoading: goalsLoading } = useInvestmentGoals();
   const { data: savingsGoals } = useSavingsGoals();
   const { data: userLevel } = useUserLevel();
@@ -256,8 +258,8 @@ export function InvestmentSection() {
                         </div>
                         <Progress value={Math.min(progress, 100)} className="h-2" />
                         <div className="flex justify-between text-sm">
-                          <span>${goal.current_amount?.toLocaleString()}</span>
-                          <span className="text-muted-foreground">/ ${goal.target_amount.toLocaleString()}</span>
+                          <span>{formatCurrency(goal.current_amount ?? 0, { decimals: 0 })}</span>
+                          <span className="text-muted-foreground">/ {formatCurrency(goal.target_amount, { decimals: 0 })}</span>
                         </div>
                       </div>
 
@@ -265,7 +267,7 @@ export function InvestmentSection() {
                         <div className="mt-3 p-2 bg-muted/50 rounded-md">
                           <div className="flex items-center gap-2 text-sm">
                             <DollarSign className="h-4 w-4 text-green-500" />
-                            <span>{t('investments.monthlyTarget')}: ${goal.monthly_target.toLocaleString()}/mes</span>
+                            <span>{t('investments.monthlyTarget')}: {formatCurrency(goal.monthly_target, { decimals: 0 })}/mes</span>
                           </div>
                         </div>
                       )}

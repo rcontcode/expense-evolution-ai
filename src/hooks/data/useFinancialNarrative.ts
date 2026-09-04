@@ -7,6 +7,8 @@ import { useIncome } from './useIncome';
 import { useRecurringBills } from './useRecurringBills';
 import { useBankTransactions, type BankTransaction } from './useBankTransactions';
 import { useDashboardStats } from './useDashboardStats';
+import { useRecMode } from '@/hooks/useRecMode';
+import { enmascararClientes } from '@/lib/rec/enmascarar-identidad';
 
 export interface IncomeStream {
   source: string;
@@ -52,6 +54,7 @@ function detectDayOfMonth(dates: string[]): number | undefined {
 
 export function useFinancialNarrative(months: number = 3): FinancialNarrative {
   const { user } = useAuth();
+  const { active: grabando } = useRecMode();
   const { data: profile, isLoading: profileLoading } = useProfile();
   const { data: allIncome, isLoading: incomeLoading } = useIncome();
   const { data: bills, isLoading: billsLoading } = useRecurringBills();
@@ -59,7 +62,7 @@ export function useFinancialNarrative(months: number = 3): FinancialNarrative {
   const { data: stats, isLoading: statsLoading } = useDashboardStats();
 
   const { data: docCounts, isLoading: docsLoading } = useQuery({
-    queryKey: ['financial-narrative-docs', user?.id],
+    queryKey: ['financial-narrative-docs', user?.id, grabando],
     queryFn: async () => {
       const [receiptsRes, contractsRes, sessionsRes, clientsRes] = await Promise.all([
         supabase.from('documents').select('id', { count: 'exact', head: true }).eq('user_id', user!.id),
@@ -72,7 +75,8 @@ export function useFinancialNarrative(months: number = 3): FinancialNarrative {
         contracts: contractsRes.count || 0,
         bankSessions: sessionsRes.count || 0,
         lastImport: sessionsRes.data?.[0]?.imported_at || undefined,
-        clients: (clientsRes.data || []) as { id: string; name: string }[],
+        // Al grabar, el nombre real del cliente no puede salir en pantalla.
+        clients: (enmascararClientes(clientsRes.data || [], grabando) || []) as { id: string; name: string }[],
       };
     },
     enabled: !!user,
@@ -89,8 +93,11 @@ export function useFinancialNarrative(months: number = 3): FinancialNarrative {
     const now = new Date();
     const incomeRecords = allIncome || [];
 
-    // Use parameterized months for filtering
-    const periodStart = new Date(now.getFullYear(), now.getMonth() - months, 1);
+    // "Ultimos 3 meses" son julio, agosto y septiembre: el mes en curso y los dos anteriores.
+    // Antes se partia en el primero del mes de hace 3, o sea junio, y se metian CUATRO meses de
+    // datos en una division por tres. Con dos sueldos de $3.830.000 al mes, el tablero mostraba
+    // "$3.830.000" arriba y "$5.106.667/mes" en el bloque de al lado, en la misma pantalla.
+    const periodStart = new Date(now.getFullYear(), now.getMonth() - (months - 1), 1);
     const recentIncome = months === 0
       ? incomeRecords // "All" mode
       : incomeRecords.filter(i => new Date(i.date) >= periodStart);

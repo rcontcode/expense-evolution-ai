@@ -66,13 +66,23 @@ export function HealthGauge({ score, label, savingsRate, pace }: HealthGaugeProp
         </div>
       </div>
       <p className={cn("text-sm font-semibold", getColor(score))}>{label}</p>
+      {/*
+        El texto explica el porque, no solo el numero. Antes dependia unicamente del puntaje y
+        siempre culpaba al gasto: con el mes recien empezado y CERO gastos registrados, la misma
+        pantalla mostraba "Gastado $0", "Ahorro 100%" y debajo "Atencion: gastos superando el
+        ritmo ideal". Cuando no hay ritmo que medir (`pace` en 0), se dice eso.
+      */}
       <p className="text-[10px] text-muted-foreground text-center max-w-[180px]">
-        {score >= 80 
+        {score >= 80
           ? (l ? "Tu salud financiera es excelente. ¡Sigue así!" : "Your financial health is excellent. Keep it up!")
-          : score >= 60 
+          : pace === 0
+          ? (l ? "Todavía no hay gastos este mes: el puntaje sube cuando empieces a registrarlos." : "No expenses yet this month: the score rises once you start recording them.")
+          : score >= 60
           ? (l ? "Buen control. Revisa los gastos para mejorar." : "Good control. Review spending to improve.")
-          : score >= 40 
+          : pace > 100
           ? (l ? "Atención: gastos superando el ritmo ideal." : "Attention: spending exceeding ideal pace.")
+          : score >= 40
+          ? (l ? "Vas bien de ritmo. Los puntos que faltan están en el ahorro y en los pagos al día." : "Your pace is fine. The missing points are in savings and bills paid on time.")
           : (l ? "Alerta: necesitas ajustar tu presupuesto urgente." : "Alert: you need to adjust your budget urgently.")}
       </p>
       <div className="flex items-center gap-4 text-[11px] text-muted-foreground">

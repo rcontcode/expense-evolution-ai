@@ -8,7 +8,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { useRecurringBills, useMarkBillPaid, type RecurringBill } from '@/hooks/data/useRecurringBills';
 import { BILL_CATEGORY_CONFIG, type BillCategory, getBillFrequencyLabel } from '@/lib/constants/bill-categories';
-import { differenceInDays, parseISO, format } from 'date-fns';
+import { differenceInDays, parseISO, format, differenceInCalendarDays} from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import {
@@ -147,7 +147,7 @@ export function BillsKanban({ selectedMonth }: BillsKanbanProps) {
 
     bills.filter(b => b.status === 'active').forEach(bill => {
       const due = parseISO(bill.next_due_date);
-      const days = differenceInDays(due, now);
+      const days = differenceInCalendarDays(due, now);
       const lastPaid = bill.last_paid_date ? parseISO(bill.last_paid_date) : null;
       const paidThisMonth = lastPaid && lastPaid.getMonth() === thisMonth && lastPaid.getFullYear() === thisYear;
 

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useCallback } from 'react';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEntity } from '@/contexts/EntityContext';
@@ -7,6 +8,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { differenceInDays } from 'date-fns';
 import { getCountryConfig, type CountryCode } from '@/lib/constants/country-tax-config';
 import type { NotificationPreference } from './useNotificationPreferences';
+import { plural } from '@/lib/plural';
 
 const CHECK_INTERVAL_MS = 60_000;
 
@@ -43,6 +45,7 @@ function isWithinPreferredHour(preferredHour: number | null): boolean {
  * Respects user preferences from `notification_preferences`.
  */
 export function useAutoReminders() {
+  const { formatCurrency } = useFormatCurrency();
   const { user } = useAuth();
   const { currentEntity } = useEntity();
   const { language } = useLanguage();
@@ -170,8 +173,8 @@ export function useAutoReminders() {
           await insertNotification(
             userId, 'bill_reminder', `💳 ${bill.name}`,
             isEs
-              ? `Vence en ${daysUntilDue} día(s) — $${bill.amount} ${bill.currency}`
-              : `Due in ${daysUntilDue} day(s) — $${bill.amount} ${bill.currency}`,
+              ? `Vence en ${daysUntilDue} ${plural(daysUntilDue, 'día', 'días')} — ${formatCurrency(Number(bill.amount), { currency: bill.currency })}`
+              : `Due in ${daysUntilDue} ${plural(daysUntilDue, 'day', 'days')} — ${formatCurrency(Number(bill.amount), { currency: bill.currency })}`,
             '/budget', 'bill', bill.id
           );
         }
@@ -185,14 +188,14 @@ export function useAutoReminders() {
           await insertNotification(
             userId, 'bill_reminder', `🚨 ${bill.name}`,
             isEs
-              ? `¡Vencido hace ${overdueDays} día(s)! — $${bill.amount} ${bill.currency}`
-              : `Overdue by ${overdueDays} day(s)! — $${bill.amount} ${bill.currency}`,
+              ? `¡Vencido hace ${overdueDays} ${plural(overdueDays, 'día', 'días')}! — ${formatCurrency(Number(bill.amount), { currency: bill.currency })}`
+              : `Overdue by ${overdueDays} ${plural(overdueDays, 'day', 'days')}! — ${formatCurrency(Number(bill.amount), { currency: bill.currency })}`,
             '/budget', 'bill', bill.id
           );
         }
       }
     }
-  }, [getPreference, hasRecentNotification, countMonthNotifications, isMuted, insertNotification, isEs]);
+  }, [getPreference, hasRecentNotification, countMonthNotifications, isMuted, insertNotification, isEs, formatCurrency]);
 
   // B) Contract reminders
   const checkContractReminders = useCallback(async (userId: string) => {
@@ -234,7 +237,7 @@ export function useAutoReminders() {
             : '';
           await insertNotification(
             userId, 'contract_reminder', `📄 ${name}`,
-            isEs ? `Vence en ${daysUntilEnd} día(s)${autoMsg}` : `Expires in ${daysUntilEnd} day(s)${autoMsg}`,
+            isEs ? `Vence en ${daysUntilEnd} ${plural(daysUntilEnd, 'día', 'días')}${autoMsg}` : `Expires in ${daysUntilEnd} ${plural(daysUntilEnd, 'day', 'days')}${autoMsg}`,
             '/contracts', 'contract', c.id
           );
         }
@@ -273,8 +276,8 @@ export function useAutoReminders() {
             await insertNotification(
               userId, 'tax_reminder', `🏛️ ${deadline.name}`,
               isEs
-                ? `Vence en ${daysUntil} día(s) — ${deadline.description}`
-                : `Due in ${daysUntil} day(s) — ${deadline.description}`,
+                ? `Vence en ${daysUntil} ${plural(daysUntil, 'día', 'días')} — ${deadline.description}`
+                : `Due in ${daysUntil} ${plural(daysUntil, 'day', 'days')} — ${deadline.description}`,
               '/tax-calendar'
             );
           }
@@ -288,7 +291,7 @@ export function useAutoReminders() {
           if (!exists) {
             await insertNotification(
               userId, 'tax_reminder', `🏛️ ${deadline.name}`,
-              isEs ? `Próximo vencimiento en ${daysUntil} día(s)` : `Next deadline in ${daysUntil} day(s)`,
+              isEs ? `Próximo vencimiento en ${daysUntil} ${plural(daysUntil, 'día', 'días')}` : `Next deadline in ${daysUntil} ${plural(daysUntil, 'day', 'days')}`,
               '/tax-calendar'
             );
           }
@@ -357,8 +360,8 @@ export function useAutoReminders() {
           await insertNotification(
             userId, 'budget_alert', `⚠️ ${rule.name}`,
             isEs
-              ? `${rule.category || 'Total'}: $${spent.toFixed(0)} / $${rule.threshold_amount} presupuesto`
-              : `${rule.category || 'Total'}: $${spent.toFixed(0)} / $${rule.threshold_amount} budget`,
+              ? `${rule.category || 'Total'}: ${formatCurrency(spent)} / ${formatCurrency(Number(rule.threshold_amount))} presupuesto`
+              : `${rule.category || 'Total'}: ${formatCurrency(spent)} / ${formatCurrency(Number(rule.threshold_amount))} budget`,
             '/budget', 'budget_rule', rule.id
           );
           await supabase
@@ -368,7 +371,7 @@ export function useAutoReminders() {
         }
       }
     }
-  }, [getPreference, hasRecentNotification, isMuted, insertNotification, isEs]);
+  }, [getPreference, hasRecentNotification, isMuted, insertNotification, isEs, formatCurrency]);
 
   const runAllChecks = useCallback(async () => {
     if (!user?.id || runningRef.current) return;

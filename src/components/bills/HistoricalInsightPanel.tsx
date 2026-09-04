@@ -6,6 +6,7 @@ import { Loader2, TrendingUp, Calendar } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 
 interface HistoricalInsight {
   count: number;
@@ -25,6 +26,7 @@ interface HistoricalInsightPanelProps {
 
 export function HistoricalInsightPanel({ candidateName, open, onApplyAverage, onApplySuggestedDay }: HistoricalInsightPanelProps) {
   const { language } = useLanguage();
+  const { formatCurrency } = useFormatCurrency();
   const { user } = useAuth();
   const l = language === 'es';
 
@@ -105,7 +107,7 @@ export function HistoricalInsightPanel({ candidateName, open, onApplyAverage, on
       <div className="grid grid-cols-3 gap-2">
         <div className="text-center p-1.5 rounded bg-background/80">
           <p className="text-[10px] text-muted-foreground">{l ? 'Mín' : 'Min'}</p>
-          <p className="text-xs font-bold">${insight.min.toFixed(2)}</p>
+          <p className="text-xs font-bold">{formatCurrency(insight.min)}</p>
         </div>
         <button
           onClick={() => onApplyAverage(insight.avg)}
@@ -113,11 +115,11 @@ export function HistoricalInsightPanel({ candidateName, open, onApplyAverage, on
           title={l ? 'Usar promedio' : 'Use average'}
         >
           <p className="text-[10px] text-primary font-medium">{l ? 'Promedio' : 'Avg'}</p>
-          <p className="text-xs font-bold text-primary">${insight.avg.toFixed(2)}</p>
+          <p className="text-xs font-bold text-primary">{formatCurrency(insight.avg)}</p>
         </button>
         <div className="text-center p-1.5 rounded bg-background/80">
           <p className="text-[10px] text-muted-foreground">{l ? 'Máx' : 'Max'}</p>
-          <p className="text-xs font-bold">${insight.max.toFixed(2)}</p>
+          <p className="text-xs font-bold">{formatCurrency(insight.max)}</p>
         </div>
       </div>
       {insight.suggestedDay && (

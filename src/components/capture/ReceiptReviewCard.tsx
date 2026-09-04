@@ -13,6 +13,7 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { ReceiptReviewDialog } from './ReceiptReviewDialog';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -71,6 +72,7 @@ export function ReceiptReviewCard({
   onDataExtracted 
 }: ReceiptReviewCardProps) {
   const { language } = useLanguage();
+  const { formatCurrency } = useFormatCurrency();
   const [showReviewDialog, setShowReviewDialog] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [checkingDups, setCheckingDups] = useState(false);
@@ -167,7 +169,7 @@ export function ReceiptReviewCard({
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium truncate">{data.vendor || 'Sin proveedor'}</span>
-              <span className="font-bold">${data.amount?.toFixed(2) || '0.00'}</span>
+              <span className="font-bold">{formatCurrency(data.amount ?? 0)}</span>
             </div>
             <div className="flex items-center justify-between text-xs text-muted-foreground">
               <span>{data.date || 'Sin fecha'}</span>

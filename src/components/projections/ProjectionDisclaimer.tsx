@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ChevronDown, ChevronUp, CheckCircle2, XCircle, Info, ArrowRight } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { cn } from '@/lib/utils';
+import { plural } from '@/lib/plural';
 
 export interface DataSource {
   name: { es: string; en: string };
@@ -51,7 +52,7 @@ export function ProjectionDisclaimer({ dataSources, methodology, assumptions, cl
           </span>
           {missing.length > 0 && (
             <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 font-medium">
-              {missing.length} {l ? 'dato(s) faltante(s)' : 'missing source(s)'}
+              {missing.length} {l ? plural(missing.length, 'dato faltante', 'datos faltantes') : plural(missing.length, 'missing source', 'missing sources')}
             </span>
           )}
         </div>

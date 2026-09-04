@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -69,6 +70,7 @@ interface ProjectFinancialOverviewProps {
 }
 
 export function ProjectFinancialOverview({ projectId, projectName }: ProjectFinancialOverviewProps) {
+  const { formatCurrency } = useFormatCurrency();
   const { language } = useLanguage();
   const { data: allExpenses } = useExpenses();
   const { data: contracts } = useContracts();
@@ -220,8 +222,8 @@ export function ProjectFinancialOverview({ projectId, projectName }: ProjectFina
             <Progress value={Math.min(recoveryRate, 100)} className="h-3" />
             <p className="text-xs text-muted-foreground mt-1">
               {language === 'es' 
-                ? `De $${totalExpenses.toFixed(2)} en gastos, recuperas ~$${financialSummary.totalBenefit.toFixed(2)} entre reembolsos y beneficios fiscales`
-                : `Of $${totalExpenses.toFixed(2)} in expenses, you recover ~$${financialSummary.totalBenefit.toFixed(2)} between reimbursements and tax benefits`}
+                ? `De ${formatCurrency(totalExpenses)} en gastos, recuperas ~${formatCurrency(financialSummary.totalBenefit)} entre reembolsos y beneficios fiscales`
+                : `Of ${formatCurrency(totalExpenses)} in expenses, you recover ~${formatCurrency(financialSummary.totalBenefit)} between reimbursements and tax benefits`}
             </p>
           </div>
 
@@ -236,7 +238,7 @@ export function ProjectFinancialOverview({ projectId, projectName }: ProjectFina
                 </span>
               </div>
               <p className="text-3xl font-bold text-green-600">
-                ${financialSummary.clientTotal.toFixed(2)}
+                {formatCurrency(financialSummary.clientTotal)}
               </p>
               <p className="text-xs text-green-600/80 mt-1">
                 {financialSummary.clientCount} {language === 'es' ? 'gastos' : 'expenses'}
@@ -255,11 +257,11 @@ export function ProjectFinancialOverview({ projectId, projectName }: ProjectFina
                 </span>
               </div>
               <p className="text-3xl font-bold text-blue-600">
-                ${(financialSummary.estimatedTaxBenefit + financialSummary.estimatedITC).toFixed(2)}
+                {formatCurrency((financialSummary.estimatedTaxBenefit + financialSummary.estimatedITC))}
               </p>
               <div className="text-xs text-blue-600/80 mt-1 space-y-0.5">
-                <p>${financialSummary.estimatedTaxBenefit.toFixed(2)} {language === 'es' ? 'ahorro impuestos' : 'tax savings'}</p>
-                <p>${financialSummary.estimatedITC.toFixed(2)} ITC (HST/GST)</p>
+                <p>{formatCurrency(financialSummary.estimatedTaxBenefit)} {language === 'es' ? 'ahorro impuestos' : 'tax savings'}</p>
+                <p>{formatCurrency(financialSummary.estimatedITC)} ITC (HST/GST)</p>
               </div>
               <Badge variant="outline" className="mt-2 bg-blue-100 text-blue-700 border-blue-300">
                 ~30% {language === 'es' ? 'retorno' : 'return'}
@@ -275,7 +277,7 @@ export function ProjectFinancialOverview({ projectId, projectName }: ProjectFina
                 </span>
               </div>
               <p className="text-3xl font-bold text-muted-foreground">
-                ${financialSummary.personalTotal.toFixed(2)}
+                {formatCurrency(financialSummary.personalTotal)}
               </p>
               <p className="text-xs text-muted-foreground mt-1">
                 {financialSummary.personalCount} {language === 'es' ? 'gastos' : 'expenses'}
@@ -297,8 +299,8 @@ export function ProjectFinancialOverview({ projectId, projectName }: ProjectFina
           </AlertTitle>
           <AlertDescription className="text-red-600">
             {language === 'es' 
-              ? `Tienes ${unassignedExpenses.length} gastos ($${unassignedExpenses.reduce((s, e) => s + Number(e.amount), 0).toFixed(2)}) que no están asignados a ningún proyecto o cliente. Ve a Gastos para asignarlos.`
-              : `You have ${unassignedExpenses.length} expenses ($${unassignedExpenses.reduce((s, e) => s + Number(e.amount), 0).toFixed(2)}) not assigned to any project or client. Go to Expenses to assign them.`}
+              ? `Tienes ${unassignedExpenses.length} gastos (${formatCurrency(unassignedExpenses.reduce((s, e) => s + Number(e.amount), 0))}) que no están asignados a ningún proyecto o cliente. Ve a Gastos para asignarlos.`
+              : `You have ${unassignedExpenses.length} expenses (${formatCurrency(unassignedExpenses.reduce((s, e) => s + Number(e.amount), 0))}) not assigned to any project or client. Go to Expenses to assign them.`}
           </AlertDescription>
         </Alert>
       )}
@@ -312,8 +314,8 @@ export function ProjectFinancialOverview({ projectId, projectName }: ProjectFina
           </AlertTitle>
           <AlertDescription className="text-amber-600">
             {language === 'es' 
-              ? `Tienes ${financialSummary.pendingCount} gastos ($${financialSummary.pendingTotal.toFixed(2)}) sin clasificar. Clasifícalos para ver los beneficios correctamente.`
-              : `You have ${financialSummary.pendingCount} expenses ($${financialSummary.pendingTotal.toFixed(2)}) unclassified. Classify them to see benefits correctly.`}
+              ? `Tienes ${financialSummary.pendingCount} gastos (${formatCurrency(financialSummary.pendingTotal)}) sin clasificar. Clasifícalos para ver los beneficios correctamente.`
+              : `You have ${financialSummary.pendingCount} expenses (${formatCurrency(financialSummary.pendingTotal)}) unclassified. Classify them to see benefits correctly.`}
           </AlertDescription>
         </Alert>
       )}
@@ -421,15 +423,15 @@ export function ProjectFinancialOverview({ projectId, projectName }: ProjectFina
                     <div className="mt-2 pt-2 border-t border-blue-200 dark:border-blue-800 grid grid-cols-3 gap-2 text-xs">
                       <div>
                         <p className="text-muted-foreground">{language === 'es' ? 'Gastado' : 'Spent'}</p>
-                        <p className="font-medium">${categoryData.total.toFixed(2)}</p>
+                        <p className="font-medium">{formatCurrency(categoryData.total)}</p>
                       </div>
                       <div>
                         <p className="text-muted-foreground">{language === 'es' ? 'Deducible' : 'Deductible'}</p>
-                        <p className="font-medium text-blue-600">${categoryData.deductible.toFixed(2)}</p>
+                        <p className="font-medium text-blue-600">{formatCurrency(categoryData.deductible)}</p>
                       </div>
                       <div>
                         <p className="text-muted-foreground">{language === 'es' ? 'Ahorro' : 'Savings'}</p>
-                        <p className="font-medium text-green-600">${(categoryData.deductible * 0.30).toFixed(2)}</p>
+                        <p className="font-medium text-green-600">{formatCurrency((categoryData.deductible * 0.30))}</p>
                       </div>
                     </div>
                   )}
@@ -442,19 +444,19 @@ export function ProjectFinancialOverview({ projectId, projectName }: ProjectFina
           <Separator className="my-4" />
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
             <div>
-              <p className="text-2xl font-bold">${financialSummary.totalCraExpenses.toFixed(2)}</p>
+              <p className="text-2xl font-bold">{formatCurrency(financialSummary.totalCraExpenses)}</p>
               <p className="text-xs text-muted-foreground">{language === 'es' ? 'Total Gastos' : 'Total Expenses'}</p>
             </div>
             <div>
-              <p className="text-2xl font-bold text-blue-600">${financialSummary.totalCraDeductible.toFixed(2)}</p>
+              <p className="text-2xl font-bold text-blue-600">{formatCurrency(financialSummary.totalCraDeductible)}</p>
               <p className="text-xs text-muted-foreground">{language === 'es' ? 'Total Deducible' : 'Total Deductible'}</p>
             </div>
             <div>
-              <p className="text-2xl font-bold text-green-600">${financialSummary.estimatedTaxBenefit.toFixed(2)}</p>
+              <p className="text-2xl font-bold text-green-600">{formatCurrency(financialSummary.estimatedTaxBenefit)}</p>
               <p className="text-xs text-muted-foreground">{language === 'es' ? 'Ahorro Impuestos' : 'Tax Savings'}</p>
             </div>
             <div>
-              <p className="text-2xl font-bold text-primary">${financialSummary.estimatedITC.toFixed(2)}</p>
+              <p className="text-2xl font-bold text-primary">{formatCurrency(financialSummary.estimatedITC)}</p>
               <p className="text-xs text-muted-foreground">ITC (HST/GST)</p>
             </div>
           </div>

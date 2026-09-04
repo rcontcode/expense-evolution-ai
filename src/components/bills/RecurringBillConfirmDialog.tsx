@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -41,6 +42,7 @@ interface RecurringBillConfirmDialogProps {
 }
 
 export function RecurringBillConfirmDialog({ open, onClose, candidate, onCreated }: RecurringBillConfirmDialogProps) {
+  const { formatCurrency } = useFormatCurrency();
   const { language } = useLanguage();
   const { user } = useAuth();
   const { currentEntity } = useEntity();
@@ -147,8 +149,8 @@ export function RecurringBillConfirmDialog({ open, onClose, candidate, onCreated
           });
           
           toast.info(l 
-            ? `📊 Presupuesto de ${category} actualizado a $${newMinBudget.toFixed(0)} (+$${amount.toFixed(0)} del pago fijo)`
-            : `📊 ${category} budget updated to $${newMinBudget.toFixed(0)} (+$${amount.toFixed(0)} from recurring bill)`
+            ? `📊 Presupuesto de ${category} actualizado a ${formatCurrency(newMinBudget)} (+${formatCurrency(amount)} del pago fijo)`
+            : `📊 ${category} budget updated to ${formatCurrency(newMinBudget)} (+${formatCurrency(amount)} from recurring bill)`
           );
         } catch {
           // Non-critical

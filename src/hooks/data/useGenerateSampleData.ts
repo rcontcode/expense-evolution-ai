@@ -53,18 +53,23 @@ export function useSampleDataCounts() {
 
       // For each section we query: total count + sample count.
       // user count = total - sample.
-      type SectionDef = { key: string; table: string; field: string };
+      // `enPapelera` marca las tablas que borran en blando (dejan `deleted_at` en vez de borrar la
+      // fila). Sin excluirlas, el panel contaba como "de ejemplo" registros que ya estaban en la
+      // papelera: los clientes de ejemplo se borran en blando, asi que el contador se quedaba
+      // pegado en "2 registros de ejemplo" con su aviso naranja, y el boton de eliminar no podia
+      // bajarlo de ahi nunca. Se veia como si la limpieza no funcionara.
+      type SectionDef = { key: string; table: string; field: string; enPapelera?: boolean };
       const sections: SectionDef[] = [
-        { key: 'clients',           table: 'clients',             field: 'name' },
-        { key: 'projects',          table: 'projects',            field: 'name' },
-        { key: 'expenses',          table: 'expenses',            field: 'description' },
-        { key: 'income',            table: 'income',              field: 'description' },
-        { key: 'mileage',           table: 'mileage',             field: 'route' },
+        { key: 'clients',           table: 'clients',             field: 'name',        enPapelera: true },
+        { key: 'projects',          table: 'projects',            field: 'name',        enPapelera: true },
+        { key: 'expenses',          table: 'expenses',            field: 'description', enPapelera: true },
+        { key: 'income',            table: 'income',              field: 'description', enPapelera: true },
+        { key: 'mileage',           table: 'mileage',             field: 'route',       enPapelera: true },
         { key: 'assets',            table: 'assets',              field: 'name' },
         { key: 'liabilities',       table: 'liabilities',         field: 'name' },
         { key: 'investment_goals',  table: 'investment_goals',    field: 'name' },
         { key: 'savings_goals',     table: 'savings_goals',       field: 'name' },
-        { key: 'contracts',         table: 'contracts',           field: 'file_name' },
+        { key: 'contracts',         table: 'contracts',           field: 'file_name',   enPapelera: true },
         { key: 'notifications',     table: 'notifications',       field: 'title' },
         { key: 'education',         table: 'financial_education', field: 'title' },
         { key: 'bank_transactions', table: 'bank_transactions',   field: 'description' },
@@ -72,9 +77,13 @@ export function useSampleDataCounts() {
         { key: 'recurring_bills',   table: 'recurring_bills',     field: 'name' },
       ];
 
+      const vivos = (s: SectionDef) => {
+        const q = supabase.from(s.table as any).select('id', { count: 'exact', head: true }).eq('user_id', uid);
+        return s.enPapelera ? q.is('deleted_at', null) : q;
+      };
       const queries = sections.flatMap(s => [
-        supabase.from(s.table as any).select('id', { count: 'exact', head: true }).eq('user_id', uid),
-        supabase.from(s.table as any).select('id', { count: 'exact', head: true }).eq('user_id', uid).like(s.field, `%${m}%`),
+        vivos(s),
+        vivos(s).like(s.field, `%${m}%`),
       ]);
       const results = await Promise.all(queries);
 
@@ -306,22 +315,22 @@ export function useGenerateSampleData() {
         // CRA deductible expenses
         { vendor: 'Microsoft 365', category: 'software', amount: 16.99, status: 'deductible', reimbursement_type: 'cra_deductible', clientIdx: null, projectIdx: null, daysAgo: 1 },
         { vendor: 'Bell Canada', category: 'utilities', amount: 145.00, status: 'deductible', reimbursement_type: 'cra_deductible', clientIdx: null, projectIdx: null, daysAgo: 15 },
-        { vendor: 'Restaurant ABC', category: 'meals_entertainment', amount: 87.50, status: 'classified', reimbursement_type: 'cra_deductible', clientIdx: 0, projectIdx: 0, daysAgo: 8 },
+        { vendor: 'Restaurant ABC', category: 'meals', amount: 87.50, status: 'classified', reimbursement_type: 'cra_deductible', clientIdx: 0, projectIdx: 0, daysAgo: 8 },
         { vendor: 'Google Ads', category: 'advertising', amount: 350.00, status: 'deductible', reimbursement_type: 'cra_deductible', clientIdx: null, projectIdx: null, daysAgo: 25 },
         { vendor: 'Accountant Services', category: 'professional_services', amount: 500.00, status: 'deductible', reimbursement_type: 'cra_deductible', clientIdx: null, projectIdx: null, daysAgo: 45 },
         // Pending expenses (need review)
         { vendor: 'Amazon', category: 'office_supplies', amount: 67.89, status: 'pending', reimbursement_type: 'pending_classification', clientIdx: null, projectIdx: null, daysAgo: 2 },
         { vendor: 'Gas Station', category: 'fuel', amount: 85.00, status: 'pending', reimbursement_type: 'pending_classification', clientIdx: null, projectIdx: null, daysAgo: 4 },
-        { vendor: 'Coffee Shop Meeting', category: 'meals_entertainment', amount: 24.50, status: 'pending', reimbursement_type: 'pending_classification', clientIdx: 0, projectIdx: null, daysAgo: 1 },
+        { vendor: 'Coffee Shop Meeting', category: 'meals', amount: 24.50, status: 'pending', reimbursement_type: 'pending_classification', clientIdx: 0, projectIdx: null, daysAgo: 1 },
         // Personal expenses
-        { vendor: 'Personal Lunch', category: 'meals_entertainment', amount: 18.99, status: 'non_deductible', reimbursement_type: 'personal', clientIdx: null, projectIdx: null, daysAgo: 7 },
+        { vendor: 'Personal Lunch', category: 'meals', amount: 18.99, status: 'non_deductible', reimbursement_type: 'personal', clientIdx: null, projectIdx: null, daysAgo: 7 },
         { vendor: 'Gym Membership', category: 'other', amount: 49.99, status: 'non_deductible', reimbursement_type: 'personal', clientIdx: null, projectIdx: null, daysAgo: 30 },
         // More varied expenses for charts
         { vendor: 'AWS Services', category: 'software', amount: 234.56, status: 'deductible', reimbursement_type: 'cra_deductible', clientIdx: 0, projectIdx: 1, daysAgo: 35 },
         { vendor: 'Home Depot', category: 'materials', amount: 189.00, status: 'classified', reimbursement_type: 'client_reimbursable', clientIdx: 1, projectIdx: 2, daysAgo: 40 },
-        { vendor: 'FedEx Shipping', category: 'shipping', amount: 45.00, status: 'deductible', reimbursement_type: 'cra_deductible', clientIdx: 0, projectIdx: 0, daysAgo: 22 },
-        { vendor: 'Insurance Premium', category: 'insurance', amount: 325.00, status: 'deductible', reimbursement_type: 'cra_deductible', clientIdx: null, projectIdx: null, daysAgo: 60 },
-        { vendor: 'Training Course', category: 'education', amount: 199.00, status: 'classified', reimbursement_type: 'cra_deductible', clientIdx: null, projectIdx: null, daysAgo: 50 },
+        { vendor: 'FedEx Shipping', category: 'other', amount: 45.00, status: 'deductible', reimbursement_type: 'cra_deductible', clientIdx: 0, projectIdx: 0, daysAgo: 22 },
+        { vendor: 'Insurance Premium', category: 'insurance_business', amount: 325.00, status: 'deductible', reimbursement_type: 'cra_deductible', clientIdx: null, projectIdx: null, daysAgo: 60 },
+        { vendor: 'Training Course', category: 'education_training', amount: 199.00, status: 'classified', reimbursement_type: 'cra_deductible', clientIdx: null, projectIdx: null, daysAgo: 50 },
       ];
 
       const expenses = expenseData.map((e, i) => {
@@ -456,7 +465,7 @@ export function useGenerateSampleData() {
       // ============================================
       const liabilities = [
         { name: `${SAMPLE_MARKER} Business Line of Credit`, category: 'business_loan', original_amount: 50000, current_balance: 32000, interest_rate: 7.5, minimum_payment: 800, notes: 'RBC business LOC for operations' },
-        { name: `${SAMPLE_MARKER} Vehicle Loan`, category: 'auto_loan', original_amount: 38000, current_balance: 22500, interest_rate: 4.9, minimum_payment: 580, notes: 'Honda Financial for CRV' },
+        { name: `${SAMPLE_MARKER} Vehicle Loan`, category: 'car_loan', original_amount: 38000, current_balance: 22500, interest_rate: 4.9, minimum_payment: 580, notes: 'Honda Financial for CRV' },
         { name: `${SAMPLE_MARKER} Business Credit Card`, category: 'credit_card', original_amount: 10000, current_balance: 3800, interest_rate: 19.99, minimum_payment: 120, notes: 'TD Business Visa' },
         { name: `${SAMPLE_MARKER} Equipment Financing`, category: 'personal_loan', original_amount: 15000, current_balance: 8200, interest_rate: 6.5, minimum_payment: 320, notes: 'Office equipment lease-to-own' },
         { name: `${SAMPLE_MARKER} Student Loan`, category: 'student_loan', original_amount: 28000, current_balance: 12500, interest_rate: 5.0, minimum_payment: 250, notes: 'Canada Student Loan' },
@@ -667,7 +676,7 @@ export function useGenerateSampleData() {
                 notes: 'Business class for flights over 4 hours'
               },
               {
-                category: 'meals_entertainment',
+                category: 'meals',
                 reimbursable: true,
                 percentage: 100,
                 requires_approval: false,
@@ -750,7 +759,7 @@ export function useGenerateSampleData() {
                 notes: 'Only for approved photo shoots and events'
               },
               {
-                category: 'meals_entertainment',
+                category: 'meals',
                 reimbursable: false,
                 notes: 'Not covered except during client events'
               }
@@ -1305,7 +1314,7 @@ export function useGenerateSampleDataBySection() {
             { vendor: 'Best Buy', category: 'equipment', amount: 1299.99, status: 'deductible' as const, daysAgo: 30 },
             { vendor: 'Microsoft 365', category: 'software', amount: 16.99, status: 'deductible' as const, daysAgo: 1 },
             { vendor: 'Bell Canada', category: 'utilities', amount: 145.00, status: 'deductible' as const, daysAgo: 15 },
-            { vendor: 'Restaurant ABC', category: 'meals_entertainment', amount: 87.50, status: 'classified' as const, daysAgo: 8 },
+            { vendor: 'Restaurant ABC', category: 'meals', amount: 87.50, status: 'classified' as const, daysAgo: 8 },
             { vendor: 'Amazon', category: 'office_supplies', amount: 67.89, status: 'pending' as const, daysAgo: 2 },
           ];
           
@@ -1402,7 +1411,7 @@ export function useGenerateSampleDataBySection() {
           
           const liabilities = [
             { name: `${SAMPLE_MARKER} Mortgage`, category: 'mortgage', current_balance: 380000, original_amount: 400000, interest_rate: 4.5, debt_type: 'good' },
-            { name: `${SAMPLE_MARKER} Car Loan`, category: 'auto_loan', current_balance: 15000, original_amount: 25000, interest_rate: 5.9, debt_type: 'bad' },
+            { name: `${SAMPLE_MARKER} Car Loan`, category: 'car_loan', current_balance: 15000, original_amount: 25000, interest_rate: 5.9, debt_type: 'bad' },
           ];
           await supabase.from('liabilities').insert(liabilities.map(l => ({ ...l, user_id: userId })));
           break;

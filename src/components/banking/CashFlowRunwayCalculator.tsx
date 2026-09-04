@@ -9,6 +9,7 @@ import { useRecurringBills } from '@/hooks/data/useRecurringBills';
 import { Fuel, TrendingDown, TrendingUp, AlertTriangle, Shield, Zap } from 'lucide-react';
 import { subMonths, isAfter, differenceInDays } from 'date-fns';
 import { ProjectionDisclaimer, type DataSource } from '@/components/projections/ProjectionDisclaimer';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 
 interface RunwayMetrics {
   avgDailyExpense: number;
@@ -25,6 +26,7 @@ interface RunwayMetrics {
 
 export function CashFlowRunwayCalculator() {
   const { language } = useLanguage();
+  const { formatCurrency: fmtMoneda } = useFormatCurrency();
   const l = language === 'es';
   const { data: expenses } = useExpenses();
   const { data: income } = useIncome();
@@ -104,7 +106,8 @@ export function CashFlowRunwayCalculator() {
     { name: { es: 'Pagos fijos', en: 'Recurring bills' }, available: (bills || []).filter(b => b.status === 'active').length > 0, count: (bills || []).filter(b => b.status === 'active').length, tip: { es: 'Agrega tus pagos recurrentes', en: 'Add your recurring payments' } },
   ], [expenses, income, bills]);
 
-  const formatCurrency = (n: number) => `$${Math.abs(n).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+  // El signo lo pone quien llama; aqui solo va la magnitud, con el simbolo del pais.
+  const formatCurrency = (n: number) => fmtMoneda(Math.abs(n), { decimals: 0 });
 
   return (
     <Card>

@@ -52,7 +52,7 @@ export function SimpleSparkline({ trends, language }: SimpleSparklineProps) {
     }));
 
     const linePath = pts
-      .map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(2)},${p.y.toFixed(2)}`)
+      .map((p, i) => `${i === 0 ? 'M' : 'L'}{formatCurrency(p.x)},{formatCurrency(p.y)}`)
       .join(' ');
 
     const area = `${linePath} L${W},${H} L0,${H} Z`;
@@ -81,7 +81,7 @@ export function SimpleSparkline({ trends, language }: SimpleSparklineProps) {
       deltaPct: pct,
       trendDir: dir,
     };
-  }, [trends]);
+  }, [trends, formatCurrency]);
 
   // For spending, "down" is good (less spent), "up" is bad (more spent)
   const isPositiveTrend = trendDir === 'down' || trendDir === 'flat';

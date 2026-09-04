@@ -60,6 +60,7 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { SetupProgressBanner } from '@/components/guidance/SetupProgressBanner';
 import { cn } from '@/lib/utils';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 
 const STATUS_OPTIONS = [
   { value: 'all', label: 'Todos', labelEn: 'All' },
@@ -71,6 +72,7 @@ const STATUS_OPTIONS = [
 
 export default function Projects() {
   const { language } = useLanguage();
+  const { formatCurrency } = useFormatCurrency();
   const [searchQuery, setSearchQuery] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState<any>(null);
@@ -464,7 +466,7 @@ export default function Projects() {
                           <span>{language === 'es' ? 'Ingresos' : 'Income'}</span>
                         </div>
                         <span className="font-medium text-green-600">
-                          ${financials.income.toLocaleString()}
+                          {formatCurrency(financials.income, { decimals: 0 })}
                         </span>
                       </div>
                       <div className="flex items-center justify-between text-sm">
@@ -473,7 +475,7 @@ export default function Projects() {
                           <span>{language === 'es' ? 'Gastos' : 'Expenses'}</span>
                         </div>
                         <span className="font-medium text-red-600">
-                          ${financials.expenses.toLocaleString()}
+                          {formatCurrency(financials.expenses, { decimals: 0 })}
                         </span>
                       </div>
                       <div className="flex items-center justify-between text-sm font-medium">
@@ -481,7 +483,7 @@ export default function Projects() {
                         <span className={cn(
                           netBalance >= 0 ? 'text-green-600' : 'text-red-600'
                         )}>
-                          {netBalance >= 0 ? '+' : ''}${netBalance.toLocaleString()}
+                          {netBalance >= 0 ? '+' : ''}{formatCurrency(netBalance, { decimals: 0 })}
                         </span>
                       </div>
                     </div>
@@ -494,7 +496,7 @@ export default function Projects() {
                             {language === 'es' ? 'Presupuesto' : 'Budget'}
                           </span>
                           <span className="font-medium">
-                            ${budgetRemaining.toLocaleString()} {language === 'es' ? 'restante' : 'remaining'}
+                            {formatCurrency(budgetRemaining, { decimals: 0 })} {language === 'es' ? 'restante' : 'remaining'}
                           </span>
                         </div>
                         <Progress 
@@ -506,8 +508,8 @@ export default function Projects() {
                           )}
                         />
                         <div className="flex justify-between text-xs text-muted-foreground">
-                          <span>${financials.expenses.toLocaleString()} {language === 'es' ? 'usado' : 'used'}</span>
-                          <span>${project.budget.toLocaleString()} {language === 'es' ? 'total' : 'total'}</span>
+                          <span>{formatCurrency(financials.expenses, { decimals: 0 })} {language === 'es' ? 'usado' : 'used'}</span>
+                          <span>{formatCurrency(project.budget, { decimals: 0 })} {language === 'es' ? 'total' : 'total'}</span>
                         </div>
                       </div>
                     )}

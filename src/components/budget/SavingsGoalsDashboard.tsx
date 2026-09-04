@@ -21,7 +21,7 @@
  import { useSavingsGoals, useAddToSavingsGoal } from '@/hooks/data/useSavingsGoals';
  import { useIncome } from '@/hooks/data/useIncome';
  import { useExpenses } from '@/hooks/data/useExpenses';
- import { differenceInDays, format, startOfMonth, endOfMonth, addMonths } from 'date-fns';
+ import { differenceInDays, format, startOfMonth, endOfMonth, addMonths, differenceInCalendarDays} from 'date-fns';
  import { es, enUS } from 'date-fns/locale';
  import { motion, AnimatePresence } from 'framer-motion';
  import { cn } from '@/lib/utils';
@@ -90,7 +90,7 @@
      const remaining = goal.target_amount - (goal.current_amount || 0);
      if (remaining <= 0) return 0;
      
-     const daysLeft = differenceInDays(new Date(goal.deadline), now);
+     const daysLeft = differenceInCalendarDays(new Date(goal.deadline), now);
      if (daysLeft <= 0) return remaining;
      
      const monthsLeft = Math.max(1, Math.ceil(daysLeft / 30));
@@ -216,7 +216,7 @@
                const remaining = goal.target_amount - (goal.current_amount || 0);
                const isCompleted = progress >= 100;
                const daysLeft = goal.deadline 
-                 ? differenceInDays(new Date(goal.deadline), now)
+                 ? differenceInCalendarDays(new Date(goal.deadline), now)
                  : null;
                const monthlyContribution = getMonthlyContribution(goal);
  

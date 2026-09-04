@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Layout } from '@/components/Layout';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -74,6 +75,7 @@ import {
 
 function IncomeAdvanced() {
   const { t, language } = useLanguage();
+  const { formatCurrency } = useFormatCurrency();
   const isMobile = useIsMobile();
   const dateLocale = language === 'es' ? es : enUS;
   const currentYear = new Date().getFullYear();
@@ -223,7 +225,7 @@ function IncomeAdvanced() {
                             <span className="text-[10px] text-muted-foreground">{t('income.totalIncome')}</span>
                             <DollarSign className="h-3 w-3 text-chart-1" />
                           </div>
-                          <p className="text-sm font-bold text-chart-1">${summary?.totalIncome.toFixed(0) || '0'}</p>
+                          <p className="text-sm font-bold text-chart-1">{formatCurrency(summary?.totalIncome ?? 0, { decimals: 0 })}</p>
                         </CardContent>
                       </Card>
                       <Card>
@@ -275,7 +277,7 @@ function IncomeAdvanced() {
                             <div key={group.key} className="space-y-1">
                               <div className="flex justify-between text-xs">
                                 <span className="font-medium">{language === 'es' ? group.label : group.labelEn}</span>
-                                <span className="text-muted-foreground">${group.total.toFixed(0)}</span>
+                                <span className="text-muted-foreground">{formatCurrency(group.total, { decimals: 0 })}</span>
                               </div>
                               <Progress value={(group.total / (summary?.totalIncome || 1)) * 100} className="h-1.5" />
                             </div>
@@ -350,7 +352,7 @@ function IncomeAdvanced() {
                   <DollarSign className="h-4 w-4 text-chart-1" />
                 </CardHeader>
                 <CardContent className="p-3 pt-0">
-                  <div className="text-lg sm:text-2xl font-bold text-chart-1">${summary?.totalIncome.toFixed(2) || '0.00'}</div>
+                  <div className="text-lg sm:text-2xl font-bold text-chart-1">{formatCurrency(summary?.totalIncome ?? 0)}</div>
                 </CardContent>
               </Card>
               <Card>
@@ -359,7 +361,7 @@ function IncomeAdvanced() {
                   <Wallet className="h-4 w-4 text-chart-2" />
                 </CardHeader>
                 <CardContent className="p-3 pt-0">
-                  <div className="text-lg sm:text-2xl font-bold text-chart-2">${summary?.taxableIncome.toFixed(2) || '0.00'}</div>
+                  <div className="text-lg sm:text-2xl font-bold text-chart-2">{formatCurrency(summary?.taxableIncome ?? 0)}</div>
                 </CardContent>
               </Card>
               <Card>
@@ -368,7 +370,7 @@ function IncomeAdvanced() {
                   <PiggyBank className="h-4 w-4 text-chart-3" />
                 </CardHeader>
                 <CardContent className="p-3 pt-0">
-                  <div className="text-lg sm:text-2xl font-bold text-chart-3">${summary?.nonTaxableIncome.toFixed(2) || '0.00'}</div>
+                  <div className="text-lg sm:text-2xl font-bold text-chart-3">{formatCurrency(summary?.nonTaxableIncome ?? 0)}</div>
                 </CardContent>
               </Card>
               <Card>
@@ -391,7 +393,7 @@ function IncomeAdvanced() {
                     <div key={group.key} className="space-y-2">
                       <div className="flex justify-between text-sm">
                         <span className="font-medium">{language === 'es' ? group.label : group.labelEn}</span>
-                        <span className="text-muted-foreground">${group.total.toFixed(2)}</span>
+                        <span className="text-muted-foreground">{formatCurrency(group.total)}</span>
                       </div>
                       <Progress value={(group.total / (summary?.totalIncome || 1)) * 100} className="h-2" />
                     </div>
@@ -452,7 +454,7 @@ function IncomeAdvanced() {
                                   <Badge variant="outline" style={{ borderColor: income.project.color, color: income.project.color }}>{income.project.name}</Badge>
                                 ) : <span className="text-muted-foreground">-</span>}
                               </TableCell>
-                              <TableCell className="text-right font-bold text-chart-1">${Number(income.amount).toFixed(2)}</TableCell>
+                              <TableCell className="text-right font-bold text-chart-1">{formatCurrency(Number(income.amount))}</TableCell>
                               <TableCell>
                                 {income.recurrence !== 'one_time' && (
                                   <div className="flex items-center gap-1 text-muted-foreground">
@@ -508,7 +510,7 @@ function IncomeAdvanced() {
                             {project.description && <p className="text-muted-foreground line-clamp-2">{project.description}</p>}
                             <div className="flex justify-between">
                               <span className="text-muted-foreground">{t('income.budget')}:</span>
-                              <span className="font-medium">{project.budget ? `$${Number(project.budget).toFixed(2)}` : '-'}</span>
+                              <span className="font-medium">{project.budget ? formatCurrency(Number(project.budget)) : '-'}</span>
                             </div>
                             <Badge variant={project.status === 'active' ? 'default' : 'secondary'}>{project.status}</Badge>
                           </div>

@@ -43,8 +43,10 @@ import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 
 function AlertCard({ alert, language }: { alert: BankAlert; language: string }) {
+  const { formatCurrency } = useFormatCurrency();
   const severityColors = {
     info: 'border-l-blue-500 bg-blue-50/50 dark:bg-blue-900/10',
     warning: 'border-l-amber-500 bg-amber-50/50 dark:bg-amber-900/10',
@@ -65,7 +67,7 @@ function AlertCard({ alert, language }: { alert: BankAlert; language: string }) 
           <p className="text-sm font-medium">{alert.message}</p>
           {alert.transaction && (
             <p className="text-xs text-muted-foreground mt-1">
-              {alert.transaction.description} - ${alert.transaction.amount.toFixed(2)}
+              {alert.transaction.description} - {formatCurrency(alert.transaction.amount)}
             </p>
           )}
         </div>
@@ -75,6 +77,7 @@ function AlertCard({ alert, language }: { alert: BankAlert; language: string }) 
 }
 
 function RecurringPaymentCard({ payment, language }: { payment: RecurringPayment; language: string }) {
+  const { formatCurrency } = useFormatCurrency();
   const categoryInfo = CATEGORY_LABELS[payment.category] || CATEGORY_LABELS.other;
   
   return (
@@ -100,9 +103,9 @@ function RecurringPaymentCard({ payment, language }: { payment: RecurringPayment
             </div>
           </div>
           <div className="text-right">
-            <p className="font-bold">${payment.amount.toFixed(2)}</p>
+            <p className="font-bold">{formatCurrency(payment.amount)}</p>
             <p className="text-xs text-muted-foreground">
-              ${(payment.amount * 12).toFixed(0)}/{language === 'es' ? 'año' : 'year'}
+              {formatCurrency((payment.amount * 12), { decimals: 0 })}/{language === 'es' ? 'año' : 'year'}
             </p>
           </div>
         </div>
@@ -117,6 +120,7 @@ interface BankAnalysisDashboardProps {
 
 export function BankAnalysisDashboard({ onImportClick }: BankAnalysisDashboardProps) {
   const { language } = useLanguage();
+  const { formatCurrency } = useFormatCurrency();
   const isMobile = useIsMobile();
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -219,7 +223,7 @@ export function BankAnalysisDashboard({ onImportClick }: BankAnalysisDashboardPr
             <CardContent className="p-2 sm:p-6 pt-0 sm:pt-0">
               <div className="text-lg sm:text-2xl font-bold">{totalTransactions}</div>
               <p className="text-[10px] sm:text-xs text-muted-foreground truncate">
-                ${totalAmount.toFixed(2)}
+                {formatCurrency(totalAmount)}
               </p>
             </CardContent>
           </Card>
@@ -234,7 +238,7 @@ export function BankAnalysisDashboard({ onImportClick }: BankAnalysisDashboardPr
             <CardContent className="p-2 sm:p-6 pt-0 sm:pt-0">
               <div className="text-lg sm:text-2xl font-bold">{insights.recurringPayments.length}</div>
               <p className="text-[10px] sm:text-xs text-muted-foreground">
-                ${insights.recurringPayments.reduce((sum, p) => sum + p.amount, 0).toFixed(2)}/{language === 'es' ? 'mes' : 'mo'}
+                {formatCurrency(insights.recurringPayments.reduce((sum, p) => sum + p.amount, 0))}/{language === 'es' ? 'mes' : 'mo'}
               </p>
             </CardContent>
           </Card>
@@ -390,7 +394,7 @@ export function BankAnalysisDashboard({ onImportClick }: BankAnalysisDashboardPr
                               <span className="font-medium truncate max-w-[140px]">{vendor.vendor}</span>
                             </div>
                             <div className="text-right">
-                              <span className="font-bold text-xs">${vendor.total.toFixed(0)}</span>
+                              <span className="font-bold text-xs">{formatCurrency(vendor.total, { decimals: 0 })}</span>
                               <span className="text-[10px] text-muted-foreground ml-1">({vendor.count}x)</span>
                             </div>
                           </div>
@@ -430,7 +434,7 @@ export function BankAnalysisDashboard({ onImportClick }: BankAnalysisDashboardPr
                       <div className="flex items-start gap-2 p-2.5 bg-primary/5 rounded-lg">
                         <RefreshCw className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" />
                         <p className="text-xs">
-                          <span className="font-medium">{insights.recurringPayments.length}</span> {language === 'es' ? 'pagos recurrentes' : 'recurring payments'}: <span className="font-bold">${insights.recurringPayments.reduce((s, p) => s + p.amount, 0).toFixed(0)}</span>/{language === 'es' ? 'mes' : 'mo'}
+                          <span className="font-medium">{insights.recurringPayments.length}</span> {language === 'es' ? 'pagos recurrentes' : 'recurring payments'}: <span className="font-bold">{formatCurrency(insights.recurringPayments.reduce((s, p) => s + p.amount, 0), { decimals: 0 })}</span>/{language === 'es' ? 'mes' : 'mo'}
                         </p>
                       </div>
                     )}
@@ -518,13 +522,13 @@ export function BankAnalysisDashboard({ onImportClick }: BankAnalysisDashboardPr
                     <div className="flex items-center justify-between font-bold">
                       <span>{language === 'es' ? 'Total Mensual' : 'Monthly Total'}</span>
                       <span className="text-lg">
-                        ${insights.recurringPayments.reduce((sum, p) => sum + p.amount, 0).toFixed(2)}
+                        {formatCurrency(insights.recurringPayments.reduce((sum, p) => sum + p.amount, 0))}
                       </span>
                     </div>
                     <div className="flex items-center justify-between text-sm text-muted-foreground mt-1">
                       <span>{language === 'es' ? 'Total Anual' : 'Annual Total'}</span>
                       <span>
-                        ${(insights.recurringPayments.reduce((sum, p) => sum + p.amount, 0) * 12).toFixed(0)}
+                        {formatCurrency((insights.recurringPayments.reduce((sum, p) => sum + p.amount, 0) * 12), { decimals: 0 })}
                       </span>
                     </div>
                   </div>
@@ -578,7 +582,7 @@ export function BankAnalysisDashboard({ onImportClick }: BankAnalysisDashboardPr
                         </div>
                       </div>
                       <div className="flex items-center gap-3">
-                        <span className="font-bold">${Number(transaction.amount).toFixed(2)}</span>
+                        <span className="font-bold">{formatCurrency(Number(transaction.amount))}</span>
                         <Badge 
                           variant="outline" 
                           className={transaction.matched_expense_id 

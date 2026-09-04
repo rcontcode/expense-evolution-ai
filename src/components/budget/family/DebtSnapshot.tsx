@@ -51,13 +51,18 @@ export function DebtSnapshot() {
   const monthsToPayoff = totalMinPayment > 0 ? Math.ceil(totalDebt / totalMinPayment) : 0;
   const yearsToPayoff = monthsToPayoff > 0 ? (monthsToPayoff / 12).toFixed(1) : "∞";
 
+  // Las llaves son las de LIABILITY_CATEGORIES (useNetWorth.ts), que es de donde salen las deudas
+  // creadas desde la app. Este mapa solo conocia "auto_loan", que no existe en ese catalogo: un
+  // prestamo de auto creado desde la app se guarda como "car_loan" y aparecia sin icono.
   const categoryIcons: Record<string, string> = {
     credit_card: "💳",
     mortgage: "🏠",
-    auto_loan: "🚗",
+    car_loan: "🚗",
+    auto_loan: "🚗", // nombre viejo, sigue reconocido para los registros ya guardados
     student_loan: "🎓",
     personal_loan: "💰",
     line_of_credit: "🏦",
+    business_loan: "🏢",
     other: "📋",
   };
 

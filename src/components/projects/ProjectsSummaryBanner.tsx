@@ -14,6 +14,7 @@ import {
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useProfile } from '@/hooks/data/useProfile';
 import { cn } from '@/lib/utils';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 
 interface ProjectsSummaryBannerProps {
   projects: any[];
@@ -22,6 +23,7 @@ interface ProjectsSummaryBannerProps {
 
 export function ProjectsSummaryBanner({ projects, projectFinancials }: ProjectsSummaryBannerProps) {
   const { language } = useLanguage();
+  const { formatAxis } = useFormatCurrency();
   const { data: profile } = useProfile();
 
   const firstName = profile?.full_name?.split(' ')[0] || '';
@@ -201,7 +203,7 @@ export function ProjectsSummaryBanner({ projects, projectFinancials }: ProjectsS
               </div>
               <div>
                 <p className="text-lg font-bold text-emerald-600">
-                  ${stats.totalIncome >= 1000 ? `${(stats.totalIncome / 1000).toFixed(1)}k` : stats.totalIncome.toLocaleString()}
+                  {formatAxis(stats.totalIncome)}
                 </p>
                 <p className="text-[10px] text-muted-foreground uppercase tracking-wide">
                   {language === 'es' ? 'Ingresos' : 'Income'}
@@ -231,9 +233,7 @@ export function ProjectsSummaryBanner({ projects, projectFinancials }: ProjectsS
                   stats.netBalance >= 0 ? "text-success" : "text-destructive"
                 )}>
                   {stats.netBalance >= 0 ? '+' : ''}
-                  ${Math.abs(stats.netBalance) >= 1000 
-                    ? `${(stats.netBalance / 1000).toFixed(1)}k` 
-                    : stats.netBalance.toLocaleString()}
+                  {formatAxis(stats.netBalance)}
                 </p>
                 <p className="text-[10px] text-muted-foreground uppercase tracking-wide">
                   {language === 'es' ? 'Balance' : 'Balance'}

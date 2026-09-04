@@ -45,6 +45,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useProfile } from "@/hooks/data/useProfile";
 import { useWorkflowProgress } from "@/hooks/data/useWorkflowProgress";
 import { cn } from "@/lib/utils";
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 
 interface WorkflowStep {
   id: string;
@@ -598,6 +599,7 @@ export function SingleWorkflow({ workflowId }: { workflowId: string }) {
 // Mini workflow with dynamic progress indicator
 export function MiniWorkflow({ workflowId }: { workflowId: string }) {
   const { language } = useLanguage();
+  const { formatCurrency } = useFormatCurrency();
   const { data: progress, isLoading } = useWorkflowProgress(workflowId);
   const workflow = WORKFLOWS.find(w => w.id === workflowId);
   if (!workflow) return null;
@@ -654,7 +656,7 @@ export function MiniWorkflow({ workflowId }: { workflowId: string }) {
                 )}
               >
                 {stat.type === 'currency' 
-                  ? `$${stat.value.toLocaleString()}`
+                  ? formatCurrency(Number(stat.value), { decimals: 0 })
                   : stat.value
                 } {stat.label[language]}
               </Badge>

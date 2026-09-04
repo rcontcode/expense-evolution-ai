@@ -10,6 +10,87 @@ const corsHeaders = {
 
 const DEMO_TAG = "[DEMO]";
 
+// La linea del banco NO lleva el prefijo visible: se marca en `duplicate_hash`, que es un campo
+// tecnico que no se muestra en ninguna pantalla. Antes el prefijo iba en `description`, y por eso
+// en la cartola se leia "[DEMO] BANCO BCI TRANSFERENCIA" en pantalla, justo en las pantallas que
+// se van a grabar. Las filas viejas siguen teniendo el prefijo en la descripcion, asi que al
+// limpiar se buscan las dos formas.
+const DEMO_HASH = "demo:";
+
+// ======================================================================
+// VOCABULARIO: del español del escenario al catalogo real de la app
+// ======================================================================
+// Los escenarios estan escritos con las palabras del dia a dia ("alimentacion", "servicios",
+// "vivienda"). La app NO usa ese vocabulario: sus categorias de gasto son las de
+// `src/lib/constants/expense-categories.ts` ("meals", "utilities", "rent"...), las de cuentas
+// recurrentes son las de `bill-categories.ts`, y las de deudas las de `useNetWorth.ts`.
+//
+// Cuando la categoria no existe en el catalogo, la app muestra la llave cruda: el supermercado
+// aparecia como "alimentacion" en vez de "Comidas y Entretenimiento", sin icono ni color; el
+// grafico de torta quedaba con etiquetas en minuscula sin traducir; y los presupuestos por
+// categoria no calzaban con ningun gasto, asi que el Presupuesto mostraba todo en cero teniendo
+// gastos cargados. Se traduce aqui, al insertar, para que los escenarios se sigan escribiendo
+// en español y la app reciba siempre su propio vocabulario.
+const CATEGORIA_DE_GASTO: Record<string, string> = {
+  vivienda: "rent",
+  arriendo: "rent",
+  alimentacion: "meals",
+  transporte: "fuel",
+  transport: "fuel",
+  suscripciones: "software",
+  salud: "medical",
+  compras: "scheduled_purchases",
+  servicios: "utilities",
+  communications: "telephone",
+  educacion: "education_training",
+  mascota: "other",
+  insumos: "materials",
+  sueldos: "professional_services",
+  marketing: "advertising",
+  entretenimiento: "family_outings",
+  tools: "equipment",
+};
+
+const CATEGORIA_DE_CUENTA: Record<string, string> = {
+  suscripciones: "subscriptions",
+  software: "subscriptions",
+  salud: "health",
+  vivienda: "housing",
+  arriendo: "housing",
+  rent: "housing",
+  educacion: "education",
+  servicios: "utilities",
+  transporte: "transportation",
+  salary: "other",
+  business: "other",
+};
+
+const CATEGORIA_DE_DEUDA: Record<string, string> = {
+  auto_loan: "car_loan",
+};
+
+// Que es cada gasto para efectos de impuestos. La app marca como INCOMPLETO todo gasto sin
+// clasificar, y los escenarios no la traian: el listado de gastos abria diciendo "116/120
+// incompletos" y cada fila con una alerta amarilla "Falta: Clasificacion". Un tablero de
+// demostracion no puede abrir en rojo.
+const TIPO_DE_GASTO_POR_ESCENARIO: Record<string, string> = {
+  maria_profesional: "personal",
+  carlos_caos: "personal",
+  constructora_ca: "cra_deductible",
+  familia_rodriguez: "personal",
+  ecolavanderia_spa: "cra_deductible",
+  pareja_primera_casa: "personal",
+  contador_independiente: "cra_deductible",
+  expat_multipais: "personal",
+  jubilado_inversiones: "personal",
+  emprendedor_digital: "cra_deductible",
+};
+
+function traducir(mapa: Record<string, string>, categoria: unknown): string | undefined {
+  if (typeof categoria !== "string") return categoria as undefined;
+  return mapa[categoria] ?? categoria;
+}
+
 type Action = "seed" | "reset" | "status";
 type Scenario =
   | "maria_profesional"
@@ -17,7 +98,7 @@ type Scenario =
   | "constructora_ca"
   | "familia_rodriguez"
   | "ecolavanderia_spa"
-  | "pareja_millennial"
+  | "pareja_primera_casa"
   | "contador_independiente"
   | "expat_multipais"
   | "jubilado_inversiones"
@@ -102,7 +183,7 @@ function buildScenarioMaria(userId: string) {
     expenses: expenses.map((e) => ({ ...e, user_id: userId, currency: "CLP", notes: `${DEMO_TAG} ${e.description}`, status: "pending" })),
     incomes: incomes.map((i) => ({ ...i, user_id: userId, currency: "CLP", notes: `${DEMO_TAG} ${i.description}`, recurrence: "one_time" })),
     bills: bills.map((b) => ({ ...b, user_id: userId, currency: "CLP", notes: `${DEMO_TAG} factura recurrente`, status: "active", payment_method_type: "manual_online" })),
-    bankTxns: bankTxns.map((t) => ({ ...t, user_id: userId, description: `${DEMO_TAG} ${t.description}` })),
+    bankTxns: bankTxns.map((t, i) => ({ ...t, user_id: userId, duplicate_hash: `${DEMO_HASH}${userId}:${i}:${t.transaction_date}:${t.amount}` })),
     fiscalEntity: { ...fiscalEntity, user_id: userId, notes: `${DEMO_TAG} entidad fiscal demo` },
     mileage: [],
     budgets: [],
@@ -145,7 +226,7 @@ function buildScenarioCarlos(userId: string) {
     expenses: expenses.map((e) => ({ ...e, user_id: userId, currency: "CLP", notes: `${DEMO_TAG} ${e.description}`, status: "pending" })),
     incomes: [],
     bills: [],
-    bankTxns: bankTxns.map((t) => ({ ...t, user_id: userId, description: `${DEMO_TAG} ${t.description}` })),
+    bankTxns: bankTxns.map((t, i) => ({ ...t, user_id: userId, duplicate_hash: `${DEMO_HASH}${userId}:${i}:${t.transaction_date}:${t.amount}` })),
     fiscalEntity: null,
     mileage: [],
     budgets: [],
@@ -216,7 +297,7 @@ function buildScenarioConstructoraCA(userId: string) {
     expenses: expenses.map((e) => ({ ...e, user_id: userId, currency: "CAD", notes: `${DEMO_TAG} ${e.description}`, status: "pending" })),
     incomes: incomes.map((i) => ({ ...i, user_id: userId, currency: "CAD", notes: `${DEMO_TAG} ${i.description}`, recurrence: "one_time" })),
     bills: bills.map((b) => ({ ...b, user_id: userId, currency: "CAD", notes: `${DEMO_TAG} recurring`, status: "active", payment_method_type: "auto_debit" })),
-    bankTxns: bankTxns.map((t) => ({ ...t, user_id: userId, description: `${DEMO_TAG} ${t.description}` })),
+    bankTxns: bankTxns.map((t, i) => ({ ...t, user_id: userId, duplicate_hash: `${DEMO_HASH}${userId}:${i}:${t.transaction_date}:${t.amount}` })),
     fiscalEntity: { ...fiscalEntity, user_id: userId, notes: `${DEMO_TAG} fiscal entity demo` },
     mileage: mileage.map((m) => ({ ...m, user_id: userId, recurrence: "one_time", purpose: `${DEMO_TAG} ${m.purpose}` })),
     budgets: [],
@@ -358,7 +439,7 @@ function buildScenarioFamiliaRodriguez(userId: string) {
     expenses: expenses.map((e) => ({ ...e, user_id: userId, currency: "CLP", notes: `${DEMO_TAG} ${e.description}`, status: "pending" })),
     incomes: incomes.map((i) => ({ ...i, user_id: userId, currency: "CLP", notes: `${DEMO_TAG} ${i.description}`, recurrence: "monthly" })),
     bills: bills.map((b) => ({ ...b, user_id: userId, currency: "CLP", notes: `${DEMO_TAG} bill recurrente familia`, status: "active", payment_method_type: "auto_debit" })),
-    bankTxns: bankTxns.map((t) => ({ ...t, user_id: userId, description: `${DEMO_TAG} ${t.description}` })),
+    bankTxns: bankTxns.map((t, i) => ({ ...t, user_id: userId, duplicate_hash: `${DEMO_HASH}${userId}:${i}:${t.transaction_date}:${t.amount}` })),
     fiscalEntity: { ...fiscalEntity, user_id: userId, notes: `${DEMO_TAG} familia` },
     mileage: [],
     budgets: budgets.map((b) => ({ ...b, user_id: userId })),
@@ -490,7 +571,7 @@ function buildScenarioEcoLavanderia(userId: string) {
     expenses: expenses.map((e) => ({ ...e, user_id: userId, currency: "CLP", notes: `${DEMO_TAG} ${e.description}`, status: "approved" })),
     incomes: incomes.map((i) => ({ ...i, user_id: userId, currency: "CLP", notes: `${DEMO_TAG} ${i.description}`, recurrence: "one_time" })),
     bills: bills.map((b) => ({ ...b, user_id: userId, currency: "CLP", notes: `${DEMO_TAG} bill operacional`, status: "active", payment_method_type: "manual_online" })),
-    bankTxns: bankTxns.map((t) => ({ ...t, user_id: userId, description: `${DEMO_TAG} ${t.description}` })),
+    bankTxns: bankTxns.map((t, i) => ({ ...t, user_id: userId, duplicate_hash: `${DEMO_HASH}${userId}:${i}:${t.transaction_date}:${t.amount}` })),
     fiscalEntity: { ...fiscalEntity, user_id: userId, notes: `${DEMO_TAG} pyme cl` },
     mileage: mileage.map((m) => ({ ...m, user_id: userId, recurrence: "one_time", purpose: `${DEMO_TAG} ${m.purpose}` })),
     budgets: budgets.map((b) => ({ ...b, user_id: userId })),
@@ -501,10 +582,10 @@ function buildScenarioEcoLavanderia(userId: string) {
 }
 
 // ======================================================================
-// SCENARIO F: Pareja Millennial (Chile, sin hijos) — FOCALIZADO
+// SCENARIO F: Pareja ahorrando su primera casa (Chile, sin hijos) — FOCALIZADO
 // Daniela (29) + Joaquin (31), ahorrando casa propia
 // ======================================================================
-function buildScenarioParejaMillennial(userId: string) {
+function buildScenarioParejaPrimeraCasa(userId: string) {
   const expenses = [
     { vendor: "Arriendo Depto", amount: 720000, category: "vivienda", date: daysAgo(28), description: "Arriendo compartido" },
     { vendor: "Jumbo", amount: 195000, category: "alimentacion", date: daysAgo(25), description: "Compra mensual" },
@@ -561,7 +642,7 @@ function buildScenarioParejaMillennial(userId: string) {
     expenses: expenses.map((e) => ({ ...e, user_id: userId, currency: "CLP", notes: `${DEMO_TAG} ${e.description}`, status: "pending" })),
     incomes: incomes.map((i) => ({ ...i, user_id: userId, currency: "CLP", notes: `${DEMO_TAG} ${i.description}`, recurrence: "monthly" })),
     bills: [],
-    bankTxns: bankTxns.map((t) => ({ ...t, user_id: userId, description: `${DEMO_TAG} ${t.description}` })),
+    bankTxns: bankTxns.map((t, i) => ({ ...t, user_id: userId, duplicate_hash: `${DEMO_HASH}${userId}:${i}:${t.transaction_date}:${t.amount}` })),
     fiscalEntity: { ...fiscalEntity, user_id: userId, notes: `${DEMO_TAG} pareja` },
     mileage: [],
     budgets: [],
@@ -643,7 +724,7 @@ function buildScenarioContadorIndependiente(userId: string) {
     expenses: expenses.map((e) => ({ ...e, user_id: userId, currency: "CLP", notes: `${DEMO_TAG} ${e.description}`, status: "pending" })),
     incomes: incomes.map((i) => ({ ...i, user_id: userId, currency: "CLP", notes: `${DEMO_TAG} ${i.description}`, recurrence: "monthly" })),
     bills: bills.map((b) => ({ ...b, user_id: userId, currency: "CLP", notes: `${DEMO_TAG} bill contador`, status: "active", payment_method_type: "manual_online" })),
-    bankTxns: bankTxns.map((t) => ({ ...t, user_id: userId, description: `${DEMO_TAG} ${t.description}` })),
+    bankTxns: bankTxns.map((t, i) => ({ ...t, user_id: userId, duplicate_hash: `${DEMO_HASH}${userId}:${i}:${t.transaction_date}:${t.amount}` })),
     fiscalEntity: { ...fiscalEntity, user_id: userId, notes: `${DEMO_TAG} contador EIRL` },
     mileage: [],
     budgets: [],
@@ -721,7 +802,7 @@ function buildScenarioExpatMultipais(userId: string) {
     expenses: expenses.map((e) => ({ ...e, user_id: userId, notes: `${DEMO_TAG} ${e.description}`, status: "pending" })),
     incomes: incomes.map((i) => ({ ...i, user_id: userId, notes: `${DEMO_TAG} ${i.description}`, recurrence: "monthly" })),
     bills: [],
-    bankTxns: bankTxns.map((t) => ({ ...t, user_id: userId, description: `${DEMO_TAG} ${t.description}` })),
+    bankTxns: bankTxns.map((t, i) => ({ ...t, user_id: userId, duplicate_hash: `${DEMO_HASH}${userId}:${i}:${t.transaction_date}:${t.amount}` })),
     fiscalEntity: { ...fiscalEntity, user_id: userId, notes: `${DEMO_TAG} expat CA primary` },
     mileage: mileage.map((m) => ({ ...m, user_id: userId, recurrence: "one_time", purpose: `${DEMO_TAG} ${m.purpose}` })),
     budgets: [],
@@ -804,7 +885,7 @@ function buildScenarioJubiladoInversiones(userId: string) {
     expenses: expenses.map((e) => ({ ...e, user_id: userId, currency: "CAD", notes: `${DEMO_TAG} ${e.description}`, status: "pending" })),
     incomes: incomes.map((i) => ({ ...i, user_id: userId, currency: "CAD", notes: `${DEMO_TAG} ${i.description}`, recurrence: "monthly" })),
     bills: [],
-    bankTxns: bankTxns.map((t) => ({ ...t, user_id: userId, description: `${DEMO_TAG} ${t.description}` })),
+    bankTxns: bankTxns.map((t, i) => ({ ...t, user_id: userId, duplicate_hash: `${DEMO_HASH}${userId}:${i}:${t.transaction_date}:${t.amount}` })),
     fiscalEntity: { ...fiscalEntity, user_id: userId, notes: `${DEMO_TAG} jubilado CA` },
     mileage: [],
     budgets: [],
@@ -891,7 +972,7 @@ function buildScenarioEmprendedorDigital(userId: string) {
     expenses: expenses.map((e) => ({ ...e, user_id: userId, currency: "CLP", notes: `${DEMO_TAG} ${e.description}`, status: "pending" })),
     incomes: incomes.map((i) => ({ ...i, user_id: userId, currency: "CLP", notes: `${DEMO_TAG} ${i.description}`, recurrence: "monthly" })),
     bills: bills.map((b) => ({ ...b, user_id: userId, currency: "CLP", notes: `${DEMO_TAG} bill SaaS`, status: "active", payment_method_type: "auto_debit" })),
-    bankTxns: bankTxns.map((t) => ({ ...t, user_id: userId, description: `${DEMO_TAG} ${t.description}` })),
+    bankTxns: bankTxns.map((t, i) => ({ ...t, user_id: userId, duplicate_hash: `${DEMO_HASH}${userId}:${i}:${t.transaction_date}:${t.amount}` })),
     fiscalEntity: { ...fiscalEntity, user_id: userId, notes: `${DEMO_TAG} SaaS founder` },
     mileage: [],
     budgets: [],
@@ -904,74 +985,184 @@ function buildScenarioEmprendedorDigital(userId: string) {
 // ======================================================================
 // RESET / STATUS / SEED
 // ======================================================================
-const RESET_TABLES = [
-  { name: "expense_tags", isRelation: true }, // limpiar relaciones primero
+// Los nombres de metas y etiquetas que crea cada escenario. Se sacan de los mismos
+// constructores, asi que si manana un escenario agrega una meta, la limpieza la reconoce sola.
+const CONSTRUCTORES = [
+  buildScenarioMaria,
+  buildScenarioCarlos,
+  buildScenarioConstructoraCA,
+  buildScenarioFamiliaRodriguez,
+  buildScenarioEcoLavanderia,
+  buildScenarioParejaPrimeraCasa,
+  buildScenarioContadorIndependiente,
+  buildScenarioExpatMultipais,
+  buildScenarioJubiladoInversiones,
+  buildScenarioEmprendedorDigital,
+];
+
+const USUARIO_FICTICIO = "00000000-0000-0000-0000-000000000000";
+
+function nombresDeDemo(campo: "goals" | "tags"): string[] {
+  const nombres = new Set<string>();
+  for (const construir of CONSTRUCTORES) {
+    let datos: any;
+    try { datos = construir(USUARIO_FICTICIO); } catch { continue; }
+    for (const item of (datos?.[campo] || [])) {
+      if (item?.name) nombres.add(item.name);
+    }
+  }
+  return Array.from(nombres);
+}
+
+// ======================================================================
+// RESET / STATUS / SEED
+// ======================================================================
+// Las tablas que guardan la marca [DEMO] en una columna de texto propia.
+const TABLAS_MARCADAS = [
   { name: "expenses", col: "notes" },
   { name: "income", col: "notes" },
   { name: "recurring_bills", col: "notes" },
-  { name: "bank_transactions", col: "description" },
   { name: "mileage", col: "purpose" },
-  { name: "category_budgets", col: null }, // no tiene notes; limpiar todos del usuario que coincidan con categorias demo? Mejor: borrar todos del user.
-  { name: "savings_goals", col: "name" }, // usar prefijo en name? Mejor: borrar tods donde name empiece con cualquier demo
   { name: "liabilities", col: "notes" },
-  { name: "tags", col: null }, // tags no tiene notes; borrar tags marcadas via user_id (ya filtrado)
   { name: "fiscal_entities", col: "notes" },
 ];
 
+// La cartola se reconoce por `duplicate_hash` (marca nueva, invisible en pantalla) o por el
+// prefijo viejo en la descripcion, para poder limpiar tambien lo que se sembro antes.
+const FILTRO_BANCO = `duplicate_hash.ilike.${DEMO_HASH}%,description.ilike.${DEMO_TAG}%`;
+
+/**
+ * Borra SOLO lo que sembro el Demo Studio.
+ *
+ * Antes esta funcion borraba **todos** los presupuestos por categoria, **todas** las metas de
+ * ahorro y **todas** las etiquetas del usuario, con el comentario de que "no tienen columna
+ * notes confiable". El dialogo del Demo Studio promete, textualmente, que los datos reales no se
+ * tocan: cargar un escenario llama a este reset primero, asi que un solo clic borraba de verdad
+ * los presupuestos, las metas y las etiquetas propias. Ahora los presupuestos se ubican por la
+ * entidad fiscal demo de la que cuelgan, y las metas y etiquetas por su nombre exacto.
+ */
 async function resetDemo(supabase: any, userId: string) {
   const counts: Record<string, number> = {};
 
-  // 1. Borrar relaciones expense_tags (ON DELETE CASCADE de expenses ya las borra, pero por seguridad las dejamos primero)
-  // 2. Borrar registros con prefijo [DEMO]
-  for (const t of [
-    { name: "expenses", col: "notes" },
-    { name: "income", col: "notes" },
-    { name: "recurring_bills", col: "notes" },
-    { name: "bank_transactions", col: "description" },
-    { name: "mileage", col: "purpose" },
-    { name: "liabilities", col: "notes" },
-    { name: "fiscal_entities", col: "notes" },
-  ]) {
+  // Las entidades demo se leen ANTES de borrarlas: los presupuestos cuelgan de ellas.
+  const { data: entidadesDemo } = await supabase
+    .from("fiscal_entities").select("id").eq("user_id", userId).ilike("notes", `${DEMO_TAG}%`);
+  const idsEntidadDemo = (entidadesDemo || []).map((e: any) => e.id);
+
+  if (idsEntidadDemo.length) {
+    const { data, error } = await supabase
+      .from("category_budgets").delete().eq("user_id", userId)
+      .in("entity_id", idsEntidadDemo).select("id");
+    counts.category_budgets = error ? -1 : (data?.length || 0);
+    if (error) console.error("Reset category_budgets:", error);
+  } else {
+    counts.category_budgets = 0;
+  }
+
+  for (const [tabla, campo] of [["savings_goals", "goals"], ["tags", "tags"]] as const) {
+    const nombres = nombresDeDemo(campo);
+    if (!nombres.length) { counts[tabla] = 0; continue; }
+    const { data, error } = await supabase
+      .from(tabla).delete().eq("user_id", userId).in("name", nombres).select("id");
+    counts[tabla] = error ? -1 : (data?.length || 0);
+    if (error) console.error(`Reset ${tabla}:`, error);
+  }
+
+  for (const t of TABLAS_MARCADAS) {
     const { data, error } = await supabase
       .from(t.name).delete().eq("user_id", userId).ilike(t.col, `${DEMO_TAG}%`).select("id");
     counts[t.name] = error ? -1 : (data?.length || 0);
     if (error) console.error(`Reset ${t.name}:`, error);
   }
 
-  // 3. category_budgets, savings_goals, tags: no tienen columna notes confiable.
-  //    Usamos heuristica: solo borrar si el user tiene una entidad fiscal demo presente en este momento (ya borrada arriba).
-  //    Para idempotencia simple: borrar TODOS los del user (admin demo studio).
-  for (const t of ["category_budgets", "savings_goals", "tags"]) {
-    const { data, error } = await supabase.from(t).delete().eq("user_id", userId).select("id");
-    counts[t] = error ? -1 : (data?.length || 0);
-    if (error) console.error(`Reset ${t}:`, error);
-  }
+  const { data: banco, error: errorBanco } = await supabase
+    .from("bank_transactions").delete().eq("user_id", userId).or(FILTRO_BANCO).select("id");
+  counts.bank_transactions = errorBanco ? -1 : (banco?.length || 0);
+  if (errorBanco) console.error("Reset bank_transactions:", errorBanco);
 
   return counts;
 }
 
 async function statusDemo(supabase: any, userId: string) {
   const counts: Record<string, number> = {};
-  for (const t of [
-    { name: "expenses", col: "notes" },
-    { name: "income", col: "notes" },
-    { name: "recurring_bills", col: "notes" },
-    { name: "bank_transactions", col: "description" },
-    { name: "mileage", col: "purpose" },
-    { name: "liabilities", col: "notes" },
-    { name: "fiscal_entities", col: "notes" },
-  ]) {
+
+  for (const t of TABLAS_MARCADAS) {
     const { count, error } = await supabase
       .from(t.name).select("*", { count: "exact", head: true })
       .eq("user_id", userId).ilike(t.col, `${DEMO_TAG}%`);
     counts[t.name] = error ? -1 : (count || 0);
   }
-  for (const t of ["category_budgets", "savings_goals", "tags"]) {
+
+  const { count: banco, error: errorBanco } = await supabase
+    .from("bank_transactions").select("*", { count: "exact", head: true })
+    .eq("user_id", userId).or(FILTRO_BANCO);
+  counts.bank_transactions = errorBanco ? -1 : (banco || 0);
+
+  const { data: entidadesDemo } = await supabase
+    .from("fiscal_entities").select("id").eq("user_id", userId).ilike("notes", `${DEMO_TAG}%`);
+  const idsEntidadDemo = (entidadesDemo || []).map((e: any) => e.id);
+  if (idsEntidadDemo.length) {
     const { count, error } = await supabase
-      .from(t).select("*", { count: "exact", head: true }).eq("user_id", userId);
-    counts[t] = error ? -1 : (count || 0);
+      .from("category_budgets").select("*", { count: "exact", head: true })
+      .eq("user_id", userId).in("entity_id", idsEntidadDemo);
+    counts.category_budgets = error ? -1 : (count || 0);
+  } else {
+    counts.category_budgets = 0;
   }
+
+  for (const [tabla, campo] of [["savings_goals", "goals"], ["tags", "tags"]] as const) {
+    const nombres = nombresDeDemo(campo);
+    if (!nombres.length) { counts[tabla] = 0; continue; }
+    const { count, error } = await supabase
+      .from(tabla).select("*", { count: "exact", head: true })
+      .eq("user_id", userId).in("name", nombres);
+    counts[tabla] = error ? -1 : (count || 0);
+  }
+
   return counts;
+}
+
+/**
+ * Deja siempre movimiento dentro del mes en curso.
+ *
+ * Los escenarios estan escritos en dias hacia atras ("hace 5 dias"), asi que en los primeros dias
+ * del mes su gasto mas reciente todavia cae en el mes pasado. Media app trabaja por mes en curso:
+ * el resumen del tablero, el grafico de torta, el Presupuesto y Analisis quedaban en cero teniendo
+ * seis meses de datos cargados — que fue exactamente lo que se vio el 3 de septiembre.
+ *
+ * Se corre TODA la linea de tiempo por igual (gastos, ingresos, cartola y kilometraje), no solo
+ * los ultimos movimientos: asi se conservan las distancias entre pagos —de eso vive la deteccion
+ * de suscripciones— y cada gasto sigue calzando con su linea del banco, que es lo que hace
+ * funcionar la conciliacion.
+ */
+function acercarAlMesEnCurso(data: any) {
+  const fechas: string[] = (data.expenses || []).map((e: any) => e.date).filter(Boolean);
+  if (!fechas.length) return data;
+
+  const masReciente = fechas.reduce((a, b) => (a > b ? a : b));
+  const hoy = new Date();
+  const primeroDelMes = new Date(Date.UTC(hoy.getUTCFullYear(), hoy.getUTCMonth(), 1))
+    .toISOString().slice(0, 10);
+  if (masReciente >= primeroDelMes) return data;
+
+  const dias = Math.round(
+    (Date.parse(`${daysAgo(0)}T00:00:00Z`) - Date.parse(`${masReciente}T00:00:00Z`)) / 86400000,
+  );
+  if (dias <= 0) return data;
+
+  const correr = (iso: string) => {
+    if (!iso || typeof iso !== "string") return iso;
+    const d = new Date(`${iso.slice(0, 10)}T00:00:00Z`);
+    d.setUTCDate(d.getUTCDate() + dias);
+    return d.toISOString().slice(0, 10);
+  };
+
+  for (const fila of data.expenses || []) fila.date = correr(fila.date);
+  for (const fila of data.incomes || []) fila.date = correr(fila.date);
+  for (const fila of data.bankTxns || []) fila.transaction_date = correr(fila.transaction_date);
+  for (const fila of data.mileage || []) fila.date = correr(fila.date);
+
+  return data;
 }
 
 async function seedDemo(supabase: any, userId: string, scenario: Scenario) {
@@ -984,13 +1175,15 @@ async function seedDemo(supabase: any, userId: string, scenario: Scenario) {
     case "constructora_ca": data = buildScenarioConstructoraCA(userId); break;
     case "familia_rodriguez": data = buildScenarioFamiliaRodriguez(userId); break;
     case "ecolavanderia_spa": data = buildScenarioEcoLavanderia(userId); break;
-    case "pareja_millennial": data = buildScenarioParejaMillennial(userId); break;
+    case "pareja_primera_casa": data = buildScenarioParejaPrimeraCasa(userId); break;
     case "contador_independiente": data = buildScenarioContadorIndependiente(userId); break;
     case "expat_multipais": data = buildScenarioExpatMultipais(userId); break;
     case "jubilado_inversiones": data = buildScenarioJubiladoInversiones(userId); break;
     case "emprendedor_digital": data = buildScenarioEmprendedorDigital(userId); break;
     default: throw new Error(`Unknown scenario: ${scenario}`);
   }
+
+  acercarAlMesEnCurso(data);
 
   const inserted: Record<string, number> = {};
   let entityId: string | null = null;
@@ -1005,7 +1198,20 @@ async function seedDemo(supabase: any, userId: string, scenario: Scenario) {
 
   // 2. Expenses (con entity_id si aplica)
   if (data.expenses.length) {
-    const withEntity = data.expenses.map((e: any) => entityId ? { ...e, entity_id: entityId } : e);
+    // Los tres gastos mas recientes quedan "pendientes" a proposito: es lo que hace que el Centro
+    // de Revision tenga algo que mostrar. El resto entra ya clasificado, como estaria la cuenta
+    // de alguien que viene usando la app hace meses.
+    const porFecha = [...data.expenses].sort((a: any, b: any) => (a.date < b.date ? 1 : -1));
+    const pendientes = new Set(porFecha.slice(0, 3));
+    const tipoPorDefecto = TIPO_DE_GASTO_POR_ESCENARIO[scenario] || "personal";
+    const withEntity = data.expenses.map((e: any) => ({
+      ...e,
+      category: traducir(CATEGORIA_DE_GASTO, e.category),
+      reimbursement_type: e.reimbursement_type
+        ?? (e.client_id ? "client_reimbursable" : tipoPorDefecto),
+      status: pendientes.has(e) ? "pending" : "classified",
+      ...(entityId ? { entity_id: entityId } : {}),
+    }));
     const { data: ins, error } = await supabase.from("expenses").insert(withEntity).select("id");
     if (error) throw new Error(`expenses: ${error.message}`);
     inserted.expenses = ins?.length || 0;
@@ -1021,7 +1227,11 @@ async function seedDemo(supabase: any, userId: string, scenario: Scenario) {
 
   // 4. Bills
   if (data.bills.length) {
-    const withEntity = data.bills.map((b: any) => entityId ? { ...b, entity_id: entityId } : b);
+    const withEntity = data.bills.map((b: any) => ({
+      ...b,
+      category: traducir(CATEGORIA_DE_CUENTA, b.category),
+      ...(entityId ? { entity_id: entityId } : {}),
+    }));
     const { data: ins, error } = await supabase.from("recurring_bills").insert(withEntity).select("id");
     if (error) throw new Error(`recurring_bills: ${error.message}`);
     inserted.recurring_bills = ins?.length || 0;
@@ -1044,7 +1254,11 @@ async function seedDemo(supabase: any, userId: string, scenario: Scenario) {
 
   // 7. Budgets
   if (data.budgets.length) {
-    const withEntity = data.budgets.map((b: any) => entityId ? { ...b, entity_id: entityId } : b);
+    const withEntity = data.budgets.map((b: any) => ({
+      ...b,
+      category: traducir(CATEGORIA_DE_GASTO, b.category),
+      ...(entityId ? { entity_id: entityId } : {}),
+    }));
     const { data: ins, error } = await supabase.from("category_budgets").insert(withEntity).select("id");
     if (error) throw new Error(`category_budgets: ${error.message}`);
     inserted.category_budgets = ins?.length || 0;
@@ -1059,7 +1273,11 @@ async function seedDemo(supabase: any, userId: string, scenario: Scenario) {
 
   // 9. Liabilities
   if (data.liabilities.length) {
-    const withEntity = data.liabilities.map((l: any) => entityId ? { ...l, entity_id: entityId } : l);
+    const withEntity = data.liabilities.map((l: any) => ({
+      ...l,
+      category: traducir(CATEGORIA_DE_DEUDA, l.category),
+      ...(entityId ? { entity_id: entityId } : {}),
+    }));
     const { data: ins, error } = await supabase.from("liabilities").insert(withEntity).select("id");
     if (error) throw new Error(`liabilities: ${error.message}`);
     inserted.liabilities = ins?.length || 0;

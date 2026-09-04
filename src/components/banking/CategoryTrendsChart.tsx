@@ -52,7 +52,7 @@ export function CategoryTrendsChart() {
   const { language } = useLanguage();
   const { data: transactions } = useBankTransactions();
   const { data: expenses } = useExpenses();
-  const { formatCurrency: fc } = useFormatCurrency();
+  const { formatCurrency: fc, formatAxis } = useFormatCurrency();
   const [chartMode, setChartMode] = useState<'area' | 'bar'>('area');
 
   const { chartData, categories, categoryTrends, momComparison } = useMemo(() => {
@@ -205,7 +205,7 @@ export function CategoryTrendsChart() {
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                 <XAxis dataKey="monthLabel" tick={{ fontSize: 12 }} className="text-muted-foreground" />
-                <YAxis tick={{ fontSize: 12 }} tickFormatter={(v) => `$${v}`} className="text-muted-foreground" />
+                <YAxis tick={{ fontSize: 12 }} tickFormatter={(v) => formatAxis(Number(v))} className="text-muted-foreground" />
                 <Tooltip
                   contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))', borderRadius: '8px' }}
                   formatter={(value: number, name: string) => [fc(value), getCategoryLabel(name)]}
@@ -220,7 +220,7 @@ export function CategoryTrendsChart() {
               <BarChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                 <XAxis dataKey="monthLabel" tick={{ fontSize: 12 }} className="text-muted-foreground" />
-                <YAxis tick={{ fontSize: 12 }} tickFormatter={(v) => `$${v}`} className="text-muted-foreground" />
+                <YAxis tick={{ fontSize: 12 }} tickFormatter={(v) => formatAxis(Number(v))} className="text-muted-foreground" />
                 <Tooltip
                   contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))', borderRadius: '8px' }}
                   formatter={(value: number, name: string) => [fc(value), getCategoryLabel(name)]}

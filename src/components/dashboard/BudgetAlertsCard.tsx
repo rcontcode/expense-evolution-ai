@@ -38,7 +38,7 @@ export function BudgetAlertsCard() {
 
   const { data: expenses } = useExpenses({
     dateRange: { start: monthStart, end: monthEnd },
-    entityId: budgetEntityId ?? undefined,
+    entityId: budgetEntityId,
     showAllEntities: budgetEntityId === undefined,
   });
 
@@ -47,7 +47,7 @@ export function BudgetAlertsCard() {
   const { data: incomeData } = useIncome({
     year: currentYear,
     month: currentMonth,
-    entityId: budgetEntityId ?? undefined,
+    entityId: budgetEntityId,
     showAllEntities: budgetEntityId === undefined,
   });
 

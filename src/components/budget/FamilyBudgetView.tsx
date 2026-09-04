@@ -14,7 +14,7 @@ import { Progress } from "@/components/ui/progress";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Settings2, Upload, CreditCard, LayoutDashboard, ShoppingCart, TrendingUp, Wallet, Target, Wrench } from "lucide-react";
-import { format, startOfMonth, endOfMonth, differenceInDays, parseISO, subMonths } from "date-fns";
+import { format, startOfMonth, endOfMonth, differenceInDays, parseISO, subMonths, differenceInCalendarDays} from "date-fns";
 import { es, enUS } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
@@ -116,7 +116,7 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
   const activeBills = (bills || []).filter(b => b.status === 'active');
   const unpaidBills = activeBills.filter(b => {
     const due = parseISO(b.next_due_date);
-    return differenceInDays(due, now) <= 7;
+    return differenceInCalendarDays(due, now) <= 7;
   });
   const overdueBills = plan.unpaidBills.filter(b => b.overdue);
 
@@ -590,7 +590,7 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
                     <div className="space-y-2">
                       {activeBills.slice(0, 8).map((bill) => {
                         const due = parseISO(bill.next_due_date);
-                        const daysUntil = differenceInDays(due, now);
+                        const daysUntil = differenceInCalendarDays(due, now);
                         const isUrgent = daysUntil <= 3;
                         const isOverdue = daysUntil < 0;
                         const catInfo = getCatInfo(bill.category, l ? 'es' : 'en');

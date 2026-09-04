@@ -21,6 +21,7 @@ import { ExpenseWithRelations } from '@/types/expense.types';
 import { getCategoryLabelByLanguage } from '@/lib/constants/expense-categories';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 
 
 interface QuickClassifyDialogProps {
@@ -66,6 +67,7 @@ const CATEGORY_EMOJI: Record<string, string> = {
 
 export function QuickClassifyDialog({ open, onClose, expenses }: QuickClassifyDialogProps) {
   const { language } = useLanguage();
+  const { formatCurrency } = useFormatCurrency();
   const { data: clients = [] } = useClients();
   const { data: contracts = [] } = useContracts();
   const { data: projects = [] } = useProjects();
@@ -309,7 +311,7 @@ export function QuickClassifyDialog({ open, onClose, expenses }: QuickClassifyDi
                       animate={{ scale: 1 }}
                       className="text-2xl font-bold text-primary whitespace-nowrap"
                     >
-                      ${Number(current.amount).toFixed(2)}
+                      {formatCurrency(Number(current.amount))}
                     </motion.p>
                   </div>
                   <div className="flex gap-2 flex-wrap">

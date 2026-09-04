@@ -18,6 +18,7 @@ import { ExpenseWithRelations } from '@/types/expense.types';
 import { format, parseISO, isWithinInterval } from 'date-fns';
 import { getCategoryLabel, EXPENSE_CATEGORIES } from '@/lib/constants/expense-categories';
 import { cn } from '@/lib/utils';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 
 interface BulkAssignDialogProps {
   open: boolean;
@@ -27,6 +28,7 @@ interface BulkAssignDialogProps {
 
 export function BulkAssignDialog({ open, onClose, expenses }: BulkAssignDialogProps) {
   const { language } = useLanguage();
+  const { formatCurrency } = useFormatCurrency();
   const { data: clients } = useClients();
   const { data: projects } = useProjects();
   const { data: contracts } = useContracts();
@@ -467,7 +469,7 @@ export function BulkAssignDialog({ open, onClose, expenses }: BulkAssignDialogPr
                       </div>
                     </div>
                     <div className="text-right shrink-0">
-                      <span className="font-medium">${Number(expense.amount).toFixed(2)}</span>
+                      <span className="font-medium">{formatCurrency(Number(expense.amount))}</span>
                       {!expense.client_id && (
                         <div className="text-xs text-yellow-600">
                           {language === 'es' ? 'Sin cliente' : 'No client'}
@@ -487,10 +489,9 @@ export function BulkAssignDialog({ open, onClose, expenses }: BulkAssignDialogPr
                 {selectedIds.size} {language === 'es' ? 'gastos seleccionados' : 'expenses selected'}
               </span>
               <span className="font-bold">
-                ${unassignedExpenses
+                {formatCurrency(unassignedExpenses
                   .filter(e => selectedIds.has(e.id))
-                  .reduce((sum, e) => sum + Number(e.amount), 0)
-                  .toFixed(2)}
+                  .reduce((sum, e) => sum + Number(e.amount), 0))}
               </span>
             </div>
           )}

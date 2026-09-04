@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Trash2, Tag, X, Zap, Users, AlertTriangle } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { useDeleteExpense } from '@/hooks/data/useExpenses';
 import { ExpenseWithRelations } from '@/types/expense.types';
 import {
@@ -33,6 +34,7 @@ export const ExpenseBulkActions = memo(function ExpenseBulkActions({
   onAssignSelected,
 }: ExpenseBulkActionsProps) {
   const { language } = useLanguage();
+  const { formatCurrency } = useFormatCurrency();
   const deleteMutation = useDeleteExpense();
   const [confirmDelete, setConfirmDelete] = useState(false);
 
@@ -68,7 +70,7 @@ export const ExpenseBulkActions = memo(function ExpenseBulkActions({
                       {language === 'es' ? 'seleccionados' : 'selected'}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      ${totalAmount.toFixed(2)} {language === 'es' ? 'total' : 'total'}
+                      {formatCurrency(totalAmount)} {language === 'es' ? 'total' : 'total'}
                     </p>
                   </div>
                 </div>
@@ -115,14 +117,14 @@ export const ExpenseBulkActions = memo(function ExpenseBulkActions({
             <AlertDialogDescription className="space-y-2">
               <p>
                 {language === 'es'
-                  ? `Se moverán ${count} gastos a la papelera por un total de $${totalAmount.toFixed(2)}. Podrás restaurarlos desde la sección Papelera.`
-                  : `${count} expenses totaling $${totalAmount.toFixed(2)} will be moved to trash. You can restore them from the Trash section.`}
+                  ? `Se moverán ${count} gastos a la papelera por un total de ${formatCurrency(totalAmount)}. Podrás restaurarlos desde la sección Papelera.`
+                  : `${count} expenses totaling ${formatCurrency(totalAmount)} will be moved to trash. You can restore them from the Trash section.`}
               </p>
               <div className="max-h-32 overflow-y-auto text-xs space-y-1 mt-2 p-2 bg-muted rounded">
                 {selectedExpenses.slice(0, 10).map(e => (
                   <div key={e.id} className="flex justify-between">
                     <span className="truncate">{e.vendor || '—'}</span>
-                    <span className="font-medium">${Number(e.amount).toFixed(2)}</span>
+                    <span className="font-medium">{formatCurrency(Number(e.amount))}</span>
                   </div>
                 ))}
                 {count > 10 && (

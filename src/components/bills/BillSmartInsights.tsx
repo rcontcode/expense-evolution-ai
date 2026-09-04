@@ -9,7 +9,7 @@ import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { useRecurringBills } from '@/hooks/data/useRecurringBills';
 import { useIncomeSummary } from '@/hooks/data/useIncome';
 import { getMonthlyEquivalent, BILL_CATEGORY_CONFIG, type BillCategory } from '@/lib/constants/bill-categories';
-import { differenceInDays, parseISO, format } from 'date-fns';
+import { differenceInDays, parseISO, format, differenceInCalendarDays} from 'date-fns';
 import { es } from 'date-fns/locale';
 import {
   Brain, Lightbulb, TrendingDown, Shield, AlertTriangle,
@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { LegalDisclaimer } from '@/components/ui/legal-disclaimer';
+import { plural } from '@/lib/plural';
 
 interface Insight {
   id: string;
@@ -54,14 +55,14 @@ export function BillSmartInsights() {
     const ratio = avgIncome > 0 ? (monthlyTotal / avgIncome) * 100 : 0;
 
     // 1. Overdue alerts
-    const overdue = active.filter(b => differenceInDays(parseISO(b.next_due_date), now) < 0);
+    const overdue = active.filter(b => differenceInCalendarDays(parseISO(b.next_due_date), now) < 0);
     if (overdue.length > 0) {
       const totalOverdue = overdue.reduce((s, b) => s + Number(b.amount), 0);
       results.push({
         id: 'overdue',
         type: 'alert',
         icon: <AlertTriangle className="h-4 w-4 text-destructive" />,
-        title: l ? `🚨 ${overdue.length} pago(s) vencido(s)` : `🚨 ${overdue.length} overdue bill(s)`,
+        title: l ? `🚨 ${overdue.length} ${plural(overdue.length, 'pago vencido', 'pagos vencidos')}` : `🚨 ${overdue.length} ${plural(overdue.length, 'overdue bill', 'overdue bills')}`,
         description: l
           ? `Tienes ${formatCurrency(totalOverdue)} en pagos vencidos: ${overdue.map(b => b.name).join(', ')}`
           : `You have ${formatCurrency(totalOverdue)} in overdue bills: ${overdue.map(b => b.name).join(', ')}`,
@@ -73,7 +74,7 @@ export function BillSmartInsights() {
 
     // 2. Upcoming 48hrs
     const urgent = active.filter(b => {
-      const d = differenceInDays(parseISO(b.next_due_date), now);
+      const d = differenceInCalendarDays(parseISO(b.next_due_date), now);
       return d >= 0 && d <= 2;
     });
     if (urgent.length > 0) {
@@ -81,7 +82,7 @@ export function BillSmartInsights() {
         id: 'urgent',
         type: 'alert',
         icon: <AlertTriangle className="h-4 w-4 text-amber-500" />,
-        title: l ? `⏰ ${urgent.length} pago(s) en las próximas 48h` : `⏰ ${urgent.length} bill(s) due in 48h`,
+        title: l ? `⏰ ${urgent.length} ${plural(urgent.length, 'pago', 'pagos')} en las próximas 48h` : `⏰ ${urgent.length} ${plural(urgent.length, 'bill', 'bills')} due in 48h`,
         description: urgent.map(b => `${b.name} - ${formatCurrency(b.amount)} (${format(parseISO(b.next_due_date), 'dd MMM', { locale: l ? es : undefined })})`).join(' · '),
         priority: 9,
       });

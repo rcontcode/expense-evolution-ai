@@ -38,6 +38,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 
 export interface LineItem {
   name: string;
@@ -114,6 +115,7 @@ export function ReceiptReviewDialog({
   onDataExtracted 
 }: ReceiptReviewDialogProps) {
   const { language } = useLanguage();
+  const { formatCurrency } = useFormatCurrency();
   const { data: clients = [] } = useClients();
   const { data: projects = [] } = useProjects('active');
   const { handleAIError } = useAIErrorHandler();
@@ -817,7 +819,9 @@ export function ReceiptReviewDialog({
                     />
                   ) : (
                     <div className="p-3 bg-muted/50 rounded-md font-bold text-lg">
-                      ${data.amount?.toFixed(2) || <span className="text-muted-foreground font-normal italic">0.00</span>}
+                      {data.amount != null
+                        ? formatCurrency(data.amount, { currency: data.currency })
+                        : <span className="text-muted-foreground font-normal italic">—</span>}
                     </div>
                   )}
                 </div>
@@ -1111,10 +1115,10 @@ export function ReceiptReviewDialog({
                                 {item.quantity || 1}
                               </td>
                               <td className="p-2 text-right text-muted-foreground">
-                                ${item.unit_price?.toFixed(2) || item.total?.toFixed(2)}
+                                {formatCurrency(item.unit_price ?? item.total ?? 0, { currency: data.currency })}
                               </td>
                               <td className="p-2 text-right font-medium">
-                                ${item.total?.toFixed(2)}
+                                {formatCurrency(item.total ?? 0, { currency: data.currency })}
                               </td>
                             </tr>
                           ))}
@@ -1127,7 +1131,7 @@ export function ReceiptReviewDialog({
                       {data.subtotal !== undefined && (
                         <div className="flex justify-between text-sm">
                           <span className="text-muted-foreground">Subtotal</span>
-                          <span>${data.subtotal.toFixed(2)}</span>
+                          <span>{formatCurrency(data.subtotal, { currency: data.currency })}</span>
                         </div>
                       )}
                       {data.taxes && data.taxes.map((tax, idx) => (
@@ -1135,12 +1139,12 @@ export function ReceiptReviewDialog({
                           <span className="text-muted-foreground">
                             {tax.name} {tax.rate ? `(${tax.rate}%)` : ''}
                           </span>
-                          <span>${tax.amount.toFixed(2)}</span>
+                          <span>{formatCurrency(tax.amount, { currency: data.currency })}</span>
                         </div>
                       ))}
                       <div className="flex justify-between font-bold pt-1 border-t">
                         <span>Total</span>
-                        <span>${data.amount?.toFixed(2)}</span>
+                        <span>{formatCurrency(data.amount ?? 0, { currency: data.currency })}</span>
                       </div>
                       {data.payment_method && (
                         <div className="flex items-center gap-1 text-xs text-muted-foreground pt-1">

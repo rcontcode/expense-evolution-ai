@@ -64,12 +64,12 @@ export function useMonthlyPlanData(): MonthlyPlanData {
   const { data: incomeData } = useIncome({
     year: currentYear,
     month: currentMonth,
-    entityId: budgetEntityId ?? undefined,
+    entityId: budgetEntityId,
     showAllEntities: budgetEntityId === undefined,
   });
   const { data: expenses } = useExpenses({
     dateRange: { start: monthStart, end: monthEnd },
-    entityId: budgetEntityId ?? undefined,
+    entityId: budgetEntityId,
     showAllEntities: budgetEntityId === undefined,
   });
   const { data: bills } = useRecurringBills();
@@ -206,8 +206,8 @@ export function useMonthlyPlanData(): MonthlyPlanData {
       alerts.push({
         type: "danger",
         message: l
-          ? `${overdueBills.length} pago(s) vencido(s)`
-          : `${overdueBills.length} overdue payment(s)`,
+          ? `${overdueBills.length} ${overdueBills.length === 1 ? 'pago vencido' : 'pagos vencidos'}`
+          : `${overdueBills.length} overdue ${overdueBills.length === 1 ? 'payment' : 'payments'}`,
         action: l ? "Ver pagos" : "View payments",
         link: "/banking",
       });
@@ -252,8 +252,8 @@ export function useMonthlyPlanData(): MonthlyPlanData {
       alerts.push({
         type: "warning",
         message: l
-          ? `${categoriesOverBudget.length} categoría(s) excedieron su presupuesto`
-          : `${categoriesOverBudget.length} category(ies) exceeded budget`,
+          ? `${categoriesOverBudget.length === 1 ? '1 categoría excedió' : `${categoriesOverBudget.length} categorías excedieron`} su presupuesto`
+          : `${categoriesOverBudget.length} ${categoriesOverBudget.length === 1 ? 'category' : 'categories'} exceeded budget`,
       });
     }
 
@@ -262,8 +262,8 @@ export function useMonthlyPlanData(): MonthlyPlanData {
       alerts.push({
         type: "info",
         message: l
-          ? `${categoriesWithoutBudget.length} categoría(s) sin presupuesto asignado`
-          : `${categoriesWithoutBudget.length} category(ies) without budget`,
+          ? `${categoriesWithoutBudget.length} ${categoriesWithoutBudget.length === 1 ? 'categoría' : 'categorías'} sin presupuesto asignado`
+          : `${categoriesWithoutBudget.length} ${categoriesWithoutBudget.length === 1 ? 'category' : 'categories'} without budget`,
       });
     }
 

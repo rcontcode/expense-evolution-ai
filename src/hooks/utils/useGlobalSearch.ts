@@ -8,6 +8,7 @@ import { useRecurringBills } from '@/hooks/data/useRecurringBills';
 import { useContracts } from '@/hooks/data/useContracts';
 import { useMileage } from '@/hooks/data/useMileage';
 import { useTags } from '@/hooks/data/useTags';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 
 export interface SearchResult {
   id: string;
@@ -34,6 +35,7 @@ function scoreMatch(searchTerm: string, text: string): number {
 }
 
 export function useGlobalSearch(query: string, maxResults = 5) {
+  const { formatCurrency } = useFormatCurrency();
   const debouncedQuery = useDebounce(query.trim(), 150);
 
   const { data: expenses, isLoading: l1 } = useExpenses();
@@ -82,7 +84,7 @@ export function useGlobalSearch(query: string, maxResults = 5) {
       expenses: search(expenses, {
         type: 'expense', fields: e => [e.vendor, e.description, e.notes],
         title: e => e.vendor || 'Sin proveedor',
-        subtitle: e => e.amount ? `$${e.amount.toFixed(2)} - ${e.date}` : e.date,
+        subtitle: e => e.amount ? `${formatCurrency(Number(e.amount))} - ${e.date}` : e.date,
         pathPrefix: '/expenses',
       }),
       clients: search(clients, {
@@ -98,13 +100,13 @@ export function useGlobalSearch(query: string, maxResults = 5) {
       income: search(income, {
         type: 'income', fields: i => [i.source, i.description, i.notes],
         title: i => i.source || i.description || 'Ingreso',
-        subtitle: i => i.amount ? `$${Number(i.amount).toFixed(2)} - ${i.date}` : i.date,
+        subtitle: i => i.amount ? `${formatCurrency(Number(i.amount))} - ${i.date}` : i.date,
         pathPrefix: '/income',
       }),
       bills: search(bills, {
         type: 'bill', fields: b => [b.name, b.vendor, b.notes],
         title: b => b.name || b.vendor || 'Factura',
-        subtitle: b => b.amount ? `$${Number(b.amount).toFixed(2)} - ${b.frequency}` : b.frequency,
+        subtitle: b => b.amount ? `${formatCurrency(Number(b.amount))} - ${b.frequency}` : b.frequency,
         pathPrefix: '/bills',
       }),
       contracts: search(contracts, {
@@ -125,7 +127,7 @@ export function useGlobalSearch(query: string, maxResults = 5) {
         pathPrefix: '/tags',
       }),
     };
-  }, [debouncedQuery, expenses, clients, projects, income, bills, contracts, mileage, tags, maxResults]);
+  }, [debouncedQuery, expenses, clients, projects, income, bills, contracts, mileage, tags, maxResults, formatCurrency]);
 
   const hasResults = Object.values(results).some(arr => arr.length > 0);
 

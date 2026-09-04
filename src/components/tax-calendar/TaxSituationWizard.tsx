@@ -19,6 +19,7 @@ import {
   Calendar, DollarSign, FileText, Info
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 
 interface TaxSituationWizardProps {
   onClose: () => void;
@@ -216,7 +217,7 @@ export function TaxSituationWizard({ onClose, onComplete }: TaxSituationWizardPr
             {knowsSituation === true && (
               <div className="space-y-4">
                 <Label className="text-base font-semibold">
-                  {isEs ? "Selecciona tu(s) situación(es):" : "Select your situation(s):"}
+                  {isEs ? "Selecciona tu situación (puedes marcar más de una):" : "Select your situation (you can pick more than one):"}
                 </Label>
                 <div className="grid gap-3">
                   <WorkTypeOption
@@ -948,6 +949,7 @@ function TaxEstimatePreview({ income, deductions, workTypes, language }: {
   workTypes: string[];
   language: string;
 }) {
+  const { formatCurrency } = useFormatCurrency();
   const isEs = language === 'es';
   const taxableIncome = Math.max(0, income - deductions);
   
@@ -1001,20 +1003,20 @@ function TaxEstimatePreview({ income, deductions, workTypes, language }: {
       <div className="grid grid-cols-2 gap-3 text-sm">
         <div>
           <p className="text-muted-foreground">{isEs ? "Ingreso Gravable" : "Taxable Income"}</p>
-          <p className="font-medium">${taxableIncome.toLocaleString()}</p>
+          <p className="font-medium">{formatCurrency(taxableIncome, { decimals: 0 })}</p>
         </div>
         <div>
           <p className="text-muted-foreground">{isEs ? "Impuesto Federal Est." : "Est. Federal Tax"}</p>
-          <p className="font-medium">${federalTax.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+          <p className="font-medium">{formatCurrency(federalTax, { decimals: 0 })}</p>
         </div>
         <div>
           <p className="text-muted-foreground">{isEs ? "Impuesto Provincial Est." : "Est. Provincial Tax"}</p>
-          <p className="font-medium">${provincialTax.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+          <p className="font-medium">{formatCurrency(provincialTax, { decimals: 0 })}</p>
         </div>
         {workTypes.includes('contractor') && (
           <div>
             <p className="text-muted-foreground">CPP (Self-Employed)</p>
-            <p className="font-medium">${cpp.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+            <p className="font-medium">{formatCurrency(cpp, { decimals: 0 })}</p>
           </div>
         )}
       </div>
@@ -1022,7 +1024,7 @@ function TaxEstimatePreview({ income, deductions, workTypes, language }: {
       <div className="pt-2 border-t">
         <div className="flex justify-between">
           <span className="font-medium">{isEs ? "Total Estimado" : "Total Estimated"}</span>
-          <span className="font-bold text-lg">${totalTax.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+          <span className="font-bold text-lg">{formatCurrency(totalTax, { decimals: 0 })}</span>
         </div>
         <p className="text-xs text-muted-foreground">
           {isEs ? `Tasa efectiva: ~${effectiveRate.toFixed(1)}%` : `Effective rate: ~${effectiveRate.toFixed(1)}%`}

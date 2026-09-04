@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { supabase } from '@/integrations/supabase/client';
 import { useRecurringBills, useMarkBillPaid } from './useRecurringBills';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -13,6 +14,7 @@ const notifiedBillMatches = new Set<string>();
  * If matched, suggest linking it via a toast with "Mark as Paid" action.
  */
 export function useExpenseBillMatcher() {
+  const { formatCurrency } = useFormatCurrency();
   const { data: bills } = useRecurringBills();
   const { language } = useLanguage();
   const l = language === 'es';
@@ -52,8 +54,8 @@ export function useExpenseBillMatcher() {
       // Match found — notify user with Mark as Paid action
       toast.info(
         l 
-          ? `🔗 Este gasto coincide con tu pago fijo "${bill.name}" ($${billAmount.toFixed(2)}/${bill.frequency})`
-          : `🔗 This expense matches your recurring bill "${bill.name}" ($${billAmount.toFixed(2)}/${bill.frequency})`,
+          ? `🔗 Este gasto coincide con tu pago fijo "${bill.name}" (${formatCurrency(billAmount)}/${bill.frequency})`
+          : `🔗 This expense matches your recurring bill "${bill.name}" (${formatCurrency(billAmount)}/${bill.frequency})`,
         {
           duration: 8000,
           action: {
@@ -75,7 +77,7 @@ export function useExpenseBillMatcher() {
       // Only notify for first match
       return;
     }
-  }, [bills, l, markPaid]);
+  }, [bills, l, markPaid, formatCurrency]);
 
   return { checkExpenseAgainstBills };
 }

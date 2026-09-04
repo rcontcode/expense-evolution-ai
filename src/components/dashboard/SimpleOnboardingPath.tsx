@@ -12,6 +12,7 @@ import { useFiscalEntities } from '@/hooks/data/useFiscalEntities';
 import { ClientDialog } from '@/components/dialogs/ClientDialog';
 import { ContractDialog } from '@/components/dialogs/ContractDialog';
 import { cn } from '@/lib/utils';
+import { plural } from '@/lib/plural';
 
 const DISMISS_KEY = 'simple_onboarding_completed_dismissed';
 
@@ -84,7 +85,7 @@ export function SimpleOnboardingPath() {
           label: language === 'es' ? 'Clientes' : 'Clients',
           description: baseDesc(
             hasClients,
-            language === 'es' ? `${clients?.length ?? 0} cliente(s)` : `${clients?.length ?? 0} client(s)`,
+            language === 'es' ? `${clients?.length ?? 0} ${plural(clients?.length ?? 0, 'cliente', 'clientes')}` : `${clients?.length ?? 0} ${plural(clients?.length ?? 0, 'client', 'clients')}`,
             language === 'es' ? 'Agrega al menos un cliente para facturar.' : 'Add at least one client to invoice.',
           ),
           icon: Users,
@@ -96,7 +97,7 @@ export function SimpleOnboardingPath() {
           label: language === 'es' ? 'Contratos' : 'Contracts',
           description: baseDesc(
             hasContracts,
-            language === 'es' ? `${contracts?.length ?? 0} contrato(s)` : `${contracts?.length ?? 0} contract(s)`,
+            language === 'es' ? `${contracts?.length ?? 0} ${plural(contracts?.length ?? 0, 'contrato', 'contratos')}` : `${contracts?.length ?? 0} ${plural(contracts?.length ?? 0, 'contract', 'contracts')}`,
             language === 'es' ? 'Registra un contrato o servicio recurrente.' : 'Register a contract or recurring service.',
           ),
           icon: FileText,

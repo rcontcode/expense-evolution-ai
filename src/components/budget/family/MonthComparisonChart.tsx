@@ -29,7 +29,7 @@ export function MonthComparisonChart() {
   });
 
   // Filter by entity when in separated mode
-  const entityFilter = entityId !== undefined ? { entityId: entityId ?? undefined, showAllEntities: entityId === undefined } : {};
+  const entityFilter = entityId !== undefined ? { entityId, showAllEntities: false } : {};
 
   const { data: exp0 } = useExpenses({ dateRange: { start: months[0].start, end: months[0].end }, ...entityFilter });
   const { data: exp1 } = useExpenses({ dateRange: { start: months[1].start, end: months[1].end }, ...entityFilter });

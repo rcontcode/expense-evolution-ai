@@ -8,7 +8,7 @@ import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { useRecurringBills } from '@/hooks/data/useRecurringBills';
 import { useIncomeSummary } from '@/hooks/data/useIncome';
 import { BILL_CATEGORY_CONFIG, type BillCategory, getMonthlyEquivalent } from '@/lib/constants/bill-categories';
-import { differenceInDays, parseISO, startOfMonth, endOfMonth, isWithinInterval, format } from 'date-fns';
+import { differenceInDays, parseISO, startOfMonth, endOfMonth, isWithinInterval, format, differenceInCalendarDays} from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Wallet, TrendingUp, AlertTriangle, CheckCircle, Zap, Clock, CalendarDays, DollarSign, ShieldCheck } from 'lucide-react';
 
@@ -57,7 +57,7 @@ export function BillsSummaryCards({ selectedMonth }: BillsSummaryCardsProps) {
         autopayTotal += monthly;
       }
 
-      const days = differenceInDays(parseISO(b.next_due_date), now);
+      const days = differenceInCalendarDays(parseISO(b.next_due_date), now);
       if (days < 0) overdue++;
       else if (days <= 7) dueSoon++;
     });
@@ -73,9 +73,9 @@ export function BillsSummaryCards({ selectedMonth }: BillsSummaryCardsProps) {
 
     // Next bill
     const nextBill = active
-      .filter(b => differenceInDays(parseISO(b.next_due_date), now) >= 0)
+      .filter(b => differenceInCalendarDays(parseISO(b.next_due_date), now) >= 0)
       .sort((a, b) => a.next_due_date.localeCompare(b.next_due_date))[0];
-    const nextBillDays = nextBill ? differenceInDays(parseISO(nextBill.next_due_date), now) : 0;
+    const nextBillDays = nextBill ? differenceInCalendarDays(parseISO(nextBill.next_due_date), now) : 0;
 
     // Income ratio
     const currentMonthKey = format(now, 'yyyy-MM');

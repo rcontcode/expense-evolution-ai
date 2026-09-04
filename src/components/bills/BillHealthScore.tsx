@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useRecurringBills, useBillPayments } from '@/hooks/data/useRecurringBills';
-import { differenceInDays, parseISO, startOfMonth, endOfMonth, isWithinInterval, subMonths } from 'date-fns';
+import { differenceInDays, parseISO, startOfMonth, endOfMonth, isWithinInterval, subMonths, differenceInCalendarDays} from 'date-fns';
 import { ShieldCheck, Zap, Clock, TrendingUp, Award, Heart } from 'lucide-react';
 
 function CircularGauge({ score, size = 120 }: { score: number; size?: number }) {
@@ -56,7 +56,7 @@ export function BillHealthScore() {
     const monthInterval = { start: startOfMonth(now), end: endOfMonth(now) };
 
     // 1. On-time rate (40 points) — based on overdue bills
-    const overdue = active.filter(b => differenceInDays(parseISO(b.next_due_date), now) < 0).length;
+    const overdue = active.filter(b => differenceInCalendarDays(parseISO(b.next_due_date), now) < 0).length;
     const onTimeRate = active.length > 0 ? ((active.length - overdue) / active.length) : 1;
     const onTimeScore = Math.round(onTimeRate * 40);
 

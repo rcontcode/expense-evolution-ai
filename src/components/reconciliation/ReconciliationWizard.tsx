@@ -43,6 +43,8 @@ import { es } from 'date-fns/locale';
 import { toast } from 'sonner';
 import { useCelebrationSound } from '@/hooks/utils/useCelebrationSound';
 import { useEntity } from '@/contexts/EntityContext';
+import { plural } from '@/lib/plural';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 
 interface Flow {
   id: string;
@@ -64,6 +66,7 @@ type WizardStep = 'welcome' | 'select-flow' | 'import' | 'review-matches' | 'res
 
 export function ReconciliationWizard({ onExitWizard }: { onExitWizard: () => void }) {
   const { language } = useLanguage();
+  const { formatCurrency } = useFormatCurrency();
   const { fire: confetti } = useConfetti();
   const [currentStep, setCurrentStep] = useState<WizardStep>('welcome');
   const [selectedFlow, setSelectedFlow] = useState<string | null>(null);
@@ -615,8 +618,8 @@ export function ReconciliationWizard({ onExitWizard }: { onExitWizard: () => voi
                   <PartyPopper className="h-5 w-5 text-success" />
                   <span className="font-medium text-success">
                     {language === 'es' 
-                      ? `¡Genial! Has conciliado ${matchedCount} transacción(es) 🎉`
-                      : `Great! You have reconciled ${matchedCount} transaction(s) 🎉`}
+                      ? `¡Genial! Has conciliado ${matchedCount} ${plural(matchedCount, 'transacción', 'transacciones')} 🎉`
+                      : `Great! You have reconciled ${matchedCount} ${plural(matchedCount, 'transaction', 'transactions')} 🎉`}
                   </span>
                 </div>
               </div>
@@ -649,7 +652,7 @@ export function ReconciliationWizard({ onExitWizard }: { onExitWizard: () => voi
                             </p>
                           </div>
                         </div>
-                        <span className="font-bold text-lg">${Number(tx.amount).toFixed(2)}</span>
+                        <span className="font-bold text-lg">{formatCurrency(Number(tx.amount))}</span>
                       </div>
                       <div className="pl-13 space-y-2">
                         <p className="text-sm text-muted-foreground font-medium">
@@ -712,8 +715,8 @@ export function ReconciliationWizard({ onExitWizard }: { onExitWizard: () => voi
                     <Plus className="h-5 w-5 text-success" />
                     <span className="font-medium text-success">
                       {language === 'es' 
-                        ? `Has creado ${createdExpensesCount} gasto(s) nuevo(s)`
-                        : `You have created ${createdExpensesCount} new expense(s)`}
+                        ? `Has creado ${createdExpensesCount} ${plural(createdExpensesCount, 'gasto nuevo', 'gastos nuevos')}`
+                        : `You have created ${createdExpensesCount} ${plural(createdExpensesCount, 'new expense', 'new expenses')}`}
                     </span>
                   </div>
                 )}
@@ -722,8 +725,8 @@ export function ReconciliationWizard({ onExitWizard }: { onExitWizard: () => voi
                     <AlertTriangle className="h-5 w-5 text-warning" />
                     <span className="font-medium">
                       {language === 'es' 
-                        ? `Has marcado ${discrepancyCount} discrepancia(s) para revisar después`
-                        : `You have marked ${discrepancyCount} discrepancy(ies) to review later`}
+                        ? `Has marcado ${discrepancyCount} ${plural(discrepancyCount, 'discrepancia', 'discrepancias')} para revisar después`
+                        : `You have marked ${discrepancyCount} ${plural(discrepancyCount, 'discrepancy', 'discrepancies')} to review later`}
                     </span>
                   </div>
                 )}
@@ -761,7 +764,7 @@ export function ReconciliationWizard({ onExitWizard }: { onExitWizard: () => voi
                           </div>
                         </div>
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="font-bold">${Number(tx.amount).toFixed(2)}</span>
+                          <span className="font-bold">{formatCurrency(Number(tx.amount))}</span>
                           <Button 
                             size="sm" 
                             className="bg-success hover:bg-success/90"
@@ -978,7 +981,7 @@ export function ReconciliationWizard({ onExitWizard }: { onExitWizard: () => voi
                   </p>
                 </div>
                 <Badge variant="secondary" className="text-lg">
-                  ${selectedTransaction.amount.toFixed(2)}
+                  {formatCurrency(selectedTransaction.amount)}
                 </Badge>
               </div>
             </div>

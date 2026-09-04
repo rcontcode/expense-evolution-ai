@@ -10,6 +10,7 @@ import { Link2, Search, Receipt, Calendar, DollarSign, Building2, CheckCircle2 }
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { ExpenseWithRelations } from '@/types/expense.types';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 
 interface LinkExpenseDialogProps {
   open: boolean;
@@ -34,6 +35,7 @@ export function LinkExpenseDialog({
   isLoading 
 }: LinkExpenseDialogProps) {
   const { t, language } = useLanguage();
+  const { formatCurrency } = useFormatCurrency();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedExpenseId, setSelectedExpenseId] = useState<string | null>(null);
 
@@ -138,7 +140,7 @@ export function LinkExpenseDialog({
                   </p>
                 </div>
                 <Badge variant="secondary" className="text-lg font-bold">
-                  ${transaction.amount.toFixed(2)}
+                  {formatCurrency(transaction.amount)}
                 </Badge>
               </div>
             </CardContent>
@@ -226,7 +228,7 @@ export function LinkExpenseDialog({
                           
                           {/* Amount */}
                           <div className="text-right">
-                            <p className="font-bold">${Number(expense.amount).toFixed(2)}</p>
+                            <p className="font-bold">{formatCurrency(Number(expense.amount))}</p>
                             {matchScore > 0 && (
                               <p className={`text-xs ${
                                 matchScore >= 80 ? 'text-success' : 

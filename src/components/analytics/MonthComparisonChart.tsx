@@ -7,6 +7,7 @@ import { format, startOfMonth, endOfMonth, subMonths, isSameMonth, isWithinInter
 import { es, enUS } from 'date-fns/locale';
 import { TrendingUp, TrendingDown, Minus, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 
 interface Expense {
   id: string;
@@ -32,6 +33,7 @@ const CATEGORIES: ExpenseCategory[] = [
 
 export const MonthComparisonChart = memo(({ expenses, isLoading }: MonthComparisonChartProps) => {
   const { language } = useLanguage();
+  const { formatCurrency, formatAxis } = useFormatCurrency();
   const locale = language === 'es' ? es : enUS;
   
   const { chartData, totals, monthNames } = useMemo(() => {
@@ -170,20 +172,20 @@ export const MonthComparisonChart = memo(({ expenses, isLoading }: MonthComparis
             <p className="text-xs text-muted-foreground mb-1">
               {language === 'es' ? 'Mes actual' : 'Current month'}
             </p>
-            <p className="text-lg font-bold text-primary">${totals.current.toFixed(0)}</p>
+            <p className="text-lg font-bold text-primary">{formatCurrency(totals.current, { decimals: 0 })}</p>
           </div>
           <div className="p-3 rounded-lg bg-muted/50 text-center">
             <p className="text-xs text-muted-foreground mb-1">
               {language === 'es' ? 'Mes anterior' : 'Previous month'}
             </p>
-            <p className="text-lg font-bold">${totals.previous.toFixed(0)}</p>
+            <p className="text-lg font-bold">{formatCurrency(totals.previous, { decimals: 0 })}</p>
           </div>
           <div className="p-3 rounded-lg bg-muted/30 text-center">
             <p className="text-xs text-muted-foreground mb-1">
               {language === 'es' ? 'Diferencia' : 'Difference'}
             </p>
             <p className={`text-lg font-bold ${totals.current > totals.previous ? 'text-red-500' : 'text-emerald-500'}`}>
-              {totals.current > totals.previous ? '+' : ''}${(totals.current - totals.previous).toFixed(0)}
+              {totals.current > totals.previous ? '+' : ''}{formatCurrency((totals.current - totals.previous), { decimals: 0 })}
             </p>
           </div>
         </div>
@@ -196,7 +198,7 @@ export const MonthComparisonChart = memo(({ expenses, isLoading }: MonthComparis
               <XAxis 
                 type="number"
                 tick={{ fontSize: 11 }}
-                tickFormatter={(value) => `$${value}`}
+                tickFormatter={(value) => formatAxis(Number(value))}
                 className="text-muted-foreground"
               />
               <YAxis 
@@ -212,7 +214,7 @@ export const MonthComparisonChart = memo(({ expenses, isLoading }: MonthComparis
                   border: '1px solid hsl(var(--border))',
                   borderRadius: '8px'
                 }}
-                formatter={(value: number, name: string) => [`$${value.toFixed(2)}`, name]}
+                formatter={(value: number, name: string) => [formatCurrency(value), name]}
               />
               <Legend />
               <Bar 
@@ -255,8 +257,8 @@ export const MonthComparisonChart = memo(({ expenses, isLoading }: MonthComparis
                 {chartData.map(item => (
                   <tr key={item.category} className="border-t hover:bg-muted/30">
                     <td className="p-2">{item.categoryLabel}</td>
-                    <td className="p-2 text-right font-medium">${item.current.toFixed(0)}</td>
-                    <td className="p-2 text-right text-muted-foreground">${item.previous.toFixed(0)}</td>
+                    <td className="p-2 text-right font-medium">{formatCurrency(item.current, { decimals: 0 })}</td>
+                    <td className="p-2 text-right text-muted-foreground">{formatCurrency(item.previous, { decimals: 0 })}</td>
                     <td className="p-2 text-right">
                       <div className="flex items-center justify-end gap-1">
                         {getChangeIcon(item.change)}

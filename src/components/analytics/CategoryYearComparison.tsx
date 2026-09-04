@@ -6,6 +6,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useExpenses } from "@/hooks/data/useExpenses";
+import { useFormatCurrency } from "@/hooks/utils/useFormatCurrency";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { CalendarDays, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { subYears, startOfYear, endOfYear, getYear } from "date-fns";
@@ -55,6 +56,7 @@ const CATEGORY_COLORS: Record<string, string> = {
 
 export function CategoryYearComparison() {
   const { language } = useLanguage();
+  const { formatAxis } = useFormatCurrency();
   const t = translations[language];
   const [showTopOnly, setShowTopOnly] = useState(true);
   
@@ -271,7 +273,7 @@ export function CategoryYearComparison() {
               <XAxis 
                 type="number"
                 tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
-                tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+                tickFormatter={(value) => `${formatAxis(value)}`}
               />
               <YAxis 
                 type="category"

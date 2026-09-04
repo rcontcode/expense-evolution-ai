@@ -120,7 +120,7 @@ export function CategoryTrendsChart() {
     return { chartData: months, categoryStats, topCategories };
   }, [expenses, language, locale]);
 
-  const { formatCompact: formatCurrency } = useFormatCurrency();
+  const { formatCompact: formatCurrency, formatAxis } = useFormatCurrency();
 
   const getTrendIcon = (trend: number) => {
     if (trend > 5) return <TrendingUp className="h-3 w-3 text-red-500" />;
@@ -217,7 +217,7 @@ export function CategoryTrendsChart() {
               />
               <YAxis 
                 tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
-                tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+                tickFormatter={(value) => `${formatAxis(value)}`}
               />
               <Tooltip content={<CustomTooltip />} />
               <Legend />

@@ -1,4 +1,7 @@
+import { useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useRecMode } from '@/hooks/useRecMode';
+import { enmascararCliente } from '@/lib/rec/enmascarar-identidad';
 import { supabase } from '@/integrations/supabase/client';
 import { ExpenseWithRelations, ExpenseInsert, ExpenseUpdate, ExpenseFilters } from '@/types/expense.types';
 import { useMissionTracker } from './useMissions';
@@ -14,6 +17,16 @@ const QUERY_LIMIT = 500;
 
 export function useExpenses(filters?: ExpenseFilters) {
   const { user } = useAuth();
+  const { active: grabando } = useRecMode();
+
+  // Al grabar, el cliente asociado a cada gasto se muestra con nombre inventado.
+  const aplicarMascara = useCallback(
+    (filas: ExpenseWithRelations[]) =>
+      grabando
+        ? (filas.map((f) => ({ ...f, client: enmascararCliente(f.client as any, true) })) as ExpenseWithRelations[])
+        : filas,
+    [grabando],
+  );
 
   return useQuery({
     queryKey: ['expenses', user?.id, filters],
@@ -59,6 +72,14 @@ export function useExpenses(filters?: ExpenseFilters) {
       }
       if (filters?.entityId) {
         query = query.eq('entity_id', filters.entityId);
+      } else if (filters?.entityId === null && !filters?.showAllEntities) {
+        // `null` es la vista "Familia": lo compartido de la casa, que es justo lo que no cuelga
+        // de ninguna entidad fiscal. Esta rama faltaba —y `showAllEntities` estaba declarado en
+        // el tipo pero no se usaba en ninguna parte—, asi que la pestaña Familia sumaba los
+        // gastos de TODAS las entidades mientras sus pagos fijos si venian filtrados: la misma
+        // pantalla mostraba ingresos de una entidad y cuentas fijas de otra. `useCategoryBudgets`
+        // ya lo hacia bien; solo faltaba propagarlo aca.
+        query = query.is('entity_id', null);
       }
       if (filters?.onlyIncomplete) {
         query = query.or(
@@ -109,6 +130,7 @@ export function useExpenses(filters?: ExpenseFilters) {
         tags: expense.expense_tags?.map((et: any) => et.tag).filter(Boolean) || [],
       })) as ExpenseWithRelations[];
     },
+    select: aplicarMascara,
     enabled: !!user,
   });
 }

@@ -1,6 +1,9 @@
+import { useCallback } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useRecMode } from '@/hooks/useRecMode';
+import { enmascararClientes } from '@/lib/rec/enmascarar-identidad';
 import { Client } from '@/types/expense.types';
 import { useGamificationTriggers, getTableCount } from '@/hooks/utils/useGamificationTriggers';
 import { useInvalidateRelated } from './useInvalidateRelated';
@@ -18,6 +21,13 @@ type ClientInsert = {
 
 export function useClients() {
   const { user } = useAuth();
+  const { active: grabando } = useRecMode();
+
+  // Al grabar, los nombres de los clientes se reemplazan por inventados: son datos de terceros.
+  const aplicarMascara = useCallback(
+    (clientes: Client[]) => (enmascararClientes(clientes, grabando) || []) as Client[],
+    [grabando],
+  );
 
   return useQuery({
     queryKey: ['clients', user?.id],
@@ -28,6 +38,7 @@ export function useClients() {
       if (error) throw error;
       return data as Client[];
     },
+    select: aplicarMascara,
     enabled: !!user,
   });
 }

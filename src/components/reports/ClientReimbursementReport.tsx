@@ -36,6 +36,7 @@ import { format, startOfMonth, endOfMonth, isWithinInterval, parseISO } from 'da
 import { es, enUS } from 'date-fns/locale';
 import { exportReimbursementReportWithCharts } from '@/lib/export/reimbursement-excel-export';
 import { exportReimbursementToPDF } from '@/lib/export/pdf-export';
+import { plural } from '@/lib/plural';
 
 interface ClientReimbursementReportProps {
   expenses: ExpenseWithRelations[];
@@ -278,8 +279,8 @@ export function ClientReimbursementReport({ expenses }: ClientReimbursementRepor
             </h2>
             <p className="text-sm opacity-80 mt-1">
               {language === 'es' 
-                ? `💰 Total a facturar • ${totalExpenses} gastos • ${clientGroups.length} cliente(s)`
-                : `💰 Total to bill • ${totalExpenses} expenses • ${clientGroups.length} client(s)`}
+                ? `💰 Total a facturar • ${totalExpenses} ${plural(totalExpenses, 'gasto', 'gastos')} • ${clientGroups.length} ${plural(clientGroups.length, 'cliente', 'clientes')}`
+                : `💰 Total to bill • ${totalExpenses} ${plural(totalExpenses, 'expense', 'expenses')} • ${clientGroups.length} ${plural(clientGroups.length, 'client', 'clients')}`}
             </p>
           </div>
           <div className="flex gap-2">
@@ -516,7 +517,7 @@ export function ClientReimbursementReport({ expenses }: ClientReimbursementRepor
                   <XAxis 
                     type="number" 
                     stroke="hsl(var(--muted-foreground))" 
-                    tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+                    tickFormatter={(value) => `${formatCurrency((value / 1000))}k`}
                     fontSize={12}
                   />
                   <YAxis 
@@ -558,7 +559,7 @@ export function ClientReimbursementReport({ expenses }: ClientReimbursementRepor
             {language === 'es' ? '📋 Detalle por Cliente' : '📋 Detail by Client'}
           </h3>
           <Badge variant="outline" className="text-xs">
-            {clientGroups.length} {language === 'es' ? 'cliente(s) en reporte' : 'client(s) in report'}
+            {clientGroups.length} {language === 'es' ? `${plural(clientGroups.length, 'cliente', 'clientes')} en reporte` : `${plural(clientGroups.length, 'client', 'clients')} in report`}
           </Badge>
         </div>
 

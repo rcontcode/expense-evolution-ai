@@ -25,6 +25,7 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 import { useQueryClient } from '@tanstack/react-query';
+import { plural } from '@/lib/plural';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -384,7 +385,7 @@ export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCe
         .eq('user_id', user.id);
 
       queryClient.invalidateQueries({ queryKey: ['documents-review'] });
-      toast.success(language === 'es' ? `✅ Ingreso de $${amount.toLocaleString()} aprobado y registrado` : `✅ Income of $${amount.toLocaleString()} approved and recorded`);
+      toast.success(language === 'es' ? `✅ Ingreso de ${fmtCurr(amount)} aprobado y registrado` : `✅ Income of ${fmtCurr(amount)} approved and recorded`);
       setEditingIncomeId(null);
     } catch (error: any) {
       console.error('Error approving income:', error);
@@ -616,22 +617,22 @@ export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCe
                                   <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">
                                     💻 {language === 'es' ? 'En sistema' : 'In system'}
                                   </p>
-                                  <p className="text-lg font-bold">${item.expenseAmount.toFixed(2)}</p>
+                                  <p className="text-lg font-bold">{fmtCurr(item.expenseAmount)}</p>
                                 </div>
                                 <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800">
                                   <p className="text-[10px] uppercase tracking-wider text-amber-600 mb-1">
                                     🧾 {language === 'es' ? 'En recibo' : 'On receipt'}
                                   </p>
                                   <p className="text-lg font-bold text-amber-700 dark:text-amber-400">
-                                    ${item.receiptAmount.toFixed(2)}
+                                    {fmtCurr(item.receiptAmount)}
                                   </p>
                                 </div>
                               </div>
 
                               <p className="text-xs text-muted-foreground leading-relaxed">
                                 {language === 'es' 
-                                  ? `📊 Diferencia: $${item.difference.toFixed(2)} (${item.percentDiff.toFixed(0)}%) — ${item.expenseAmount < item.receiptAmount ? 'Puede ser un ítem parcial de una compra mayor.' : 'El monto del sistema es mayor al del recibo.'}`
-                                  : `📊 Difference: $${item.difference.toFixed(2)} (${item.percentDiff.toFixed(0)}%) — ${item.expenseAmount < item.receiptAmount ? 'May be a partial item from a larger purchase.' : 'System amount is higher than receipt.'}`}
+                                  ? `📊 Diferencia: ${fmtCurr(item.difference)} (${item.percentDiff.toFixed(0)}%) — ${item.expenseAmount < item.receiptAmount ? 'Puede ser un ítem parcial de una compra mayor.' : 'El monto del sistema es mayor al del recibo.'}`
+                                  : `📊 Difference: ${fmtCurr(item.difference)} (${item.percentDiff.toFixed(0)}%) — ${item.expenseAmount < item.receiptAmount ? 'May be a partial item from a larger purchase.' : 'System amount is higher than receipt.'}`}
                               </p>
 
                               {/* Actions */}
@@ -666,7 +667,7 @@ export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCe
                                       }}
                                     >
                                       <Edit3 className="h-3.5 w-3.5 mr-1.5" />
-                                      {language === 'es' ? `Corregir a $${item.receiptAmount.toFixed(2)}` : `Fix to $${item.receiptAmount.toFixed(2)}`}
+                                      {language === 'es' ? `Corregir a ${fmtCurr(item.receiptAmount)}` : `Fix to ${fmtCurr(item.receiptAmount)}`}
                                     </Button>
                                     <Button
                                       size="sm"
@@ -714,8 +715,8 @@ export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCe
                   <div className="text-xs text-emerald-700 dark:text-emerald-400 leading-relaxed">
                     <p className="font-medium mb-0.5">
                       {language === 'es' 
-                        ? `💰 ${pendingIncome.length} factura(s) de ingreso pendientes de aprobación`
-                        : `💰 ${pendingIncome.length} income invoice(s) pending approval`}
+                        ? `💰 ${pendingIncome.length} ${plural(pendingIncome.length, 'factura de ingreso pendiente', 'facturas de ingreso pendientes')} de aprobación`
+                        : `💰 ${pendingIncome.length} ${plural(pendingIncome.length, 'income invoice', 'income invoices')} pending approval`}
                     </p>
                     <p className="text-emerald-600 dark:text-emerald-500">
                       {language === 'es'
@@ -848,7 +849,7 @@ export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCe
                                       </p>
                                       {ed.line_items.slice(0, 5).map((item: any, i: number) => (
                                         <p key={i} className="text-[11px] text-muted-foreground">
-                                          • {item.name} — ${(item.total || 0).toLocaleString()}
+                                          • {item.name} — {fmtCurr(item.total || 0, { decimals: 0 })}
                                         </p>
                                       ))}
                                     </div>
@@ -995,7 +996,7 @@ export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCe
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-medium truncate">{expense.vendor || '—'}</p>
                         <p className="text-[10px] text-muted-foreground">
-                          📅 {expense.date} · 💰 ${Number(expense.amount).toFixed(2)}
+                          📅 {expense.date} · 💰 {fmtCurr(Number(expense.amount))}
                         </p>
                       </div>
                     </div>
@@ -1038,7 +1039,7 @@ export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCe
                   <Clock className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />
                   <div className="text-xs text-blue-700 dark:text-blue-400 leading-relaxed">
                     <p className="font-medium mb-0.5">
-                      {language === 'es' ? `⏳ ${pendingDocs.length} recibo(s) pendientes de aprobación` : `⏳ ${pendingDocs.length} receipt(s) pending approval`}
+                      {language === 'es' ? `⏳ ${pendingDocs.length} ${plural(pendingDocs.length, 'recibo pendiente', 'recibos pendientes')} de aprobación` : `⏳ ${pendingDocs.length} ${plural(pendingDocs.length, 'receipt', 'receipts')} pending approval`}
                     </p>
                     <p className="text-blue-600 dark:text-blue-500">
                       {language === 'es'
@@ -1061,7 +1062,7 @@ export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCe
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-medium truncate">📄 {doc.file_name}</p>
                         <p className="text-[10px] text-muted-foreground">
-                          🏪 {doc.extracted_data?.vendor || '—'} · 💰 ${doc.extracted_data?.amount?.toFixed(2) || '0.00'}
+                          🏪 {doc.extracted_data?.vendor || '—'} · 💰 {fmtCurr(doc.extracted_data?.amount ?? 0)}
                         </p>
                       </div>
                     </div>
@@ -1100,8 +1101,8 @@ export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCe
                   <div className="p-3 rounded-lg bg-amber-50/80 dark:bg-amber-950/20 border border-amber-200/40 mb-3">
                     <p className="text-xs text-amber-700 dark:text-amber-400">
                       {language === 'es'
-                        ? `⚠️ Aún tienes ${totalIssues} punto(s) por resolver. Puedes generar un reporte parcial con los ${readyExpenses.length} gastos listos, o resolver todo primero para un reporte completo.`
-                        : `⚠️ You still have ${totalIssues} item(s) to resolve. You can generate a partial report with the ${readyExpenses.length} ready expenses, or resolve everything first for a complete report.`}
+                        ? `⚠️ Aún tienes ${totalIssues} ${plural(totalIssues, 'punto', 'puntos')} por resolver. Puedes generar un reporte parcial con los ${readyExpenses.length} gastos listos, o resolver todo primero para un reporte completo.`
+                        : `⚠️ You still have ${totalIssues} ${plural(totalIssues, 'item', 'items')} to resolve. You can generate a partial report with the ${readyExpenses.length} ready expenses, or resolve everything first for a complete report.`}
                     </p>
                   </div>
                 )}

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -40,6 +41,7 @@ export function SplitTransactionDialog({
   onSave,
   isLoading 
 }: SplitTransactionDialogProps) {
+  const { formatCurrency } = useFormatCurrency();
   const { t, language } = useLanguage();
   const { data: clients = [] } = useClients();
   
@@ -140,7 +142,7 @@ export function SplitTransactionDialog({
                   </p>
                 </div>
                 <Badge variant="outline" className="text-lg font-bold">
-                  ${Number(transaction.amount).toFixed(2)}
+                  {formatCurrency(Number(transaction.amount))}
                 </Badge>
               </div>
             </CardContent>
@@ -159,13 +161,13 @@ export function SplitTransactionDialog({
               <span className="text-sm font-medium">
                 {t('reconciliation.totalAssigned')}:
               </span>
-              <span className="font-bold">${totalAmount.toFixed(2)}</span>
+              <span className="font-bold">{formatCurrency(totalAmount)}</span>
             </div>
             {!isBalanced && (
               <span className={`text-sm font-medium ${remainingAmount > 0 ? 'text-warning' : 'text-destructive'}`}>
                 {remainingAmount > 0 
-                  ? `${t('reconciliation.remaining')}: $${remainingAmount.toFixed(2)}`
-                  : `${t('reconciliation.exceeds')}: $${Math.abs(remainingAmount).toFixed(2)}`}
+                  ? `${t('reconciliation.remaining')}: ${formatCurrency(remainingAmount)}`
+                  : `${t('reconciliation.exceeds')}: ${formatCurrency(Math.abs(remainingAmount))}`}
               </span>
             )}
           </div>
@@ -282,7 +284,7 @@ export function SplitTransactionDialog({
             >
               {isLoading 
                 ? t('reconciliation.saving')
-                : `${t('reconciliation.createExpenses').replace('(s)', `(${items.length})`)}`}
+                : `${t(items.length === 1 ? 'reconciliation.createExpense' : 'reconciliation.createExpenses')} (${items.length})`}
             </Button>
           </div>
         </div>

@@ -34,6 +34,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useExpenses } from '@/hooks/data/useExpenses';
 import { useIncome } from '@/hooks/data/useIncome';
 import { ProjectFinancialOverview } from './ProjectFinancialOverview';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 
 interface ProjectDetailDialogProps {
   open: boolean;
@@ -43,6 +44,7 @@ interface ProjectDetailDialogProps {
 
 export function ProjectDetailDialog({ open, onClose, project }: ProjectDetailDialogProps) {
   const { language } = useLanguage();
+  const { formatCurrency, formatAxis } = useFormatCurrency();
   const { data: allExpenses } = useExpenses();
   const { data: allIncome } = useIncome();
 
@@ -175,7 +177,7 @@ export function ProjectDetailDialog({ open, onClose, project }: ProjectDetailDia
                     {language === 'es' ? 'Ingresos' : 'Income'}
                   </div>
                   <p className="text-2xl font-bold text-green-600 mt-1">
-                    ${totals.income.toLocaleString()}
+                    {formatCurrency(totals.income, { decimals: 0 })}
                   </p>
                 </CardContent>
               </Card>
@@ -186,7 +188,7 @@ export function ProjectDetailDialog({ open, onClose, project }: ProjectDetailDia
                     {language === 'es' ? 'Gastos' : 'Expenses'}
                   </div>
                   <p className="text-2xl font-bold text-red-600 mt-1">
-                    ${totals.expenses.toLocaleString()}
+                    {formatCurrency(totals.expenses, { decimals: 0 })}
                   </p>
                 </CardContent>
               </Card>
@@ -201,7 +203,7 @@ export function ProjectDetailDialog({ open, onClose, project }: ProjectDetailDia
                     {language === 'es' ? 'Balance' : 'Balance'}
                   </div>
                   <p className={`text-2xl font-bold mt-1 ${totals.netBalance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    ${Math.abs(totals.netBalance).toLocaleString()}
+                    {formatCurrency(Math.abs(totals.netBalance), { decimals: 0 })}
                   </p>
                 </CardContent>
               </Card>
@@ -213,7 +215,7 @@ export function ProjectDetailDialog({ open, onClose, project }: ProjectDetailDia
                       {language === 'es' ? 'Presupuesto' : 'Budget'}
                     </div>
                     <p className="text-2xl font-bold mt-1">
-                      ${totals.budgetRemaining.toLocaleString()}
+                      {formatCurrency(totals.budgetRemaining, { decimals: 0 })}
                     </p>
                     <Progress value={Math.min(totals.budgetUsed, 100)} className="h-2 mt-2" />
                     <p className="text-xs text-muted-foreground mt-1">
@@ -248,9 +250,9 @@ export function ProjectDetailDialog({ open, onClose, project }: ProjectDetailDia
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                       <XAxis dataKey="month" className="text-xs" />
-                      <YAxis className="text-xs" tickFormatter={(v) => `$${v.toLocaleString()}`} />
+                      <YAxis className="text-xs" tickFormatter={(v) => formatAxis(Number(v))} />
                       <Tooltip 
-                        formatter={(value: number) => `$${value.toLocaleString()}`}
+                        formatter={(value: number) => formatCurrency(value)}
                         labelFormatter={(label, payload) => payload?.[0]?.payload?.fullMonth || label}
                         contentStyle={{ 
                           backgroundColor: 'hsl(var(--background))', 
@@ -303,10 +305,10 @@ export function ProjectDetailDialog({ open, onClose, project }: ProjectDetailDia
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={categoryData} layout="vertical">
                         <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                        <XAxis type="number" tickFormatter={(v) => `$${v.toLocaleString()}`} className="text-xs" />
+                        <XAxis type="number" tickFormatter={(v) => formatAxis(Number(v))} className="text-xs" />
                         <YAxis dataKey="name" type="category" className="text-xs" width={100} />
                         <Tooltip 
-                          formatter={(value: number) => `$${value.toLocaleString()}`}
+                          formatter={(value: number) => formatCurrency(value)}
                           contentStyle={{ 
                             backgroundColor: 'hsl(var(--background))', 
                             border: '1px solid hsl(var(--border))',
@@ -354,7 +356,7 @@ export function ProjectDetailDialog({ open, onClose, project }: ProjectDetailDia
                   <div className="flex items-center gap-3">
                     <DollarSign className="h-4 w-4 text-muted-foreground" />
                     <div className="text-sm">
-                      <span className="font-medium">${project.budget.toLocaleString()}</span>
+                      <span className="font-medium">{formatCurrency(project.budget, { decimals: 0 })}</span>
                       <span className="text-muted-foreground ml-1">
                         {language === 'es' ? 'presupuesto total' : 'total budget'}
                       </span>

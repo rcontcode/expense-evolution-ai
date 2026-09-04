@@ -25,6 +25,7 @@
  import { motion, AnimatePresence } from 'framer-motion';
  import { cn } from '@/lib/utils';
  import { toast } from 'sonner';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
  
  interface OnboardingStep {
    id: string;
@@ -62,6 +63,7 @@
  
  export function BudgetOnboarding({ onComplete }: { onComplete: () => void }) {
    const { language } = useLanguage();
+   const { formatCurrency } = useFormatCurrency();
    const { data: profile } = useProfile();
    const { data: settings } = useUserSettings();
    const { data: existingBudgets } = useCategoryBudgets();
@@ -97,8 +99,8 @@
      if (budgetSuggestions.globalSuggestion > 0) {
        setGlobalBudget(budgetSuggestions.globalSuggestion.toString());
        toast.success(l 
-         ? `Sugerido: $${budgetSuggestions.globalSuggestion.toFixed(0)}/mes`
-         : `Suggested: $${budgetSuggestions.globalSuggestion.toFixed(0)}/mo`
+         ? `Sugerido: ${formatCurrency(budgetSuggestions.globalSuggestion)}/mes`
+         : `Suggested: ${formatCurrency(budgetSuggestions.globalSuggestion)}/mo`
        );
      }
    };
@@ -226,12 +228,12 @@
                    </div>
                    <p className="text-sm text-muted-foreground mb-3">
                      {l 
-                       ? `Basado en tu promedio de $${budgetSuggestions.globalAverage.toFixed(0)}/mes, te sugerimos:`
-                       : `Based on your average of $${budgetSuggestions.globalAverage.toFixed(0)}/mo, we suggest:`}
+                       ? `Basado en tu promedio de ${formatCurrency(budgetSuggestions.globalAverage)}/mes, te sugerimos:`
+                       : `Based on your average of ${formatCurrency(budgetSuggestions.globalAverage)}/mo, we suggest:`}
                    </p>
                    <div className="flex items-center justify-between">
                      <span className="text-2xl font-bold text-chart-2">
-                       ${budgetSuggestions.globalSuggestion.toFixed(0)}/mes
+                       {formatCurrency(budgetSuggestions.globalSuggestion, { decimals: 0 })}/mes
                      </span>
                      <Button variant="outline" size="sm" onClick={handleApplySuggestion}>
                        <Check className="h-4 w-4 mr-1" />

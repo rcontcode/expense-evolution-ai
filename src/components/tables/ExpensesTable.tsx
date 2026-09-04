@@ -55,6 +55,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 
 type SortField = 'date' | 'vendor' | 'category' | 'amount' | 'status';
 type SortDirection = 'asc' | 'desc';
@@ -185,6 +186,7 @@ interface ExpenseRowProps extends ExpenseRowCustomProps {
 }
 
 function ExpenseRowComponent({ index, style, expenses, onEdit, onDelete, t, language, selectedIds, onToggleSelect }: ExpenseRowProps): ReactElement {
+  const { formatCurrency } = useFormatCurrency();
   const expense = expenses[index];
   const config = STATUS_CONFIG[expense.status] || STATUS_CONFIG.pending;
   const StatusIcon = config.icon;
@@ -354,7 +356,7 @@ function ExpenseRowComponent({ index, style, expenses, onEdit, onDelete, t, lang
       
       {/* Amount */}
       <div className="w-[8%] px-2 text-right font-medium text-sm">
-        ${Number(expense.amount).toFixed(2)}
+        {formatCurrency(Number(expense.amount))}
       </div>
       
       {/* Status */}

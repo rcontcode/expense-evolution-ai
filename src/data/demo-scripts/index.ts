@@ -6,7 +6,7 @@ import script04 from './04-voice-capture-60s.md?raw';
 import script05 from './05-reports-tax-hub-2min.md?raw';
 import script06 from './06-familia-rodriguez-tour-12min.md?raw';
 import script07 from './07-ecolavanderia-pyme-15min.md?raw';
-import script08 from './08-pareja-millennial-4min.md?raw';
+import script08 from './08-pareja-primera-casa-4min.md?raw';
 import script09 from './09-contador-independiente-10min.md?raw';
 import script10 from './10-expat-multipais-8min.md?raw';
 import script11 from './11-jubilado-inversiones-7min.md?raw';
@@ -18,7 +18,7 @@ export type DemoScriptScenario =
   | 'constructora_ca'
   | 'familia_rodriguez'
   | 'ecolavanderia_spa'
-  | 'pareja_millennial'
+  | 'pareja_primera_casa'
   | 'contador_independiente'
   | 'expat_multipais'
   | 'jubilado_inversiones'
@@ -125,11 +125,11 @@ export const DEMO_SCRIPTS: DemoScript[] = [
     raw: script05,
   },
   {
-    id: 'pareja-millennial',
+    id: 'pareja-primera-casa',
     number: '08',
-    title: 'Pareja Millennial — Casa propia',
+    title: 'Pareja ahorrando su primera casa',
     duration: '4 min',
-    scenario: 'pareja_millennial',
+    scenario: 'pareja_primera_casa',
     raw: script08,
   },
 ];

@@ -8,6 +8,7 @@ import { Upload } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { checkFilePreUpload } from '@/hooks/data/useContentDuplicateDetector';
 import { useFeatureAccess } from '@/hooks/data/useFeatureAccess';
+import { plural } from '@/lib/plural';
 
 interface FileUploadZoneProps {
   onDocumentProcessed?: (docId: string, fileName: string) => void;
@@ -75,7 +76,7 @@ export function FileUploadZone({ onDocumentProcessed }: FileUploadZoneProps = {}
     }
 
     if (successCount > 0) {
-      toast.success(language === 'es' ? `${successCount} archivo(s) subido(s)` : `${successCount} file(s) uploaded`);
+      toast.success(language === 'es' ? `${successCount} ${plural(successCount, 'archivo subido', 'archivos subidos')}` : `${successCount} ${plural(successCount, 'file', 'files')} uploaded`);
       queryClient.invalidateQueries({ queryKey: ['all-files'] });
       queryClient.invalidateQueries({ queryKey: ['documents'] });
     }

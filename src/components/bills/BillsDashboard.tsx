@@ -22,7 +22,7 @@ import { BillStreakTracker } from './BillStreakTracker';
 import { MonthNavigator } from './MonthNavigator';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
-import { differenceInDays, parseISO } from 'date-fns';
+import { differenceInDays, parseISO, differenceInCalendarDays} from 'date-fns';
 
 export function BillsDashboard() {
   const { language } = useLanguage();
@@ -34,9 +34,9 @@ export function BillsDashboard() {
 
   const activeBills = bills?.filter(b => b.status === 'active') || [];
   const now = new Date();
-  const overdue = activeBills.filter(b => differenceInDays(parseISO(b.next_due_date), now) < 0).length;
+  const overdue = activeBills.filter(b => differenceInCalendarDays(parseISO(b.next_due_date), now) < 0).length;
   const dueSoon = activeBills.filter(b => {
-    const d = differenceInDays(parseISO(b.next_due_date), now);
+    const d = differenceInCalendarDays(parseISO(b.next_due_date), now);
     return d >= 0 && d <= 7;
   }).length;
   const hasBills = activeBills.length > 0;

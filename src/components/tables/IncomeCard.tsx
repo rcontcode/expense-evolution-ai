@@ -32,6 +32,7 @@ import { getIncomeCategory } from '@/lib/constants/income-categories';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useDocumentImageUrl } from '@/hooks/data/useDocumentReview';
 import { cn } from '@/lib/utils';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 
 interface IncomeCardProps {
   income: IncomeWithRelations;
@@ -60,6 +61,7 @@ function DocumentPreview({ filePath, fileName }: { filePath: string; fileName?: 
 
 export const IncomeCard = memo(function IncomeCard({ income, onEdit, onDelete }: IncomeCardProps) {
   const { t, language } = useLanguage();
+  const { formatCurrency } = useFormatCurrency();
   const dateLocale = language === 'es' ? es : enUS;
   const category = getIncomeCategory(income.income_type);
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -94,7 +96,7 @@ export const IncomeCard = memo(function IncomeCard({ income, onEdit, onDelete }:
                   </div>
                 </div>
                 <div className="text-right shrink-0">
-                  <p className="font-bold text-base text-chart-1">${Number(income.amount).toFixed(2)}</p>
+                  <p className="font-bold text-base text-chart-1">{formatCurrency(Number(income.amount))}</p>
                   <p className="text-[10px] text-muted-foreground uppercase">{income.currency || 'CAD'}</p>
                 </div>
               </div>

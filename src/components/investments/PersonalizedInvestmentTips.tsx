@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -313,7 +314,8 @@ const ALL_TIPS: Tip[] = [
 ];
 
 // Generate tips based on specific goals
-function generateGoalSpecificTips(goals: InvestmentGoal[]): Tip[] {
+// Recibe el formateador porque esto no es un componente y no puede llamar al hook.
+function generateGoalSpecificTips(goals: InvestmentGoal[], formatCurrency: (n: number) => string): Tip[] {
   const tips: Tip[] = [];
   
   goals.forEach(goal => {
@@ -345,7 +347,7 @@ function generateGoalSpecificTips(goals: InvestmentGoal[]): Tip[] {
         tips.push({
           id: `goal_behind_${goal.id}`,
           title: `Acelera tu meta "${goal.name}"`,
-          description: `Necesitas $${neededMonthly.toFixed(0)}/mes para cumplir a tiempo. Considera aumentar tus aportes.`,
+          description: `Necesitas ${formatCurrency(neededMonthly)}/mes para cumplir a tiempo. Considera aumentar tus aportes.`,
           icon: Clock,
           color: 'text-amber-500',
           category: 'all',
@@ -370,6 +372,7 @@ function generateGoalSpecificTips(goals: InvestmentGoal[]): Tip[] {
 }
 
 export function PersonalizedInvestmentTips() {
+  const { formatCurrency } = useFormatCurrency();
   const { language } = useLanguage();
   const { data: profile, isLoading: profileLoading } = useFinancialProfile();
   const { data: goals, isLoading: goalsLoading } = useInvestmentGoals();
@@ -387,7 +390,7 @@ export function PersonalizedInvestmentTips() {
     const userGoalTypes = goals?.map(g => g.goal_type) || [];
     
     // Generate dynamic tips based on actual goals
-    const goalSpecificTips = goals ? generateGoalSpecificTips(goals) : [];
+    const goalSpecificTips = goals ? generateGoalSpecificTips(goals, formatCurrency) : [];
 
     // Filter tips based on user level, interests, and goal types
     const relevantTips = ALL_TIPS.filter(tip => {

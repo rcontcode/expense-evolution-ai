@@ -11,6 +11,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
+import { plural } from '@/lib/plural';
 
 interface NetWorthChartProps {
   snapshots: NetWorthSnapshot[];
@@ -110,7 +111,7 @@ export function NetWorthChart({ snapshots, currentNetWorth, currentAssets, curre
     };
   }, [snapshots, currentNetWorth, currentAssets, currentLiabilities]);
 
-  const { formatCompact: formatCurrency } = useFormatCurrency();
+  const { formatCompact: formatCurrency, formatAxis } = useFormatCurrency();
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
@@ -208,7 +209,7 @@ export function NetWorthChart({ snapshots, currentNetWorth, currentAssets, curre
                 <XAxis dataKey="date" className="text-xs" />
                 <YAxis 
                   className="text-xs" 
-                  tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+                  tickFormatter={(value) => `${formatAxis(value)}`}
                 />
                 <Tooltip content={<CustomTooltip />} />
                 <Legend />
@@ -279,7 +280,7 @@ export function NetWorthChart({ snapshots, currentNetWorth, currentAssets, curre
                   <div className="grid gap-3">
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-muted-foreground">Puntos de datos históricos:</span>
-                      <Badge variant="outline">{stats.dataPoints} registro(s)</Badge>
+                      <Badge variant="outline">{stats.dataPoints} {plural(stats.dataPoints, 'registro', 'registros')}</Badge>
                     </div>
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-muted-foreground">Tasa de crecimiento mensual calculada:</span>

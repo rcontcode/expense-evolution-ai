@@ -19,6 +19,7 @@ import {
   Info, PieChart, BarChart3, Sparkles, FileText, Building2, Briefcase
 } from "lucide-react";
 import { LegalDisclaimer } from "@/components/ui/legal-disclaimer";
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 
 // Canadian provinces with tax brackets
 const PROVINCES_CA = [
@@ -64,6 +65,7 @@ const CHILE_PRIMERA_CATEGORIA = {
 
 export function TaxEstimator() {
   const { language } = useLanguage();
+  const { formatCurrency } = useFormatCurrency();
   const { data: profile } = useProfile();
   const { data: expenses } = useExpenses();
   const { data: income } = useIncome();
@@ -236,8 +238,8 @@ export function TaxEstimator() {
                 <AlertDescription className="flex items-center justify-between">
                   <span className="text-sm">
                     {isEs 
-                      ? `Detectamos datos en tu app: $${appTotals.totalIncome.toLocaleString()} ingresos, $${appTotals.deductibleExpenses.toLocaleString()} deducciones`
-                      : `We detected app data: $${appTotals.totalIncome.toLocaleString()} income, $${appTotals.deductibleExpenses.toLocaleString()} deductions`
+                      ? `Detectamos datos en tu app: ${formatCurrency(appTotals.totalIncome)} ingresos, ${formatCurrency(appTotals.deductibleExpenses)} deducciones`
+                      : `We detected app data: ${formatCurrency(appTotals.totalIncome)} income, ${formatCurrency(appTotals.deductibleExpenses)} deductions`
                     }
                   </span>
                   <Button 
@@ -375,7 +377,7 @@ export function TaxEstimator() {
                 }
               </p>
               <p className={`text-4xl font-bold ${calculations.isRefund ? 'text-green-500' : 'text-red-500'}`}>
-                ${Math.abs(calculations.netResult).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                {formatCurrency(Math.abs(calculations.netResult), { decimals: 0 })}
               </p>
             </div>
 
@@ -383,7 +385,7 @@ export function TaxEstimator() {
             <div className="space-y-3">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">{isEs ? "Ingreso Gravable" : "Taxable Income"}</span>
-                <span className="font-medium">${calculations.taxableIncome.toLocaleString()}</span>
+                <span className="font-medium">{formatCurrency(calculations.taxableIncome, { decimals: 0 })}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">
@@ -392,7 +394,7 @@ export function TaxEstimator() {
                     : (isEs ? "Impuesto Federal" : "Federal Tax")
                   }
                 </span>
-                <span className="font-medium">${calculations.federalTax.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                <span className="font-medium">{formatCurrency(calculations.federalTax, { decimals: 0 })}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">
@@ -401,28 +403,28 @@ export function TaxEstimator() {
                     : (isEs ? "Impuesto Provincial" : "Provincial Tax")
                   }
                 </span>
-                <span className="font-medium">${calculations.provincialTax.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                <span className="font-medium">{formatCurrency(calculations.provincialTax, { decimals: 0 })}</span>
               </div>
               {calculations.cppContribution > 0 && (
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">CPP (Self-Employed)</span>
-                  <span className="font-medium">${calculations.cppContribution.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                  <span className="font-medium">{formatCurrency(calculations.cppContribution, { decimals: 0 })}</span>
                 </div>
               )}
               {calculations.bpaCredit > 0 && (
                 <div className="flex justify-between text-sm text-green-600">
                   <span>BPA Credit</span>
-                  <span>-${calculations.bpaCredit.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                  <span>-{formatCurrency(calculations.bpaCredit, { decimals: 0 })}</span>
                 </div>
               )}
               <hr />
               <div className="flex justify-between text-sm font-medium">
                 <span>{isEs ? "Total Impuestos" : "Total Tax"}</span>
-                <span>${calculations.totalTax.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                <span>{formatCurrency(calculations.totalTax, { decimals: 0 })}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">{isEs ? "Ya Pagado/Retenido" : "Already Paid/Withheld"}</span>
-                <span className="font-medium">-${withheldValue.toLocaleString()}</span>
+                <span className="font-medium">-{formatCurrency(withheldValue, { decimals: 0 })}</span>
               </div>
             </div>
 

@@ -1,6 +1,6 @@
-# 08 — Pareja Millennial (Arquetipo focalizado)
+# 08 — Pareja ahorrando su primera casa (Arquetipo focalizado)
 
-**Escenario:** `pareja_millennial` | **Duración:** ~4 min | **Idioma:** ES + EN
+**Escenario:** `pareja_primera_casa` | **Duración:** ~4 min | **Idioma:** ES + EN
 
 > Daniela y Joaquín, 29 y 31, sin hijos, ingresos profesionales, ahorrando para casa propia. Foco en tags compartidos y meta conjunta.
 

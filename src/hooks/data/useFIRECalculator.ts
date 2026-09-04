@@ -67,11 +67,32 @@ export function useFIRECalculator() {
     const currentYear = new Date().getFullYear();
     const currentMonth = new Date().getMonth();
     
+    // El promedio se divide por los meses que TIENEN datos, no por los meses que lleva el año.
+    // Antes se dividia por `currentMonth + 1`: quien empieza a usar la app en agosto veia su
+    // sueldo repartido entre ocho meses, o sea un octavo de lo que gana, y la tasa de ahorro y la
+    // fecha de independencia financiera salian de ese numero. En el tablero se veia el ingreso
+    // mensual diciendo una cifra y este bloque diciendo otra, en la misma pantalla.
+    const mesesConMovimiento = new Set<number>();
+    for (const inc of incomeData || []) {
+      const d = new Date(inc.date);
+      if (d.getFullYear() === currentYear) mesesConMovimiento.add(d.getMonth());
+    }
+    for (const exp of expensesData || []) {
+      const d = new Date(exp.date);
+      if (d.getFullYear() === currentYear) mesesConMovimiento.add(d.getMonth());
+    }
+    // Se toma el tramo entre el primer mes con movimiento y hoy: asi un mes intermedio sin gastos
+    // sigue contando (y baja el promedio, que es lo correcto), pero los meses anteriores a que la
+    // persona empezara a registrar no.
+    const primerMes = mesesConMovimiento.size ? Math.min(...mesesConMovimiento) : currentMonth;
+    const monthsWithData = Math.max(1, currentMonth - primerMes + 1);
+
     // Calculate monthly income average
-    const yearlyIncome = incomeData?.reduce((sum, inc) => sum + Number(inc.amount), 0) || 0;
-    const monthsWithData = currentMonth + 1;
+    const yearlyIncome = incomeData
+      ?.filter(inc => new Date(inc.date).getFullYear() === currentYear)
+      .reduce((sum, inc) => sum + Number(inc.amount), 0) || 0;
     const avgMonthlyIncome = yearlyIncome / monthsWithData;
-    
+
     // Calculate monthly expenses average
     const yearlyExpenses = expensesData
       ?.filter(exp => new Date(exp.date).getFullYear() === currentYear)

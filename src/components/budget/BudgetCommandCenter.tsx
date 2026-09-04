@@ -38,6 +38,7 @@ import { CaptureHub } from './CaptureHub';
 import { DataCompletenessPrompt } from '@/components/dashboard/DataCompletenessPrompt';
 import { useExpenseCompleteness } from '@/hooks/utils/useExpenseCompleteness';
  import { getCategoryLabel, ExpenseCategory } from '@/lib/constants/expense-categories';
+import { plural } from '@/lib/plural';
  
  interface FinancialHealthScore {
    score: number;
@@ -58,6 +59,7 @@ import { useExpenseCompleteness } from '@/hooks/utils/useExpenseCompleteness';
     const { data: savingsGoals } = useSavingsGoals();
     const { isConfirmed: expensesConfirmed, looksIncomplete } = useExpenseCompleteness();
    const budgetSuggestions = useBudgetSuggestions();
+   const { formatCompact: formatCurrency } = useFormatCurrency();
  
    const now = new Date();
    const monthStart = startOfMonth(now);
@@ -179,8 +181,8 @@ import { useExpenseCompleteness } from '@/hooks/utils/useExpenseCompleteness';
          icon: Wallet,
          title: l ? 'Establece tu presupuesto global' : 'Set your global budget',
          description: l 
-           ? `Basado en tu historial, te sugerimos $${budgetSuggestions.globalSuggestion.toFixed(0)}/mes`
-           : `Based on your history, we suggest $${budgetSuggestions.globalSuggestion.toFixed(0)}/mo`,
+           ? `Basado en tu historial, te sugerimos ${formatCurrency(budgetSuggestions.globalSuggestion)}/mes`
+           : `Based on your history, we suggest ${formatCurrency(budgetSuggestions.globalSuggestion)}/mo`,
          priority: 'high',
          action: l ? 'Configurar ahora' : 'Set up now',
        });
@@ -191,7 +193,7 @@ import { useExpenseCompleteness } from '@/hooks/utils/useExpenseCompleteness';
      if (overCategories.length > 0) {
        recs.push({
          icon: AlertTriangle,
-         title: l ? `${overCategories.length} categoría(s) excedida(s)` : `${overCategories.length} category(ies) exceeded`,
+         title: l ? `${overCategories.length} ${plural(overCategories.length, 'categoría excedida', 'categorías excedidas')}` : `${overCategories.length} ${plural(overCategories.length, 'category', 'categories')} exceeded`,
          description: l
            ? `${overCategories.map(c => getCategoryLabel(c.category as ExpenseCategory)).join(', ')} necesitan atención`
            : `${overCategories.map(c => getCategoryLabel(c.category as ExpenseCategory)).join(', ')} need attention`,
@@ -263,7 +265,7 @@ import { useExpenseCompleteness } from '@/hooks/utils/useExpenseCompleteness';
        const priority = { high: 0, medium: 1, low: 2 };
        return priority[a.priority] - priority[b.priority];
      });
-   }, [globalBudget, budgetSuggestions, categoryHealth, savingsRate, savingsGoals, totalIncome, monthOverMonth, l]);
+   }, [globalBudget, budgetSuggestions, categoryHealth, savingsRate, savingsGoals, totalIncome, monthOverMonth, l, formatCurrency]);
  
    const getScoreColor = (score: number) => {
      if (score >= 80) return 'from-emerald-500 to-teal-500';
@@ -282,7 +284,6 @@ import { useExpenseCompleteness } from '@/hooks/utils/useExpenseCompleteness';
      return labels[level];
    };
  
-   const { formatCompact: formatCurrency } = useFormatCurrency();
  
    return (
     <div className="space-y-6">

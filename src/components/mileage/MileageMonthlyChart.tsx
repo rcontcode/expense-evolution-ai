@@ -7,6 +7,7 @@ import { format, parseISO, startOfMonth, getMonth } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 import { MileageWithClient, calculateMileageDeduction } from '@/hooks/data/useMileage';
 import { BarChart3 } from 'lucide-react';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 
 interface MileageMonthlyChartProps {
   data: MileageWithClient[];
@@ -26,6 +27,7 @@ const chartConfig = {
 
 export function MileageMonthlyChart({ data, year }: MileageMonthlyChartProps) {
   const { t, language } = useLanguage();
+  const { formatCurrency, formatAxis } = useFormatCurrency();
   const locale = language === 'es' ? es : enUS;
 
   const monthlyData = useMemo(() => {
@@ -92,7 +94,7 @@ export function MileageMonthlyChart({ data, year }: MileageMonthlyChartProps) {
         <div className="flex gap-4 text-sm text-muted-foreground">
           <span>{totals.trips} {language === 'es' ? 'viajes' : 'trips'}</span>
           <span>{totals.kilometers.toLocaleString()} km</span>
-          <span className="text-primary font-medium">${totals.deduction.toLocaleString()}</span>
+          <span className="text-primary font-medium">{formatCurrency(totals.deduction, { decimals: 0 })}</span>
         </div>
       </CardHeader>
       <CardContent>
@@ -119,14 +121,14 @@ export function MileageMonthlyChart({ data, year }: MileageMonthlyChartProps) {
                 tick={{ fontSize: 12 }}
                 tickLine={false}
                 axisLine={false}
-                tickFormatter={(value) => `$${value}`}
+                tickFormatter={(value) => formatAxis(Number(value))}
               />
               <ChartTooltip
                 content={
                   <ChartTooltipContent
                     formatter={(value, name) => {
                       if (name === 'kilometers') return [`${value} km`, language === 'es' ? 'Kilómetros' : 'Kilometers'];
-                      if (name === 'deduction') return [`$${value}`, language === 'es' ? 'Deducción' : 'Deduction'];
+                      if (name === 'deduction') return [formatCurrency(Number(value)), language === 'es' ? 'Deducción' : 'Deduction'];
                       return [value, name];
                     }}
                   />

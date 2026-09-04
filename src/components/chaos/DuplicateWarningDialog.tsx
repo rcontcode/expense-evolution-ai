@@ -10,6 +10,8 @@ import { getDocumentBlobUrl } from '@/hooks/data/useDocumentUrl';
 import { DocumentPreviewRenderer } from '@/components/shared/DocumentPreviewRenderer';
 import { toast } from 'sonner';
 import { useState, useEffect } from 'react';
+import { plural } from '@/lib/plural';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 
 type Selection = 'new' | 'existing' | null;
 interface DuplicateWarningDialogProps {
@@ -76,6 +78,7 @@ export function DuplicateWarningDialog({
   onReplaceOld,
 }: DuplicateWarningDialogProps) {
   const { language } = useLanguage();
+  const { formatCurrency } = useFormatCurrency();
   const isEs = language === 'es';
   const [showComparison, setShowComparison] = useState(false);
   const [loadingPreviews, setLoadingPreviews] = useState(false);
@@ -242,7 +245,7 @@ export function DuplicateWarningDialog({
                 {isEs ? '📄 Nuevo' : '📄 New'}
               </p>
               <p className="text-sm font-semibold truncate">{newDocument.vendor || '—'}</p>
-              <p className="text-sm">${Number(newDocument.amount || 0).toFixed(2)}</p>
+              <p className="text-sm">{formatCurrency(Number(newDocument.amount || 0))}</p>
               <p className="text-xs text-muted-foreground">{newDocument.date || '—'}</p>
               {newDocument.time && (
                 <p className="text-xs text-muted-foreground flex items-center gap-1">
@@ -270,7 +273,7 @@ export function DuplicateWarningDialog({
                 {isEs ? '📁 Existente' : '📁 Existing'}
               </p>
               <p className="text-sm font-semibold truncate">{bestMatch.vendor || '—'}</p>
-              <p className="text-sm">${bestMatch.amount.toFixed(2)}</p>
+              <p className="text-sm">{formatCurrency(bestMatch.amount)}</p>
               <p className="text-xs text-muted-foreground">{bestMatch.date || '—'}</p>
               {bestMatch.time && (
                 <p className="text-xs text-muted-foreground flex items-center gap-1">
@@ -323,14 +326,14 @@ export function DuplicateWarningDialog({
               <div className="space-y-2">
                 <p className="text-xs font-medium text-muted-foreground">
                   {isEs
-                    ? `+${matches.length - 1} coincidencia(s) más:`
-                    : `+${matches.length - 1} more match(es):`}
+                    ? `+${matches.length - 1} ${plural(matches.length - 1, 'coincidencia más', 'coincidencias más')}:`
+                    : `+${matches.length - 1} ${plural(matches.length - 1, 'more match', 'more matches')}:`}
                 </p>
                 {matches.slice(1).map((m, i) => (
                   <div key={i} className="flex items-center gap-2 text-xs text-muted-foreground rounded border p-2">
                     {m.type === 'expense' ? <Receipt className="h-3 w-3 shrink-0" /> : <FileText className="h-3 w-3 shrink-0" />}
                     <span className="truncate">{m.vendor || '?'}</span>
-                    <span>${m.amount.toFixed(2)}</span>
+                    <span>{formatCurrency(m.amount)}</span>
                     <span>{m.date}</span>
                   </div>
                 ))}

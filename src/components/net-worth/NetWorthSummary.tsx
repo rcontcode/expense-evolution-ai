@@ -35,14 +35,10 @@ export function NetWorthSummary({ totalAssets, totalLiabilities, snapshots }: Ne
   const monthlyExpenses = expensesData?.reduce((sum, e) => sum + Number(e.amount), 0) || 0;
   const monthlyCashFlow = monthlyIncome - monthlyExpenses;
   
-  const { formatCompact, currentCurrency } = useFormatCurrency();
-  const formatCurrency = (value: number) => {
-    if (isMobile && Math.abs(value) >= 1000) {
-      if (Math.abs(value) >= 1000000) return `$${(value / 1000000).toFixed(1)}M`;
-      return `$${(value / 1000).toFixed(0)}K`;
-    }
-    return formatCompact(value);
-  };
+  const { formatCompact, formatAxis, currentCurrency } = useFormatCurrency();
+  // En pantalla chica el monto se abrevia; en pantalla grande va entero.
+  const formatCurrency = (value: number) =>
+    isMobile && Math.abs(value) >= 1000 ? formatAxis(value) : formatCompact(value);
 
   // Calculate month-over-month change
   const getMonthlyChange = () => {

@@ -1,4 +1,5 @@
 import { useAuth } from '@/contexts/AuthContext';
+import { useProfile } from '@/hooks/data/useProfile';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useNavigate } from 'react-router-dom';
 import { UserCheck, UserX, Loader2 } from 'lucide-react';
@@ -16,6 +17,10 @@ interface AuthStatusIndicatorProps {
 
 export function AuthStatusIndicator({ collapsed = false, compact = false }: AuthStatusIndicatorProps) {
   const { user, loading } = useAuth();
+  // El correo se toma del perfil, no de la sesion: el perfil ya viene enmascarado cuando REC
+  // Mode esta activo, y `user.email` no. Este indicador mostraba el correo real al grabar.
+  const { data: profile } = useProfile();
+  const correoVisible = profile?.email || undefined;
   const { language } = useLanguage();
   const navigate = useNavigate();
   const isEs = language === 'es';
@@ -35,8 +40,8 @@ export function AuthStatusIndicator({ collapsed = false, compact = false }: Auth
       icon: UserCheck,
       color: 'text-emerald-500',
       bgColor: 'bg-emerald-500/10',
-      label: user?.email?.split('@')[0] || (isEs ? 'Conectado' : 'Connected'),
-      description: user?.email || (isEs ? 'Sesión activa' : 'Session active'),
+      label: correoVisible?.split('@')[0] || (isEs ? 'Conectado' : 'Connected'),
+      description: correoVisible || (isEs ? 'Sesión activa' : 'Session active'),
       animate: false,
     },
     unauthenticated: {

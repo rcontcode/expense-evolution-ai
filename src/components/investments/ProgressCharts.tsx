@@ -4,6 +4,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, BarChart, Bar, Legend, PieChart, Pie, Cell } from 'recharts';
 import { TrendingUp, PiggyBank, Target, Calendar } from 'lucide-react';
 import { MobileChartHint } from '@/components/ui/mobile-chart-hint';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 
 interface ProgressChartsProps {
   savingsGoals: any[];
@@ -20,6 +21,7 @@ const CHART_COLORS = [
 
 export function ProgressCharts({ savingsGoals, investmentGoals }: ProgressChartsProps) {
   const { t, language } = useLanguage();
+  const { formatCurrency, formatAxis } = useFormatCurrency();
 
   // Combine all goals for overview
   const allGoals = useMemo(() => {
@@ -102,7 +104,7 @@ export function ProgressCharts({ savingsGoals, investmentGoals }: ProgressCharts
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">{t('investments.totalSaved')}</p>
-                <p className="text-2xl font-bold">${totalSaved.toLocaleString()}</p>
+                <p className="text-2xl font-bold">{formatCurrency(totalSaved, { decimals: 0 })}</p>
               </div>
             </div>
           </CardContent>
@@ -164,14 +166,14 @@ export function ProgressCharts({ savingsGoals, investmentGoals }: ProgressCharts
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                 <XAxis dataKey="month" className="text-xs" />
-                <YAxis className="text-xs" tickFormatter={(value) => `$${value}`} />
+                <YAxis className="text-xs" tickFormatter={(value) => formatAxis(Number(value))} />
                 <Tooltip 
                   contentStyle={{ 
                     backgroundColor: 'hsl(var(--card))',
                     borderColor: 'hsl(var(--border))',
                     borderRadius: '8px'
                   }}
-                  formatter={(value: number) => [`$${value.toLocaleString()}`, '']}
+                  formatter={(value: number) => [formatCurrency(value), '']}
                 />
                 <Area 
                   type="monotone" 
@@ -217,7 +219,7 @@ export function ProgressCharts({ savingsGoals, investmentGoals }: ProgressCharts
                   outerRadius={90}
                   paddingAngle={5}
                   dataKey="value"
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  label={({ name, percent }) => `${name} {formatCurrency((percent * 100), { decimals: 0 })}%`}
                   labelLine={false}
                 >
                   {summaryData.map((entry, index) => (
@@ -230,7 +232,7 @@ export function ProgressCharts({ savingsGoals, investmentGoals }: ProgressCharts
                     borderColor: 'hsl(var(--border))',
                     borderRadius: '8px'
                   }}
-                  formatter={(value: number) => [`$${value.toLocaleString()}`, '']}
+                  formatter={(value: number) => [formatCurrency(value), '']}
                 />
               </PieChart>
             </ResponsiveContainer>
@@ -260,7 +262,7 @@ export function ProgressCharts({ savingsGoals, investmentGoals }: ProgressCharts
                   }}
                   formatter={(value: number, name: string, props: any) => {
                     if (name === 'progress') {
-                      return [`${value.toFixed(1)}% ($${props.payload.current.toLocaleString()} / $${props.payload.target.toLocaleString()})`, t('investments.progress')];
+                      return [`${value.toFixed(1)}% (${formatCurrency(props.payload.current)} / ${formatCurrency(props.payload.target)})`, t('investments.progress')];
                     }
                     return [`${value.toFixed(1)}%`, t('investments.remaining')];
                   }}

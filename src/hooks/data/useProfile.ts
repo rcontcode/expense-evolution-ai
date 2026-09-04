@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -55,22 +56,37 @@ const PERFIL_DEMO = {
   phone: null,
 } as const;
 
-function enmascararSiGrabando(perfil: Profile | null): Profile | null {
-  if (!perfil) return perfil;
-  if (typeof document === 'undefined') return perfil;
-  if (!document.body.classList.contains('rec-mode')) return perfil;
-  return { ...perfil, ...PERFIL_DEMO } as Profile;
+/**
+ * La mascara se aplica al ENTREGAR el perfil, no al traerlo.
+ *
+ * Antes se aplicaba dentro de la consulta, leyendo la clase `rec-mode` del body. Esa clase la
+ * pone un efecto, y la consulta puede salir antes: cuando eso pasaba, el perfil real quedaba
+ * guardado en cache bajo la llave de grabacion y el nombre verdadero seguia apareciendo por
+ * horas, sin que nada avisara. Aplicarla en `select` la deja como funcion de lo que se muestra:
+ * se evalua en cada render, con el valor del hook y sin tocar el DOM.
+ *
+ * Y si todavia no hay perfil cargado, grabando se devuelve igual el de demostracion: varias
+ * pantallas caen a `user.email` cuando el perfil viene vacio, y ese correo tambien es identidad.
+ */
+function enmascarar(perfil: Profile | null, grabando: boolean): Profile | null {
+  if (!grabando) return perfil;
+  return { ...(perfil || {}), ...PERFIL_DEMO } as Profile;
 }
 
 export function useProfile() {
   const { user } = useAuth();
   const { active: grabando } = useRecMode();
 
+  const aplicarMascara = useCallback(
+    (perfil: Profile | null) => enmascarar(perfil, grabando),
+    [grabando],
+  );
+
   return useQuery({
-    queryKey: ['profile', user?.id, grabando ? 'rec' : 'real'],
+    queryKey: ['profile', user?.id],
     queryFn: async () => {
       if (!user) return null;
-      
+
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
@@ -78,8 +94,9 @@ export function useProfile() {
         .maybeSingle();
 
       if (error) throw error;
-      return enmascararSiGrabando(data as Profile);
+      return data as Profile | null;
     },
+    select: aplicarMascara,
     enabled: !!user,
   });
 }

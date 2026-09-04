@@ -9,6 +9,7 @@ import { useMileage } from '@/hooks/data/useMileage';
 import { useClients } from '@/hooks/data/useClients';
 import { TrendingUp, TrendingDown, Target, Crown, AlertTriangle, DollarSign, ArrowUpRight, ArrowDownRight, Minus } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 
 interface ClientProfit {
   id: string;
@@ -28,6 +29,7 @@ const CRA_RATE_PER_KM = 0.70; // 2024 CRA rate
 
 export function ClientProfitabilityRadar() {
   const { language } = useLanguage();
+  const { formatAxis } = useFormatCurrency();
   const isEs = language === 'es';
   const { data: clients } = useClients();
   const { data: expenses } = useExpenses();
@@ -96,11 +98,8 @@ export function ClientProfitabilityRadar() {
   const lossClients = clientProfits.filter(c => c.netProfit < 0);
   const maxProfit = Math.max(...clientProfits.map(c => Math.abs(c.netProfit)), 1);
 
-  const formatCurrency = (n: number) => {
-    const abs = Math.abs(n);
-    if (abs >= 1000) return `$${(n / 1000).toFixed(1)}k`;
-    return `$${n.toFixed(0)}`;
-  };
+  // Abreviado con el simbolo y los separadores del pais ("$1,2 M", "$980").
+  const formatCurrency = (n: number) => formatAxis(n);
 
   const TrendIcon = ({ trend }: { trend: string }) => {
     if (trend === 'up') return <ArrowUpRight className="h-3.5 w-3.5 text-emerald-500" />;

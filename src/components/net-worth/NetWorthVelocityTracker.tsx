@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { Rocket, Target, Calendar, TrendingUp, Zap, Flag } from 'lucide-react';
 
 interface Snapshot {
@@ -26,6 +27,7 @@ interface Milestone {
 
 export function NetWorthVelocityTracker({ snapshots, currentNetWorth }: Props) {
   const { language } = useLanguage();
+  const { formatAxis } = useFormatCurrency();
   const isEs = language === 'es';
 
   const analysis = useMemo(() => {
@@ -73,7 +75,7 @@ export function NetWorthVelocityTracker({ snapshots, currentNetWorth }: Props) {
         
         return {
           target,
-          label: target >= 1000000 ? `$${(target / 1000000).toFixed(0)}M` : `$${(target / 1000).toFixed(0)}k`,
+          label: formatAxis(target),
           eta: reached 
             ? (isEs ? '✅ Alcanzado' : '✅ Reached') 
             : etaDate 
@@ -105,15 +107,12 @@ export function NetWorthVelocityTracker({ snapshots, currentNetWorth }: Props) {
       velocityGrade,
       monthsTracked: sorted.length,
     };
-  }, [snapshots, currentNetWorth, isEs]);
+  }, [snapshots, currentNetWorth, isEs, formatAxis]);
 
   if (!analysis) return null;
 
-  const formatCurrency = (n: number) => {
-    const abs = Math.abs(n);
-    if (abs >= 1000) return `${n >= 0 ? '+' : ''}$${(n / 1000).toFixed(1)}k`;
-    return `${n >= 0 ? '+' : ''}$${n.toFixed(0)}`;
-  };
+  // Estos montos son variaciones: el signo se muestra siempre.
+  const formatCurrency = (n: number) => (n >= 0 ? '+' : '') + formatAxis(n);
 
   const gradeColors: Record<string, string> = {
     A: 'bg-emerald-500/20 text-emerald-700 border-emerald-500/30',
