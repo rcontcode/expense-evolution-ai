@@ -67,7 +67,7 @@ export function FinancialAutopilot() {
         .map((i: any) => ({ amount: i.amount, category: i.category, date: i.date }));
 
       const activeBills = (bills || [])
-        .filter((b: any) => b.is_active)
+        .filter((b: any) => b.status === 'active')
         .map((b: any) => ({ name: b.name, amount: b.amount, frequency: b.frequency }));
 
       const { data, error } = await supabase.functions.invoke('financial-autopilot', {

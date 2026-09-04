@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useFormatCurrency } from "@/hooks/utils/useFormatCurrency";
+import { useBudgetEntity } from "@/contexts/BudgetEntityContext";
 import { useIncome, useUpdateIncome, useDeleteIncome } from "@/hooks/data/useIncome";
 
 import { Button } from "@/components/ui/button";
@@ -35,9 +36,15 @@ export function IncomeListWidget() {
   
   const now = new Date();
 
+  // Mismo caso que las deudas: la lista de "Ingresos del Mes" mostraba los de la
+  // familia y los de la empresa mezclados, aunque arriba dijera "Separado por
+  // entidad fiscal". undefined = todo, null = solo familia, texto = esa entidad.
+  const budgetEntityId = useBudgetEntity();
+
   const { data: incomes } = useIncome({
     year: now.getFullYear(),
     month: now.getMonth() + 1,
+    entityId: budgetEntityId,
   });
   const updateIncome = useUpdateIncome();
   const deleteIncome = useDeleteIncome();

@@ -3,6 +3,7 @@ import { useFormatCurrency } from "@/hooks/utils/useFormatCurrency";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useBudgetEntity } from "@/contexts/BudgetEntityContext";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { TrendingDown, AlertTriangle, CheckCircle2 } from "lucide-react";
@@ -12,16 +13,27 @@ export function DebtSnapshot() {
   const l = language === "es";
   const { formatCurrency: fc } = useFormatCurrency();
   const { user } = useAuth();
+  // Este panel vive dentro del Presupuesto, que puede estar mirando solo la
+  // familia, solo una empresa, o las dos cosas juntas. Sin esto mostraba
+  // SIEMPRE todas las deudas: la del auto de la casa aparecia sumada en el
+  // presupuesto de la empresa, y las de la empresa en el de la familia.
+  //   undefined = vista unificada (todo)   null = solo familia   texto = esa entidad
+  const budgetEntityId = useBudgetEntity();
 
   const { data: debts } = useQuery({
-    queryKey: ["liabilities-snapshot", user?.id],
+    queryKey: ["liabilities-snapshot", user?.id, budgetEntityId],
     queryFn: async () => {
       if (!user) return [];
-      const { data, error } = await supabase
+      let query = supabase
         .from("liabilities")
         .select("*")
-        .eq("user_id", user.id)
-        .order("interest_rate", { ascending: false });
+        .eq("user_id", user.id);
+      if (budgetEntityId) {
+        query = query.eq("entity_id", budgetEntityId);
+      } else if (budgetEntityId === null) {
+        query = query.is("entity_id", null);
+      }
+      const { data, error } = await query.order("interest_rate", { ascending: false });
       if (error) throw error;
       return data || [];
     },

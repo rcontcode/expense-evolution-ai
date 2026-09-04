@@ -57,7 +57,7 @@ export function ProactiveAlertsWidget() {
         .from('recurring_bills')
         .select('*')
         .eq('user_id', user.id)
-        .eq('is_active', true);
+        .eq('status', 'active');
       return data || [];
     },
     enabled: !!user,

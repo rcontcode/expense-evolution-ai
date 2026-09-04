@@ -101,7 +101,7 @@ export function RecurringBillConfirmDialog({ open, onClose, candidate, onCreated
         frequency_months: frequency === 'custom' ? frequencyMonths : null,
         next_due_date: nextDueDate || hoyLocal(),
         auto_pay: autoPay,
-        is_active: true,
+        status: 'active',
         currency: currentEntity?.default_currency || 'CAD',
         start_date: startDate || null,
         end_date: endDate || null,

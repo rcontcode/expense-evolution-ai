@@ -1,6 +1,7 @@
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useFormatCurrency } from "@/hooks/utils/useFormatCurrency";
 import { useRecurringBills } from "@/hooks/data/useRecurringBills";
+import { useBudgetEntity } from "@/contexts/BudgetEntityContext";
 import { differenceInDays, parseISO, format, differenceInCalendarDays} from "date-fns";
 import { es, enUS } from "date-fns/locale";
 import { motion } from "framer-motion";
@@ -12,9 +13,21 @@ export function UpcomingReminders() {
   const l = language === "es";
   const { formatCurrency: fc } = useFormatCurrency();
   const { data: bills } = useRecurringBills();
+  // "Proximos Pagos" listaba las cuentas de la familia y las de la empresa
+  // juntas, aunque el presupuesto estuviera mirando una sola de las dos.
+  // undefined = vista unificada (todo), null = solo familia, texto = esa entidad.
+  const budgetEntityId = useBudgetEntity();
 
   const now = new Date();
-  const activeBills = (bills || []).filter(b => b.status === "active");
+  const activeBills = (bills || [])
+    .filter(b => b.status === "active")
+    .filter(b =>
+      budgetEntityId === undefined
+        ? true
+        : budgetEntityId === null
+          ? !b.entity_id
+          : b.entity_id === budgetEntityId
+    );
 
   // Get bills due within next 14 days, sorted by urgency
   const upcoming = activeBills
