@@ -69,6 +69,47 @@ const CATEGORIA_DE_DEUDA: Record<string, string> = {
   auto_loan: "car_loan",
 };
 
+// Los movimientos bancarios tienen su PROPIO vocabulario, distinto del de gastos: es el de
+// `CATEGORY_LABELS` en `src/hooks/data/useBankAnalysis.ts` (groceries, housing, utilities...).
+// Los escenarios copiaban la categoria del gasto tal cual, y ninguna de esas palabras existe
+// alli: el analisis del banco mostraba TODO como "Otros 📦" y el resumen semanal escupia
+// "insumos", "sueldos" y "arriendo" en minuscula entre filas bien etiquetadas.
+const CATEGORIA_DE_BANCO: Record<string, string> = {
+  alimentacion: "groceries",
+  arriendo: "housing",
+  vivienda: "housing",
+  rent: "housing",
+  compras: "shopping",
+  insumos: "shopping",
+  materials: "shopping",
+  educacion: "education",
+  entretenimiento: "entertainment",
+  salud: "healthcare",
+  servicios: "utilities",
+  utilities: "utilities",
+  communications: "telecommunications",
+  software: "subscriptions",
+  suscripciones: "subscriptions",
+  insurance: "insurance",
+  transporte: "transportation",
+  transport: "transportation",
+  meals: "restaurants",
+  marketing: "other",
+  mascota: "other",
+  tools: "other",
+  // Los sueldos que PAGA la empresa salen por transferencia, no son un ingreso.
+  sueldos: "transfers",
+  // Lado de los ingresos: lo unico que el banco reconoce como sueldo es el sueldo.
+  salary: "salary",
+  business: "transfers",
+  client_payment: "transfers",
+  freelance: "transfers",
+  passive_rental: "transfers",
+  investment_funds: "transfers",
+  investment_stocks: "transfers",
+  other: "other",
+};
+
 // Que es cada gasto para efectos de impuestos. La app marca como INCOMPLETO todo gasto sin
 // clasificar, y los escenarios no la traian: el listado de gastos abria diciendo "116/120
 // incompletos" y cada fila con una alerta amarilla "Falta: Clasificacion". Un tablero de
@@ -767,7 +808,7 @@ function buildScenarioExpatMultipais(userId: string) {
   // Ingresos: contractor CAD + arriendo CLP
   for (let m = 0; m < 3; m++) {
     incomes.push({ source: "TechCorp Canada", amount: 7800, income_type: "client_payment", date: daysAgo(m * 30 + 15), description: "Software contractor monthly invoice", currency: "CAD" });
-    incomes.push({ source: "Arrendatario depto Santiago", amount: 720000, income_type: "rental", date: daysAgo(m * 30 + 5), description: "Arriendo mensual depto Santiago", currency: "CLP" });
+    incomes.push({ source: "Arrendatario depto Santiago", amount: 720000, income_type: "passive_rental", date: daysAgo(m * 30 + 5), description: "Arriendo mensual depto Santiago", currency: "CLP" });
   }
 
   for (const e of expenses) {
@@ -839,12 +880,12 @@ function buildScenarioJubiladoInversiones(userId: string) {
 
   // Ingresos pensión (mensuales) + retiros RRSP (trimestrales) + dividendos (trimestrales)
   for (let m = 0; m < 3; m++) {
-    incomes.push({ source: "Service Canada CPP", amount: 1380, income_type: "pension", date: daysAgo(m * 30 + 27), description: "Canada Pension Plan monthly" });
-    incomes.push({ source: "Service Canada OAS", amount: 720, income_type: "pension", date: daysAgo(m * 30 + 27), description: "Old Age Security monthly" });
+    incomes.push({ source: "Service Canada CPP", amount: 1380, income_type: "other", date: daysAgo(m * 30 + 27), description: "Canada Pension Plan monthly" });
+    incomes.push({ source: "Service Canada OAS", amount: 720, income_type: "other", date: daysAgo(m * 30 + 27), description: "Old Age Security monthly" });
   }
   // RRSP meltdown trimestral
-  incomes.push({ source: "RBC Direct Investing - RRSP", amount: 4500, income_type: "investment", date: daysAgo(15), description: "Planned RRSP withdrawal Q current" });
-  incomes.push({ source: "RBC Direct Investing - RRSP", amount: 4500, income_type: "investment", date: daysAgo(105), description: "Planned RRSP withdrawal Q-1" });
+  incomes.push({ source: "RBC Direct Investing - RRSP", amount: 4500, income_type: "investment_funds", date: daysAgo(15), description: "Planned RRSP withdrawal Q current" });
+  incomes.push({ source: "RBC Direct Investing - RRSP", amount: 4500, income_type: "investment_funds", date: daysAgo(105), description: "Planned RRSP withdrawal Q-1" });
   // Dividendos (TD, RY, ENB, T, BCE) trimestrales
   const dividends = [
     { src: "TD Bank dividend", amt: 580 }, { src: "Royal Bank RY dividend", amt: 645 },
@@ -852,8 +893,8 @@ function buildScenarioJubiladoInversiones(userId: string) {
     { src: "BCE Inc dividend", amt: 525 },
   ];
   for (const d of dividends) {
-    incomes.push({ source: d.src, amount: d.amt, income_type: "investment", date: daysAgo(20), description: "Quarterly dividend payment" });
-    incomes.push({ source: d.src, amount: d.amt, income_type: "investment", date: daysAgo(110), description: "Quarterly dividend payment" });
+    incomes.push({ source: d.src, amount: d.amt, income_type: "investment_stocks", date: daysAgo(20), description: "Quarterly dividend payment" });
+    incomes.push({ source: d.src, amount: d.amt, income_type: "investment_stocks", date: daysAgo(110), description: "Quarterly dividend payment" });
   }
 
   for (const e of expenses) {
@@ -1239,7 +1280,11 @@ async function seedDemo(supabase: any, userId: string, scenario: Scenario) {
 
   // 5. Bank transactions
   if (data.bankTxns.length) {
-    const { data: ins, error } = await supabase.from("bank_transactions").insert(data.bankTxns).select("id");
+    const conVocabulario = data.bankTxns.map((t: any) => ({
+      ...t,
+      category: traducir(CATEGORIA_DE_BANCO, t.category),
+    }));
+    const { data: ins, error } = await supabase.from("bank_transactions").insert(conVocabulario).select("id");
     if (error) throw new Error(`bank_transactions: ${error.message}`);
     inserted.bank_transactions = ins?.length || 0;
   }
