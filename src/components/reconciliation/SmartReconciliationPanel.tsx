@@ -28,6 +28,7 @@ import { toast } from 'sonner';
 import { useAIErrorHandler } from '@/hooks/utils/useAIErrorHandler';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { fechaLocal } from '@/lib/fecha';
+import { getCategoryLabelByLanguage } from '@/lib/constants/expense-categories';
 
 interface AIMatch {
   transaction_id: string;
@@ -417,7 +418,7 @@ export function SmartReconciliationPanel() {
                   <div className="flex-1 min-w-0">
                     <p className="font-medium">{tx.description || '—'} — {fc(Number(tx.amount))}</p>
                     <p className="text-[10px] text-muted-foreground">
-                      {l ? 'Categoría sugerida' : 'Suggested category'}: <span className="capitalize">{s.suggested_category}</span>
+                      {l ? 'Categoría sugerida' : 'Suggested category'}: <span>{getCategoryLabelByLanguage(s.suggested_category, l ? 'es' : 'en')}</span>
                       {s.suggested_vendor && ` • ${s.suggested_vendor}`}
                       {s.reason && ` • ${s.reason}`}
                     </p>

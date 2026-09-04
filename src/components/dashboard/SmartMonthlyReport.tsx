@@ -23,6 +23,7 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useAIErrorHandler } from '@/hooks/utils/useAIErrorHandler';
 import { fechaLocal } from '@/lib/fecha';
+import { getCategoryLabelByLanguage } from '@/lib/constants/expense-categories';
 
 export function SmartMonthlyReport() {
   const { language } = useLanguage();
@@ -269,7 +270,7 @@ Data:
                   {report.topCategories.map((cat, i) => (
                     <div key={cat.category} className="space-y-1">
                       <div className="flex items-center justify-between text-xs">
-                        <span className="capitalize">{cat.category}</span>
+                        <span>{getCategoryLabelByLanguage(cat.category, l ? 'es' : 'en')}</span>
                         <span className="font-medium">{formatCompact(cat.amount)} ({cat.percent.toFixed(0)}%)</span>
                       </div>
                       <Progress value={cat.percent} className="h-1.5" />
@@ -289,7 +290,7 @@ Data:
                 <div className="space-y-1.5">
                   {report.categoryChanges.slice(0, 5).map(c => (
                     <div key={c.category} className="flex items-center justify-between text-xs p-1.5 rounded bg-muted/30">
-                      <span className="capitalize">{c.category}</span>
+                      <span>{getCategoryLabelByLanguage(c.category, l ? 'es' : 'en')}</span>
                       <span className={cn("font-medium", c.change > 0 ? 'text-destructive' : 'text-green-600')}>
                         {c.change > 0 ? '+' : ''}{formatCompact(c.change)}
                         {c.previous > 0 && ` (${c.changePercent > 0 ? '+' : ''}${c.changePercent.toFixed(0)}%)`}

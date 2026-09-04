@@ -5,6 +5,7 @@ import { Progress } from '@/components/ui/progress';
 import { Liability, LIABILITY_CATEGORIES, useDeleteLiability } from '@/hooks/data/useNetWorth';
 import { Plus, Pencil, Trash2, Home, Car, GraduationCap, CreditCard, HandCoins, Banknote, Building2, Receipt, AlertTriangle } from 'lucide-react';
 import { plural } from '@/lib/plural';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,16 +29,13 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
 };
 
 export function LiabilitiesList({ liabilities, onAdd, onEdit }: LiabilitiesListProps) {
+  const { formatCurrency: fmtMoneda } = useFormatCurrency();
   const deleteLiability = useDeleteLiability();
 
-  const formatCurrency = (value: number, currency: string = 'CAD') => {
-    return new Intl.NumberFormat('es-CA', {
-      style: 'currency',
-      currency,
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(value);
-  };
+  // Antes forzaba el idioma 'es-CA' y el dolar canadiense por defecto. Ahora la
+  // moneda de la deuda manda si la trae, y si no, la de la cuenta.
+  const formatCurrency = (value: number, currency?: string) =>
+    fmtMoneda(value, { decimals: 0, ...(currency ? { currency } : {}) });
 
   const totalLiabilities = liabilities.reduce((sum, l) => sum + l.current_balance, 0);
   const totalMinPayments = liabilities.reduce((sum, l) => sum + (l.minimum_payment || 0), 0);

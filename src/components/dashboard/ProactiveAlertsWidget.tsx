@@ -20,6 +20,7 @@ import { cn } from '@/lib/utils';
 import { useExpenseCompleteness } from '@/hooks/utils/useExpenseCompleteness';
 import { plural } from '@/lib/plural';
 import { fechaLocal } from '@/lib/fecha';
+import { getCategoryLabelByLanguage } from '@/lib/constants/expense-categories';
 
 interface SmartAlert {
   id: string;
@@ -154,7 +155,7 @@ export function ProactiveAlertsWidget() {
           description: overBudget.map(b => {
             const spent = categorySpending[b.category] || 0;
             const pct = ((spent / b.monthly_budget) * 100).toFixed(0);
-            return `${b.category}: ${pct}%`;
+            return `${getCategoryLabelByLanguage(b.category, l ? 'es' : 'en')}: ${pct}%`;
           }).join(', '),
           action: { label: l ? 'Ajustar' : 'Adjust', route: '/budget' },
           priority: 3,

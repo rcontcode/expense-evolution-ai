@@ -87,7 +87,7 @@ export function SimpleBanking() {
                         <Landmark className="h-4 w-4" />
                       </div>
                       <div className="min-w-0">
-                        <div className="text-sm font-medium truncate">{t.description || t.merchant || (language === 'es' ? 'Movimiento' : 'Movement')}</div>
+                        <div className="text-sm font-medium truncate">{t.description || (language === 'es' ? 'Movimiento' : 'Movement')}</div>
                         <div className="text-xs text-muted-foreground">
                           {fechaLocal(t.transaction_date).toLocaleDateString(language === 'es' ? 'es' : 'en', { day: 'numeric', month: 'short' })}
                         </div>

@@ -56,7 +56,7 @@ const CATEGORY_COLORS: Record<string, string> = {
 
 export function CategoryYearComparison() {
   const { language } = useLanguage();
-  const { formatAxis } = useFormatCurrency();
+  const { formatAxis, formatCurrency: fmtMoneda } = useFormatCurrency();
   const t = translations[language];
   const [showTopOnly, setShowTopOnly] = useState(true);
   
@@ -132,14 +132,8 @@ export function CategoryYearComparison() {
     };
   }, [currentExpenses, previousExpenses, language, showTopOnly]);
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat(language === "es" ? "es-CA" : "en-CA", {
-      style: "currency",
-      currency: "CAD",
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(value);
-  };
+  // Antes tenia "CAD" escrito a mano: una cuenta chilena veia "CA$1.234".
+  const formatCurrency = (value: number) => fmtMoneda(value, { decimals: 0 });
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {

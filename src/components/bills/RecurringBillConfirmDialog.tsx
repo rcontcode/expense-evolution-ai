@@ -24,6 +24,7 @@ import {
   type BillFrequency 
 } from '@/lib/constants/bill-categories';
 import { aFechaISO, hoyLocal } from '@/lib/fecha';
+import { getBillCategoryLabel } from '@/lib/constants/bill-categories';
 
 export interface RecurringBillCandidate {
   name: string;
@@ -150,8 +151,8 @@ export function RecurringBillConfirmDialog({ open, onClose, candidate, onCreated
           });
           
           toast.info(l 
-            ? `📊 Presupuesto de ${category} actualizado a ${formatCurrency(newMinBudget)} (+${formatCurrency(amount)} del pago fijo)`
-            : `📊 ${category} budget updated to ${formatCurrency(newMinBudget)} (+${formatCurrency(amount)} from recurring bill)`
+            ? `📊 Presupuesto de ${getBillCategoryLabel(category, 'es')} actualizado a ${formatCurrency(newMinBudget)} (+${formatCurrency(amount)} del pago fijo)`
+            : `📊 ${getBillCategoryLabel(category, 'en')} budget updated to ${formatCurrency(newMinBudget)} (+${formatCurrency(amount)} from recurring bill)`
           );
         } catch {
           // Non-critical

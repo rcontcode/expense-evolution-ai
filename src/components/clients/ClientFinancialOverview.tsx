@@ -25,6 +25,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useExpenses } from '@/hooks/data/useExpenses';
 import { useContracts } from '@/hooks/data/useContracts';
 import { useProjectsWithClients } from '@/hooks/data/useProjectClients';
+import { getCategoryLabelByLanguage } from '@/lib/constants/expense-categories';
 
 // CRA deduction rates by category
 const CRA_RATES: Record<string, { rate: number; description: string; descriptionEn: string }> = {
@@ -330,7 +331,7 @@ export function ClientFinancialOverview({ clientId, clientName }: ClientFinancia
                           <Icon className="h-4 w-4 text-primary" />
                         </div>
                         <div>
-                          <p className="font-medium capitalize">{category.replace('_', ' ')}</p>
+                          <p className="font-medium">{getCategoryLabelByLanguage(category, language === 'es' ? 'es' : 'en')}</p>
                           <p className="text-xs text-muted-foreground">
                             {data.count} {language === 'es' ? 'gastos' : 'expenses'} • 
                             {language === 'es' ? rateInfo.description : rateInfo.descriptionEn}

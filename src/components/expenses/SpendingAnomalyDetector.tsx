@@ -10,6 +10,7 @@ import { es, enUS } from 'date-fns/locale';
 import { AlertTriangle, TrendingUp, ShieldAlert, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { fechaLocal } from '@/lib/fecha';
+import { getCategoryLabelByLanguage } from '@/lib/constants/expense-categories';
 
 interface Anomaly {
   id: string;
@@ -173,7 +174,7 @@ export function SpendingAnomalyDetector() {
                 <div className="flex items-center gap-2 min-w-0">
                   <span className="text-sm">{severityIcons[anomaly.severity]}</span>
                   <span className="text-sm font-medium truncate">{anomaly.vendor}</span>
-                  <Badge variant="secondary" className="text-[9px] capitalize shrink-0">{anomaly.category}</Badge>
+                  <Badge variant="secondary" className="text-[9px] shrink-0">{getCategoryLabelByLanguage(anomaly.category, language === 'es' ? 'es' : 'en')}</Badge>
                 </div>
                 <span className="text-sm font-bold text-destructive shrink-0">{fc(anomaly.amount)}</span>
               </div>

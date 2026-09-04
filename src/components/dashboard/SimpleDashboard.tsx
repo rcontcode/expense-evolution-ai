@@ -41,6 +41,7 @@ import { SimpleSparkline } from './SimpleSparkline';
 import { getDailyTip, type TipContext } from '@/data/simpleFinancialTips';
 import { cn } from '@/lib/utils';
 import { fechaLocal } from '@/lib/fecha';
+import { getCategoryLabelByLanguage } from '@/lib/constants/expense-categories';
 
 interface SimpleDashboardProps {
   onQuickCapture?: () => void;
@@ -103,7 +104,9 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
         id: `e-${e.id}`,
         rawId: String(e.id),
         type: 'expense',
-        label: e.merchant || e.category || (language === 'es' ? 'Gasto' : 'Expense'),
+        label: e.vendor || e.description
+          || (e.category ? getCategoryLabelByLanguage(e.category, language === 'es' ? 'es' : 'en') : '')
+          || (language === 'es' ? 'Gasto' : 'Expense'),
         amount: Number(e.amount) || 0,
         date: e.date,
       });
@@ -147,7 +150,7 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
 
   // Has the user configured a budget already? Drives the second shortcut choice
   const hasBudget = useMemo(() => {
-    const prefs = (profile as any)?.preferences;
+    const prefs = (profile as any)?.display_preferences ?? (profile as any)?.preferences;
     return Boolean(prefs?.budget_mode);
   }, [profile]);
 
@@ -426,7 +429,7 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
                 {language === 'es' ? 'Tu mayor categoría este mes' : 'Your top category this month'}
               </div>
               <div className="text-sm font-semibold">
-                <span className="capitalize">{topCategory.category}</span>
+                <span>{getCategoryLabelByLanguage(topCategory.category, language === 'es' ? 'es' : 'en')}</span>
                 <span className="text-muted-foreground font-normal"> · </span>
                 <span className="tabular-nums">{formatCurrency(topCategory.amount)}</span>
                 <span className="text-muted-foreground font-normal tabular-nums"> ({topCategory.pct}%)</span>

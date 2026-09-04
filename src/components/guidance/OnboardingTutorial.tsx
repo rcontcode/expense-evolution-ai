@@ -247,7 +247,9 @@ export function OnboardingTutorial() {
   const [currentStep, setCurrentStep] = useState(0);
   const [dismissedThisSession, setDismissedThisSession] = useState(false);
 
-  const userName = profile?.full_name?.split(' ')[0] || t('user');
+  // Si el perfil todavia no tiene nombre, se le habla de tu. Antes decia t('user'),
+  // una llave que no existe en el diccionario: el tutorial saludaba «Hola user».
+  const userName = profile?.full_name?.split(' ')[0] || (language === 'es' ? 'tú' : 'you');
 
   // Check if we're on a public route
   const isPublicRoute = PUBLIC_ROUTES.includes(location.pathname);

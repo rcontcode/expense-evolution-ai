@@ -22,6 +22,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { RecurringBillConfirmDialog, type RecurringBillCandidate } from '@/components/bills/RecurringBillConfirmDialog';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { fechaLocal, hoyLocal } from '@/lib/fecha';
+import { getCategoryLabelByLanguage } from '@/lib/constants/expense-categories';
 
 interface SmartTextInputProps {
   onSuccess?: () => void;
@@ -333,7 +334,7 @@ export function SmartTextInput({ onSuccess, onCancel }: SmartTextInputProps) {
                   {result.data.category && (
                     <div className="p-2 rounded bg-muted/50">
                       <p className="text-[11px] text-muted-foreground">{l ? 'Categoría' : 'Category'}</p>
-                      <p className="font-medium capitalize">{result.data.category.replace(/_/g, ' ')}</p>
+                      <p className="font-medium">{getCategoryLabelByLanguage(result.data.category, l ? 'es' : 'en')}</p>
                     </div>
                   )}
                   {result.data.frequency && (

@@ -138,7 +138,9 @@ export default function Dashboard() {
       const d = fechaLocal(b.next_due_date);
       return d >= new Date(now.getFullYear(), now.getMonth(), now.getDate()) && d <= limit3;
     }).length;
-    const incompleteExpenses = (allExpenses ?? []).filter((e: any) => !e?.category || !e?.merchant).length;
+    // Antes se pedia tambien `e.merchant`, un campo que no existe en la tabla
+    // (se llama `vendor`), asi que contaba como incompleto hasta el ultimo gasto.
+    const incompleteExpenses = (allExpenses ?? []).filter((e: any) => !e?.category || !e?.vendor).length;
     const balance = (stats?.monthlyIncome ?? 0) - (stats?.monthlyTotal ?? 0);
     return {
       noClients: (clients?.length ?? 0) === 0,

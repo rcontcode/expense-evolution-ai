@@ -55,6 +55,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { plural } from '@/lib/plural';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { fechaLocal } from '@/lib/fecha';
+import { getCategoryLabelByLanguage } from '@/lib/constants/expense-categories';
 
 function MatchScoreBadge({ score, matchType }: { score: number; matchType: string }) {
   const { language } = useLanguage();
@@ -109,7 +110,7 @@ function SuggestedMatchCard({
             {match.expense.category && (
               <>
                 <span>•</span>
-                <span className="capitalize">{match.expense.category}</span>
+                <span>{getCategoryLabelByLanguage(match.expense.category, language === 'es' ? 'es' : 'en')}</span>
               </>
             )}
           </div>
