@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useIsAdmin } from '@/hooks/data/useIsAdmin';
+import { mesLocal } from '@/lib/fecha';
 
 // Fallback plan limits (used if DB fetch fails)
 const FALLBACK_LIMITS = {
@@ -252,7 +253,7 @@ export function usePlanLimits() {
     queryFn: async () => {
       if (!user?.id) return null;
       
-      const currentPeriod = new Date().toISOString().slice(0, 7) + '-01';
+      const currentPeriod = mesLocal() + '-01';
       
       const { data, error } = await supabase
         .from('usage_tracking')

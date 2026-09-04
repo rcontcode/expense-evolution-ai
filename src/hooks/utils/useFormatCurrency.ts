@@ -7,6 +7,17 @@ import { useLanguage } from '@/contexts/LanguageContext';
  * Reads currency from EntityContext (fiscal entity → profile fallback → 'CAD').
  * All components MUST use this instead of hardcoding 'CAD'.
  */
+/**
+ * Un monto que llega indefinido o roto se muestra como cero, no como "$NaN".
+ *
+ * `Intl.NumberFormat().format(NaN)` escribe literalmente "$NaN", y en pantalla eso
+ * es peor que un cero: parece que la app se rompio. Pasa cuando un campo todavia
+ * no se leyo o cuando una division no tenia divisor.
+ */
+function seguro(monto: number): number {
+  return Number.isFinite(monto) ? monto : 0;
+}
+
 export function useFormatCurrency() {
   const { currentCurrency } = useEntity();
   const { language } = useLanguage();
@@ -24,7 +35,7 @@ export function useFormatCurrency() {
         currency: curr,
         minimumFractionDigits: decimals,
         maximumFractionDigits: decimals,
-      }).format(amount);
+      }).format(seguro(amount));
     },
     [currentCurrency, locale],
   );
@@ -37,7 +48,7 @@ export function useFormatCurrency() {
         currency: curr,
         minimumFractionDigits: 0,
         maximumFractionDigits: 0,
-      }).format(amount);
+      }).format(seguro(amount));
     },
     [currentCurrency, locale],
   );
@@ -55,7 +66,7 @@ export function useFormatCurrency() {
         currency: curr,
         notation: 'compact',
         maximumFractionDigits: 1,
-      }).format(amount);
+      }).format(seguro(amount));
     },
     [currentCurrency, locale],
   );

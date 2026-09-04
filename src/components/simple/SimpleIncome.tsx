@@ -8,7 +8,7 @@ import { useIncome } from '@/hooks/data/useIncome';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { IncomeDialog } from '@/components/dialogs/IncomeDialog';
 import type { IncomeWithRelations } from '@/types/income.types';
-import { fechaLocal } from '@/lib/fecha';
+import { fechaLocal, mesLocal } from '@/lib/fecha';
 import { getIncomeCategoryLabel } from '@/lib/constants/income-categories';
 
 export function SimpleIncome() {
@@ -24,7 +24,7 @@ export function SimpleIncome() {
   );
 
   const total = useMemo(() => {
-    const ym = new Date().toISOString().slice(0, 7);
+    const ym = mesLocal();
     return (income ?? [])
       .filter((i: any) => typeof i.date === 'string' && i.date.startsWith(ym))
       .reduce((s: number, i: any) => s + Number(i.amount || 0), 0);

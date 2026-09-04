@@ -47,9 +47,33 @@ export function DebtSnapshot() {
   const highestRate = debts[0];
   const debtCount = debts.length;
 
-  // Estimated payoff (simplified: total / monthly min payment)
-  const monthsToPayoff = totalMinPayment > 0 ? Math.ceil(totalDebt / totalMinPayment) : 0;
-  const yearsToPayoff = monthsToPayoff > 0 ? (monthsToPayoff / 12).toFixed(1) : "∞";
+  // Cuanto falta para saldar la deuda, CON intereses.
+  //
+  // Antes esto era `deuda total / pago minimo`, que ignora el interes por
+  // completo. Con una tarjeta al 19,99% y el minimo de siempre, esa cuenta
+  // promete la mitad del tiempo real —y a veces promete un final que no existe,
+  // porque si el minimo no cubre ni el interes del mes la deuda solo crece.
+  const tasaMensual = (() => {
+    const conSaldo = debts.filter(d => Number(d.current_balance) > 0);
+    const saldo = conSaldo.reduce((t, d) => t + Number(d.current_balance), 0);
+    if (saldo <= 0) return 0;
+    const ponderada = conSaldo.reduce(
+      (t, d) => t + Number(d.current_balance) * (Number(d.interest_rate) || 0),
+      0
+    ) / saldo;
+    return ponderada / 100 / 12;
+  })();
+
+  const interesDelPrimerMes = totalDebt * tasaMensual;
+  const seSalda = totalMinPayment > interesDelPrimerMes;
+  const monthsToPayoff = !seSalda
+    ? Infinity
+    : tasaMensual === 0
+      ? Math.ceil(totalDebt / totalMinPayment)
+      : Math.ceil(
+          -Math.log(1 - (tasaMensual * totalDebt) / totalMinPayment) / Math.log(1 + tasaMensual)
+        );
+  const yearsToPayoff = Number.isFinite(monthsToPayoff) ? (monthsToPayoff / 12).toFixed(1) : "∞";
 
   // Las llaves son las de LIABILITY_CATEGORIES (useNetWorth.ts), que es de donde salen las deudas
   // creadas desde la app. Este mapa solo conocia "auto_loan", que no existe en ese catalogo: un

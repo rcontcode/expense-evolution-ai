@@ -8,7 +8,7 @@ import { useBankTransactions } from '@/hooks/data/useBankTransactions';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { BankImportDialog } from '@/components/dialogs/BankImportDialog';
 import { cn } from '@/lib/utils';
-import { fechaLocal } from '@/lib/fecha';
+import { fechaLocal, mesLocal } from '@/lib/fecha';
 
 export function SimpleBanking() {
   const { language } = useLanguage();
@@ -19,7 +19,7 @@ export function SimpleBanking() {
   const recent = useMemo(() => (transactions ?? []).slice(0, 15), [transactions]);
 
   const monthSummary = useMemo(() => {
-    const ym = new Date().toISOString().slice(0, 7);
+    const ym = mesLocal();
     let inc = 0, out = 0;
     for (const t of (transactions ?? [])) {
       if (!t.transaction_date?.startsWith(ym)) continue;

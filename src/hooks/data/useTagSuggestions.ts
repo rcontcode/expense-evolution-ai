@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTags } from './useTags';
 import { useAIErrorHandler } from '@/hooks/utils/useAIErrorHandler';
+import { mesLocal } from '@/lib/fecha';
 
 interface TagSuggestion {
   tagId: string;
@@ -141,7 +142,7 @@ export function useTagAnalytics() {
       const now = new Date();
       for (let i = 5; i >= 0; i--) {
         const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-        last6Months.push(d.toISOString().substring(0, 7));
+        last6Months.push(mesLocal(d));
       }
 
       // Calculate monthly trends

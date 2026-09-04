@@ -21,6 +21,7 @@ import { format } from 'date-fns';
 import { es as esLocale } from 'date-fns/locale';
 import { toast } from 'sonner';
 import { UserActivityCard } from './UserActivityCard';
+import { mesLocal } from '@/lib/fecha';
 
 
 interface UserDetailSheetProps {
@@ -67,7 +68,7 @@ export const UserDetailSheet = ({ userId, onClose, language }: UserDetailSheetPr
     queryKey: ['admin-user-usage', userId],
     queryFn: async () => {
       if (!userId) return null;
-      const currentMonth = new Date().toISOString().slice(0, 7) + '-01';
+      const currentMonth = mesLocal() + '-01';
       const { data } = await supabase
         .from('usage_tracking')
         .select('*')

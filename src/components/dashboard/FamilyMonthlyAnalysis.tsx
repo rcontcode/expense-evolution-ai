@@ -94,6 +94,7 @@ import {
 } from 'recharts';
 import { getCategoryLabelByLanguage, ExpenseCategory } from '@/lib/constants/expense-categories';
 import { MobileChartHint } from '@/components/ui/mobile-chart-hint';
+import { porcentaje } from '@/lib/numeros';
 
 // Category color palette - vibrant 3D-like colors
 const CATEGORY_COLORS: Record<string, string> = {
@@ -605,8 +606,8 @@ export function FamilyMonthlyAnalysis({ year, month }: FamilyMonthlyAnalysisProp
         severity: insights.projectedTotal > insights.totalIncome * 1.5 ? 'critical' : 'high',
         amount: insights.projectedTotal,
         message: {
-          es: `Proyección: ${formatCurrency(insights.projectedTotal)} excede ingresos en ${((insights.projectedTotal / insights.totalIncome - 1) * 100).toFixed(0)}%`,
-          en: `Projection: ${formatCurrency(insights.projectedTotal)} exceeds income by ${((insights.projectedTotal / insights.totalIncome - 1) * 100).toFixed(0)}%`
+          es: `Proyección: ${formatCurrency(insights.projectedTotal)} excede ingresos en ${(porcentaje(insights.projectedTotal, insights.totalIncome) - 100).toFixed(0)}%`,
+          en: `Projection: ${formatCurrency(insights.projectedTotal)} exceeds income by ${(porcentaje(insights.projectedTotal, insights.totalIncome) - 100).toFixed(0)}%`
         },
         suggestion: {
           es: `Reduce ${formatCurrency((insights.projectedTotal - insights.totalIncome) / (daysInMonth - insights.currentDay))}/día para equilibrar`,
@@ -1762,7 +1763,7 @@ export function FamilyMonthlyAnalysis({ year, month }: FamilyMonthlyAnalysisProp
                       <div key={i} className="flex items-center gap-2">
                         <div className="w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: cat.color }} />
                         <span className="text-[10px] truncate flex-1">{cat.name}</span>
-                        <span className="text-[10px] font-bold">{((cat.value / insights.totalExpenses) * 100).toFixed(0)}%</span>
+                        <span className="text-[10px] font-bold">{porcentaje(cat.value, insights.totalExpenses).toFixed(0)}%</span>
                       </div>
                     ))}
                   </div>
@@ -1831,7 +1832,7 @@ export function FamilyMonthlyAnalysis({ year, month }: FamilyMonthlyAnalysisProp
               <p className="font-bold text-xs truncate">{getCategoryLabelByLanguage(insights.topCategory[0] as ExpenseCategory, language as 'es' | 'en')}</p>
               <p className="text-lg font-bold text-amber-600">{formatCurrency(insights.topCategory[1])}</p>
               <p className="text-[10px] text-muted-foreground">
-                {((insights.topCategory[1] / insights.totalExpenses) * 100).toFixed(0)}% {language === 'es' ? 'del total' : 'of total'}
+                {porcentaje(insights.topCategory[1], insights.totalExpenses).toFixed(0)}% {language === 'es' ? 'del total' : 'of total'}
               </p>
             </motion.div>
           )}
@@ -2002,8 +2003,8 @@ export function FamilyMonthlyAnalysis({ year, month }: FamilyMonthlyAnalysisProp
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {language === 'es' 
-                          ? `Gastas ${((insights.avgWeekendSpending / insights.avgWeekdaySpending) * 100 - 100).toFixed(0)}% más los fines de semana. Considera planificar actividades más económicas.`
-                          : `You spend ${((insights.avgWeekendSpending / insights.avgWeekdaySpending) * 100 - 100).toFixed(0)}% more on weekends. Consider planning more affordable activities.`
+                          ? `Gastas ${(porcentaje(insights.avgWeekendSpending, insights.avgWeekdaySpending) - 100).toFixed(0)}% más los fines de semana. Considera planificar actividades más económicas.`
+                          : `You spend ${(porcentaje(insights.avgWeekendSpending, insights.avgWeekdaySpending) - 100).toFixed(0)}% more on weekends. Consider planning more affordable activities.`
                         }
                       </p>
                     </div>
@@ -2024,8 +2025,8 @@ export function FamilyMonthlyAnalysis({ year, month }: FamilyMonthlyAnalysisProp
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {language === 'es' 
-                          ? `"${getCategoryLabelByLanguage(insights.topCategory[0] as ExpenseCategory, 'es')}" representa el ${((insights.topCategory[1] / insights.totalExpenses) * 100).toFixed(0)}% de tus gastos. Busca alternativas para diversificar.`
-                          : `"${getCategoryLabelByLanguage(insights.topCategory[0] as ExpenseCategory, 'en')}" represents ${((insights.topCategory[1] / insights.totalExpenses) * 100).toFixed(0)}% of your expenses. Look for alternatives to diversify.`
+                          ? `"${getCategoryLabelByLanguage(insights.topCategory[0] as ExpenseCategory, 'es')}" representa el ${porcentaje(insights.topCategory[1], insights.totalExpenses).toFixed(0)}% de tus gastos. Busca alternativas para diversificar.`
+                          : `"${getCategoryLabelByLanguage(insights.topCategory[0] as ExpenseCategory, 'en')}" represents ${porcentaje(insights.topCategory[1], insights.totalExpenses).toFixed(0)}% of your expenses. Look for alternatives to diversify.`
                         }
                       </p>
                     </div>

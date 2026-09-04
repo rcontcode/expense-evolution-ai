@@ -9,6 +9,7 @@ import { useExpenses } from '@/hooks/data/useExpenses';
 import { useIncome } from '@/hooks/data/useIncome';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { cn } from '@/lib/utils';
+import { mesLocal } from '@/lib/fecha';
 
 export function SimpleReports() {
   const { language } = useLanguage();
@@ -18,7 +19,7 @@ export function SimpleReports() {
   const { formatCurrency } = useFormatCurrency();
 
   const summary = useMemo(() => {
-    const ym = new Date().toISOString().slice(0, 7);
+    const ym = mesLocal();
     const inc = (income ?? [])
       .filter((i: any) => typeof i.date === 'string' && i.date.startsWith(ym))
       .reduce((s: number, i: any) => s + Number(i.amount || 0), 0);

@@ -11,6 +11,7 @@ import { subMonths, isAfter, differenceInDays } from 'date-fns';
 import { ProjectionDisclaimer, type DataSource } from '@/components/projections/ProjectionDisclaimer';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { fechaLocal } from '@/lib/fecha';
+import { porcentaje } from '@/lib/numeros';
 
 interface RunwayMetrics {
   avgDailyExpense: number;
@@ -205,7 +206,7 @@ export function CashFlowRunwayCalculator() {
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">{l ? '% fijo vs variable' : 'Fixed vs variable %'}</span>
               <span className="font-medium">
-                {Math.round((metrics.monthlyRecurring / metrics.monthlyBurn) * 100)}% {l ? 'fijo' : 'fixed'}
+                {Math.round(porcentaje(metrics.monthlyRecurring, metrics.monthlyBurn))}% {l ? 'fijo' : 'fixed'}
               </span>
             </div>
           )}

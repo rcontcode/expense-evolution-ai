@@ -8,7 +8,7 @@ import { useExpenses } from '@/hooks/data/useExpenses';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { ExpenseDialog } from '@/components/dialogs/ExpenseDialog';
 import type { ExpenseWithRelations } from '@/types/expense.types';
-import { fechaLocal } from '@/lib/fecha';
+import { fechaLocal, mesLocal } from '@/lib/fecha';
 import { getCategoryLabelByLanguage } from '@/lib/constants/expense-categories';
 
 export function SimpleExpenses() {
@@ -24,7 +24,7 @@ export function SimpleExpenses() {
   );
 
   const total = useMemo(() => {
-    const ym = new Date().toISOString().slice(0, 7);
+    const ym = mesLocal();
     return (expenses ?? [])
       .filter((e: any) => typeof e.date === 'string' && e.date.startsWith(ym))
       .reduce((s: number, e: any) => s + Number(e.amount || 0), 0);

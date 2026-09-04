@@ -233,7 +233,7 @@ export function useMarkBillPaid() {
 
       const currentDue = fechaLocal(bill.next_due_date);
       const { getNextDueDate } = await import('@/lib/constants/bill-categories');
-      const nextDue = getNextDueDate(currentDue, bill.frequency, bill.frequency_months || undefined);
+      const nextDue = getNextDueDate(currentDue, bill.frequency, bill.frequency_months || undefined, bill.due_day);
 
       const { error: updateError } = await supabase
         .from('recurring_bills')

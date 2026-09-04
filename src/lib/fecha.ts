@@ -53,3 +53,17 @@ export function aFechaISO(fecha: Date): string {
 export function hoyLocal(): string {
   return aFechaISO(new Date());
 }
+
+/**
+ * El mes de una fecha en formato `YYYY-MM`, en la hora del usuario.
+ *
+ * `new Date().toISOString().slice(0, 7)` parece inofensivo y no lo es: el 31 a
+ * las 17:00 en Vancouver el reloj UTC ya esta en el dia 1 del mes siguiente, asi
+ * que las pantallas que filtran "este mes" con esa cuenta se vacian una tarde
+ * antes de tiempo. Con una fecha ya guardada el error va al reves: la medianoche
+ * local del 1 de septiembre es el 31 de agosto en UTC.
+ */
+export function mesLocal(valor?: string | number | Date | null): string {
+  const f = valor === undefined || valor === null ? new Date() : fechaLocal(valor);
+  return `${f.getFullYear()}-${String(f.getMonth() + 1).padStart(2, '0')}`;
+}

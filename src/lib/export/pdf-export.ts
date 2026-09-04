@@ -5,6 +5,7 @@ import { ExpenseWithRelations } from '@/types/expense.types';
 import { TAX_DEDUCTION_RULES } from '@/hooks/data/useTaxCalculations';
 import { T2125_LINES, calculateT2125Totals } from './t2125-export';
 import { fechaLocal } from '@/lib/fecha';
+import { porcentaje } from '@/lib/numeros';
 
 // Extend jsPDF type for autoTable
 declare module 'jspdf' {
@@ -585,7 +586,7 @@ export function exportExpensesToPDF(expenses: ExpenseWithRelations[], options: P
       data.count.toString(),
       formatCurrency(data.total, options.country),
       formatCurrency(data.deductible, options.country),
-      `${((data.deductible / data.total) * 100).toFixed(0)}%`,
+      `${porcentaje(data.deductible, data.total).toFixed(0)}%`,
     ]);
 
   autoTable(doc, {

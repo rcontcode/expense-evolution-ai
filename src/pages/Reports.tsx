@@ -428,6 +428,7 @@ function ReportsAdvanced() {
             businessName: profile?.business_name || undefined,
             incomes: yearIncomes.map(i => ({ amount: i.amount, date: i.date, income_type: i.income_type, source: i.source, description: i.description })),
             expenses: yearExpenses.map(e => ({ amount: Number(e.amount), date: e.date, category: e.category, vendor: e.vendor })),
+            formatCurrency: fc,
           };
           if (format === 'excel') {
             const { exportPnLToExcel } = await import('@/lib/export/pnl-export');

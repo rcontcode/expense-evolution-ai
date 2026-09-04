@@ -18,6 +18,7 @@ import {
 import { cn } from '@/lib/utils';
 import { LegalDisclaimer } from '@/components/ui/legal-disclaimer';
 import { plural } from '@/lib/plural';
+import { porcentaje } from '@/lib/numeros';
 
 interface Insight {
   id: string;
@@ -171,8 +172,8 @@ export function BillSmartInsights() {
         icon: <Eye className="h-4 w-4 text-indigo-500" />,
         title: l ? `🔍 Concentración en ${cfg?.es || topCat[0]}` : `🔍 Concentration in ${cfg?.en || topCat[0]}`,
         description: l
-          ? `El ${((topCat[1] / monthlyTotal) * 100).toFixed(0)}% de tus pagos fijos (${formatCurrency(topCat[1])}/mes) está en una sola categoría. Diversificar reduce riesgo.`
-          : `${((topCat[1] / monthlyTotal) * 100).toFixed(0)}% of fixed bills (${formatCurrency(topCat[1])}/mo) is in one category. Diversifying reduces risk.`,
+          ? `El ${porcentaje(topCat[1], monthlyTotal).toFixed(0)}% de tus pagos fijos (${formatCurrency(topCat[1])}/mes) está en una sola categoría. Diversificar reduce riesgo.`
+          : `${porcentaje(topCat[1], monthlyTotal).toFixed(0)}% of fixed bills (${formatCurrency(topCat[1])}/mo) is in one category. Diversifying reduces risk.`,
         priority: 3,
       });
     }

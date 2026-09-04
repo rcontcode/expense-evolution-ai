@@ -20,6 +20,13 @@ export interface PnLData {
   businessName?: string;
   incomes: Array<{ amount: number; date: string; income_type: string; source: string | null; description: string | null }>;
   expenses: Array<{ amount: number; date: string; category: string | null; vendor: string | null }>;
+  /**
+   * Formateador de dinero de la app (el mismo que ve el usuario en pantalla).
+   * Los demas exportes de esta pagina ya lo reciben; este no, y por eso el PDF
+   * del Estado de Resultados escribia siempre dolares canadienses aunque la
+   * entidad fuera chilena.
+   */
+  formatCurrency?: (n: number) => string;
 }
 
 interface CategoryRow {
@@ -222,7 +229,7 @@ export function exportPnLToPDF(data: PnLData) {
   const l = data.language === 'es';
   const pnl = buildPnLStructure(data);
   const doc = new jsPDF({ orientation: 'landscape' });
-  const fc = (n: number) => n.toLocaleString(l ? 'es-ES' : 'en-US', { style: 'currency', currency: 'CAD', minimumFractionDigits: 0 });
+  const fc = data.formatCurrency ?? ((n: number) => n.toLocaleString(l ? 'es-CL' : 'en-CA', { maximumFractionDigits: 0 }));
 
   // Header
   doc.setFillColor(26, 26, 46);
