@@ -21,6 +21,7 @@ import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { RecurringBillConfirmDialog, type RecurringBillCandidate } from '@/components/bills/RecurringBillConfirmDialog';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
+import { fechaLocal, hoyLocal } from '@/lib/fecha';
 
 interface SmartTextInputProps {
   onSuccess?: () => void;
@@ -154,7 +155,7 @@ export function SmartTextInput({ onSuccess, onCancel }: SmartTextInputProps) {
           category: result.data.category || 'utilities',
           frequency: result.data.frequency || 'monthly',
           auto_pay: result.data.auto_pay || false,
-          next_due_date: result.data.date || new Date().toISOString().split('T')[0],
+          next_due_date: result.data.date || hoyLocal(),
         });
         setShowBillConfirm(true);
         setIsSaving(false);
@@ -171,7 +172,7 @@ export function SmartTextInput({ onSuccess, onCancel }: SmartTextInputProps) {
         
         await createIncome.mutateAsync({
           amount: result.data.amount,
-          date: new Date(result.data.date),
+          date: fechaLocal(result.data.date),
           description: result.data.description,
           source: result.data.source || undefined,
           income_type: mappedType,

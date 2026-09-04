@@ -19,6 +19,7 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useAIErrorHandler } from '@/hooks/utils/useAIErrorHandler';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
+import { fechaLocal } from '@/lib/fecha';
 
 interface BankImportDialogProps {
   open: boolean;
@@ -545,7 +546,7 @@ export function BankImportDialog({ open, onClose }: BankImportDialogProps) {
                         </p>
                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
                           <Calendar className="h-3 w-3" />
-                          {format(new Date(transaction.date), 'dd MMM yyyy', { locale: l ? es : undefined })}
+                          {format(fechaLocal(transaction.date), 'dd MMM yyyy', { locale: l ? es : undefined })}
                           {transaction.category && (
                             <Badge variant="secondary" className="text-[10px] px-1 py-0">
                               {transaction.category}

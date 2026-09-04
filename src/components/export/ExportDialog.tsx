@@ -21,6 +21,7 @@ import { useCountryContext } from '@/hooks/utils/useCountryContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import { FileSpreadsheet, FileText, Download, Loader2, FileCheck, FileJson, FileType, FileWarning, Sparkles, Receipt } from 'lucide-react';
+import { fechaLocal } from '@/lib/fecha';
 
 interface ExportDialogProps {
   open: boolean;
@@ -68,7 +69,7 @@ export function ExportDialog({ open, onClose, expenses, initialTab }: ExportDial
   });
 
   // Get available years from expenses
-  const years = [...new Set(expenses.map(e => new Date(e.date).getFullYear()))].sort((a, b) => b - a);
+  const years = [...new Set(expenses.map(e => fechaLocal(e.date).getFullYear()))].sort((a, b) => b - a);
   const currentYear = new Date().getFullYear();
 
   const handleExport = async () => {
@@ -90,7 +91,7 @@ export function ExportDialog({ open, onClose, expenses, initialTab }: ExportDial
       const selectedYear = yearFilter !== 'all' ? parseInt(yearFilter) : undefined;
       
       if (selectedYear) {
-        filteredExpenses = expenses.filter(e => new Date(e.date).getFullYear() === selectedYear);
+        filteredExpenses = expenses.filter(e => fechaLocal(e.date).getFullYear() === selectedYear);
       }
 
       if (filteredExpenses.length === 0) {
@@ -165,7 +166,7 @@ export function ExportDialog({ open, onClose, expenses, initialTab }: ExportDial
 
   const filteredCount = yearFilter === 'all' 
     ? expenses.length 
-    : expenses.filter(e => new Date(e.date).getFullYear() === parseInt(yearFilter)).length;
+    : expenses.filter(e => fechaLocal(e.date).getFullYear() === parseInt(yearFilter)).length;
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -351,7 +352,7 @@ export function ExportDialog({ open, onClose, expenses, initialTab }: ExportDial
 
           {/* Data Quality Warnings */}
           {(() => {
-            const filtered = yearFilter === 'all' ? expenses : expenses.filter(e => new Date(e.date).getFullYear() === parseInt(yearFilter));
+            const filtered = yearFilter === 'all' ? expenses : expenses.filter(e => fechaLocal(e.date).getFullYear() === parseInt(yearFilter));
             const unclassified = filtered.filter(e => e.reimbursement_type === 'pending_classification').length;
             const noClient = filtered.filter(e => !e.client_id && e.reimbursement_type === 'client_reimbursable').length;
             const noReceipt = filtered.filter(e => !e.document_id).length;

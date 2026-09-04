@@ -26,6 +26,7 @@ import { MobileTabLayout, type MobileTab } from '@/components/mobile';
 import { IncomeDuplicatePanel } from '@/components/income/IncomeDuplicatePanel';
 import { IncomeInsightsSummary } from '@/components/income/IncomeInsightsSummary';
 import { IncomeStabilityScore } from '@/components/income/IncomeStabilityScore';
+import { fechaLocal } from '@/lib/fecha';
 import {
   Plus,
   TrendingUp,
@@ -435,7 +436,7 @@ function IncomeAdvanced() {
                               <TableCell>
                                 <div className="flex items-center gap-2">
                                   <Calendar className="h-4 w-4 text-muted-foreground" />
-                                  {format(new Date(income.date), 'PP', { locale: dateLocale })}
+                                  {format(fechaLocal(income.date), 'PP', { locale: dateLocale })}
                                 </div>
                               </TableCell>
                               <TableCell>

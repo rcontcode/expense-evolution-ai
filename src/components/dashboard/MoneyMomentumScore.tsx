@@ -16,6 +16,7 @@ import { motion } from 'framer-motion';
 import { startOfMonth, endOfMonth, subMonths } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';
+import { fechaLocal } from '@/lib/fecha';
 
 interface ScoreDimension {
   id: string;
@@ -56,7 +57,7 @@ export function MoneyMomentumScore() {
 
     // Monthly income
     const recentIncome = allIncome?.filter(i => {
-      const d = new Date(i.date);
+      const d = fechaLocal(i.date);
       return d >= monthStart && d <= monthEnd;
     }) || [];
     const monthlyIncome = recentIncome.reduce((s, i) => s + Number(i.amount), 0);

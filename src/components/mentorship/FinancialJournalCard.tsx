@@ -11,6 +11,7 @@ import { BookOpen, Flame, Plus, Lightbulb, Heart, Target, Brain, Trash2 } from '
 import { Skeleton } from '@/components/ui/skeleton';
 import { format } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
+import { fechaLocal } from '@/lib/fecha';
 
 const ENTRY_TYPES = [
   { value: 'reflection', labelEs: 'Reflexión', labelEn: 'Reflection', icon: Brain },
@@ -193,7 +194,7 @@ export function FinancialJournalCard() {
                       <div className="min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className="text-xs text-muted-foreground">
-                            {format(new Date(entry.entry_date), 'dd MMM', {
+                            {format(fechaLocal(entry.entry_date), 'dd MMM', {
                               locale: language === 'es' ? es : enUS,
                             })}
                           </span>

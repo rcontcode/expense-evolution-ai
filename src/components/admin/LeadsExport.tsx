@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { useLanguage } from '@/contexts/LanguageContext';
 import type { QuizLead } from '@/hooks/admin/useLeadsManagement';
 import { calculateLeadScore, getLeadPriority, getPriorityLabel } from '@/hooks/admin/useLeadScoring';
+import { hoyLocal } from '@/lib/fecha';
 
 interface LeadsExportProps {
   leads: QuizLead[];
@@ -72,7 +73,7 @@ export function LeadsExport({ leads, filename = 'quiz-leads' }: LeadsExportProps
       const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
-      link.download = `${filename}-${new Date().toISOString().split('T')[0]}.xlsx`;
+      link.download = `${filename}-${hoyLocal()}.xlsx`;
       link.click();
       URL.revokeObjectURL(link.href);
 
@@ -104,7 +105,7 @@ export function LeadsExport({ leads, filename = 'quiz-leads' }: LeadsExportProps
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
-      link.download = `${filename}-${new Date().toISOString().split('T')[0]}.csv`;
+      link.download = `${filename}-${hoyLocal()}.csv`;
       link.click();
       URL.revokeObjectURL(link.href);
 

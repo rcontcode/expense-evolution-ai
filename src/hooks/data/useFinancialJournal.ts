@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useInvalidateRelated } from './useInvalidateRelated';
 import { insertAuditLog } from './useAuditLog';
 import { useLocalizedToast } from '@/hooks/utils/useLocalizedToast';
+import { aFechaISO, fechaLocal, hoyLocal } from '@/lib/fecha';
 
 export interface FinancialJournalEntry {
   id: string; user_id: string; entry_date: string;
@@ -56,19 +57,19 @@ export function useJournalStats() {
       for (let i = 0; i < sortedDates.length; i++) {
         const expectedDate = new Date(today);
         expectedDate.setDate(expectedDate.getDate() - i);
-        if (sortedDates[i] === expectedDate.toISOString().split('T')[0]) { streak++; } else { break; }
+        if (sortedDates[i] === aFechaISO(expectedDate)) { streak++; } else { break; }
       }
 
       const currentMonth = today.getMonth();
       const currentYear = today.getFullYear();
       const entriesThisMonth = entries.filter(e => {
-        const d = new Date(e.entry_date);
+        const d = fechaLocal(e.entry_date);
         return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
       }).length;
 
       return {
         totalEntries: entries.length, byType, streak, entriesThisMonth,
-        hasEntryToday: sortedDates[0] === today.toISOString().split('T')[0],
+        hasEntryToday: sortedDates[0] === aFechaISO(today),
       };
     },
     enabled: !!user,
@@ -84,7 +85,7 @@ export function useCreateJournalEntry() {
     mutationFn: async (data: FinancialJournalFormData) => {
       if (!user) throw new Error('No user');
       const { error } = await supabase.from('financial_journal').insert({
-        user_id: user.id, entry_date: new Date().toISOString().split('T')[0], ...data,
+        user_id: user.id, entry_date: hoyLocal(), ...data,
       });
       if (error) throw error;
     },

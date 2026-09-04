@@ -46,6 +46,7 @@ import { TripCalendarPreview } from '@/components/mileage/TripCalendarPreview';
 import { EntitySelect } from '@/components/forms/EntitySelect';
 import { useEntity } from '@/contexts/EntityContext';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
+import { fechaLocal } from '@/lib/fecha';
 
 interface MileageFormProps {
   initialData?: MileageWithClient | null;
@@ -69,7 +70,7 @@ export const MileageForm = ({ initialData, yearToDateKm = 0, onSubmit, isLoading
   const form = useForm<MileageFormValues>({
     resolver: zodResolver(mileageSchema),
     defaultValues: {
-      date: initialData?.date ? new Date(initialData.date) : new Date(),
+      date: initialData?.date ? fechaLocal(initialData.date) : new Date(),
       kilometers: initialData?.kilometers ? parseFloat(initialData.kilometers.toString()) : undefined,
       route: initialData?.route || '',
       purpose: initialData?.purpose || '',

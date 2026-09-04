@@ -4,6 +4,7 @@ import { useIncome } from './useIncome';
 import { useExpenses } from './useExpenses';
 import { useAuth } from '@/contexts/AuthContext';
 import { startOfYear, endOfYear } from 'date-fns';
+import { fechaLocal } from '@/lib/fecha';
 
 export interface FinancialFreedomResult {
   passiveIncomeMonthly: number;
@@ -66,11 +67,11 @@ export function useFinancialFreedom(language: 'es' | 'en' = 'es'): FinancialFree
     // intermedio sin nada sigue contando y baja el promedio, que es lo correcto.
     const mesesConMovimiento = new Set<number>();
     for (const inc of incomeData || []) {
-      const d = new Date(inc.date);
+      const d = fechaLocal(inc.date);
       if (d.getFullYear() === currentYear) mesesConMovimiento.add(d.getMonth());
     }
     for (const exp of expensesData || []) {
-      const d = new Date(exp.date);
+      const d = fechaLocal(exp.date);
       if (d.getFullYear() === currentYear) mesesConMovimiento.add(d.getMonth());
     }
     const primerMes = mesesConMovimiento.size ? Math.min(...mesesConMovimiento) : currentMonth;

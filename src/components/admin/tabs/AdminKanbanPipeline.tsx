@@ -15,6 +15,7 @@ import { es as esLocale, enUS } from 'date-fns/locale';
 import { calculateLeadScore, getLeadPriority, getPriorityColors } from '@/hooks/admin/useLeadScoring';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { fechaLocal } from '@/lib/fecha';
 import {
   DndContext,
   DragOverlay,
@@ -337,7 +338,7 @@ function LeadDetailDialog({ lead, isEs, open, onClose, onMove, isPending, intera
               leadInteractions.forEach((i: any) => {
                 events.push({ date: i.created_at, type: i.interaction_type, label: i.interaction_type, detail: i.notes || undefined });
               });
-              events.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+              events.sort((a, b) => fechaLocal(b.date).getTime() - fechaLocal(a.date).getTime());
 
               return events.length > 0 ? (
                 <ScrollArea className="h-[300px]">
@@ -353,7 +354,7 @@ function LeadDetailDialog({ lead, isEs, open, onClose, onMove, isPending, intera
                           <p className="text-xs font-semibold capitalize">{ev.label}</p>
                           {ev.detail && <p className="text-[10px] text-muted-foreground mt-0.5">{ev.detail}</p>}
                           <p className="text-[9px] text-muted-foreground">
-                            {format(new Date(ev.date), 'dd MMM yyyy HH:mm', { locale: isEs ? esLocale : enUS })}
+                            {format(fechaLocal(ev.date), 'dd MMM yyyy HH:mm', { locale: isEs ? esLocale : enUS })}
                           </p>
                         </div>
                       );

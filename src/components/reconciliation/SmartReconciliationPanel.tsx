@@ -27,6 +27,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { useAIErrorHandler } from '@/hooks/utils/useAIErrorHandler';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { fechaLocal } from '@/lib/fecha';
 
 interface AIMatch {
   transaction_id: string;
@@ -338,7 +339,7 @@ export function SmartReconciliationPanel() {
                           </Badge>
                         </div>
                         <div className="flex items-center gap-2 text-[10px] text-muted-foreground mt-0.5">
-                          <span>{format(new Date(tx.transaction_date), 'dd MMM', { locale: l ? es : undefined })}</span>
+                          <span>{format(fechaLocal(tx.transaction_date), 'dd MMM', { locale: l ? es : undefined })}</span>
                           <span>•</span>
                           <span className="font-bold text-foreground">{fc(Number(tx.amount))}</span>
                           {matchedExpense && (

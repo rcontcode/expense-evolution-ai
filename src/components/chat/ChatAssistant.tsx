@@ -60,6 +60,7 @@ import { toast } from 'sonner';
 import { AnimatePresence } from 'framer-motion';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useAIErrorHandler } from '@/hooks/utils/useAIErrorHandler';
+import { fechaLocal, hoyLocal } from '@/lib/fecha';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -211,12 +212,12 @@ export const ChatAssistant: React.FC = () => {
   const monthlyExpenses = stats?.monthlyTotal || 0;
   const yearlyExpenses = stats?.totalExpenses || 0;
   const monthlyIncome = incomeData?.filter(inc => {
-    const incDate = new Date(inc.date);
+    const incDate = fechaLocal(inc.date);
     return incDate.getMonth() === currentMonth && incDate.getFullYear() === currentYear;
   }).reduce((sum, inc) => sum + Number(inc.amount), 0) || 0;
 
   const yearlyIncome = incomeData?.filter(inc => {
-    const incDate = new Date(inc.date);
+    const incDate = fechaLocal(inc.date);
     return incDate.getFullYear() === currentYear;
   }).reduce((sum, inc) => sum + Number(inc.amount), 0) || 0;
 
@@ -924,7 +925,7 @@ export const ChatAssistant: React.FC = () => {
             amount: expData.amount,
             category: expData.category || 'other',
             description: expData.description || expData.vendor || '',
-            date: expData.date || new Date().toISOString().split('T')[0],
+            date: expData.date || hoyLocal(),
             status: 'pending' as const,
           } as any).catch((err: Error) => {
             if (err.message !== 'DUPLICATE_DETECTED') {
@@ -944,7 +945,7 @@ export const ChatAssistant: React.FC = () => {
             source: incData.source || null,
             income_type: (incData.income_type || 'other') as any,
             description: incData.description || incData.source || '',
-            date: incData.date || new Date().toISOString().split('T')[0],
+            date: incData.date || hoyLocal(),
             is_taxable: true,
           } as any).catch(() => {
             toast.error(language === 'es' ? 'Error al registrar ingreso' : 'Error recording income');
@@ -966,7 +967,7 @@ export const ChatAssistant: React.FC = () => {
               category: billData.category || 'utilities',
               frequency: billData.frequency || 'monthly',
               auto_pay: false,
-              next_due_date: billData.next_due_date || new Date().toISOString().split('T')[0],
+              next_due_date: billData.next_due_date || hoyLocal(),
             }
           }));
           toast.info(language === 'es' ? '📋 Revisa los detalles del pago fijo' : '📋 Review bill details');

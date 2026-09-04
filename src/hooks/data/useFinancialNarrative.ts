@@ -9,6 +9,7 @@ import { useBankTransactions, type BankTransaction } from './useBankTransactions
 import { useDashboardStats } from './useDashboardStats';
 import { useRecMode } from '@/hooks/useRecMode';
 import { enmascararClientes } from '@/lib/rec/enmascarar-identidad';
+import { fechaLocal } from '@/lib/fecha';
 
 export interface IncomeStream {
   source: string;
@@ -100,7 +101,7 @@ export function useFinancialNarrative(months: number = 3): FinancialNarrative {
     const periodStart = new Date(now.getFullYear(), now.getMonth() - (months - 1), 1);
     const recentIncome = months === 0
       ? incomeRecords // "All" mode
-      : incomeRecords.filter(i => new Date(i.date) >= periodStart);
+      : incomeRecords.filter(i => fechaLocal(i.date) >= periodStart);
 
     // Determine divisor for monthly averages
     const divisor = months === 0

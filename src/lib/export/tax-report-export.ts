@@ -3,6 +3,7 @@ import { ExpenseWithRelations } from '@/types/expense.types';
 import { EXPENSE_CATEGORY_TRANSLATIONS, ExpenseCategory } from '@/lib/constants/expense-categories';
 import { getTaxDeductionRules, getTaxRate, TaxDeductionRule } from '@/hooks/data/useTaxCalculations';
 import { format } from 'date-fns';
+import { fechaLocal } from '@/lib/fecha';
 
 interface TaxReportOptions {
   year?: number;
@@ -30,7 +31,7 @@ export async function exportTaxReport(
   const currencySymbol = country === 'CL' ? '$' : '$';
   const currencyCode = country === 'CL' ? 'CLP' : 'CAD';
 
-  const filtered = year ? expenses.filter(e => new Date(e.date).getFullYear() === year) : expenses;
+  const filtered = year ? expenses.filter(e => fechaLocal(e.date).getFullYear() === year) : expenses;
 
   // ═══ Sheet 1: Summary ═══
   const summary = wb.addWorksheet(l ? 'Resumen Fiscal' : 'Tax Summary');
@@ -165,13 +166,13 @@ export async function exportTaxReport(
   });
 
   filtered
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+    .sort((a, b) => fechaLocal(a.date).getTime() - fechaLocal(b.date).getTime())
     .forEach((e, idx) => {
       const r = detail.getRow(idx + 2);
       const catInfo = EXPENSE_CATEGORY_TRANSLATIONS[e.category as ExpenseCategory];
       const rule = taxRules.find(ru => ru.category === e.category);
       
-      r.getCell(1).value = format(new Date(e.date), 'yyyy-MM-dd');
+      r.getCell(1).value = format(fechaLocal(e.date), 'yyyy-MM-dd');
       r.getCell(2).value = e.vendor || '—';
       r.getCell(3).value = catInfo ? (l ? catInfo.es : catInfo.en) : (e.category || 'Otro');
       r.getCell(4).value = e.amount;
@@ -253,7 +254,7 @@ export async function exportTaxReport(
   noReceipt.forEach((e, idx) => {
     const r = missing.getRow(idx + 2);
     const catInfo = EXPENSE_CATEGORY_TRANSLATIONS[e.category as ExpenseCategory];
-    r.getCell(1).value = format(new Date(e.date), 'yyyy-MM-dd');
+    r.getCell(1).value = format(fechaLocal(e.date), 'yyyy-MM-dd');
     r.getCell(2).value = e.vendor || '—';
     r.getCell(3).value = e.amount;
     r.getCell(3).numFmt = '#,##0.00';

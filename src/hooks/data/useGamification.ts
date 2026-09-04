@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useGamificationCelebration, createAchievementCelebration, createLevelUpCelebration } from '@/contexts/GamificationContext';
+import { aFechaISO, hoyLocal } from '@/lib/fecha';
 
 export interface UserLevel {
   id: string;
@@ -229,7 +230,7 @@ export function useUpdateStreak() {
 
   return useMutation({
     mutationFn: async () => {
-      const today = new Date().toISOString().split('T')[0];
+      const today = hoyLocal();
       
       const { data: current } = await supabase
         .from('user_financial_level')
@@ -241,7 +242,7 @@ export function useUpdateStreak() {
         const lastDate = current.last_activity_date;
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
-        const yesterdayStr = yesterday.toISOString().split('T')[0];
+        const yesterdayStr = aFechaISO(yesterday);
         
         let newStreak = current.streak_days || 0;
         if (lastDate === yesterdayStr) {

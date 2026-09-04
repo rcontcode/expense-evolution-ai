@@ -11,6 +11,7 @@ import { useIncome } from '@/hooks/data/useIncome';
 import { useSavingsGoals } from '@/hooks/data/useSavingsGoals';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
+import { fechaLocal } from '@/lib/fecha';
 import { 
   Calendar,
   TrendingUp,
@@ -193,7 +194,7 @@ export function FamilyMonthlyAnalysis({ year, month }: FamilyMonthlyAnalysisProp
     
     // Add expenses
     expenses?.forEach(expense => {
-      const day = new Date(expense.date).getDate();
+      const day = fechaLocal(expense.date).getDate();
       const cat = expense.category || 'other';
       if (data[day]) {
         data[day].expenses[cat] = (data[day].expenses[cat] || 0) + Number(expense.amount);
@@ -204,7 +205,7 @@ export function FamilyMonthlyAnalysis({ year, month }: FamilyMonthlyAnalysisProp
     
     // Add income
     income?.forEach(inc => {
-      const day = new Date(inc.date).getDate();
+      const day = fechaLocal(inc.date).getDate();
       if (data[day]) {
         data[day].income += Number(inc.amount);
         data[day].items.push({ type: 'income', ...inc });

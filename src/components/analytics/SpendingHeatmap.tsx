@@ -19,6 +19,7 @@ import { es, enUS } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight, Calendar, Flame } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
+import { fechaLocal } from '@/lib/fecha';
 
 interface Expense {
   id: string;
@@ -61,7 +62,7 @@ export const SpendingHeatmap = memo(({ expenses, isLoading }: SpendingHeatmapPro
     let dayCount = 0;
 
     expenses.forEach((exp) => {
-      const d = new Date(exp.date);
+      const d = fechaLocal(exp.date);
       if (d >= monthStart && d <= monthEnd) {
         const key = format(d, 'yyyy-MM-dd');
         if (!totals[key]) totals[key] = { total: 0, expenses: [] };

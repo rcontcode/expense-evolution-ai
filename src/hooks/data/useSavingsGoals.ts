@@ -6,6 +6,7 @@ import { useMissionTracker } from './useMissions';
 import { useInvalidateRelated } from './useInvalidateRelated';
 import { insertAuditLog } from './useAuditLog';
 import { useLocalizedToast } from '@/hooks/utils/useLocalizedToast';
+import { aFechaISO } from '@/lib/fecha';
 
 type SavingsGoal = Database['public']['Tables']['savings_goals']['Row'];
 type SavingsGoalInsert = Database['public']['Tables']['savings_goals']['Insert'];
@@ -41,7 +42,7 @@ export function useCreateSavingsGoal() {
       const insertData: SavingsGoalInsert = {
         user_id: user.id, name: data.name, target_amount: data.target_amount,
         current_amount: data.current_amount || 0,
-        deadline: data.deadline?.toISOString().split('T')[0] || null,
+        deadline: data.deadline ? aFechaISO(data.deadline) : null,
         color: data.color || '#10B981', priority: data.priority || 1, status: data.status || 'active',
       };
       const { data: newGoal, error } = await supabase.from('savings_goals').insert(insertData).select().single();
@@ -66,7 +67,7 @@ export function useUpdateSavingsGoal() {
     mutationFn: async ({ id, data }: { id: string; data: Partial<SavingsGoalFormData> }) => {
       const updateData: SavingsGoalUpdate = {
         name: data.name, target_amount: data.target_amount, current_amount: data.current_amount,
-        deadline: data.deadline?.toISOString().split('T')[0], color: data.color,
+        deadline: data.deadline ? aFechaISO(data.deadline) : null, color: data.color,
         priority: data.priority, status: data.status,
       };
       Object.keys(updateData).forEach(key => {

@@ -36,6 +36,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { hoyLocal } from '@/lib/fecha';
 
 interface ExpenseReviewCenterProps {
   expenses: ExpenseWithRelations[];
@@ -360,7 +361,7 @@ export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCe
       const amount = data.amount ? parseFloat(data.amount) : (ed.amount || 0);
       const source = data.source || ed.source || ed.vendor || '';
       const description = data.description || ed.description || '';
-      const date = data.date || ed.date || new Date().toISOString().split('T')[0];
+      const date = data.date || ed.date || hoyLocal();
       const currency = ed.currency || (currentEntity?.default_currency) || 'CAD';
 
       await createIncome.mutateAsync({

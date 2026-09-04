@@ -23,6 +23,7 @@ import {
   type BillCategory, 
   type BillFrequency 
 } from '@/lib/constants/bill-categories';
+import { aFechaISO, hoyLocal } from '@/lib/fecha';
 
 export interface RecurringBillCandidate {
   name: string;
@@ -73,7 +74,7 @@ export function RecurringBillConfirmDialog({ open, onClose, candidate, onCreated
     setCategory(candidate.category || 'utilities');
     setFrequency(candidate.frequency || 'monthly');
     setAutoPay(candidate.auto_pay);
-    setNextDueDate(candidate.next_due_date || new Date().toISOString().split('T')[0]);
+    setNextDueDate(candidate.next_due_date || hoyLocal());
   }
 
   const handleApplyAverage = (avg: number) => setAmount(avg);
@@ -83,7 +84,7 @@ export function RecurringBillConfirmDialog({ open, onClose, candidate, onCreated
       const d = new Date(nextDueDate);
       d.setDate(day);
       if (d < new Date()) d.setMonth(d.getMonth() + 1);
-      setNextDueDate(d.toISOString().split('T')[0]);
+      setNextDueDate(aFechaISO(d));
     }
   };
 
@@ -97,7 +98,7 @@ export function RecurringBillConfirmDialog({ open, onClose, candidate, onCreated
         category,
         frequency,
         frequency_months: frequency === 'custom' ? frequencyMonths : null,
-        next_due_date: nextDueDate || new Date().toISOString().split('T')[0],
+        next_due_date: nextDueDate || hoyLocal(),
         auto_pay: autoPay,
         is_active: true,
         currency: currentEntity?.default_currency || 'CAD',

@@ -4,6 +4,7 @@ import { format } from 'date-fns';
 import { ExpenseWithRelations } from '@/types/expense.types';
 import { TAX_DEDUCTION_RULES } from '@/hooks/data/useTaxCalculations';
 import { T2125_LINES, calculateT2125Totals } from './t2125-export';
+import { fechaLocal } from '@/lib/fecha';
 
 // Extend jsPDF type for autoTable
 declare module 'jspdf' {
@@ -496,7 +497,7 @@ export function exportExpensesToPDF(expenses: ExpenseWithRelations[], options: P
   const t = PDF_TRANSLATIONS[lang];
   
   const filteredExpenses = options.year 
-    ? expenses.filter(e => new Date(e.date).getFullYear() === options.year)
+    ? expenses.filter(e => fechaLocal(e.date).getFullYear() === options.year)
     : expenses;
   
   if (filteredExpenses.length === 0) {
@@ -516,7 +517,7 @@ export function exportExpensesToPDF(expenses: ExpenseWithRelations[], options: P
     totalExpenses += amount;
     
     // Monthly grouping
-    const monthKey = format(new Date(expense.date), 'yyyy-MM');
+    const monthKey = format(fechaLocal(expense.date), 'yyyy-MM');
     if (!monthlyTotals[monthKey]) {
       monthlyTotals[monthKey] = { total: 0, count: 0 };
     }
@@ -700,7 +701,7 @@ export function exportT2125ToPDF(expenses: ExpenseWithRelations[], year?: number
   const t = PDF_TRANSLATIONS[lang];
   
   const filteredExpenses = year 
-    ? expenses.filter(e => new Date(e.date).getFullYear() === year)
+    ? expenses.filter(e => fechaLocal(e.date).getFullYear() === year)
     : expenses;
   
   const deductibleExpenses = filteredExpenses.filter(e => e.status === 'deductible');

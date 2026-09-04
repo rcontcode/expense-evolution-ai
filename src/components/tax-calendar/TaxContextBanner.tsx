@@ -15,6 +15,7 @@ import { format } from "date-fns";
 import { es, enCA } from "date-fns/locale";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { fechaLocal } from '@/lib/fecha';
 
 interface TaxContextBannerProps {
   country: string;
@@ -69,7 +70,7 @@ export function TaxContextBanner({ country, onOpenQuiz }: TaxContextBannerProps)
     if (profile?.business_start_date) {
       items.push({ 
         emoji: '📅', label: isEs ? 'Inicio actividad' : 'Activity start', 
-        value: format(new Date(profile.business_start_date), 'MMMM yyyy', { locale }),
+        value: format(fechaLocal(profile.business_start_date), 'MMMM yyyy', { locale }),
         status: 'ok'
       });
     } else if (workTypes.includes('contractor') || workTypes.includes('corporation')) {
@@ -84,7 +85,7 @@ export function TaxContextBanner({ country, onOpenQuiz }: TaxContextBannerProps)
       if (profile?.fiscal_year_end) {
         items.push({
           emoji: '🗓️', label: isEs ? 'Fin año fiscal' : 'Fiscal year end',
-          value: format(new Date(profile.fiscal_year_end), 'MMMM d', { locale }),
+          value: format(fechaLocal(profile.fiscal_year_end), 'MMMM d', { locale }),
           status: 'ok'
         });
       } else if (!isChile) {

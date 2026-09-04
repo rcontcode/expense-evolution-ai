@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { subMonths, format, getDay } from 'date-fns';
 import { openFokusparkTool } from '@/lib/ecosystem/deeplinks';
 import { EcosystemErrorFallback } from './EcosystemErrorFallback';
+import { fechaLocal } from '@/lib/fecha';
 
 const DISMISS_KEY = 'ecosystem-predictive-dismissed';
 const DAY_NAMES_ES = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
@@ -63,7 +64,7 @@ export const EcosystemPredictiveAlerts = memo(() => {
       const dayTotals: number[] = [0, 0, 0, 0, 0, 0, 0];
       const dayCounts: number[] = [0, 0, 0, 0, 0, 0, 0];
       for (const e of expenses) {
-        const day = getDay(new Date(e.date));
+        const day = getDay(fechaLocal(e.date));
         dayTotals[day] += e.amount || 0;
         dayCounts[day]++;
       }

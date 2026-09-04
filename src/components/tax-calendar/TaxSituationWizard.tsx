@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
+import { fechaLocal } from '@/lib/fecha';
 
 interface TaxSituationWizardProps {
   onClose: () => void;
@@ -50,12 +51,12 @@ export function TaxSituationWizard({ onClose, onComplete }: TaxSituationWizardPr
   // Step 3: Fiscal year
   const [fiscalMonth, setFiscalMonth] = useState<string>(
     profile?.fiscal_year_end 
-      ? new Date(profile.fiscal_year_end).getMonth().toString() 
+      ? fechaLocal(profile.fiscal_year_end).getMonth().toString() 
       : "11"
   );
   const [fiscalDay, setFiscalDay] = useState<string>(
     profile?.fiscal_year_end 
-      ? new Date(profile.fiscal_year_end).getDate().toString() 
+      ? fechaLocal(profile.fiscal_year_end).getDate().toString() 
       : "31"
   );
 

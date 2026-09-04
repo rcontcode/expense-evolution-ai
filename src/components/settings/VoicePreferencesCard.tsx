@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { hoyLocal } from '@/lib/fecha';
 
 interface VoiceInfo {
   name: string;
@@ -1279,7 +1280,7 @@ export function VoicePreferencesCard() {
               const url = URL.createObjectURL(blob);
               const a = document.createElement('a');
               a.href = url;
-              a.download = `voice-history-${new Date().toISOString().split('T')[0]}.json`;
+              a.download = `voice-history-${hoyLocal()}.json`;
               document.body.appendChild(a);
               a.click();
               document.body.removeChild(a);

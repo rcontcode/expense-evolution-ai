@@ -12,6 +12,7 @@ import { insertAuditLog } from './useAuditLog';
 import { useExpenseBillMatcher } from './useExpenseBillMatcher';
 import { useLocalizedToast } from '@/hooks/utils/useLocalizedToast';
 import { useUndoableDelete } from '@/hooks/utils/useUndoableAction';
+import { aFechaISO } from '@/lib/fecha';
 
 const QUERY_LIMIT = 500;
 
@@ -43,8 +44,8 @@ export function useExpenses(filters?: ExpenseFilters) {
       
       if (filters?.dateRange) {
         query = query
-          .gte('date', filters.dateRange.start.toISOString().split('T')[0])
-          .lte('date', filters.dateRange.end.toISOString().split('T')[0]);
+          .gte('date', aFechaISO(filters.dateRange.start))
+          .lte('date', aFechaISO(filters.dateRange.end));
       }
       if (filters?.clientIds?.length) {
         query = query.in('client_id', filters.clientIds);

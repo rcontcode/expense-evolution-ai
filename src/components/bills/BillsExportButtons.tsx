@@ -8,6 +8,7 @@ import { getBillCategoryLabel, getBillFrequencyLabel, getPaymentMethodLabel } fr
 import { format } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 import { toast } from 'sonner';
+import { fechaLocal } from '@/lib/fecha';
 
 export function BillsExportButtons() {
   const { language } = useLanguage();
@@ -72,7 +73,7 @@ export function BillsExportButtons() {
           getBillCategoryLabel(b.category, lang),
           fc(b.amount),
           getBillFrequencyLabel(b.frequency, lang),
-          format(new Date(b.next_due_date), 'dd MMM yyyy', { locale: l ? es : enUS }),
+          format(fechaLocal(b.next_due_date), 'dd MMM yyyy', { locale: l ? es : enUS }),
           getPaymentMethodLabel(b.payment_method_type, lang),
         ]),
         theme: 'striped',

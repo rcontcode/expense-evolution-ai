@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { useIncome } from './useIncome';
 import { useExpenses } from './useExpenses';
 import { useAssets, useLiabilities } from './useNetWorth';
+import { fechaLocal } from '@/lib/fecha';
 import {
   clamp, MAX_PROJECTION_YEARS, MIN_AGE, MAX_AGE,
   MIN_RETURN_RATE, MAX_RETURN_RATE, MIN_WITHDRAWAL_RATE, MAX_WITHDRAWAL_RATE,
@@ -74,11 +75,11 @@ export function useFIRECalculator() {
     // mensual diciendo una cifra y este bloque diciendo otra, en la misma pantalla.
     const mesesConMovimiento = new Set<number>();
     for (const inc of incomeData || []) {
-      const d = new Date(inc.date);
+      const d = fechaLocal(inc.date);
       if (d.getFullYear() === currentYear) mesesConMovimiento.add(d.getMonth());
     }
     for (const exp of expensesData || []) {
-      const d = new Date(exp.date);
+      const d = fechaLocal(exp.date);
       if (d.getFullYear() === currentYear) mesesConMovimiento.add(d.getMonth());
     }
     // Se toma el tramo entre el primer mes con movimiento y hoy: asi un mes intermedio sin gastos
@@ -89,13 +90,13 @@ export function useFIRECalculator() {
 
     // Calculate monthly income average
     const yearlyIncome = incomeData
-      ?.filter(inc => new Date(inc.date).getFullYear() === currentYear)
+      ?.filter(inc => fechaLocal(inc.date).getFullYear() === currentYear)
       .reduce((sum, inc) => sum + Number(inc.amount), 0) || 0;
     const avgMonthlyIncome = yearlyIncome / monthsWithData;
 
     // Calculate monthly expenses average
     const yearlyExpenses = expensesData
-      ?.filter(exp => new Date(exp.date).getFullYear() === currentYear)
+      ?.filter(exp => fechaLocal(exp.date).getFullYear() === currentYear)
       .reduce((sum, exp) => sum + Number(exp.amount), 0) || 0;
     const avgMonthlyExpenses = yearlyExpenses / monthsWithData;
     

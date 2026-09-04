@@ -12,6 +12,7 @@ import { Plus, Trash2, PiggyBank, Target, Calendar } from "lucide-react";
 import { format, differenceInDays, parseISO, differenceInCalendarDays} from "date-fns";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
+import { fechaLocal } from '@/lib/fecha';
 
 const GOAL_ICONS = ["🎯", "🏠", "✈️", "🚗", "📚", "💻", "🎓", "💍", "🏖️", "🐷"];
 const GOAL_COLORS = ["#10b981", "#3b82f6", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899", "#14b8a6", "#f97316"];
@@ -39,7 +40,7 @@ export function SavingsGoalsWidget() {
     await createGoal.mutateAsync({
       name: form.name,
       target_amount: form.target_amount,
-      deadline: form.deadline ? new Date(form.deadline) : null,
+      deadline: form.deadline ? fechaLocal(form.deadline) : null,
       color: form.color,
     });
     setShowCreate(false);

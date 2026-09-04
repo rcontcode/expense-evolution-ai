@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
+import { aFechaISO } from '@/lib/fecha';
 
 interface ActionResult {
   success: boolean;
@@ -292,7 +293,7 @@ export function useAssistantActions(options: UseAssistantActionsOptions) {
               const d = new Date();
               d.setMonth(d.getMonth() + 1);
               d.setDate(1);
-              return d.toISOString().split('T')[0];
+              return aFechaISO(d);
             })();
             
             window.dispatchEvent(new CustomEvent('recurring-bill-candidate', {

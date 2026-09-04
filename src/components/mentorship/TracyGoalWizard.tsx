@@ -50,6 +50,7 @@ import { format, addDays, differenceInDays } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { useFinancialProfile } from '@/hooks/data/useFinancialProfile';
+import { fechaLocal } from '@/lib/fecha';
 
 interface Goal {
   id: string;
@@ -827,7 +828,7 @@ export const TracyGoalWizard = () => {
                       <p className="text-sm font-medium text-green-700 dark:text-green-400">
                         ⏰ {language === 'es' ? 'Faltan' : 'Remaining'}: {' '}
                         <span className="text-lg font-bold">
-                          {differenceInDays(new Date(mainGoal.deadline), new Date())} {language === 'es' ? 'días' : 'days'}
+                          {differenceInDays(fechaLocal(mainGoal.deadline), new Date())} {language === 'es' ? 'días' : 'days'}
                         </span>
                       </p>
                     </div>
@@ -1043,7 +1044,7 @@ export const TracyGoalWizard = () => {
                     <h3 className="font-semibold">{mainGoal.title}</h3>
                     {mainGoal.deadline && (
                       <p className="text-sm text-muted-foreground">
-                        {differenceInDays(new Date(mainGoal.deadline), new Date())} {language === 'es' ? 'días restantes' : 'days remaining'}
+                        {differenceInDays(fechaLocal(mainGoal.deadline), new Date())} {language === 'es' ? 'días restantes' : 'days remaining'}
                       </p>
                     )}
                   </div>

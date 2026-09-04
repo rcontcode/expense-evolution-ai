@@ -13,6 +13,7 @@ import { Calculator, Target, TrendingUp, AlertTriangle, CheckCircle, Wallet } fr
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, differenceInDays, getDaysInMonth } from "date-fns";
 import { es, enUS } from "date-fns/locale";
 import { Skeleton } from "@/components/ui/skeleton";
+import { fechaLocal } from '@/lib/fecha';
 
 const translations = {
   es: {
@@ -85,7 +86,7 @@ export function BudgetProjectionChart() {
       const monthEnd = endOfMonth(date);
       const monthIncome = income
         .filter(inc => {
-          const incDate = new Date(inc.date);
+          const incDate = fechaLocal(inc.date);
           return incDate >= monthStart && incDate <= monthEnd;
         })
         .reduce((sum, inc) => sum + inc.amount, 0);
@@ -119,7 +120,7 @@ export function BudgetProjectionChart() {
       const monthEnd = endOfMonth(date);
       const monthTotal = expenses
         .filter(exp => {
-          const expDate = new Date(exp.date);
+          const expDate = fechaLocal(exp.date);
           return expDate >= monthStart && expDate <= monthEnd;
         })
         .reduce((sum, exp) => sum + exp.amount, 0);
@@ -133,7 +134,7 @@ export function BudgetProjectionChart() {
     // Current month actual spending
     const currentSpend = expenses
       .filter(exp => {
-        const expDate = new Date(exp.date);
+        const expDate = fechaLocal(exp.date);
         return expDate >= currentMonthStart && expDate <= currentMonthEnd;
       })
       .reduce((sum, exp) => sum + exp.amount, 0);

@@ -22,6 +22,7 @@ import { format, subMonths, startOfMonth, endOfMonth } from "date-fns";
 import { es, enUS } from "date-fns/locale";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { fechaLocal } from '@/lib/fecha';
 
 export function BudgetHistoryChart() {
   const { language } = useLanguage();
@@ -59,7 +60,7 @@ export function BudgetHistoryChart() {
     }
 
     expenses.forEach((expense) => {
-      const monthKey = format(new Date(expense.date), "yyyy-MM");
+      const monthKey = format(fechaLocal(expense.date), "yyyy-MM");
       if (monthlyData[monthKey]) {
         monthlyData[monthKey].spent += Number(expense.amount);
       }

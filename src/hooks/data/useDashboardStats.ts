@@ -5,6 +5,7 @@ import { startOfMonth, endOfMonth, subMonths, format } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { ExpenseStatus, ExpenseCategory } from '@/types/expense.types';
+import { fechaLocal } from '@/lib/fecha';
 
 interface DashboardFilters {
   clientId?: string;
@@ -232,7 +233,7 @@ export const useDashboardStats = (filters?: DashboardFilters) => {
       }
 
       trendsExpensesResult.data?.forEach((exp) => {
-        const monthKey = format(new Date(exp.date), 'yyyy-MM');
+        const monthKey = format(fechaLocal(exp.date), 'yyyy-MM');
         if (!monthlyTrendsMap.has(monthKey)) return;
         monthlyTrendsMap.set(monthKey, (monthlyTrendsMap.get(monthKey) || 0) + parseFloat(exp.amount.toString()));
       });

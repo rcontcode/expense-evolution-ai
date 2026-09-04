@@ -9,6 +9,7 @@ import { parseISO, format, subMonths } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 import { AlertTriangle, TrendingUp, ShieldAlert, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { fechaLocal } from '@/lib/fecha';
 
 interface Anomaly {
   id: string;
@@ -97,7 +98,7 @@ export function SpendingAnomalyDetector() {
         prev.vendor && curr.vendor &&
         prev.vendor === curr.vendor &&
         Math.abs(Number(prev.amount)) === Math.abs(Number(curr.amount)) &&
-        Math.abs(new Date(curr.date).getTime() - new Date(prev.date).getTime()) <= 3 * 86400000
+        Math.abs(fechaLocal(curr.date).getTime() - fechaLocal(prev.date).getTime()) <= 3 * 86400000
       ) {
         if (!results.find(r => r.id === curr.id)) {
           results.push({

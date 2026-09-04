@@ -10,6 +10,7 @@ import { Fuel, TrendingDown, TrendingUp, AlertTriangle, Shield, Zap } from 'luci
 import { subMonths, isAfter, differenceInDays } from 'date-fns';
 import { ProjectionDisclaimer, type DataSource } from '@/components/projections/ProjectionDisclaimer';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
+import { fechaLocal } from '@/lib/fecha';
 
 interface RunwayMetrics {
   avgDailyExpense: number;
@@ -39,7 +40,7 @@ export function CashFlowRunwayCalculator() {
 
     // Expenses in last 3 months
     const recentExpenses = (expenses || []).filter(e =>
-      isAfter(new Date(e.date), threeMonthsAgo)
+      isAfter(fechaLocal(e.date), threeMonthsAgo)
     );
     const totalExpenses = recentExpenses.reduce((sum, e) => sum + Number(e.amount), 0);
     const avgDailyExpense = totalExpenses / daysInPeriod;
@@ -47,7 +48,7 @@ export function CashFlowRunwayCalculator() {
 
     // Income in last 3 months
     const recentIncome = (income || []).filter(i =>
-      isAfter(new Date(i.date), threeMonthsAgo)
+      isAfter(fechaLocal(i.date), threeMonthsAgo)
     );
     const totalIncome = recentIncome.reduce((sum, i) => sum + Number(i.amount), 0);
     const avgDailyIncome = totalIncome / daysInPeriod;
@@ -101,8 +102,8 @@ export function CashFlowRunwayCalculator() {
   const RiskIcon = risk.icon;
 
   const disclaimerSources: DataSource[] = useMemo(() => [
-    { name: { es: 'Gastos (3 meses)', en: 'Expenses (3 months)' }, available: (expenses || []).filter(e => isAfter(new Date(e.date), subMonths(new Date(), 3))).length > 0, count: (expenses || []).filter(e => isAfter(new Date(e.date), subMonths(new Date(), 3))).length, tip: { es: 'Registra al menos 1 mes de gastos', en: 'Log at least 1 month of expenses' } },
-    { name: { es: 'Ingresos (3 meses)', en: 'Income (3 months)' }, available: (income || []).filter(i => isAfter(new Date(i.date), subMonths(new Date(), 3))).length > 0, count: (income || []).filter(i => isAfter(new Date(i.date), subMonths(new Date(), 3))).length, tip: { es: 'Registra tus fuentes de ingreso', en: 'Log your income sources' } },
+    { name: { es: 'Gastos (3 meses)', en: 'Expenses (3 months)' }, available: (expenses || []).filter(e => isAfter(fechaLocal(e.date), subMonths(new Date(), 3))).length > 0, count: (expenses || []).filter(e => isAfter(fechaLocal(e.date), subMonths(new Date(), 3))).length, tip: { es: 'Registra al menos 1 mes de gastos', en: 'Log at least 1 month of expenses' } },
+    { name: { es: 'Ingresos (3 meses)', en: 'Income (3 months)' }, available: (income || []).filter(i => isAfter(fechaLocal(i.date), subMonths(new Date(), 3))).length > 0, count: (income || []).filter(i => isAfter(fechaLocal(i.date), subMonths(new Date(), 3))).length, tip: { es: 'Registra tus fuentes de ingreso', en: 'Log your income sources' } },
     { name: { es: 'Pagos fijos', en: 'Recurring bills' }, available: (bills || []).filter(b => b.status === 'active').length > 0, count: (bills || []).filter(b => b.status === 'active').length, tip: { es: 'Agrega tus pagos recurrentes', en: 'Add your recurring payments' } },
   ], [expenses, income, bills]);
 

@@ -5,6 +5,7 @@ import { useFinancialProfile } from './useFinancialProfile';
 import { useIncome } from './useIncome';
 import { toast } from 'sonner';
 import { useAIErrorHandler } from '@/hooks/utils/useAIErrorHandler';
+import { fechaLocal } from '@/lib/fecha';
 
 interface ApvRecommendation {
   recommended: number;
@@ -51,7 +52,7 @@ export function useApvOptimizer() {
       // Calculate annual income from income records
       const currentYear = new Date().getFullYear();
       const annualIncome = (incomeData || [])
-        .filter(inc => new Date(inc.date).getFullYear() === currentYear)
+        .filter(inc => fechaLocal(inc.date).getFullYear() === currentYear)
         .reduce((sum, inc) => sum + Number(inc.amount), 0);
 
       if (!annualIncome || annualIncome === 0) {

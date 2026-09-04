@@ -57,6 +57,7 @@ import { QuickCaptureDialog } from "@/components/dialogs/QuickCaptureDialog";
 import { BudgetAlertsCard } from "@/components/dashboard/BudgetAlertsCard";
 import { CategoryBudgetsCard } from "@/components/dashboard/CategoryBudgetsCard";
 import { SubscriptionTracker } from "@/components/subscriptions/SubscriptionTracker";
+import { fechaLocal } from '@/lib/fecha';
 
 // Lazy-loaded heavy charts
 const BudgetProjectionChart = lazy(() =>
@@ -167,7 +168,7 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
   const heatmapData = useMemo(() => {
     const dayMap: Record<number, number> = {};
     familyExpenses.forEach(e => {
-      const day = new Date(e.date).getDate();
+      const day = fechaLocal(e.date).getDate();
       dayMap[day] = (dayMap[day] || 0) + Number(e.amount);
     });
     const result = [];

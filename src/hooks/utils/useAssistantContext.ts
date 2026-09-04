@@ -16,6 +16,7 @@ import { useDashboardStats } from '@/hooks/data/useDashboardStats';
 import { useProfile } from '@/hooks/data/useProfile';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { format, subMonths, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
+import { fechaLocal } from '@/lib/fecha';
 
 // Tipos de gráficos que pueden estar visibles en cada página
 const PAGE_CHARTS: Record<string, string[]> = {
@@ -304,22 +305,22 @@ export function useAssistantContext(): AssistantContext {
 
     // Calcular datos financieros
     const monthlyExpenses = expenses?.filter(e => {
-      const d = new Date(e.date);
+      const d = fechaLocal(e.date);
       return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
     }).reduce((sum, e) => sum + Number(e.amount), 0) || 0;
 
     const monthlyIncome = income?.filter(i => {
-      const d = new Date(i.date);
+      const d = fechaLocal(i.date);
       return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
     }).reduce((sum, i) => sum + Number(i.amount), 0) || 0;
 
     const yearlyExpenses = expenses?.filter(e => {
-      const d = new Date(e.date);
+      const d = fechaLocal(e.date);
       return d.getFullYear() === currentYear;
     }).reduce((sum, e) => sum + Number(e.amount), 0) || 0;
 
     const yearlyIncome = income?.filter(i => {
-      const d = new Date(i.date);
+      const d = fechaLocal(i.date);
       return d.getFullYear() === currentYear;
     }).reduce((sum, i) => sum + Number(i.amount), 0) || 0;
 
@@ -374,7 +375,7 @@ export function useAssistantContext(): AssistantContext {
       }));
 
     const recentTransactions = [...recentExpenses, ...recentIncome]
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      .sort((a, b) => fechaLocal(b.date).getTime() - fechaLocal(a.date).getTime())
       .slice(0, 10);
 
     // Construir datos de gráficos visibles según la página

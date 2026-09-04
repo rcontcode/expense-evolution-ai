@@ -14,6 +14,7 @@ import { format, differenceInDays } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { LegalDisclaimer } from '@/components/ui/legal-disclaimer';
+import { fechaLocal } from '@/lib/fecha';
 
 interface GoalWithSMART {
   id: string;
@@ -63,7 +64,7 @@ export function SMARTGoalsCard() {
       current_amount: g.current_amount || 0,
       color: g.color || '#10B981',
       progress: g.target_amount > 0 ? ((g.current_amount || 0) / g.target_amount) * 100 : 0,
-      daysRemaining: g.deadline ? differenceInDays(new Date(g.deadline), new Date()) : null,
+      daysRemaining: g.deadline ? differenceInDays(fechaLocal(g.deadline), new Date()) : null,
     })),
     ...(investmentGoals || []).map(g => ({
       ...g,
@@ -71,7 +72,7 @@ export function SMARTGoalsCard() {
       current_amount: g.current_amount || 0,
       color: g.color || '#8B5CF6',
       progress: g.target_amount > 0 ? ((g.current_amount || 0) / g.target_amount) * 100 : 0,
-      daysRemaining: g.deadline ? differenceInDays(new Date(g.deadline), new Date()) : null,
+      daysRemaining: g.deadline ? differenceInDays(fechaLocal(g.deadline), new Date()) : null,
     })),
   ].sort((a, b) => {
     // Sort by deadline, closest first

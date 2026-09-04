@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { Rocket, Target, Calendar, TrendingUp, Zap, Flag } from 'lucide-react';
+import { fechaLocal } from '@/lib/fecha';
 
 interface Snapshot {
   snapshot_date: string;
@@ -34,13 +35,13 @@ export function NetWorthVelocityTracker({ snapshots, currentNetWorth }: Props) {
     if (snapshots.length < 2) return null;
 
     const sorted = [...snapshots].sort((a, b) => 
-      new Date(a.snapshot_date).getTime() - new Date(b.snapshot_date).getTime()
+      fechaLocal(a.snapshot_date).getTime() - fechaLocal(b.snapshot_date).getTime()
     );
 
     // Monthly growth rates
     const monthlyChanges: number[] = [];
     for (let i = 1; i < sorted.length; i++) {
-      const monthDiff = (new Date(sorted[i].snapshot_date).getTime() - new Date(sorted[i - 1].snapshot_date).getTime()) / (1000 * 60 * 60 * 24 * 30);
+      const monthDiff = (fechaLocal(sorted[i].snapshot_date).getTime() - fechaLocal(sorted[i - 1].snapshot_date).getTime()) / (1000 * 60 * 60 * 24 * 30);
       if (monthDiff > 0 && monthDiff < 3) {
         monthlyChanges.push(sorted[i].net_worth - sorted[i - 1].net_worth);
       }

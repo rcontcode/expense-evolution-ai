@@ -16,6 +16,7 @@ import {
   ArrowUpDown, CheckCircle2, ChevronDown, ChevronUp
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { fechaLocal } from '@/lib/fecha';
 
 const CATEGORY_ICONS: Record<string, React.ElementType> = {
   groceries: ShoppingCart, supermercado: ShoppingCart,
@@ -61,7 +62,7 @@ function detectPatterns(transactions: any[]): PatternGroup[] {
     const amounts = txs.map(t => Math.abs(Number(t.amount)));
     const avgAmount = amounts.reduce((a, b) => a + b, 0) / amounts.length;
     const totalAmount = amounts.reduce((a, b) => a + b, 0);
-    const days = txs.map(t => new Date(t.transaction_date).getDate());
+    const days = txs.map(t => fechaLocal(t.transaction_date).getDate());
     const avgDay = Math.round(days.reduce((a, b) => a + b, 0) / days.length);
     
     // Detect recurrence: same description appearing 2+ times with similar amounts

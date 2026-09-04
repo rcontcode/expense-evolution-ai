@@ -24,6 +24,7 @@ import {
 import { format } from 'date-fns';
 import { LegalDisclaimer } from '@/components/ui/legal-disclaimer';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
+import { fechaLocal } from '@/lib/fecha';
 
 // formatCurrency is now provided by useFormatCurrency hook inside the component
 
@@ -329,7 +330,7 @@ export function PortfolioTrackerCard() {
                   <div key={dividend.id} className="flex items-center justify-between text-sm">
                     <div className="flex items-center gap-2">
                       <Calendar className="h-3 w-3 text-muted-foreground" />
-                      <span>{format(new Date(dividend.date), 'dd MMM')}</span>
+                      <span>{format(fechaLocal(dividend.date), 'dd MMM')}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="text-muted-foreground truncate max-w-[100px]">

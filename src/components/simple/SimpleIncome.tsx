@@ -8,6 +8,7 @@ import { useIncome } from '@/hooks/data/useIncome';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { IncomeDialog } from '@/components/dialogs/IncomeDialog';
 import type { IncomeWithRelations } from '@/types/income.types';
+import { fechaLocal } from '@/lib/fecha';
 
 export function SimpleIncome() {
   const { language } = useLanguage();
@@ -74,7 +75,7 @@ export function SimpleIncome() {
                           {i.source || i.description || (language === 'es' ? 'Ingreso' : 'Income')}
                         </div>
                         <div className="text-xs text-muted-foreground">
-                          {new Date(i.date).toLocaleDateString(language === 'es' ? 'es' : 'en', { day: 'numeric', month: 'short' })}
+                          {fechaLocal(i.date).toLocaleDateString(language === 'es' ? 'es' : 'en', { day: 'numeric', month: 'short' })}
                           {i.category ? ` · ${i.category}` : ''}
                         </div>
                       </div>

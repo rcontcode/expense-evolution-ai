@@ -17,6 +17,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { hoyLocal } from '@/lib/fecha';
 
 
 // Las 61 tablas que guardan datos de la persona (todas las que tienen columna `user_id`).
@@ -142,7 +143,7 @@ export function DataPrivacyCard() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `evofinz-data-export-${new Date().toISOString().split('T')[0]}.json`;
+      a.download = `evofinz-data-export-${hoyLocal()}.json`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);

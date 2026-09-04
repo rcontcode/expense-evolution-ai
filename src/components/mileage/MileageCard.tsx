@@ -12,6 +12,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { MileageWithClient, calculateMileageDeduction } from '@/hooks/data/useMileage';
 import { MoreHorizontal, Pencil, Trash2, MapPin, Calendar, Car, DollarSign, User } from 'lucide-react';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
+import { fechaLocal } from '@/lib/fecha';
 
 interface MileageCardProps {
   record: MileageWithClient;
@@ -46,7 +47,7 @@ export function MileageCard({ record, ytdKm, onEdit, onDelete }: MileageCardProp
               <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
                 <div className="flex items-center gap-1">
                   <Calendar className="h-3 w-3" />
-                  {format(new Date(record.date), 'dd/MM/yy')}
+                  {format(fechaLocal(record.date), 'dd/MM/yy')}
                 </div>
                 {record.client?.name && (
                   <>

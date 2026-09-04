@@ -10,6 +10,7 @@ import { ArrowUpRight, ArrowDownRight, TrendingUp, Minus } from 'lucide-react';
 import { format, subMonths, startOfMonth, endOfMonth } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 import { Skeleton } from '@/components/ui/skeleton';
+import { fechaLocal } from '@/lib/fecha';
 
 const translations = {
   es: {
@@ -57,14 +58,14 @@ export function IncomeVsExpensesChart() {
       
       const monthIncome = income
         .filter(inc => {
-          const incDate = new Date(inc.date);
+          const incDate = fechaLocal(inc.date);
           return incDate >= monthStart && incDate <= monthEnd;
         })
         .reduce((sum, inc) => sum + inc.amount, 0);
       
       const monthExpenses = expenses
         .filter(exp => {
-          const expDate = new Date(exp.date);
+          const expDate = fechaLocal(exp.date);
           return expDate >= monthStart && expDate <= monthEnd;
         })
         .reduce((sum, exp) => sum + exp.amount, 0);

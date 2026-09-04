@@ -12,6 +12,7 @@ import { useClients } from '@/hooks/data/useClients';
 import { EXPENSE_CATEGORIES } from '@/lib/constants/expense-categories';
 import { Plus, Trash2, Split, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { fechaLocal } from '@/lib/fecha';
 
 interface SplitItem {
   id: string;
@@ -138,7 +139,7 @@ export function SplitTransactionDialog({
                 <div>
                   <p className="font-medium">{transaction.description || t('reconciliation.noDescription')}</p>
                   <p className="text-sm text-muted-foreground">
-                    {new Date(transaction.transaction_date).toLocaleDateString()}
+                    {fechaLocal(transaction.transaction_date).toLocaleDateString()}
                   </p>
                 </div>
                 <Badge variant="outline" className="text-lg font-bold">

@@ -11,6 +11,7 @@ import { motion } from 'framer-motion';
 import { BookOpen, Flame, PenLine, Target, TrendingUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { hoyLocal } from '@/lib/fecha';
 
 interface StatCardProps {
   icon: React.ReactNode;
@@ -105,13 +106,13 @@ export function MentorshipProgressSummary() {
       
       history.previousScore = history.lastScore ?? 0;
       history.lastScore = score;
-      history.lastUpdated = new Date().toISOString().slice(0, 10);
+      history.lastUpdated = hoyLocal();
       localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
 
       // Mentorship visit streak
       const streakStored = localStorage.getItem(STREAK_KEY);
       const streakData = streakStored ? JSON.parse(streakStored) : { streak: 0, lastDate: '' };
-      const today = new Date().toISOString().slice(0, 10);
+      const today = hoyLocal();
       
       if (streakData.lastDate === today) {
         streakRef.current = streakData.streak;

@@ -4,6 +4,7 @@ import autoTable from 'jspdf-autotable';
 import { format, startOfYear, endOfYear, startOfMonth, endOfMonth, eachMonthOfInterval } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 import { getCategoryLabelByLanguage, ExpenseCategory } from '@/lib/constants/expense-categories';
+import { fechaLocal } from '@/lib/fecha';
 
 // Extend jsPDF type for autoTable
 declare module 'jspdf' {
@@ -40,7 +41,7 @@ function buildPnLStructure(data: PnLData) {
     if (!incomeTypes[type]) {
       incomeTypes[type] = { label: type, total: 0, monthly: new Array(12).fill(0) };
     }
-    const m = new Date(inc.date).getMonth();
+    const m = fechaLocal(inc.date).getMonth();
     incomeTypes[type].total += inc.amount;
     incomeTypes[type].monthly[m] += inc.amount;
   });
@@ -57,7 +58,7 @@ function buildPnLStructure(data: PnLData) {
         monthly: new Array(12).fill(0),
       };
     }
-    const m = new Date(exp.date).getMonth();
+    const m = fechaLocal(exp.date).getMonth();
     expenseCategories[cat].total += exp.amount;
     expenseCategories[cat].monthly[m] += exp.amount;
   });

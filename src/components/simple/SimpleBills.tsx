@@ -8,6 +8,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useRecurringBills } from '@/hooks/data/useRecurringBills';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { cn } from '@/lib/utils';
+import { fechaLocal } from '@/lib/fecha';
 
 export function SimpleBills() {
   const { language } = useLanguage();
@@ -19,7 +20,7 @@ export function SimpleBills() {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     return [...(bills ?? [])]
-      .filter((b: any) => b.next_due_date && new Date(b.next_due_date) >= today)
+      .filter((b: any) => b.next_due_date && fechaLocal(b.next_due_date) >= today)
       .sort((a: any, b: any) => (a.next_due_date < b.next_due_date ? -1 : 1))
       .slice(0, 10);
   }, [bills]);
@@ -47,7 +48,7 @@ export function SimpleBills() {
           ) : (
             <ul className="divide-y divide-border/50">
               {upcoming.map((b: any) => {
-                const due = new Date(b.next_due_date);
+                const due = fechaLocal(b.next_due_date);
                 const days = Math.ceil((due.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
                 const soon = days <= 3;
                 return (

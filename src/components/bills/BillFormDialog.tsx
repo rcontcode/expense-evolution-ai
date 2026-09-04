@@ -16,6 +16,7 @@ import {
   PAYMENT_METHOD_CONFIG, COMMON_BANKS,
   type BillCategory, type BillFrequency, type PaymentMethodType,
 } from '@/lib/constants/bill-categories';
+import { hoyLocal } from '@/lib/fecha';
 
 const createEmptyBill = (currency: string): BillInsert => ({
   name: '',
@@ -26,7 +27,7 @@ const createEmptyBill = (currency: string): BillInsert => ({
   frequency: 'monthly',
   frequency_months: null,
   due_day: null,
-  next_due_date: new Date().toISOString().split('T')[0],
+  next_due_date: hoyLocal(),
   last_paid_date: null,
   auto_pay: false,
   status: 'active',

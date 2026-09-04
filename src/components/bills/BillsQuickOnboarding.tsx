@@ -14,6 +14,7 @@ import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { useCreateBill, type BillInsert } from '@/hooks/data/useRecurringBills';
 import { BILL_FREQUENCY_CONFIG, BILL_PRIORITIES, type BillFrequency } from '@/lib/constants/bill-categories';
 import { cn } from '@/lib/utils';
+import { aFechaISO } from '@/lib/fecha';
 
 interface BillPreset {
   key: string;
@@ -377,5 +378,5 @@ export function BillsQuickOnboarding({ onComplete }: BillsQuickOnboardingProps) 
 function getNextFirstOfMonth(): string {
   const now = new Date();
   const next = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-  return next.toISOString().split('T')[0];
+  return aFechaISO(next);
 }

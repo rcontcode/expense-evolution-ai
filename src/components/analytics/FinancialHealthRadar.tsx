@@ -11,6 +11,7 @@ import { useAssets, useLiabilities } from '@/hooks/data/useNetWorth';
 import { useInvestmentGoals } from '@/hooks/data/useInvestmentGoals';
 import { useSavingsGoals } from '@/hooks/data/useSavingsGoals';
 import { Shield, TrendingUp, TrendingDown, Minus, Info } from 'lucide-react';
+import { fechaLocal } from '@/lib/fecha';
 
 interface DimensionScore {
   dimension: string;
@@ -113,8 +114,8 @@ export function FinancialHealthRadar() {
     const threeMonthsAgo = new Date();
     threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
     
-    const recentExpenses = expenses.filter(e => new Date(e.date) >= threeMonthsAgo);
-    const recentIncome = income.filter(i => new Date(i.date) >= threeMonthsAgo);
+    const recentExpenses = expenses.filter(e => fechaLocal(e.date) >= threeMonthsAgo);
+    const recentIncome = income.filter(i => fechaLocal(i.date) >= threeMonthsAgo);
     
     const totalExpenses = recentExpenses.reduce((sum, e) => sum + e.amount, 0);
     const totalIncome = recentIncome.reduce((sum, i) => sum + i.amount, 0);

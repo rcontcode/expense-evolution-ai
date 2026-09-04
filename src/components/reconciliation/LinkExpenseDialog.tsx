@@ -11,6 +11,7 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { ExpenseWithRelations } from '@/types/expense.types';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
+import { fechaLocal } from '@/lib/fecha';
 
 interface LinkExpenseDialogProps {
   open: boolean;
@@ -57,11 +58,11 @@ export function LinkExpenseDialog({
   const sortedExpenses = useMemo(() => {
     if (!transaction) return filteredExpenses;
     
-    const txDate = new Date(transaction.transaction_date).getTime();
+    const txDate = fechaLocal(transaction.transaction_date).getTime();
     
     return [...filteredExpenses].sort((a, b) => {
-      const dateA = new Date(a.date).getTime();
-      const dateB = new Date(b.date).getTime();
+      const dateA = fechaLocal(a.date).getTime();
+      const dateB = fechaLocal(b.date).getTime();
       const diffA = Math.abs(txDate - dateA);
       const diffB = Math.abs(txDate - dateB);
       return diffA - diffB;
@@ -96,8 +97,8 @@ export function LinkExpenseDialog({
     else if (amountDiff < 10) score += 10;
     
     // Date proximity (up to 50 points)
-    const txDate = new Date(transaction.transaction_date);
-    const expDate = new Date(expense.date);
+    const txDate = fechaLocal(transaction.transaction_date);
+    const expDate = fechaLocal(expense.date);
     const daysDiff = Math.abs((txDate.getTime() - expDate.getTime()) / (1000 * 60 * 60 * 24));
     if (daysDiff === 0) score += 50;
     else if (daysDiff <= 1) score += 40;
@@ -134,7 +135,7 @@ export function LinkExpenseDialog({
                     </p>
                     <p className="font-medium">{transaction.description || t('reconciliation.noDescription')}</p>
                     <p className="text-sm text-muted-foreground">
-                    {format(new Date(transaction.transaction_date), 'dd MMM yyyy', { 
+                    {format(fechaLocal(transaction.transaction_date), 'dd MMM yyyy', { 
                       locale: language === 'es' ? es : undefined 
                     })}
                   </p>
@@ -210,7 +211,7 @@ export function LinkExpenseDialog({
                             <div className="flex items-center gap-3 text-xs text-muted-foreground">
                               <span className="flex items-center gap-1">
                                 <Calendar className="h-3 w-3" />
-                                {format(new Date(expense.date), 'dd/MM/yyyy')}
+                                {format(fechaLocal(expense.date), 'dd/MM/yyyy')}
                               </span>
                               {expense.category && (
                                 <Badge variant="outline" className="text-xs">

@@ -22,6 +22,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useAIErrorHandler } from '@/hooks/utils/useAIErrorHandler';
+import { fechaLocal } from '@/lib/fecha';
 
 export function SmartMonthlyReport() {
   const { language } = useLanguage();
@@ -49,7 +50,7 @@ export function SmartMonthlyReport() {
 
     const filterByMonth = (items: any[], month: number, year: number) =>
       items.filter(item => {
-        const d = new Date(item.date);
+        const d = fechaLocal(item.date);
         return d.getMonth() === month && d.getFullYear() === year && !item.deleted_at;
       });
 
@@ -57,11 +58,11 @@ export function SmartMonthlyReport() {
     const prevExpenses = filterByMonth(expenses, prevMonthDate.getMonth(), prevMonthDate.getFullYear());
     
     const currentIncome = incomeData?.filter(i => {
-      const d = new Date(i.date);
+      const d = fechaLocal(i.date);
       return d.getMonth() === currentMonth;
     }) || [];
     const prevIncome = incomeData?.filter(i => {
-      const d = new Date(i.date);
+      const d = fechaLocal(i.date);
       return d.getMonth() === prevMonthDate.getMonth();
     }) || [];
 

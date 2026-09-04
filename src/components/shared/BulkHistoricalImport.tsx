@@ -15,6 +15,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { EXPENSE_CATEGORIES } from '@/lib/constants/expense-categories';
 import { MAX_BULK_IMPORT_ROWS, BATCH_INSERT_SIZE } from '@/lib/constants/resource-limits';
+import { hoyLocal } from '@/lib/fecha';
 
 interface HistoricalRow {
   id: string;
@@ -34,7 +35,7 @@ interface BulkHistoricalImportProps {
 
 const newRow = (): HistoricalRow => ({
   id: crypto.randomUUID(),
-  date: new Date().toISOString().split('T')[0],
+  date: hoyLocal(),
   amount: 0,
   description: '',
   category: 'other',
@@ -75,7 +76,7 @@ export function BulkHistoricalImport({ open, onClose, type, onComplete }: BulkHi
       const parts = line.split(/[\t,;]/).map(s => s.trim());
       return {
         id: crypto.randomUUID(),
-        date: parts[0] || new Date().toISOString().split('T')[0],
+        date: parts[0] || hoyLocal(),
         amount: parseFloat(parts[1]) || 0,
         description: parts[2] || '',
         category: parts[3] || 'other',

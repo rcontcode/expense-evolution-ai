@@ -9,6 +9,7 @@ import { UpgradePrompt } from '@/components/UpgradePrompt';
 import { useEntity } from '@/contexts/EntityContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
+import { aFechaISO } from '@/lib/fecha';
 
 interface ExpenseDialogProps {
   open: boolean;
@@ -44,7 +45,7 @@ export function ExpenseDialog({ open, onClose, expense }: ExpenseDialogProps) {
     const { tagIds, ...formData } = data;
     
     const expenseData = {
-      date: formData.date.toISOString().split('T')[0],
+      date: aFechaISO(formData.date),
       vendor: formData.vendor,
       amount: formData.amount,
       category: formData.category,

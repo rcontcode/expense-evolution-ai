@@ -28,6 +28,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { hoyLocal } from '@/lib/fecha';
 
 interface AssetsListProps {
   assets: Asset[];
@@ -244,7 +245,7 @@ export function AssetsList({ assets, onAdd, onEdit }: AssetsListProps) {
   // Handle conversion status toggle
   const handleStartConversion = (asset: Asset) => {
     const currentNotes = asset.notes || '';
-    const today = new Date().toISOString().split('T')[0];
+    const today = hoyLocal();
     // Remove any old conversion markers first
     const cleanNotes = currentNotes
       .replace(/\[EN CONVERSIÓN[:\d-]*\]\s*/gi, '')
@@ -256,7 +257,7 @@ export function AssetsList({ assets, onAdd, onEdit }: AssetsListProps) {
 
   const handleCompleteConversion = (asset: Asset) => {
     let currentNotes = asset.notes || '';
-    const today = new Date().toISOString().split('T')[0];
+    const today = hoyLocal();
     
     // Extract start date from in-progress marker
     const startMatch = currentNotes.match(/\[EN CONVERSIÓN:(\d{4}-\d{2}-\d{2})\]/i);

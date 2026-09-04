@@ -8,6 +8,7 @@ import { useExpenses } from '@/hooks/data/useExpenses';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { ExpenseDialog } from '@/components/dialogs/ExpenseDialog';
 import type { ExpenseWithRelations } from '@/types/expense.types';
+import { fechaLocal } from '@/lib/fecha';
 
 export function SimpleExpenses() {
   const { language } = useLanguage();
@@ -74,7 +75,7 @@ export function SimpleExpenses() {
                           {e.merchant || e.description || (language === 'es' ? 'Gasto' : 'Expense')}
                         </div>
                         <div className="text-xs text-muted-foreground">
-                          {new Date(e.date).toLocaleDateString(language === 'es' ? 'es' : 'en', { day: 'numeric', month: 'short' })}
+                          {fechaLocal(e.date).toLocaleDateString(language === 'es' ? 'es' : 'en', { day: 'numeric', month: 'short' })}
                           {e.category ? ` · ${e.category}` : ''}
                         </div>
                       </div>

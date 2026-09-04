@@ -8,6 +8,7 @@ import { useBankTransactions } from '@/hooks/data/useBankTransactions';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { BankImportDialog } from '@/components/dialogs/BankImportDialog';
 import { cn } from '@/lib/utils';
+import { fechaLocal } from '@/lib/fecha';
 
 export function SimpleBanking() {
   const { language } = useLanguage();
@@ -88,7 +89,7 @@ export function SimpleBanking() {
                       <div className="min-w-0">
                         <div className="text-sm font-medium truncate">{t.description || t.merchant || (language === 'es' ? 'Movimiento' : 'Movement')}</div>
                         <div className="text-xs text-muted-foreground">
-                          {new Date(t.transaction_date).toLocaleDateString(language === 'es' ? 'es' : 'en', { day: 'numeric', month: 'short' })}
+                          {fechaLocal(t.transaction_date).toLocaleDateString(language === 'es' ? 'es' : 'en', { day: 'numeric', month: 'short' })}
                         </div>
                       </div>
                     </div>

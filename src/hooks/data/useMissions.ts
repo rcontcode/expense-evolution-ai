@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useUnlockAchievement } from './useGamification';
+import { hoyLocal } from '@/lib/fecha';
 
 export interface Mission {
   id: string;
@@ -183,7 +184,7 @@ function storeProgress(progress: Record<string, UserMissionProgress>) {
 }
 
 function shouldResetDaily(lastReset: string): boolean {
-  const today = new Date().toISOString().split('T')[0];
+  const today = hoyLocal();
   return lastReset !== today;
 }
 
@@ -202,7 +203,7 @@ export function useMissions() {
   // Reset missions if needed
   useEffect(() => {
     const storedProgress = getStoredProgress();
-    const today = new Date().toISOString().split('T')[0];
+    const today = hoyLocal();
     let updated = false;
     
     // Check and reset daily missions
@@ -244,7 +245,7 @@ export function useMissions() {
       mission_key: missionKey,
       progress: 0,
       completed: false,
-      last_reset: new Date().toISOString().split('T')[0],
+      last_reset: hoyLocal(),
     };
   };
   
@@ -282,7 +283,7 @@ export function useCompleteMission() {
   
   const completeMission = async (missionKey: string, action: string, increment: number = 1) => {
     const storedProgress = getStoredProgress();
-    const today = new Date().toISOString().split('T')[0];
+    const today = hoyLocal();
     
     // Find the mission
     const mission = [...DAILY_MISSIONS, ...WEEKLY_MISSIONS].find(m => m.action === action);

@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { hoyLocal } from '@/lib/fecha';
 
 export interface FinancialEducationResource {
   id: string;
@@ -210,8 +211,8 @@ export function useCreateEducationResource() {
         .from('financial_education')
         .insert({
           user_id: user.id,
-          started_date: data.status === 'in_progress' ? new Date().toISOString().split('T')[0] : null,
-          completed_date: data.status === 'completed' ? new Date().toISOString().split('T')[0] : null,
+          started_date: data.status === 'in_progress' ? hoyLocal() : null,
+          completed_date: data.status === 'completed' ? hoyLocal() : null,
           ...data,
         });
 
@@ -238,14 +239,14 @@ export function useUpdateEducationResource() {
       
       // Set completed date if status changed to completed
       if (data.status === 'completed') {
-        updateData.completed_date = new Date().toISOString().split('T')[0];
+        updateData.completed_date = hoyLocal();
         updateData.progress_percentage = 100;
       }
       
       // When moving back to in_progress, recalculate real progress
       if (data.status === 'in_progress') {
         if (!data.started_date) {
-          updateData.started_date = new Date().toISOString().split('T')[0];
+          updateData.started_date = hoyLocal();
         }
         updateData.completed_date = null;
         
@@ -335,7 +336,7 @@ export function useLogDailyProgress() {
     }) => {
       if (!user) throw new Error('No user');
 
-      const today = new Date().toISOString().split('T')[0];
+      const today = hoyLocal();
       const pagesRead = data.pages_read || 0;
       const minutesConsumed = data.minutes_consumed || 0;
 
@@ -451,7 +452,7 @@ export function useLogPractice() {
           practice_type: data.practice_type || 'action',
           outcome: data.outcome,
           impact_rating: data.impact_rating,
-          practice_date: new Date().toISOString().split('T')[0],
+          practice_date: hoyLocal(),
         });
 
       if (error) throw error;
@@ -481,7 +482,7 @@ export function useEducationReminders() {
     mutationFn: async () => {
       if (!user) return;
 
-      const today = new Date().toISOString().split('T')[0];
+      const today = hoyLocal();
 
       // Check for in-progress resources
       const { data: inProgress } = await supabase

@@ -16,6 +16,7 @@ import { Target, CheckCircle, Calendar as CalendarIcon, DollarSign, Lightbulb, A
 import { format } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
+import { aFechaISO } from '@/lib/fecha';
 
 interface SMARTGoalWizardProps {
   open: boolean;
@@ -145,7 +146,7 @@ export function SMARTGoalWizard({ open, onOpenChange, goalType = 'savings' }: SM
         monthly_target: formData.monthlyTarget,
         asset_class: formData.assetClass,
         risk_level: formData.riskLevel,
-        deadline: formData.deadline?.toISOString().split('T')[0] || null,
+        deadline: formData.deadline ? aFechaISO(formData.deadline) : null,
         color: formData.color,
         is_specific: formData.isSpecific,
         is_measurable: formData.isMeasurable,

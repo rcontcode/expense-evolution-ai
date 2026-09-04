@@ -27,6 +27,7 @@ import { InfoTooltip, TOOLTIP_CONTENT } from '@/components/ui/info-tooltip';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { EntitySelect } from '@/components/forms/EntitySelect';
 import { useEntity } from '@/contexts/EntityContext';
+import { fechaLocal } from '@/lib/fecha';
 
 interface ExpenseFormProps {
   expense?: ExpenseWithRelations;
@@ -56,7 +57,7 @@ export function ExpenseForm({ expense, onSubmit, onCancel, isLoading }: ExpenseF
   const form = useForm<ExpenseFormValues>({
     resolver: zodResolver(expenseSchema),
     defaultValues: {
-      date: expense?.date ? new Date(expense.date) : new Date(),
+      date: expense?.date ? fechaLocal(expense.date) : new Date(),
       vendor: expense?.vendor || '',
       amount: expense?.amount ? Number(expense.amount) : 0,
       category: (expense?.category as any) || 'other',

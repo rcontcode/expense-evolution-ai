@@ -18,6 +18,7 @@ import { cn } from '@/lib/utils';
 import { CalendarIcon, DollarSign } from 'lucide-react';
 import { EntitySelect } from '@/components/forms/EntitySelect';
 import { useEntity } from '@/contexts/EntityContext';
+import { fechaLocal } from '@/lib/fecha';
 
 const projectSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -57,8 +58,8 @@ export function ProjectForm({ project, onSubmit, onCancel, isLoading }: ProjectF
       status: project?.status || 'active',
       client_id: project?.client_id || '',
       budget: project?.budget || null,
-      start_date: project?.start_date ? new Date(project.start_date) : null,
-      end_date: project?.end_date ? new Date(project.end_date) : null,
+      start_date: project?.start_date ? fechaLocal(project.start_date) : null,
+      end_date: project?.end_date ? fechaLocal(project.end_date) : null,
       color: project?.color || '#3B82F6',
       entity_id: (project as any)?.entity_id || currentEntity?.id || undefined,
     },

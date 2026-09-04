@@ -8,6 +8,7 @@ import { es, enUS } from 'date-fns/locale';
 import { MileageWithClient, calculateMileageDeduction } from '@/hooks/data/useMileage';
 import { BarChart3 } from 'lucide-react';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
+import { fechaLocal } from '@/lib/fecha';
 
 interface MileageMonthlyChartProps {
   data: MileageWithClient[];
@@ -45,7 +46,7 @@ export function MileageMonthlyChart({ data, year }: MileageMonthlyChartProps) {
     
     // Sort data by date to calculate deductions properly
     const sortedData = [...data].sort((a, b) => 
-      new Date(a.date).getTime() - new Date(b.date).getTime()
+      fechaLocal(a.date).getTime() - fechaLocal(b.date).getTime()
     );
 
     sortedData.forEach((record) => {

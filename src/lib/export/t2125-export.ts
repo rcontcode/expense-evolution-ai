@@ -1,6 +1,7 @@
 import ExcelJS from 'exceljs';
 import { ExpenseWithRelations } from '@/types/expense.types';
 import { format } from 'date-fns';
+import { fechaLocal } from '@/lib/fecha';
 
 // T2125 Form Lines mapping - Part 5: Business expenses
 // https://www.canada.ca/en/revenue-agency/services/forms-publications/forms/t2125.html
@@ -221,7 +222,7 @@ export function calculateT2125Totals(expenses: ExpenseWithRelations[]): T2125Lin
 
 export async function exportT2125Report(expenses: ExpenseWithRelations[], year?: number): Promise<void> {
   const filteredExpenses = year 
-    ? expenses.filter(e => new Date(e.date).getFullYear() === year)
+    ? expenses.filter(e => fechaLocal(e.date).getFullYear() === year)
     : expenses;
 
   const deductibleExpenses = filteredExpenses.filter(e => e.status === 'deductible');

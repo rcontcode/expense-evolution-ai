@@ -40,6 +40,7 @@ import { SimpleOnboardingPath } from './SimpleOnboardingPath';
 import { SimpleSparkline } from './SimpleSparkline';
 import { getDailyTip, type TipContext } from '@/data/simpleFinancialTips';
 import { cn } from '@/lib/utils';
+import { fechaLocal } from '@/lib/fecha';
 
 interface SimpleDashboardProps {
   onQuickCapture?: () => void;
@@ -139,7 +140,7 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
     limit.setDate(limit.getDate() + 7);
     return (bills as any[]).filter((b) => {
       if (!b?.next_due_date) return false;
-      const d = new Date(b.next_due_date);
+      const d = fechaLocal(b.next_due_date);
       return d >= new Date(now.getFullYear(), now.getMonth(), now.getDate()) && d <= limit;
     }).length;
   }, [bills]);
@@ -679,7 +680,7 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
                       <div className="min-w-0 flex-1 overflow-hidden">
                         <div className="text-sm font-medium truncate">{item.label}</div>
                         <div className="text-xs text-muted-foreground">
-                          {new Date(item.date).toLocaleDateString(language === 'es' ? 'es' : 'en', {
+                          {fechaLocal(item.date).toLocaleDateString(language === 'es' ? 'es' : 'en', {
                             day: 'numeric',
                             month: 'short',
                           })}

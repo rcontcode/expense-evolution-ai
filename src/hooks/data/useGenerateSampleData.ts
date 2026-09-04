@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useLanguage } from '@/contexts/LanguageContext';
 import type { Database } from '@/integrations/supabase/types';
+import { aFechaISO } from '@/lib/fecha';
 
 type ExpenseStatus = Database['public']['Enums']['expense_status'];
 type IncomeType = Database['public']['Enums']['income_type'];
@@ -338,7 +339,7 @@ export function useGenerateSampleData() {
         date.setDate(date.getDate() - e.daysAgo);
         return {
           user_id: userId,
-          date: date.toISOString().split('T')[0],
+          date: aFechaISO(date),
           amount: e.amount,
           vendor: e.vendor,
           category: e.category,
@@ -390,7 +391,7 @@ export function useGenerateSampleData() {
         const recurrence: RecurrenceType = inc.type === 'passive_rental' ? 'monthly' : 'one_time';
         return {
           user_id: userId,
-          date: date.toISOString().split('T')[0],
+          date: aFechaISO(date),
           amount: inc.amount,
           income_type: inc.type,
           source: inc.source,
@@ -424,7 +425,7 @@ export function useGenerateSampleData() {
         date.setDate(date.getDate() - m.daysAgo);
         return {
           user_id: userId,
-          date: date.toISOString().split('T')[0],
+          date: aFechaISO(date),
           kilometers: m.km,
           route: `${SAMPLE_MARKER} ${m.route}`,
           purpose: m.purpose,
@@ -520,7 +521,7 @@ export function useGenerateSampleData() {
         date.setDate(date.getDate() - t.daysAgo);
         return {
           user_id: userId,
-          transaction_date: date.toISOString().split('T')[0],
+          transaction_date: aFechaISO(date),
           amount: t.amount,
           description: `${SAMPLE_MARKER} ${t.desc}`,
           status: t.status,
@@ -608,7 +609,7 @@ export function useGenerateSampleData() {
         const baseLiabilities = 85000 - (6 - i) * 1200;
         netWorthSnapshots.push({
           user_id: userId,
-          snapshot_date: snapshotDate.toISOString().split('T')[0],
+          snapshot_date: aFechaISO(snapshotDate),
           total_assets: baseAssets + Math.random() * 2000,
           total_liabilities: baseLiabilities + Math.random() * 500,
           net_worth: baseAssets - baseLiabilities + Math.random() * 1500,
@@ -888,7 +889,7 @@ export function useGenerateSampleData() {
           dailyLogs.push({
             user_id: userId,
             resource_id: eduData[0].id, // Rich Dad Poor Dad
-            log_date: logDate.toISOString().split('T')[0],
+            log_date: aFechaISO(logDate),
             pages_read: Math.floor(Math.random() * 20) + 5,
             minutes_consumed: Math.floor(Math.random() * 40) + 15,
             notes: i % 3 === 0 ? `${SAMPLE_MARKER} Great chapter on ${['assets', 'cash flow', 'financial literacy', 'investing'][i % 4]}` : null
@@ -945,7 +946,7 @@ export function useGenerateSampleData() {
         total_savings: 15000,
         total_investments: 45000,
         streak_days: 12,
-        last_activity_date: today.toISOString().split('T')[0]
+        last_activity_date: aFechaISO(today)
       };
 
       const { error: levelError } = await supabase.from('user_financial_level').upsert(financialLevel, { onConflict: 'user_id' });
@@ -1323,7 +1324,7 @@ export function useGenerateSampleDataBySection() {
             date.setDate(date.getDate() - e.daysAgo);
             return {
               user_id: userId,
-              date: date.toISOString().split('T')[0],
+              date: aFechaISO(date),
               amount: e.amount,
               vendor: e.vendor,
               category: e.category,
@@ -1353,7 +1354,7 @@ export function useGenerateSampleDataBySection() {
             date.setDate(date.getDate() - inc.daysAgo);
             return {
               user_id: userId,
-              date: date.toISOString().split('T')[0],
+              date: aFechaISO(date),
               amount: inc.amount,
               income_type: inc.type,
               source: inc.source,
@@ -1389,7 +1390,7 @@ export function useGenerateSampleDataBySection() {
             date.setDate(date.getDate() - m.daysAgo);
             return {
               user_id: userId,
-              date: date.toISOString().split('T')[0],
+              date: aFechaISO(date),
               kilometers: m.km,
               route: `${SAMPLE_MARKER} ${m.route}`,
               purpose: m.purpose,

@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useInvalidateRelated } from './useInvalidateRelated';
 import { insertAuditLog } from './useAuditLog';
+import { hoyLocal } from '@/lib/fecha';
 
 export interface Asset {
   id: string;
@@ -466,7 +467,7 @@ export function useCreateSnapshot() {
 
   return useMutation({
     mutationFn: async (snapshot: { total_assets: number; total_liabilities: number; net_worth: number }) => {
-      const today = new Date().toISOString().split('T')[0];
+      const today = hoyLocal();
       
       // Check if snapshot exists for today
       const { data: existing } = await supabase

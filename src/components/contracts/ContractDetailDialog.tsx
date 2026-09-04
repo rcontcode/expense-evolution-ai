@@ -13,6 +13,7 @@ import { FullScreenDialog } from '@/components/mobile/FullScreenDialog';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
+import { fechaLocal } from '@/lib/fecha';
 
 interface ContractDetailDialogProps {
   open: boolean;
@@ -277,7 +278,7 @@ function ContractTermsPanel({
                 {language === 'es' ? 'Inicio' : 'Start'}
               </div>
               <p className="font-medium text-sm">
-                {format(new Date(contract.start_date), 'dd MMM yyyy', { locale })}
+                {format(fechaLocal(contract.start_date), 'dd MMM yyyy', { locale })}
               </p>
             </div>
           )}
@@ -288,7 +289,7 @@ function ContractTermsPanel({
                 {language === 'es' ? 'Fin' : 'End'}
               </div>
               <p className="font-medium text-sm">
-                {format(new Date(contract.end_date), 'dd MMM yyyy', { locale })}
+                {format(fechaLocal(contract.end_date), 'dd MMM yyyy', { locale })}
               </p>
             </div>
           )}

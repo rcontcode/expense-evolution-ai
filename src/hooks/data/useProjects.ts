@@ -6,6 +6,7 @@ import { useInvalidateRelated } from './useInvalidateRelated';
 import { insertAuditLog } from './useAuditLog';
 import { useLocalizedToast } from '@/hooks/utils/useLocalizedToast';
 import { useUndoableDelete } from '@/hooks/utils/useUndoableAction';
+import { aFechaISO } from '@/lib/fecha';
 
 export function useProjects(status?: string) {
   const { user } = useAuth();
@@ -45,8 +46,8 @@ export function useCreateProject(defaultEntityId?: string) {
         .insert({
           user_id: user!.id, name: data.name, description: data.description || null,
           status: data.status, client_id: data.client_id || null, budget: data.budget || null,
-          start_date: data.start_date?.toISOString().split('T')[0] || null,
-          end_date: data.end_date?.toISOString().split('T')[0] || null,
+          start_date: data.start_date ? aFechaISO(data.start_date) : null,
+          end_date: data.end_date ? aFechaISO(data.end_date) : null,
           color: data.color, entity_id: data.entity_id || defaultEntityId || null,
         })
         .select().single();
@@ -76,10 +77,10 @@ export function useUpdateProject() {
     mutationFn: async ({ id, data }: { id: string; data: Partial<ProjectFormData> }) => {
       const updateData: any = { ...data };
       if (data.start_date) {
-        updateData.start_date = data.start_date instanceof Date ? data.start_date.toISOString().split('T')[0] : data.start_date;
+        updateData.start_date = data.start_date instanceof Date ? aFechaISO(data.start_date) : data.start_date;
       }
       if (data.end_date) {
-        updateData.end_date = data.end_date instanceof Date ? data.end_date.toISOString().split('T')[0] : data.end_date;
+        updateData.end_date = data.end_date instanceof Date ? aFechaISO(data.end_date) : data.end_date;
       }
       const { error } = await supabase.from('projects').update(updateData).eq('id', id);
       if (error) throw error;

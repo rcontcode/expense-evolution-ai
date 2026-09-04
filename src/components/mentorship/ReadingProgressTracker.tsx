@@ -33,6 +33,7 @@ import {
 } from 'recharts';
 import { format, differenceInDays, addDays, parseISO } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
+import { fechaLocal } from '@/lib/fecha';
 
 interface ReadingProgressTrackerProps {
   resource: FinancialEducationResource;
@@ -84,7 +85,7 @@ export function ReadingProgressTracker({ resource, onClose }: ReadingProgressTra
     }
 
     const sortedLogs = [...dailyLogs].sort((a, b) => 
-      new Date(a.log_date).getTime() - new Date(b.log_date).getTime()
+      fechaLocal(a.log_date).getTime() - fechaLocal(b.log_date).getTime()
     );
 
     const totalPagesRead = resource.pages_read || sortedLogs.reduce((sum, l) => sum + (l.pages_read || 0), 0);
@@ -105,13 +106,13 @@ export function ReadingProgressTracker({ resource, onClose }: ReadingProgressTra
     const today = new Date();
     
     for (let i = sortedLogs.length - 1; i >= 0; i--) {
-      const logDate = new Date(sortedLogs[i].log_date);
+      const logDate = fechaLocal(sortedLogs[i].log_date);
       const daysAgo = differenceInDays(today, logDate);
       
       if (i === sortedLogs.length - 1 && daysAgo <= 1) {
         tempStreak = 1;
       } else if (i < sortedLogs.length - 1) {
-        const prevDate = new Date(sortedLogs[i + 1].log_date);
+        const prevDate = fechaLocal(sortedLogs[i + 1].log_date);
         const daysDiff = differenceInDays(prevDate, logDate);
         if (daysDiff === 1) {
           tempStreak++;
@@ -125,8 +126,8 @@ export function ReadingProgressTracker({ resource, onClose }: ReadingProgressTra
     // Calculate best streak
     tempStreak = 1;
     for (let i = 1; i < sortedLogs.length; i++) {
-      const prevDate = new Date(sortedLogs[i - 1].log_date);
-      const currDate = new Date(sortedLogs[i].log_date);
+      const prevDate = fechaLocal(sortedLogs[i - 1].log_date);
+      const currDate = fechaLocal(sortedLogs[i].log_date);
       const daysDiff = differenceInDays(currDate, prevDate);
       if (daysDiff === 1) {
         tempStreak++;

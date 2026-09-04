@@ -19,6 +19,7 @@ import { ProjectionDisclaimer, type DataSource } from '@/components/projections/
 import { motion, AnimatePresence } from 'framer-motion';
 import { startOfMonth, endOfMonth, subMonths } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { fechaLocal } from '@/lib/fecha';
 
 interface Scenario {
   id: string;
@@ -161,7 +162,7 @@ export function WhatIfSimulator() {
   const monthlyIncome = useMemo(() => {
     if (!income?.length) return 0;
     const recent = income.filter(i => {
-      const d = new Date(i.date);
+      const d = fechaLocal(i.date);
       return d >= startOfMonth(subMonths(now, 3));
     });
     const months = new Set(recent.map(i => i.date.substring(0, 7)));
