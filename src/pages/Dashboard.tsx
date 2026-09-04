@@ -44,6 +44,7 @@ import { MoneyMomentumScore } from '@/components/dashboard/MoneyMomentumScore';
 import { useIncome } from '@/hooks/data/useIncome';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { cn } from '@/lib/utils';
+import { fechaLocal } from '@/lib/fecha';
 
 // Lazy load only dashboard-specific components
 const WorkflowSummaryWidget = lazy(() => import('@/components/dashboard/WorkflowSummaryWidget').then(m => ({ default: m.WorkflowSummaryWidget })));
@@ -127,17 +128,19 @@ export default function Dashboard() {
     limit.setDate(limit.getDate() + 7);
     const billsDueWeek = (bills ?? []).filter((b: any) => {
       if (!b?.next_due_date) return false;
-      const d = new Date(b.next_due_date);
+      const d = fechaLocal(b.next_due_date);
       return d >= new Date(now.getFullYear(), now.getMonth(), now.getDate()) && d <= limit;
     }).length;
     const limit3 = new Date(now);
     limit3.setDate(limit3.getDate() + 3);
     const billsDueSoon = (bills ?? []).filter((b: any) => {
       if (!b?.next_due_date) return false;
-      const d = new Date(b.next_due_date);
+      const d = fechaLocal(b.next_due_date);
       return d >= new Date(now.getFullYear(), now.getMonth(), now.getDate()) && d <= limit3;
     }).length;
-    const incompleteExpenses = (allExpenses ?? []).filter((e: any) => !e?.category || !e?.merchant).length;
+    // Antes se pedia tambien `e.merchant`, un campo que no existe en la tabla
+    // (se llama `vendor`), asi que contaba como incompleto hasta el ultimo gasto.
+    const incompleteExpenses = (allExpenses ?? []).filter((e: any) => !e?.category || !e?.vendor).length;
     const balance = (stats?.monthlyIncome ?? 0) - (stats?.monthlyTotal ?? 0);
     return {
       noClients: (clients?.length ?? 0) === 0,

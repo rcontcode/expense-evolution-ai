@@ -33,6 +33,7 @@ import { useState } from 'react';
 import { MileageRoutePreview } from '@/components/mileage/MileageRoutePreview';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
+import { fechaLocal } from '@/lib/fecha';
 
 interface MileageTableProps {
   data: MileageWithClient[];
@@ -51,7 +52,7 @@ export const MileageTable = ({ data, onEdit }: MileageTableProps) => {
   // Calculate running YTD for deduction display
   const dataWithDeductions = data.map((record) => {
     const sortedData = [...data].sort((a, b) => 
-      new Date(a.date).getTime() - new Date(b.date).getTime()
+      fechaLocal(a.date).getTime() - fechaLocal(b.date).getTime()
     );
     const recordIndex = sortedData.findIndex(r => r.id === record.id);
     const ytdKm = sortedData
@@ -93,7 +94,7 @@ export const MileageTable = ({ data, onEdit }: MileageTableProps) => {
             {dataWithDeductions.map((record) => (
               <TableRow key={record.id} className={isSample(record.route) ? 'bg-muted/30' : ''}>
                 <TableCell className="font-medium">
-                  {format(new Date(record.date), 'dd/MM/yyyy')}
+                  {format(fechaLocal(record.date), 'dd/MM/yyyy')}
                 </TableCell>
                 <TableCell className="py-3">
                   <div className="flex items-center gap-3">

@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { format, addMonths, subMonths, startOfMonth, endOfMonth } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
+import { fechaLocal } from '@/lib/fecha';
 
 interface ProjectionData {
   month: string;
@@ -130,7 +131,7 @@ export function CashFlowProjection() {
     };
     
     const baseRecurringIncome = recurringIncome.reduce((sum, i) => {
-      const endDate = i.recurrence_end_date ? new Date(i.recurrence_end_date) : null;
+      const endDate = i.recurrence_end_date ? fechaLocal(i.recurrence_end_date) : null;
       if (endDate && endDate < now) return sum;
       return sum + getMonthlyRecurringAmount(i.recurrence!, Number(i.amount));
     }, 0);

@@ -9,6 +9,7 @@ import { useEcosystemData } from '@/contexts/EcosystemContext';
 import { useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { EcosystemErrorFallback } from './EcosystemErrorFallback';
+import { hoyLocal } from '@/lib/fecha';
 
 export const EcosystemStreaks = memo(() => {
   const { language } = useLanguage();
@@ -23,7 +24,7 @@ export const EcosystemStreaks = memo(() => {
   const updateMutation = useMutation({
     mutationFn: async () => {
       if (!user?.id || !streakData?.needsUpdate) return;
-      const today = new Date().toISOString().slice(0, 10);
+      const today = hoyLocal();
 
       const { data: existing } = await supabase
         .from('ecosystem_streaks')

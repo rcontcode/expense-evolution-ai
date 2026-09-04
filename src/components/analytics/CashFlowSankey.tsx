@@ -8,6 +8,7 @@ import { useIncome } from '@/hooks/data/useIncome';
 import { ArrowRight, Wallet, TrendingUp, TrendingDown, PiggyBank } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { porcentaje } from '@/lib/numeros';
 
 interface FlowNode {
   id: string;
@@ -342,7 +343,7 @@ export function CashFlowSankey() {
                 <TooltipContent>
                   <p>{node.label}: {formatCurrency(node.value)}</p>
                   <p className="text-xs text-muted-foreground">
-                    {((node.value / flowData.totalIncome) * 100).toFixed(1)}% {t.income.toLowerCase()}
+                    {porcentaje(node.value, flowData.totalIncome).toFixed(1)}% {t.income.toLowerCase()}
                   </p>
                 </TooltipContent>
               </Tooltip>
@@ -418,7 +419,7 @@ export function CashFlowSankey() {
                   <p>{node.label}: {formatCurrency(node.value)}</p>
                   {node.id !== 'balance' && (
                     <p className="text-xs text-muted-foreground">
-                      {((node.value / flowData.totalExpenses) * 100).toFixed(1)}% {t.expenses.toLowerCase()}
+                      {porcentaje(node.value, flowData.totalExpenses).toFixed(1)}% {t.expenses.toLowerCase()}
                     </p>
                   )}
                 </TooltipContent>

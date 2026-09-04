@@ -21,6 +21,7 @@ import { CalendarIcon, DollarSign } from 'lucide-react';
 import { GlossaryLabel, TermHelp } from '@/components/ui/glossary-term';
 import { EntitySelect } from '@/components/forms/EntitySelect';
 import { useEntity } from '@/contexts/EntityContext';
+import { fechaLocal } from '@/lib/fecha';
 
 const incomeSchema = z.object({
   amount: z.number().min(0.01, 'Amount must be greater than 0'),
@@ -57,14 +58,14 @@ export function IncomeForm({ income, onSubmit, onCancel, isLoading }: IncomeForm
     defaultValues: {
       amount: income?.amount || 0,
       currency: income?.currency || currentEntity?.default_currency || 'CAD',
-      date: income?.date ? new Date(income.date) : new Date(),
+      date: income?.date ? fechaLocal(income.date) : new Date(),
       income_type: income?.income_type || 'salary',
       description: income?.description || '',
       source: income?.source || '',
       client_id: income?.client_id || '',
       project_id: income?.project_id || '',
       recurrence: income?.recurrence || 'one_time',
-      recurrence_end_date: income?.recurrence_end_date ? new Date(income.recurrence_end_date) : null,
+      recurrence_end_date: income?.recurrence_end_date ? fechaLocal(income.recurrence_end_date) : null,
       is_taxable: income?.is_taxable ?? true,
       notes: income?.notes || '',
       entity_id: income?.entity_id || currentEntity?.id || '',

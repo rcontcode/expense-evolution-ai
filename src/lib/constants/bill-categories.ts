@@ -128,7 +128,31 @@ export function getMonthlyEquivalent(amount: number, frequency: string, customMo
   return amount / months;
 }
 
-export function getNextDueDate(currentDue: Date, frequency: string, customMonths?: number): Date {
+/**
+ * Suma meses a una fecha sin que se desborde al mes siguiente.
+ *
+ * `setMonth(mes + 1)` sobre un 31 de enero devuelve el 3 de marzo, porque
+ * febrero no tiene 31. Una cuenta mensual que vencia el 31 se iba corriendo sola
+ * —31 ene, 3 mar, 3 abr...— y ya nunca volvia a su dia. Aqui el dia se recorta
+ * al ultimo del mes de destino: 31 ene + 1 mes = 28 (o 29) de febrero.
+ *
+ * `diaAncla` permite volver al dia original cuando el mes siguiente si lo tiene,
+ * asi una cuenta del 31 vuelve al 31 en marzo en vez de quedarse pegada en 28.
+ */
+export function sumarMeses(fecha: Date, meses: number, diaAncla?: number | null): Date {
+  const dia = diaAncla && diaAncla > 0 ? diaAncla : fecha.getDate();
+  const anio = fecha.getFullYear();
+  const mes = fecha.getMonth() + meses;
+  const ultimoDelMes = new Date(anio, mes + 1, 0).getDate();
+  return new Date(anio, mes, Math.min(dia, ultimoDelMes));
+}
+
+export function getNextDueDate(
+  currentDue: Date,
+  frequency: string,
+  customMonths?: number,
+  dueDay?: number | null,
+): Date {
   const next = new Date(currentDue);
   const freq = BILL_FREQUENCY_CONFIG[frequency as BillFrequency];
   if (!freq) return next;
@@ -136,15 +160,13 @@ export function getNextDueDate(currentDue: Date, frequency: string, customMonths
   switch (frequency) {
     case 'weekly':
       next.setDate(next.getDate() + 7);
-      break;
+      return next;
     case 'bi_weekly':
       next.setDate(next.getDate() + 14);
-      break;
+      return next;
     case 'custom':
-      next.setMonth(next.getMonth() + (customMonths || 1));
-      break;
+      return sumarMeses(currentDue, customMonths || 1, dueDay);
     default:
-      next.setMonth(next.getMonth() + freq.months);
+      return sumarMeses(currentDue, freq.months, dueDay);
   }
-  return next;
 }

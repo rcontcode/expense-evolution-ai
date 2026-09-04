@@ -5,6 +5,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig } from '
 import { PieChart, Pie, Cell, BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Legend, Tooltip } from 'recharts';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
+import { getCategoryLabelByLanguage } from '@/lib/constants/expense-categories';
 
 const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
 
@@ -85,14 +86,16 @@ export const DashboardCharts = memo(({
                     cx="50%"
                     cy="50%"
                     outerRadius={80}
-                    label={({ category, percent }) => `${category} ${(percent * 100).toFixed(0)}%`}
+                    label={({ category, percent }) =>
+                      `${getCategoryLabelByLanguage(category, language === 'es' ? 'es' : 'en')} ${(percent * 100).toFixed(0)}%`}
                   >
                     {categoryBreakdown.map((_, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
                   <Tooltip
-                    formatter={(value: number) => [fc(value), '']}
+                    formatter={(value: number, name: string) =>
+                      [fc(value), getCategoryLabelByLanguage(name, language === 'es' ? 'es' : 'en')]}
                     contentStyle={{
                       backgroundColor: 'hsl(var(--popover))',
                       border: '1px solid hsl(var(--border))',

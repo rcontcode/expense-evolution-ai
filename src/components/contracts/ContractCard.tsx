@@ -13,6 +13,7 @@ import { MoreVertical, Eye, Trash2, Download, FileText, CheckCircle2, AlertTrian
 import { format, differenceInDays, isPast } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
+import { fechaLocal } from '@/lib/fecha';
 
 interface ContractCardProps {
   contract: ContractWithClient;
@@ -104,11 +105,11 @@ export function ContractCard({ contract, pageCount = 1, onView, onDownload, onDe
               {/* Dates row */}
               <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
                 {contract.start_date && (
-                  <span>{format(new Date(contract.start_date), 'dd MMM yy', { locale })}</span>
+                  <span>{format(fechaLocal(contract.start_date), 'dd MMM yy', { locale })}</span>
                 )}
                 {contract.start_date && contract.end_date && <span>→</span>}
                 {contract.end_date && (
-                  <span>{format(new Date(contract.end_date), 'dd MMM yy', { locale })}</span>
+                  <span>{format(fechaLocal(contract.end_date), 'dd MMM yy', { locale })}</span>
                 )}
               </div>
               

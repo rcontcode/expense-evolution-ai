@@ -14,6 +14,7 @@ import { ChevronDown } from 'lucide-react';
 import { DashboardNotificationHub } from './DashboardNotificationHub';
 import { DataInventoryPanel } from './DataInventoryPanel';
 import { MissionControl } from './MissionControl';
+import { fechaLocal } from '@/lib/fecha';
 
 type ChipKind = 'avisos' | 'datos' | 'sistema';
 type Urgency = 'critical' | 'warning' | 'info' | 'ok';
@@ -71,7 +72,7 @@ export function SystemStatusStrip() {
     enabled: !!user, refetchInterval: 60000,
   });
 
-  const overdueBills = bills.filter(b => b.status === 'active' && b.next_due_date && isPast(new Date(b.next_due_date))).length;
+  const overdueBills = bills.filter(b => b.status === 'active' && b.next_due_date && isPast(fechaLocal(b.next_due_date))).length;
   const dataHealthIssues = (healthData?.totalIssues || 0) + expenseMissingReceipt + expensePendingClassification + expenseNoCategory;
   const avisosCount = notifications.length + pendingDocuments + incompleteExpenses + overdueBills + (dataHealthIssues > 0 ? 1 : 0);
   const avisosUrgency: Urgency = useMemo(() => {

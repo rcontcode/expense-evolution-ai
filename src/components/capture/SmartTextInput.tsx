@@ -21,6 +21,8 @@ import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { RecurringBillConfirmDialog, type RecurringBillCandidate } from '@/components/bills/RecurringBillConfirmDialog';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
+import { fechaLocal, hoyLocal } from '@/lib/fecha';
+import { getCategoryLabelByLanguage } from '@/lib/constants/expense-categories';
 
 interface SmartTextInputProps {
   onSuccess?: () => void;
@@ -154,7 +156,7 @@ export function SmartTextInput({ onSuccess, onCancel }: SmartTextInputProps) {
           category: result.data.category || 'utilities',
           frequency: result.data.frequency || 'monthly',
           auto_pay: result.data.auto_pay || false,
-          next_due_date: result.data.date || new Date().toISOString().split('T')[0],
+          next_due_date: result.data.date || hoyLocal(),
         });
         setShowBillConfirm(true);
         setIsSaving(false);
@@ -171,7 +173,7 @@ export function SmartTextInput({ onSuccess, onCancel }: SmartTextInputProps) {
         
         await createIncome.mutateAsync({
           amount: result.data.amount,
-          date: new Date(result.data.date),
+          date: fechaLocal(result.data.date),
           description: result.data.description,
           source: result.data.source || undefined,
           income_type: mappedType,
@@ -332,7 +334,7 @@ export function SmartTextInput({ onSuccess, onCancel }: SmartTextInputProps) {
                   {result.data.category && (
                     <div className="p-2 rounded bg-muted/50">
                       <p className="text-[11px] text-muted-foreground">{l ? 'Categoría' : 'Category'}</p>
-                      <p className="font-medium capitalize">{result.data.category.replace(/_/g, ' ')}</p>
+                      <p className="font-medium">{getCategoryLabelByLanguage(result.data.category, l ? 'es' : 'en')}</p>
                     </div>
                   )}
                   {result.data.frequency && (

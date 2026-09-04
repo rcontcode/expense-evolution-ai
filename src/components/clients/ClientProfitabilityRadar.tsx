@@ -10,6 +10,7 @@ import { useClients } from '@/hooks/data/useClients';
 import { TrendingUp, TrendingDown, Target, Crown, AlertTriangle, DollarSign, ArrowUpRight, ArrowDownRight, Minus } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
+import { fechaLocal } from '@/lib/fecha';
 
 interface ClientProfit {
   id: string;
@@ -59,10 +60,10 @@ export function ClientProfitabilityRadar() {
 
       // Trend: compare last 3 months vs prior 3 months
       const recentIncome = clientIncome
-        .filter(i => new Date(i.date) >= threeMonthsAgo)
+        .filter(i => fechaLocal(i.date) >= threeMonthsAgo)
         .reduce((s, i) => s + Number(i.amount), 0);
       const priorIncome = clientIncome
-        .filter(i => new Date(i.date) >= sixMonthsAgo && new Date(i.date) < threeMonthsAgo)
+        .filter(i => fechaLocal(i.date) >= sixMonthsAgo && fechaLocal(i.date) < threeMonthsAgo)
         .reduce((s, i) => s + Number(i.amount), 0);
       
       const trend: 'up' | 'down' | 'stable' = 

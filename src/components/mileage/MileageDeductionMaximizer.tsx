@@ -8,6 +8,7 @@ import { useMileage, useMileageSummary, getCRAMileageRates, getSIIMileageRates }
 import { Car, DollarSign, CalendarDays, TrendingUp, Lightbulb, Route } from 'lucide-react';
 import { plural } from '@/lib/plural';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
+import { fechaLocal } from '@/lib/fecha';
 
 export function MileageDeductionMaximizer() {
   const { language } = useLanguage();
@@ -45,7 +46,7 @@ export function MileageDeductionMaximizer() {
     // Monthly breakdown
     const monthlyKm: Record<number, number> = {};
     records.forEach(r => {
-      const month = new Date(r.date).getMonth();
+      const month = fechaLocal(r.date).getMonth();
       monthlyKm[month] = (monthlyKm[month] || 0) + Number(r.kilometers);
     });
 

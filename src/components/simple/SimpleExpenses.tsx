@@ -8,6 +8,8 @@ import { useExpenses } from '@/hooks/data/useExpenses';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { ExpenseDialog } from '@/components/dialogs/ExpenseDialog';
 import type { ExpenseWithRelations } from '@/types/expense.types';
+import { fechaLocal, mesLocal } from '@/lib/fecha';
+import { getCategoryLabelByLanguage } from '@/lib/constants/expense-categories';
 
 export function SimpleExpenses() {
   const { language } = useLanguage();
@@ -22,7 +24,7 @@ export function SimpleExpenses() {
   );
 
   const total = useMemo(() => {
-    const ym = new Date().toISOString().slice(0, 7);
+    const ym = mesLocal();
     return (expenses ?? [])
       .filter((e: any) => typeof e.date === 'string' && e.date.startsWith(ym))
       .reduce((s: number, e: any) => s + Number(e.amount || 0), 0);
@@ -71,11 +73,11 @@ export function SimpleExpenses() {
                       </div>
                       <div className="min-w-0">
                         <div className="text-sm font-medium truncate">
-                          {e.merchant || e.description || (language === 'es' ? 'Gasto' : 'Expense')}
+                          {e.vendor || e.description || (language === 'es' ? 'Gasto' : 'Expense')}
                         </div>
                         <div className="text-xs text-muted-foreground">
-                          {new Date(e.date).toLocaleDateString(language === 'es' ? 'es' : 'en', { day: 'numeric', month: 'short' })}
-                          {e.category ? ` · ${e.category}` : ''}
+                          {fechaLocal(e.date).toLocaleDateString(language === 'es' ? 'es' : 'en', { day: 'numeric', month: 'short' })}
+                          {e.category ? ` · ${getCategoryLabelByLanguage(e.category, language === 'es' ? 'es' : 'en')}` : ''}
                         </div>
                       </div>
                     </div>

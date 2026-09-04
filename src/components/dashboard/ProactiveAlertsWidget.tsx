@@ -19,6 +19,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useExpenseCompleteness } from '@/hooks/utils/useExpenseCompleteness';
 import { plural } from '@/lib/plural';
+import { fechaLocal } from '@/lib/fecha';
+import { getCategoryLabelByLanguage } from '@/lib/constants/expense-categories';
 
 interface SmartAlert {
   id: string;
@@ -80,11 +82,11 @@ export function ProactiveAlertsWidget() {
     if (!expenses) return result;
 
     const monthExpenses = expenses.filter(e => {
-      const d = new Date(e.date);
+      const d = fechaLocal(e.date);
       return d.getMonth() === currentMonth && d.getFullYear() === currentYear && !e.deleted_at;
     });
     const totalSpent = monthExpenses.reduce((s, e) => s + Number(e.amount), 0);
-    const monthIncome = incomeData?.filter(i => new Date(i.date).getMonth() === currentMonth)
+    const monthIncome = incomeData?.filter(i => fechaLocal(i.date).getMonth() === currentMonth)
       .reduce((s, i) => s + Number(i.amount), 0) || 0;
 
     // 1. Spending pace alert
@@ -153,7 +155,7 @@ export function ProactiveAlertsWidget() {
           description: overBudget.map(b => {
             const spent = categorySpending[b.category] || 0;
             const pct = ((spent / b.monthly_budget) * 100).toFixed(0);
-            return `${b.category}: ${pct}%`;
+            return `${getCategoryLabelByLanguage(b.category, l ? 'es' : 'en')}: ${pct}%`;
           }).join(', '),
           action: { label: l ? 'Ajustar' : 'Adjust', route: '/budget' },
           priority: 3,
@@ -194,7 +196,7 @@ export function ProactiveAlertsWidget() {
     }
 
     // 5. No income registered yet this month
-    if (!incomeData || incomeData.filter(i => new Date(i.date).getMonth() === currentMonth).length === 0) {
+    if (!incomeData || incomeData.filter(i => fechaLocal(i.date).getMonth() === currentMonth).length === 0) {
       if (dayOfMonth > 10) {
         result.push({
           id: 'no-income',
@@ -212,7 +214,7 @@ export function ProactiveAlertsWidget() {
 
     // 6. Unusual spending spike in a category
     const prevMonthExpenses = expenses.filter(e => {
-      const d = new Date(e.date);
+      const d = fechaLocal(e.date);
       const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
       const prevYear = currentMonth === 0 ? currentYear - 1 : currentYear;
       return d.getMonth() === prevMonth && d.getFullYear() === prevYear && !e.deleted_at;

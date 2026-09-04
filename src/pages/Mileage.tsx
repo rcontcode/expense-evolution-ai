@@ -46,6 +46,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { FeatureGate } from '@/components/FeatureGate';
 import { usePlanLimits } from '@/hooks/data/usePlanLimits';
+import { fechaLocal } from '@/lib/fecha';
 
 export default function Mileage() {
   const { t, language } = useLanguage();
@@ -91,7 +92,7 @@ export default function Mileage() {
 
   // Calculate running YTD for each record
   const sortedRecords = [...(mileageRecords || [])].sort((a, b) => 
-    new Date(a.date).getTime() - new Date(b.date).getTime()
+    fechaLocal(a.date).getTime() - fechaLocal(b.date).getTime()
   );
 
   if (!planLoading && !hasAccess) {

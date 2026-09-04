@@ -2,6 +2,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useFormatCurrency } from "@/hooks/utils/useFormatCurrency";
 import { motion } from "framer-motion";
 import { plural } from '@/lib/plural';
+import { porcentaje } from '@/lib/numeros';
 
 interface InsightData {
   totalIncome: number;
@@ -172,8 +173,8 @@ export function SmartInsights({ data }: { data: InsightData }) {
       insights.push({
         icon: "🔮",
         text: l
-          ? `Proyección: gastarás ~${fc(projectedTotal)} este mes. Eso es el ${((projectedTotal / data.totalIncome) * 100).toFixed(0)}% de tus ingresos.`
-          : `Projection: you'll spend ~${fc(projectedTotal)} this month. That's ${((projectedTotal / data.totalIncome) * 100).toFixed(0)}% of your income.`,
+          ? `Proyección: gastarás ~${fc(projectedTotal)} este mes. Eso es el ${porcentaje(projectedTotal, data.totalIncome).toFixed(0)}% de tus ingresos.`
+          : `Projection: you'll spend ~${fc(projectedTotal)} this month. That's ${porcentaje(projectedTotal, data.totalIncome).toFixed(0)}% of your income.`,
         type: "warning",
       });
     }

@@ -19,6 +19,7 @@ import { format, subMonths, startOfMonth, endOfMonth } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 import { ProjectionDisclaimer } from '@/components/projections/ProjectionDisclaimer';
 import { useAIErrorHandler } from '@/hooks/utils/useAIErrorHandler';
+import { fechaLocal } from '@/lib/fecha';
 
 interface Expense {
   id: string;
@@ -82,7 +83,7 @@ export function ExpensePredictions({ expenses, isLoading }: ExpensePredictionsPr
 
     // Aggregate expenses
     expenses.forEach(expense => {
-      const expenseDate = new Date(expense.date);
+      const expenseDate = fechaLocal(expense.date);
       const key = format(expenseDate, 'yyyy-MM');
       
       if (monthlyData[key]) {

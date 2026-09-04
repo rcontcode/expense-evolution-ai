@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEntity } from '@/contexts/EntityContext';
+import { hoyLocal } from '@/lib/fecha';
 
 interface ExchangeRate {
   id: string;
@@ -119,7 +120,7 @@ export function useCurrencyConversion() {
       convertedAmount: amount * rate,
       targetCurrency: target,
       rate,
-      rateDate: rates[0]?.rate_date || new Date().toISOString().split('T')[0],
+      rateDate: rates[0]?.rate_date || hoyLocal(),
     };
   };
 

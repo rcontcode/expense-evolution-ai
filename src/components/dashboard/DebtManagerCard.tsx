@@ -41,6 +41,7 @@ import {
 import { format, differenceInMonths } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 import { LegalDisclaimer } from '@/components/ui/legal-disclaimer';
+import { porcentaje } from '@/lib/numeros';
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   mortgage: Home,
@@ -63,7 +64,20 @@ function formatCurrencyStatic(amount: number, curr: string): string {
   }).format(amount);
 }
 
+/** La fecha de "libre de deudas", o un guion cuando la deuda no llega a saldarse. */
+function fechaLibre(strategy: DebtStrategy, language: string): string {
+  if (!Number.isFinite(strategy.totalMonths)) {
+    return language === 'es' ? 'sin fecha' : 'no date';
+  }
+  return format(strategy.debtFreeDate, 'MMM yyyy', { locale: language === 'es' ? es : enUS });
+}
+
 function formatMonths(months: number, language: string): string {
+  // Una deuda cuyo pago minimo no cubre ni el interes no se salda nunca. El
+  // calculo la marca asi para no prometer una fecha que no va a llegar.
+  if (!Number.isFinite(months)) {
+    return language === 'es' ? 'más de 30 años' : 'over 30 years';
+  }
   if (months === 0) return language === 'es' ? '0 meses' : '0 months';
   
   const years = Math.floor(months / 12);
@@ -129,7 +143,7 @@ function StrategyCard({ strategy, isRecommended, language, totalDebt, formatCurr
               {language === 'es' ? 'Libre de Deudas' : 'Debt Free'}
             </p>
             <p className="font-semibold text-sm">
-              {format(strategy.debtFreeDate, 'MMM yyyy', { locale: language === 'es' ? es : enUS })}
+              {fechaLibre(strategy, language)}
             </p>
             <p className="text-xs text-muted-foreground">
               {formatMonths(strategy.totalMonths, language)}
@@ -145,7 +159,7 @@ function StrategyCard({ strategy, isRecommended, language, totalDebt, formatCurr
               {formatCurrency(strategy.totalInterestPaid)}
             </p>
             <p className="text-xs text-muted-foreground">
-              {((strategy.totalInterestPaid / totalDebt) * 100).toFixed(1)}% {language === 'es' ? 'del total' : 'of total'}
+              {porcentaje(strategy.totalInterestPaid, totalDebt).toFixed(1)}% {language === 'es' ? 'del total' : 'of total'}
             </p>
           </div>
         </div>
@@ -406,7 +420,7 @@ export function DebtManagerCard() {
                     <div className="flex items-center gap-3 pt-2 border-t">
                       <Trophy className="h-5 w-5 text-green-600" />
                       <span className="text-sm font-medium text-green-600">
-                        🎉 {language === 'es' ? 'Libre de deudas:' : 'Debt free:'} {format(selectedStrategyData.debtFreeDate, 'MMM yyyy', { locale: language === 'es' ? es : enUS })}
+                        🎉 {language === 'es' ? 'Libre de deudas:' : 'Debt free:'} {fechaLibre(selectedStrategyData, language)}
                       </span>
                     </div>
                   </div>

@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useRecurringBills, useMarkBillPaid } from './useRecurringBills';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { toast } from 'sonner';
+import { hoyLocal } from '@/lib/fecha';
 
 // Session-level deduplication to avoid repeated toasts for same bill matches
 const notifiedBillMatches = new Set<string>();
@@ -64,7 +65,7 @@ export function useExpenseBillMatcher() {
               markPaid.mutate({
                 billId: bill.id,
                 amount: expAmount,
-                paidDate: expense.date || new Date().toISOString().split('T')[0],
+                paidDate: expense.date || hoyLocal(),
                 notes: l 
                   ? `Auto-vinculado desde gasto: ${expense.vendor}`
                   : `Auto-linked from expense: ${expense.vendor}`,

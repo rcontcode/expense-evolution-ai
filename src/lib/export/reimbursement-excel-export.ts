@@ -39,6 +39,7 @@ interface ExportData {
 }
 
 import { getCategoryLabelByLanguage, getCategoryIcon } from '@/lib/constants/expense-categories';
+import { fechaLocal } from '@/lib/fecha';
 
 function getCatLabel(cat: string, lang: string): string {
   return getCategoryLabelByLanguage(cat, lang === 'es' ? 'es' : 'en');
@@ -517,7 +518,7 @@ export async function exportReimbursementReportWithCharts(data: ExportData): Pro
   });
 
   filteredExpenses
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .sort((a, b) => fechaLocal(b.date).getTime() - fechaLocal(a.date).getTime())
     .forEach((expense, idx) => {
       const row = 5 + idx;
       

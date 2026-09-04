@@ -7,6 +7,7 @@ import { startOfMonth, endOfMonth, subMonths, subYears, format } from "date-fns"
 import { es, enUS } from "date-fns/locale";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { fechaLocal } from '@/lib/fecha';
 
 export function YearComparisonChart() {
   const { language } = useLanguage();
@@ -39,14 +40,14 @@ export function YearComparisonChart() {
     return months.map(m => {
       const thisYear = familyExp
         .filter(e => {
-          const d = new Date(e.date);
+          const d = fechaLocal(e.date);
           return d >= m.start && d <= m.end;
         })
         .reduce((s, e) => s + Number(e.amount), 0);
 
       const lastYear = familyExp
         .filter(e => {
-          const d = new Date(e.date);
+          const d = fechaLocal(e.date);
           return d >= m.prevStart && d <= m.prevEnd;
         })
         .reduce((s, e) => s + Number(e.amount), 0);

@@ -27,6 +27,7 @@ import { cn } from '@/lib/utils';
 import { formatDistanceToNow, differenceInDays, isPast, isBefore, addDays } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 import { motion, AnimatePresence } from 'framer-motion';
+import { fechaLocal } from '@/lib/fecha';
 
 // ── Types ──────────────────────────────────────────────
 interface Notification {
@@ -210,8 +211,8 @@ export function DashboardNotificationHub({ onExpandedChange }: DashboardNotifica
     }
 
     // 3. Overdue / upcoming bills
-    const overdueBills = bills.filter(b => b.status === 'active' && isPast(new Date(b.next_due_date)));
-    const upcomingBills = bills.filter(b => b.status === 'active' && !isPast(new Date(b.next_due_date)) && isBefore(new Date(b.next_due_date), addDays(now, 3)));
+    const overdueBills = bills.filter(b => b.status === 'active' && isPast(fechaLocal(b.next_due_date)));
+    const upcomingBills = bills.filter(b => b.status === 'active' && !isPast(fechaLocal(b.next_due_date)) && isBefore(fechaLocal(b.next_due_date), addDays(now, 3)));
 
     if (overdueBills.length > 0) {
       alerts.push({
@@ -244,7 +245,7 @@ export function DashboardNotificationHub({ onExpandedChange }: DashboardNotifica
     // 4. Savings goals at risk
     const atRiskGoals = savingsGoals.filter(g => {
       if (g.status !== 'active' || !g.deadline) return false;
-      const daysLeft = differenceInDays(new Date(g.deadline), now);
+      const daysLeft = differenceInDays(fechaLocal(g.deadline), now);
       if (daysLeft < 0 || daysLeft > 30) return false;
       const progress = g.target_amount > 0 ? (g.current_amount / g.target_amount) * 100 : 0;
       return progress < 80;
@@ -252,7 +253,7 @@ export function DashboardNotificationHub({ onExpandedChange }: DashboardNotifica
 
     if (atRiskGoals.length > 0) {
       const g = atRiskGoals[0];
-      const daysLeft = differenceInDays(new Date(g.deadline!), now);
+      const daysLeft = differenceInDays(fechaLocal(g.deadline!), now);
       const pct = Math.round((g.current_amount / g.target_amount) * 100);
       alerts.push({
         id: `goal_risk_${g.id}`,

@@ -11,6 +11,7 @@ import { format, subMonths, startOfMonth, endOfMonth, getMonth, getYear } from "
 import { es, enUS } from "date-fns/locale";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getCategoryLabelByLanguage, ExpenseCategory } from "@/lib/constants/expense-categories";
+import { fechaLocal } from '@/lib/fecha';
 
 const translations = {
   es: {
@@ -72,7 +73,7 @@ export function CategoryTrendsChart() {
       
       // Group expenses by category for this month
       const monthExpenses = expenses.filter(exp => {
-        const expDate = new Date(exp.date);
+        const expDate = fechaLocal(exp.date);
         return expDate >= monthStart && expDate <= monthEnd;
       });
       

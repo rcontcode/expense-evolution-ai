@@ -76,6 +76,8 @@ import {
 import { IncomeType } from '@/types/income.types';
 import { format, subMonths, startOfMonth, endOfMonth } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
+import { fechaLocal } from '@/lib/fecha';
+import { porcentaje } from '@/lib/numeros';
 
 // Income type classification based on Kiyosaki quadrant
 const INCOME_CLASSIFICATION: Record<IncomeType, { quadrant: 'E' | 'S' | 'B' | 'I'; passive: boolean; color: string; icon: any }> = {
@@ -231,7 +233,7 @@ export function IncomeAnalyticsDashboard({ year, month }: IncomeAnalyticsDashboa
     const byMonth: Record<string, { passive: number; active: number; total: number }> = {};
     
     yearlyIncome.forEach(inc => {
-      const monthKey = format(new Date(inc.date), 'MMM', { locale: language === 'es' ? es : enUS });
+      const monthKey = format(fechaLocal(inc.date), 'MMM', { locale: language === 'es' ? es : enUS });
       if (!byMonth[monthKey]) {
         byMonth[monthKey] = { passive: 0, active: 0, total: 0 };
       }
@@ -754,7 +756,7 @@ export function IncomeAnalyticsDashboard({ year, month }: IncomeAnalyticsDashboa
                         <div key={i} className="flex items-center gap-2">
                           <div className="w-3 h-3 rounded-full" style={{ backgroundColor: type.color }} />
                           <span className="text-[10px] flex-1 truncate">{type.name}</span>
-                          <span className="text-[10px] font-bold">{((type.value / incomeAnalysis.totalMonthly) * 100).toFixed(0)}%</span>
+                          <span className="text-[10px] font-bold">{porcentaje(type.value, incomeAnalysis.totalMonthly).toFixed(0)}%</span>
                         </div>
                       ))}
                     </div>

@@ -22,6 +22,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useSavingsGoals, useCreateSavingsGoal, useUpdateSavingsGoal, useDeleteSavingsGoal, useAddToSavingsGoal } from '@/hooks/data/useSavingsGoals';
 import { cn } from '@/lib/utils';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
+import { fechaLocal } from '@/lib/fecha';
 
 const GOAL_COLORS = [
   '#10B981', '#3B82F6', '#8B5CF6', '#F59E0B', '#EF4444', '#EC4899', '#06B6D4', '#84CC16'
@@ -343,7 +344,7 @@ export function SavingsGoalsSection() {
                       )}
                       {goal.deadline && (
                         <p className="text-xs text-muted-foreground mt-1">
-                          {t('savingsGoals.deadline')}: {new Date(goal.deadline).toLocaleDateString()}
+                          {t('savingsGoals.deadline')}: {fechaLocal(goal.deadline).toLocaleDateString()}
                         </p>
                       )}
                     </CardContent>

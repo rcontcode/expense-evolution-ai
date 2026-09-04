@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { aFechaISO, hoyLocal } from '@/lib/fecha';
 
 export interface CaptureStreak {
   currentStreak: number;
@@ -12,13 +13,13 @@ const STORAGE_KEY = 'capture-streak-data';
 const DEFAULT_DAILY_GOAL = 5;
 
 function getTodayDateString(): string {
-  return new Date().toISOString().split('T')[0];
+  return hoyLocal();
 }
 
 function getYesterdayDateString(): string {
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
-  return yesterday.toISOString().split('T')[0];
+  return aFechaISO(yesterday);
 }
 
 export function useCaptureStreak() {

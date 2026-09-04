@@ -30,6 +30,7 @@ import { Link } from 'react-router-dom';
 import { startOfMonth, endOfMonth, subMonths, parseISO, format, getDay } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
+import { fechaLocal } from '@/lib/fecha';
 
 interface SmartInsight {
   id: string;
@@ -241,7 +242,7 @@ export function SmartInsightsEngine() {
     if (recurringTotal > 100) {
       const yearlyRecurring = recurringTotal * 12;
       const currentMonthIncome = allIncome?.filter(i => {
-        const d = new Date(i.date);
+        const d = fechaLocal(i.date);
         return d >= monthStart && d <= monthEnd;
       }).reduce((sum, i) => sum + Number(i.amount), 0) || 0;
 
@@ -265,7 +266,7 @@ export function SmartInsightsEngine() {
 
     // Savings rate with income
     const currentMonthIncome = allIncome?.filter(i => {
-      const d = new Date(i.date);
+      const d = fechaLocal(i.date);
       return d >= monthStart && d <= monthEnd;
     }).reduce((sum, i) => sum + Number(i.amount), 0) || 0;
 

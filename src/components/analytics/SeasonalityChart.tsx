@@ -7,6 +7,7 @@ import { format, startOfYear, endOfYear, eachMonthOfInterval, isSameMonth, subYe
 import { es, enUS } from 'date-fns/locale';
 import { TrendingUp, TrendingDown, AlertTriangle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { fechaLocal } from '@/lib/fecha';
 
 interface Expense {
   id: string;
@@ -48,7 +49,7 @@ export const SeasonalityChart = memo(({ expenses, isLoading }: SeasonalityChartP
     
     // Aggregate expenses by month and year
     expenses.forEach(expense => {
-      const date = new Date(expense.date);
+      const date = fechaLocal(expense.date);
       const year = date.getFullYear();
       const monthIndex = date.getMonth();
       

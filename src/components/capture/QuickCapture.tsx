@@ -331,8 +331,16 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
     setIsSaving(true);
     try {
       let isFirstSaved = true;
+      // Los gastos a los que les falta proveedor o monto no se pueden guardar.
+      // Antes se saltaban en silencio y el aviso decia igual "todos guardados":
+      // de cinco recibos se guardaban tres y nadie se enteraba de los otros dos.
+      let guardados = 0;
+      const omitidos: string[] = [];
       for (const exp of editedExpenses) {
-        if (!exp.vendor || !exp.amount) continue;
+        if (!exp.vendor || !exp.amount) {
+          omitidos.push(exp.vendor || exp.description || (language === 'es' ? 'sin nombre' : 'unnamed'));
+          continue;
+        }
         // Only link document to the first expense to avoid many-to-one confusion
         const docId = isFirstSaved ? savedDocumentId : null;
         const newExpense = await createExpense.mutateAsync({ 
@@ -356,9 +364,25 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
             .eq('id', savedDocumentId);
         }
         isFirstSaved = false;
+        guardados++;
       }
       
-      toast.success(language === 'es' ? 'Todos los gastos guardados' : 'All expenses saved');
+      if (omitidos.length === 0) {
+        toast.success(language === 'es' ? 'Todos los gastos guardados' : 'All expenses saved');
+      } else if (guardados === 0) {
+        toast.error(
+          language === 'es'
+            ? 'No se guardo ninguno: a todos les falta el proveedor o el monto'
+            : 'Nothing saved: all of them are missing the vendor or the amount',
+        );
+      } else {
+        toast.warning(
+          language === 'es'
+            ? `Se guardaron ${guardados}. Quedaron ${omitidos.length} sin guardar porque les falta el proveedor o el monto: ${omitidos.join(', ')}`
+            : `Saved ${guardados}. ${omitidos.length} were left out because they are missing the vendor or the amount: ${omitidos.join(', ')}`,
+          { duration: 8000 },
+        );
+      }
       onSuccess?.();
     } catch (e) { 
       console.error(e);

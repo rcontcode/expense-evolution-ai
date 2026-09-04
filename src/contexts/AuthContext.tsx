@@ -3,6 +3,7 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
+import { hoyLocal } from '@/lib/fecha';
 
 interface AuthContextType {
   user: User | null;
@@ -38,7 +39,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Track login for missions
   const trackLoginAction = useCallback(() => {
-    const today = new Date().toISOString().split('T')[0];
+    const today = hoyLocal();
     const lastLoginTracked = localStorage.getItem('last_login_tracked');
     
     // Only track login once per day

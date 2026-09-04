@@ -45,6 +45,7 @@ import { useCelebrationSound } from '@/hooks/utils/useCelebrationSound';
 import { useEntity } from '@/contexts/EntityContext';
 import { plural } from '@/lib/plural';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
+import { aFechaISO, fechaLocal, hoyLocal } from '@/lib/fecha';
 
 interface Flow {
   id: string;
@@ -333,7 +334,7 @@ export function ReconciliationWizard({ onExitWizard }: { onExitWizard: () => voi
     if (!selectedTransaction) return;
 
     const expenseData = {
-      date: data.date.toISOString().split('T')[0],
+      date: aFechaISO(data.date),
       vendor: data.vendor,
       amount: data.amount,
       category: data.category,
@@ -387,7 +388,7 @@ export function ReconciliationWizard({ onExitWizard }: { onExitWizard: () => voi
       
       for (const item of items) {
         const expenseData = {
-          date: transactionToSplit?.transaction_date || new Date().toISOString().split('T')[0],
+          date: transactionToSplit?.transaction_date || hoyLocal(),
           vendor: item.vendor,
           amount: item.amount,
           category: item.category,
@@ -648,7 +649,7 @@ export function ReconciliationWizard({ onExitWizard }: { onExitWizard: () => voi
                           <div>
                             <p className="font-medium">{tx.description || 'Sin descripción'}</p>
                             <p className="text-sm text-muted-foreground">
-                              {format(new Date(tx.transaction_date), 'dd MMM yyyy', { locale: language === 'es' ? es : undefined })}
+                              {format(fechaLocal(tx.transaction_date), 'dd MMM yyyy', { locale: language === 'es' ? es : undefined })}
                             </p>
                           </div>
                         </div>
@@ -759,7 +760,7 @@ export function ReconciliationWizard({ onExitWizard }: { onExitWizard: () => voi
                           <div>
                             <p className="font-medium">{tx.description || 'Sin descripción'}</p>
                             <p className="text-sm text-muted-foreground">
-                              {format(new Date(tx.transaction_date), 'dd MMM yyyy', { locale: language === 'es' ? es : undefined })}
+                              {format(fechaLocal(tx.transaction_date), 'dd MMM yyyy', { locale: language === 'es' ? es : undefined })}
                             </p>
                           </div>
                         </div>
@@ -977,7 +978,7 @@ export function ReconciliationWizard({ onExitWizard }: { onExitWizard: () => voi
                 <div>
                   <p className="font-medium">{selectedTransaction.description || (language === 'es' ? 'Sin descripción' : 'No description')}</p>
                   <p className="text-sm text-muted-foreground">
-                    {format(new Date(selectedTransaction.transaction_date), 'dd MMM yyyy', { locale: language === 'es' ? es : undefined })}
+                    {format(fechaLocal(selectedTransaction.transaction_date), 'dd MMM yyyy', { locale: language === 'es' ? es : undefined })}
                   </p>
                 </div>
                 <Badge variant="secondary" className="text-lg">
@@ -997,8 +998,8 @@ export function ReconciliationWizard({ onExitWizard }: { onExitWizard: () => voi
               category: null,
               description: selectedTransaction.description,
               notes: language === 'es' 
-                ? `Creado desde transacción bancaria del ${format(new Date(selectedTransaction.transaction_date), 'dd/MM/yyyy')}`
-                : `Created from bank transaction on ${format(new Date(selectedTransaction.transaction_date), 'MM/dd/yyyy')}`,
+                ? `Creado desde transacción bancaria del ${format(fechaLocal(selectedTransaction.transaction_date), 'dd/MM/yyyy')}`
+                : `Created from bank transaction on ${format(fechaLocal(selectedTransaction.transaction_date), 'MM/dd/yyyy')}`,
               client_id: null,
               project_id: null,
               contract_id: null,

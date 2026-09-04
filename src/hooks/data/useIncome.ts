@@ -12,6 +12,7 @@ import { useLocalizedToast } from '@/hooks/utils/useLocalizedToast';
 import { useUndoableDelete } from '@/hooks/utils/useUndoableAction';
 import { useRecMode } from '@/hooks/useRecMode';
 import { enmascararCliente } from '@/lib/rec/enmascarar-identidad';
+import { aFechaISO } from '@/lib/fecha';
 
 export interface IncomeFilters {
   year?: number;
@@ -43,7 +44,10 @@ export function useIncome(filters?: IncomeFilters) {
         .eq('user_id', user!.id)
         .is('deleted_at', null)
         .order('date', { ascending: false })
-        .limit(500);
+        // El resumen anual de mas abajo trae hasta 2000 filas. Con 500 aqui, un
+        // usuario con muchos ingresos veia dos totales distintos para los mismos
+        // datos: el de la lista se quedaba corto y el del resumen no.
+        .limit(2000);
 
       if (filters?.year) {
         const startDate = `${filters.year}-01-01`;
@@ -91,11 +95,11 @@ export function useCreateIncome() {
         .from('income')
         .insert({
           user_id: user.id, amount: data.amount, currency: data.currency,
-          date: data.date.toISOString().split('T')[0], income_type: data.income_type,
+          date: aFechaISO(data.date), income_type: data.income_type,
           description: data.description || null, source: data.source || null,
           client_id: data.client_id || null, project_id: data.project_id || null,
           recurrence: data.recurrence,
-          recurrence_end_date: data.recurrence_end_date?.toISOString().split('T')[0] || null,
+          recurrence_end_date: data.recurrence_end_date ? aFechaISO(data.recurrence_end_date) : null,
           is_taxable: data.is_taxable, notes: data.notes || null,
           entity_id: data.entity_id || null,
         })
@@ -132,11 +136,11 @@ export function useUpdateIncome() {
     mutationFn: async ({ id, data }: { id: string; data: Partial<IncomeFormData> }) => {
       const updateData: any = { ...data };
       if (data.date) {
-        updateData.date = data.date instanceof Date ? data.date.toISOString().split('T')[0] : data.date;
+        updateData.date = data.date instanceof Date ? aFechaISO(data.date) : data.date;
       }
       if (data.recurrence_end_date) {
         updateData.recurrence_end_date = data.recurrence_end_date instanceof Date
-          ? data.recurrence_end_date.toISOString().split('T')[0] : data.recurrence_end_date;
+          ? aFechaISO(data.recurrence_end_date) : data.recurrence_end_date;
       }
       const { error } = await supabase.from('income').update(updateData).eq('id', id);
       if (error) throw error;

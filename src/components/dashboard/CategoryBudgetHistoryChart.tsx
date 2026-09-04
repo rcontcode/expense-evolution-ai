@@ -12,6 +12,7 @@ import { es } from "date-fns/locale";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { getCategoryLabel, ExpenseCategory } from "@/lib/constants/expense-categories";
+import { fechaLocal } from '@/lib/fecha';
 
 const CATEGORY_COLORS: Record<string, string> = {
   meals: "#f59e0b",
@@ -59,7 +60,7 @@ export function CategoryBudgetHistoryChart() {
       
       // Filter expenses for this month
       const monthExpenses = expenses.filter(exp => {
-        const expDate = new Date(exp.date);
+        const expDate = fechaLocal(exp.date);
         return expDate >= monthStart && expDate <= monthEnd;
       });
       

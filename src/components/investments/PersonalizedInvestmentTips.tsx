@@ -33,6 +33,7 @@ import {
   BookOpen
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { fechaLocal } from '@/lib/fecha';
 
 interface Tip {
   id: string;
@@ -338,7 +339,7 @@ function generateGoalSpecificTips(goals: InvestmentGoal[], formatCurrency: (n: n
     // Behind schedule tip
     if (goal.deadline && goal.monthly_target > 0) {
       const monthsLeft = Math.max(0, 
-        (new Date(goal.deadline).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24 * 30)
+        (fechaLocal(goal.deadline).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24 * 30)
       );
       const remaining = goal.target_amount - goal.current_amount;
       const neededMonthly = remaining / Math.max(1, monthsLeft);

@@ -28,6 +28,7 @@ import {
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Progress } from '@/components/ui/progress';
+import { fechaLocal } from '@/lib/fecha';
 
 // Hook to detect touch devices
 const useIsTouchDevice = () => {
@@ -98,14 +99,14 @@ export function YearTimelineChart({
     }));
     
     expenses?.forEach((expense) => {
-      const date = new Date(expense.date);
+      const date = fechaLocal(expense.date);
       if (date.getFullYear() === selectedYear) {
         months[date.getMonth()].expenses += Number(expense.amount);
       }
     });
     
     income?.forEach((inc) => {
-      const date = new Date(inc.date);
+      const date = fechaLocal(inc.date);
       if (date.getFullYear() === selectedYear) {
         months[date.getMonth()].income += Number(inc.amount);
       }

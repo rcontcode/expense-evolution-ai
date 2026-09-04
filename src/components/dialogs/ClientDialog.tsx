@@ -178,10 +178,10 @@ export function ClientDialog({ open, onClose, client }: ClientDialogProps) {
               </div>
               <div className="text-center animate-in fade-in-50 slide-in-from-bottom-2 duration-300">
                 <p className="text-lg font-semibold text-green-700 dark:text-green-400">
-                  ¡Datos eliminados!
+                  {t('clients.deleteTestDataDone')}
                 </p>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Todos los datos de prueba han sido eliminados exitosamente
+                  {t('clients.deleteTestDataDoneDetail')}
                 </p>
               </div>
             </div>

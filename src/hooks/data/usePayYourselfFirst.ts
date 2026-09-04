@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useIncome } from './useIncome';
 import { useLocalizedToast } from '@/hooks/utils/useLocalizedToast';
+import { aFechaISO, fechaLocal } from '@/lib/fecha';
 
 export interface PayYourselfFirstSettings {
   id: string; user_id: string; target_percentage: number; current_month_saved: number;
@@ -45,7 +46,7 @@ export function usePayYourselfFirst(): PayYourselfFirstData {
   const percentageSaved = incomeThisMonth > 0 ? (actualSavedThisMonth / incomeThisMonth) * 100 : 0;
   const isOnTrack = actualSavedThisMonth >= targetSavedThisMonth;
 
-  const lastPaymentDate = settings?.last_payment_date ? new Date(settings.last_payment_date) : null;
+  const lastPaymentDate = settings?.last_payment_date ? fechaLocal(settings.last_payment_date) : null;
   const hasPaidThisMonth = lastPaymentDate
     ? lastPaymentDate.getMonth() === currentMonth && lastPaymentDate.getFullYear() === currentYear : false;
 
@@ -109,7 +110,7 @@ export function useRecordPayment() {
       const currentYear = today.getFullYear();
 
       const { data: settings } = await supabase.from('pay_yourself_first_settings').select('*').eq('user_id', user.id).maybeSingle();
-      const lastPaymentDate = settings?.last_payment_date ? new Date(settings.last_payment_date) : null;
+      const lastPaymentDate = settings?.last_payment_date ? fechaLocal(settings.last_payment_date) : null;
       const isNewMonth = !lastPaymentDate || lastPaymentDate.getMonth() !== currentMonth || lastPaymentDate.getFullYear() !== currentYear;
       const newSaved = isNewMonth ? amount : (settings?.current_month_saved || 0) + amount;
       const newStreak = isNewMonth ? (settings?.streak_months || 0) + 1 : settings?.streak_months || 1;
@@ -118,13 +119,13 @@ export function useRecordPayment() {
       if (settings) {
         const { error } = await supabase.from('pay_yourself_first_settings').update({
           current_month_saved: newSaved, streak_months: newStreak, best_streak_months: newBestStreak,
-          last_payment_date: today.toISOString().split('T')[0], updated_at: new Date().toISOString(),
+          last_payment_date: aFechaISO(today), updated_at: new Date().toISOString(),
         }).eq('user_id', user.id);
         if (error) throw error;
       } else {
         const { error } = await supabase.from('pay_yourself_first_settings').insert({
           user_id: user.id, current_month_saved: amount, streak_months: 1, best_streak_months: 1,
-          last_payment_date: today.toISOString().split('T')[0],
+          last_payment_date: aFechaISO(today),
         });
         if (error) throw error;
       }

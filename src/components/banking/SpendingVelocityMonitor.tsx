@@ -10,6 +10,7 @@ import { motion } from 'framer-motion';
 import { startOfMonth, endOfMonth, subDays, parseISO, getDaysInMonth, startOfWeek, format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Gauge, TrendingUp, TrendingDown, AlertTriangle, CheckCircle2, Flame } from 'lucide-react';
+import { aFechaISO } from '@/lib/fecha';
 
 export function SpendingVelocityMonitor() {
   const { language } = useLanguage();
@@ -82,7 +83,7 @@ export function SpendingVelocityMonitor() {
     const paceRatio = idealToDate > 0 ? (monthTotal / idealToDate) * 100 : 0;
 
     // Today
-    const todayStr = now.toISOString().split('T')[0];
+    const todayStr = aFechaISO(now);
     const todayTotal = items.filter(i => i.date === todayStr).reduce((s, i) => s + i.amount, 0);
 
     // This week

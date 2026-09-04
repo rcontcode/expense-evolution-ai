@@ -7,6 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCelebrationSound } from '@/hooks/utils/useCelebrationSound';
 import { useConfetti } from '@/hooks/utils/useConfetti';
+import { fechaLocal } from '@/lib/fecha';
 
 interface GoalNotificationsProps {
   savingsGoals: any[];
@@ -152,7 +153,7 @@ export function useGoalNotifications({ savingsGoals, investmentGoals, userLevel 
       // Check deadline proximity
       if (goal.deadline && goal.current_amount < goal.target_amount) {
         const daysLeft = Math.ceil(
-          (new Date(goal.deadline).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
+          (fechaLocal(goal.deadline).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
         );
         
         const deadlineMilestones = [30, 14, 7, 3, 1];

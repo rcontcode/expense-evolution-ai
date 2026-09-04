@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useInvalidateRelated } from './useInvalidateRelated';
 import { useLocalizedToast } from '@/hooks/utils/useLocalizedToast';
+import { hoyLocal } from '@/lib/fecha';
 
 export interface FinancialHabit {
   id: string; user_id: string; habit_name: string; habit_description: string | null;
@@ -35,7 +36,7 @@ export function useFinancialHabits() {
         .eq('user_id', user.id).eq('is_active', true).order('created_at', { ascending: true });
       if (error) throw error;
 
-      const today = new Date().toISOString().split('T')[0];
+      const today = hoyLocal();
       const weekStart = new Date();
       weekStart.setDate(weekStart.getDate() - weekStart.getDay());
       

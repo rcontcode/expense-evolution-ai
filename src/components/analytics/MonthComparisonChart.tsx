@@ -8,6 +8,7 @@ import { es, enUS } from 'date-fns/locale';
 import { TrendingUp, TrendingDown, Minus, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
+import { fechaLocal } from '@/lib/fecha';
 
 interface Expense {
   id: string;
@@ -65,7 +66,7 @@ export const MonthComparisonChart = memo(({ expenses, isLoading }: MonthComparis
     });
     
     expenses.forEach(expense => {
-      const date = new Date(expense.date);
+      const date = fechaLocal(expense.date);
       const category = (expense.category as ExpenseCategory) || 'other';
       
       if (!CATEGORIES.includes(category)) return;

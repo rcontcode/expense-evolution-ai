@@ -38,6 +38,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { ReadingProgressTracker } from './ReadingProgressTracker';
 import { LegalDisclaimer } from '@/components/ui/legal-disclaimer';
+import { fechaLocal } from '@/lib/fecha';
 
 const RESOURCE_TYPES = [
   { value: 'book', icon: Book, labelEs: 'Libro', labelEn: 'Book' },
@@ -624,7 +625,7 @@ export function FinancialEducationCard() {
                                 <p className="text-muted-foreground mt-1">→ {log.outcome}</p>
                               )}
                               <p className="text-muted-foreground mt-1">
-                                📅 {new Date(log.practice_date).toLocaleDateString()}
+                                📅 {fechaLocal(log.practice_date).toLocaleDateString()}
                               </p>
                             </div>
                           ))}

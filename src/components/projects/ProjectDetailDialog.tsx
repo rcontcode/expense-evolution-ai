@@ -35,6 +35,7 @@ import { useExpenses } from '@/hooks/data/useExpenses';
 import { useIncome } from '@/hooks/data/useIncome';
 import { ProjectFinancialOverview } from './ProjectFinancialOverview';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
+import { fechaLocal } from '@/lib/fecha';
 
 interface ProjectDetailDialogProps {
   open: boolean;
@@ -344,9 +345,9 @@ export function ProjectDetailDialog({ open, onClose, project }: ProjectDetailDia
                   <div className="flex items-center gap-3">
                     <Calendar className="h-4 w-4 text-muted-foreground" />
                     <div className="text-sm">
-                      {project.start_date && format(new Date(project.start_date), 'PP', { locale: language === 'es' ? es : undefined })}
+                      {project.start_date && format(fechaLocal(project.start_date), 'PP', { locale: language === 'es' ? es : undefined })}
                       {project.start_date && project.end_date && ' - '}
-                      {project.end_date && format(new Date(project.end_date), 'PP', { locale: language === 'es' ? es : undefined })}
+                      {project.end_date && format(fechaLocal(project.end_date), 'PP', { locale: language === 'es' ? es : undefined })}
                     </div>
                   </div>
                 )}

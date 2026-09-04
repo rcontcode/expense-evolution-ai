@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { X, HelpCircle, Lightbulb, ExternalLink, Building2, User, Briefcase } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
+import { fechaLocal } from '@/lib/fecha';
 
 interface TaxProfileSetupProps {
   onClose: () => void;
@@ -26,12 +27,12 @@ export function TaxProfileSetup({ onClose }: TaxProfileSetupProps) {
   const [workTypes, setWorkTypes] = useState<string[]>(profile?.work_types || []);
   const [fiscalMonth, setFiscalMonth] = useState<string>(
     profile?.fiscal_year_end 
-      ? new Date(profile.fiscal_year_end).getMonth().toString() 
+      ? fechaLocal(profile.fiscal_year_end).getMonth().toString() 
       : "11"
   );
   const [fiscalDay, setFiscalDay] = useState<string>(
     profile?.fiscal_year_end 
-      ? new Date(profile.fiscal_year_end).getDate().toString() 
+      ? fechaLocal(profile.fiscal_year_end).getDate().toString() 
       : "31"
   );
   const [saving, setSaving] = useState(false);

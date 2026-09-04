@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { aFechaISO, fechaLocal } from '@/lib/fecha';
 
 export interface BankTransaction {
   id: string;
@@ -89,14 +90,16 @@ export function useBankTransactionsWithMatches() {
 
       if (txError) throw txError;
 
-      // Fetch expenses for matching (exclude deleted, limit for performance)
+      // Gastos contra los que se busca calce. Son seis columnas, asi que el tope
+      // puede ser holgado: con 500 no se encontraba el calce de un extracto
+      // antiguo, porque los gastos de esa fecha quedaban fuera del corte.
       const { data: expenses, error: expError } = await supabase
         .from('expenses')
         .select('id, date, amount, vendor, description, category')
         .eq('user_id', user!.id)
         .is('deleted_at', null)
         .order('date', { ascending: false })
-        .limit(500);
+        .limit(2000);
 
       if (expError) throw expError;
 
@@ -121,11 +124,11 @@ function findMatchingExpenses(
   expenses: { id: string; date: string; amount: number; vendor: string | null; description: string | null; category: string | null }[]
 ): ExpenseMatch[] {
   const matches: ExpenseMatch[] = [];
-  const txDate = new Date(transaction.transaction_date);
+  const txDate = fechaLocal(transaction.transaction_date);
   const txAmount = Number(transaction.amount);
 
   for (const expense of expenses) {
-    const expDate = new Date(expense.date);
+    const expDate = fechaLocal(expense.date);
     const expAmount = Number(expense.amount);
     
     // Calculate date difference in days
@@ -400,7 +403,7 @@ export function parseCSV(csvText: string): ParsedTransaction[] {
     if (isNaN(amount)) continue;
 
     transactions.push({
-      date: parsedDate.toISOString().split('T')[0],
+      date: aFechaISO(parsedDate),
       amount,
       description,
     });

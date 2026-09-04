@@ -33,6 +33,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useDocumentImageUrl } from '@/hooks/data/useDocumentReview';
 import { cn } from '@/lib/utils';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
+import { fechaLocal } from '@/lib/fecha';
 
 interface IncomeCardProps {
   income: IncomeWithRelations;
@@ -92,7 +93,7 @@ export const IncomeCard = memo(function IncomeCard({ income, onEdit, onDelete }:
                   </h4>
                   <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                     <Calendar className="h-3 w-3" />
-                    <span>{format(new Date(income.date), 'MMM dd, yyyy', { locale: dateLocale })}</span>
+                    <span>{format(fechaLocal(income.date), 'MMM dd, yyyy', { locale: dateLocale })}</span>
                   </div>
                 </div>
                 <div className="text-right shrink-0">

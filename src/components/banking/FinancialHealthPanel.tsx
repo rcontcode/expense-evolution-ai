@@ -31,6 +31,7 @@ import { es } from 'date-fns/locale';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';
+import { fechaLocal } from '@/lib/fecha';
 
 interface Insight {
   type: 'success' | 'warning' | 'info' | 'tip';
@@ -71,7 +72,7 @@ export function FinancialHealthPanel() {
 
   // Income this month
   const monthlyIncome = allIncome?.filter(i => {
-    const d = new Date(i.date);
+    const d = fechaLocal(i.date);
     return d >= monthStart && d <= monthEnd;
   }).reduce((sum, i) => sum + Number(i.amount), 0) || 0;
 

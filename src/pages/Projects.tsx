@@ -61,6 +61,7 @@ import { es } from 'date-fns/locale';
 import { SetupProgressBanner } from '@/components/guidance/SetupProgressBanner';
 import { cn } from '@/lib/utils';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
+import { fechaLocal } from '@/lib/fecha';
 
 const STATUS_OPTIONS = [
   { value: 'all', label: 'Todos', labelEn: 'All' },
@@ -138,10 +139,10 @@ export default function Projects() {
       // Date filter
       let matchesDate = true;
       if (startDateFilter && p.start_date) {
-        matchesDate = new Date(p.start_date) >= startDateFilter;
+        matchesDate = fechaLocal(p.start_date) >= startDateFilter;
       }
       if (endDateFilter && p.end_date && matchesDate) {
-        matchesDate = new Date(p.end_date) <= endDateFilter;
+        matchesDate = fechaLocal(p.end_date) <= endDateFilter;
       }
       
       return matchesSearch && matchesStatus && matchesClient && matchesDate;
@@ -451,9 +452,9 @@ export default function Projects() {
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <CalendarIcon className="h-4 w-4" />
                         <span>
-                          {project.start_date && format(new Date(project.start_date), 'MMM d, yyyy')}
+                          {project.start_date && format(fechaLocal(project.start_date), 'MMM d, yyyy')}
                           {project.start_date && project.end_date && ' - '}
-                          {project.end_date && format(new Date(project.end_date), 'MMM d, yyyy')}
+                          {project.end_date && format(fechaLocal(project.end_date), 'MMM d, yyyy')}
                         </span>
                       </div>
                     )}

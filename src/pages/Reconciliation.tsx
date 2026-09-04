@@ -54,6 +54,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { plural } from '@/lib/plural';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
+import { fechaLocal } from '@/lib/fecha';
+import { getCategoryLabelByLanguage } from '@/lib/constants/expense-categories';
 
 function MatchScoreBadge({ score, matchType }: { score: number; matchType: string }) {
   const { language } = useLanguage();
@@ -104,11 +106,11 @@ function SuggestedMatchCard({
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <span>{formatCurrency(Number(match.expense.amount))}</span>
             <span>•</span>
-            <span>{format(new Date(match.expense.date), 'dd MMM', { locale: language === 'es' ? es : undefined })}</span>
+            <span>{format(fechaLocal(match.expense.date), 'dd MMM', { locale: language === 'es' ? es : undefined })}</span>
             {match.expense.category && (
               <>
                 <span>•</span>
-                <span className="capitalize">{match.expense.category}</span>
+                <span>{getCategoryLabelByLanguage(match.expense.category, language === 'es' ? 'es' : 'en')}</span>
               </>
             )}
           </div>
@@ -175,7 +177,7 @@ function TransactionWithSuggestions({
               </div>
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <Calendar className="h-3 w-3" />
-                {format(new Date(transaction.transaction_date), 'dd MMM yyyy', {
+                {format(fechaLocal(transaction.transaction_date), 'dd MMM yyyy', {
                   locale: language === 'es' ? es : undefined
                 })}
               </div>
@@ -541,7 +543,7 @@ export default function Reconciliation() {
                             <p className="font-medium text-sm">{transaction.description || (language === 'es' ? 'Sin descripción' : 'No description')}</p>
                             <div className="flex items-center gap-2 text-xs text-muted-foreground">
                               <Calendar className="h-3 w-3" />
-                              {format(new Date(transaction.transaction_date), 'dd MMM yyyy', {
+                              {format(fechaLocal(transaction.transaction_date), 'dd MMM yyyy', {
                                 locale: language === 'es' ? es : undefined
                               })}
                               <span>•</span>
@@ -591,7 +593,7 @@ export default function Reconciliation() {
                             <p className="font-medium text-sm">{transaction.description || (language === 'es' ? 'Sin descripción' : 'No description')}</p>
                             <div className="flex items-center gap-2 text-xs text-muted-foreground">
                               <Calendar className="h-3 w-3" />
-                              {format(new Date(transaction.transaction_date), 'dd MMM yyyy', {
+                              {format(fechaLocal(transaction.transaction_date), 'dd MMM yyyy', {
                                 locale: language === 'es' ? es : undefined
                               })}
                             </div>

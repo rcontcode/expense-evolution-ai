@@ -7,6 +7,7 @@ import { useEntity } from '@/contexts/EntityContext';
 import { compareDuplicateCandidate, DuplicateMatch } from '@/hooks/data/useContentDuplicateDetector';
 import { useAIErrorHandler } from '@/hooks/utils/useAIErrorHandler';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
+import { hoyLocal } from '@/lib/fecha';
 
 export type DocumentClassificationType = 
   | 'receipt' | 'utility_bill' | 'bank_statement' | 'income_proof'
@@ -399,7 +400,7 @@ export function useUnifiedChaosInbox() {
                   vendor: ep.to_entity || ep.bill_to || '',
                   source: ep.to_entity || ep.bill_to || ep.vendor || doc.fileName,
                   amount: totalAmount,
-                  date: ep.date || new Date().toISOString().split('T')[0],
+                  date: ep.date || hoyLocal(),
                   currency: ep.currency || userCurrency,
                   description: `Factura ${ep.invoice_number || ''}: ${lineItems.map((i: any) => i.name).join('; ') || ep.description || ''}`.trim(),
                   income_type: 'freelance',
@@ -420,7 +421,7 @@ export function useUnifiedChaosInbox() {
             const extractedData = {
               vendor: ep.remit_to?.name || ep.vendor || ep.from_entity || classData.document_type,
               amount: totalAmount,
-              date: ep.date || new Date().toISOString().split('T')[0],
+              date: ep.date || hoyLocal(),
               category: 'professional_services',
               description: lineItems.map((i: any) => i.name).join('; ') || ep.description || '',
               currency: ep.currency || userCurrency,
@@ -528,7 +529,7 @@ export function useUnifiedChaosInbox() {
           if (transactions.length > 0) {
             const bankRows = transactions.map((tx: any) => ({
               user_id: user.id,
-              transaction_date: tx.date || new Date().toISOString().split('T')[0],
+              transaction_date: tx.date || hoyLocal(),
               amount: typeof tx.amount === 'number' ? tx.amount : parseFloat(tx.amount) || 0,
               description: tx.description || tx.vendor || 'Unknown',
               status: 'pending',

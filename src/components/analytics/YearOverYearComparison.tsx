@@ -10,6 +10,7 @@ import { Calendar, TrendingUp, TrendingDown, Percent, DollarSign } from 'lucide-
 import { format, getMonth, getYear, startOfYear, endOfYear } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 import { Skeleton } from '@/components/ui/skeleton';
+import { fechaLocal } from '@/lib/fecha';
 
 const translations = {
   es: {
@@ -67,7 +68,7 @@ export function YearOverYearComparison() {
       // Current year expenses
       const currentYearExpenses = expenses
         .filter(e => {
-          const date = new Date(e.date);
+          const date = fechaLocal(e.date);
           return getYear(date) === currentYear && getMonth(date) === i;
         })
         .reduce((sum, e) => sum + e.amount, 0);
@@ -75,7 +76,7 @@ export function YearOverYearComparison() {
       // Previous year expenses
       const prevYearExpenses = expenses
         .filter(e => {
-          const date = new Date(e.date);
+          const date = fechaLocal(e.date);
           return getYear(date) === previousYear && getMonth(date) === i;
         })
         .reduce((sum, e) => sum + e.amount, 0);
@@ -83,7 +84,7 @@ export function YearOverYearComparison() {
       // Current year income
       const currentYearIncome = income
         .filter(inc => {
-          const date = new Date(inc.date);
+          const date = fechaLocal(inc.date);
           return getYear(date) === currentYear && getMonth(date) === i;
         })
         .reduce((sum, inc) => sum + inc.amount, 0);
@@ -91,7 +92,7 @@ export function YearOverYearComparison() {
       // Previous year income
       const prevYearIncome = income
         .filter(inc => {
-          const date = new Date(inc.date);
+          const date = fechaLocal(inc.date);
           return getYear(date) === previousYear && getMonth(date) === i;
         })
         .reduce((sum, inc) => sum + inc.amount, 0);

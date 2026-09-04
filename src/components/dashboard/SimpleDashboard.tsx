@@ -40,6 +40,8 @@ import { SimpleOnboardingPath } from './SimpleOnboardingPath';
 import { SimpleSparkline } from './SimpleSparkline';
 import { getDailyTip, type TipContext } from '@/data/simpleFinancialTips';
 import { cn } from '@/lib/utils';
+import { fechaLocal } from '@/lib/fecha';
+import { getCategoryLabelByLanguage } from '@/lib/constants/expense-categories';
 
 interface SimpleDashboardProps {
   onQuickCapture?: () => void;
@@ -102,7 +104,9 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
         id: `e-${e.id}`,
         rawId: String(e.id),
         type: 'expense',
-        label: e.merchant || e.category || (language === 'es' ? 'Gasto' : 'Expense'),
+        label: e.vendor || e.description
+          || (e.category ? getCategoryLabelByLanguage(e.category, language === 'es' ? 'es' : 'en') : '')
+          || (language === 'es' ? 'Gasto' : 'Expense'),
         amount: Number(e.amount) || 0,
         date: e.date,
       });
@@ -139,14 +143,14 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
     limit.setDate(limit.getDate() + 7);
     return (bills as any[]).filter((b) => {
       if (!b?.next_due_date) return false;
-      const d = new Date(b.next_due_date);
+      const d = fechaLocal(b.next_due_date);
       return d >= new Date(now.getFullYear(), now.getMonth(), now.getDate()) && d <= limit;
     }).length;
   }, [bills]);
 
   // Has the user configured a budget already? Drives the second shortcut choice
   const hasBudget = useMemo(() => {
-    const prefs = (profile as any)?.preferences;
+    const prefs = (profile as any)?.display_preferences ?? (profile as any)?.preferences;
     return Boolean(prefs?.budget_mode);
   }, [profile]);
 
@@ -425,7 +429,7 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
                 {language === 'es' ? 'Tu mayor categoría este mes' : 'Your top category this month'}
               </div>
               <div className="text-sm font-semibold">
-                <span className="capitalize">{topCategory.category}</span>
+                <span>{getCategoryLabelByLanguage(topCategory.category, language === 'es' ? 'es' : 'en')}</span>
                 <span className="text-muted-foreground font-normal"> · </span>
                 <span className="tabular-nums">{formatCurrency(topCategory.amount)}</span>
                 <span className="text-muted-foreground font-normal tabular-nums"> ({topCategory.pct}%)</span>
@@ -679,7 +683,7 @@ export function SimpleDashboard({ onQuickCapture }: SimpleDashboardProps) {
                       <div className="min-w-0 flex-1 overflow-hidden">
                         <div className="text-sm font-medium truncate">{item.label}</div>
                         <div className="text-xs text-muted-foreground">
-                          {new Date(item.date).toLocaleDateString(language === 'es' ? 'es' : 'en', {
+                          {fechaLocal(item.date).toLocaleDateString(language === 'es' ? 'es' : 'en', {
                             day: 'numeric',
                             month: 'short',
                           })}

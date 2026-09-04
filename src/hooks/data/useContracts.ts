@@ -5,6 +5,7 @@ import { ContractFormData, ContractWithClient, ContractStatus } from '@/types/co
 import { useInvalidateRelated } from './useInvalidateRelated';
 import { useLocalizedToast } from '@/hooks/utils/useLocalizedToast';
 import { useUndoableDelete } from '@/hooks/utils/useUndoableAction';
+import { aFechaISO } from '@/lib/fecha';
 
 export const useContracts = () => {
   const { user } = useAuth();
@@ -83,8 +84,8 @@ export const useCreateContract = () => {
             // Only the first page carries full metadata
             title: isFirst ? (data.title || null) : null,
             contract_type: isFirst ? (data.contract_type || 'services') : 'services',
-            start_date: isFirst && data.start_date ? data.start_date.toISOString().split('T')[0] : null,
-            end_date: isFirst && data.end_date ? data.end_date.toISOString().split('T')[0] : null,
+            start_date: isFirst && data.start_date ? aFechaISO(data.start_date) : null,
+            end_date: isFirst && data.end_date ? aFechaISO(data.end_date) : null,
             auto_renew: isFirst ? (data.auto_renew || false) : false, 
             renewal_notice_days: isFirst ? (data.renewal_notice_days || 30) : 30,
             value: isFirst ? (data.value || null) : null, 

@@ -46,6 +46,7 @@ import {
   Tooltip as RechartsTooltip,
 } from 'recharts';
 import { MobileChartHint } from '@/components/ui/mobile-chart-hint';
+import { porcentaje } from '@/lib/numeros';
 
 // Budget Progress Component
 function BudgetProgressSection({ 
@@ -288,7 +289,7 @@ export function MonthDetailPanel({
     // Extract first name from full_name
     const firstName = profile?.full_name?.split(' ')[0] || '';
     const savingsRate = totals.totalIncome > 0 
-      ? ((totals.totalIncome - totals.totalExpenses) / totals.totalIncome * 100).toFixed(0)
+      ? porcentaje(totals.totalIncome - totals.totalExpenses, totals.totalIncome).toFixed(0)
       : 0;
     
     if (!firstName) return null;
@@ -591,7 +592,7 @@ export function MonthDetailPanel({
                       {formatCurrency(cat.value)}
                     </span>
                     <span className="text-[10px] text-muted-foreground">
-                      ({((cat.value / totals.totalExpenses) * 100).toFixed(0)}%)
+                      ({porcentaje(cat.value, totals.totalExpenses).toFixed(0)}%)
                     </span>
                   </div>
                 ))}

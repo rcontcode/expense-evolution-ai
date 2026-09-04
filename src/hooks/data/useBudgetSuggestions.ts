@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { useExpenses } from "@/hooks/data/useExpenses";
 import { subMonths, startOfMonth, endOfMonth } from "date-fns";
+import { fechaLocal } from '@/lib/fecha';
 
 interface BudgetSuggestionOptions {
   monthsToConsider?: number;
@@ -52,7 +53,7 @@ export function useBudgetSuggestions(options?: BudgetSuggestionOptions): BudgetS
       const monthEnd = endOfMonth(subMonths(now, i));
       
       const monthExpenses = expenses.filter(exp => {
-        const expDate = new Date(exp.date);
+        const expDate = fechaLocal(exp.date);
         return expDate >= monthStart && expDate <= monthEnd;
       });
       

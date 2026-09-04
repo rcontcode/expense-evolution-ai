@@ -35,6 +35,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { startOfMonth, endOfMonth, subMonths } from 'date-fns';
 import { toast } from 'sonner';
 import { plural } from '@/lib/plural';
+import { fechaLocal } from '@/lib/fecha';
 
 interface PostUploadWizardProps {
   open: boolean;
@@ -161,7 +162,7 @@ export function PostUploadWizard({ open, onClose, processedHistory }: PostUpload
   // Calculate real savings capacity
   const savingsCapacity = useMemo(() => {
     const monthlyIncome = income?.reduce((sum, i) => {
-      const monthsAgo = (new Date().getTime() - new Date(i.date).getTime()) / (30 * 24 * 60 * 60 * 1000);
+      const monthsAgo = (new Date().getTime() - fechaLocal(i.date).getTime()) / (30 * 24 * 60 * 60 * 1000);
       if (monthsAgo <= 3) return sum + Number(i.amount);
       return sum;
     }, 0) || 0;

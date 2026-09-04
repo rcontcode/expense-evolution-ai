@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { ExtractedData, ReceiptDocument } from '@/components/capture/ReceiptReviewCard';
 import { useInvalidateRelated } from './useInvalidateRelated';
+import { hoyLocal } from '@/lib/fecha';
 
 export function useDocumentsForReview() {
   const { user } = useAuth();
@@ -63,7 +64,7 @@ export function useDocumentReviewActions() {
           .insert({
             user_id: user!.id,
             amount: data.amount || 0,
-            date: data.date || new Date().toISOString().split('T')[0],
+            date: data.date || hoyLocal(),
             source: data.vendor || (data as any).source || 'Unknown',
             description: data.description || null,
             currency: data.currency || 'CAD',
@@ -96,7 +97,7 @@ export function useDocumentReviewActions() {
             user_id: user!.id,
             vendor: data.vendor || 'Unknown',
             amount: data.amount || 0,
-            date: data.date || new Date().toISOString().split('T')[0],
+            date: data.date || hoyLocal(),
             category: data.category || 'other',
             description: data.description,
             status: 'pending',

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { useMissionTracker } from './useMissions';
+import { hoyLocal } from '@/lib/fecha';
 
 // Central hook for auto-tracking missions across the app
 export function useMissionAutoTracker() {
@@ -64,7 +65,7 @@ export function useLoginTracker() {
   const { trackAction } = useMissionTracker();
   
   const trackUserLogin = useCallback(() => {
-    const today = new Date().toISOString().split('T')[0];
+    const today = hoyLocal();
     const lastLoginTracked = localStorage.getItem('last_login_tracked');
     
     // Only track login once per day

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { aFechaISO, hoyLocal } from '@/lib/fecha';
 
 export type VoiceGender = 'female' | 'male' | 'auto';
 
@@ -70,7 +71,7 @@ const DEFAULT_PREFERENCES: VoicePreferences = {
   frequentActions: [],
   voiceReminders: [],
   conversationHistory: [],
-  lastActiveDate: new Date().toISOString().split('T')[0],
+  lastActiveDate: hoyLocal(),
 };
 
 const STORAGE_KEY = 'evofinz_voice_preferences';
@@ -357,7 +358,7 @@ export function useVoicePreferences() {
     const now = new Date();
     const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
     const currentDay = now.getDay();
-    const today = now.toISOString().split('T')[0];
+    const today = aFechaISO(now);
 
     const dueReminders: string[] = [];
 

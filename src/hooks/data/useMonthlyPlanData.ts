@@ -8,6 +8,7 @@ import { useUserSettings, UserPreferences } from "@/hooks/data/useUserSettings";
 import { useCategoryBudgets } from "@/hooks/data/useCategoryBudgets";
 import { useBudgetEntity } from "@/contexts/BudgetEntityContext";
 import { startOfMonth, endOfMonth, differenceInDays } from "date-fns";
+import { fechaLocal } from '@/lib/fecha';
 
 export interface MonthlyPlanData {
   totalIncome: number;
@@ -105,21 +106,21 @@ export function useMonthlyPlanData(): MonthlyPlanData {
 
     const paidBillsCount = activeBills.filter((b) => {
       if (!b.last_paid_date) return false;
-      const pd = new Date(b.last_paid_date);
+      const pd = fechaLocal(b.last_paid_date);
       return pd >= monthStart && pd <= monthEnd;
     }).length;
 
     const unpaidBills = activeBills
       .filter((b) => {
         if (!b.last_paid_date) return true;
-        const pd = new Date(b.last_paid_date);
+        const pd = fechaLocal(b.last_paid_date);
         return pd < monthStart || pd > monthEnd;
       })
       .map((b) => ({
         name: b.name,
         amount: Number(b.amount),
         nextDue: b.next_due_date,
-        overdue: new Date(b.next_due_date) < now,
+        overdue: fechaLocal(b.next_due_date) < now,
       }))
       .sort((a, b) => new Date(a.nextDue).getTime() - new Date(b.nextDue).getTime());
 
@@ -301,11 +302,11 @@ export function useMonthlyPlanData(): MonthlyPlanData {
 
     // Cumulative daily spending vs ideal
     const cumulativeData: MonthlyPlanData["cumulativeData"] = [];
-    const sortedExpenses = [...(expenses || [])].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    const sortedExpenses = [...(expenses || [])].sort((a, b) => fechaLocal(a.date).getTime() - fechaLocal(b.date).getTime());
     const idealDailySpend = variableBudget > 0 ? variableBudget / daysInMonth : 0;
     let cumSpent = 0;
     for (let d = 1; d <= daysPassed; d++) {
-      const dayExpenses = sortedExpenses.filter((e) => new Date(e.date).getDate() === d);
+      const dayExpenses = sortedExpenses.filter((e) => fechaLocal(e.date).getDate() === d);
       cumSpent += dayExpenses.reduce((s, e) => s + Number(e.amount), 0);
       cumulativeData.push({ day: d, spent: Math.round(cumSpent), ideal: Math.round(idealDailySpend * d) });
     }

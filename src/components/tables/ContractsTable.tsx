@@ -32,6 +32,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { MoreVertical, Eye, Trash2, Download, FileText, CheckCircle2, AlertTriangle, XCircle, Calendar, Clock, Sparkles, Files } from 'lucide-react';
 import { format, differenceInDays, isPast } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
+import { fechaLocal } from '@/lib/fecha';
 
 interface ContractsTableProps {
   contractGroups: ContractGroup[];
@@ -206,7 +207,7 @@ export function ContractsTable({ contractGroups }: ContractsTableProps) {
                     {contract.start_date ? (
                       <div className="flex items-center gap-1.5 text-sm">
                         <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
-                        {format(new Date(contract.start_date), 'dd MMM yyyy', { locale })}
+                        {format(fechaLocal(contract.start_date), 'dd MMM yyyy', { locale })}
                       </div>
                     ) : (
                       <span className="text-muted-foreground text-sm">-</span>
@@ -216,7 +217,7 @@ export function ContractsTable({ contractGroups }: ContractsTableProps) {
                     {contract.end_date ? (
                       <div className="flex items-center gap-1.5 text-sm">
                         <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-                        {format(new Date(contract.end_date), 'dd MMM yyyy', { locale })}
+                        {format(fechaLocal(contract.end_date), 'dd MMM yyyy', { locale })}
                       </div>
                     ) : (
                       <span className="text-muted-foreground text-sm">{t('contracts.noEndDate')}</span>

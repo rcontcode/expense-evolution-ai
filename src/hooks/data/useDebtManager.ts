@@ -39,7 +39,7 @@ export interface DebtManagerData {
   isLoading: boolean;
 }
 
-function calculatePayoffSchedule(
+export function calculatePayoffSchedule(
   debts: Liability[],
   extraPayment: number,
   strategy: 'avalanche' | 'snowball'
@@ -111,8 +111,11 @@ function calculatePayoffSchedule(
         debt.balance = 0;
         debt.paidOff = true;
         debt.payoffMonth = month;
-        // Free up minimum payment for next debt
-        availableExtra += debt.minimumPayment;
+        // Ojo: aqui NO se devuelve el minimo al bolsillo del mes. El presupuesto
+        // mensual ya contiene el minimo de TODAS las deudas, y a partir del mes
+        // siguiente esta deja de descontarlo, asi que la bola de nieve se arma
+        // sola. Sumarlo aqui inventaba dinero justo el mes del pago final y
+        // hacia que la app prometiera salir de deudas antes de tiempo.
       }
     }
 
@@ -133,13 +136,21 @@ function calculatePayoffSchedule(
     }
   }
 
-  const debtFreeDate = new Date();
-  debtFreeDate.setMonth(debtFreeDate.getMonth() + month);
+  // Si al llegar al tope de 30 anios queda deuda viva, la deuda no se salda:
+  // pasa cuando el pago minimo no alcanza a cubrir ni el interes del mes. Antes
+  // se devolvia igual "360 meses" y esas deudas quedaban con payoffMonth 0, o
+  // sea que la tarjeta las mostraba de primeras y con "0 meses".
+  const quedaDeuda = workingDebts.some(d => !d.paidOff);
+
+  // Sumar meses con setMonth se pasa de largo cuando hoy es 31 (31-ene + 1 mes
+  // da 3-mar). Se arma la fecha desde el ano y el mes.
+  const hoy = new Date();
+  const enMeses = (n: number) => new Date(hoy.getFullYear(), hoy.getMonth() + n, 1);
+  const debtFreeDate = enMeses(month);
 
   const payoffOrder: DebtPayoffItem[] = workingDebts.map(debt => {
-    const payoffDate = new Date();
-    payoffDate.setMonth(payoffDate.getMonth() + debt.payoffMonth);
-    
+    const payoffDate = enMeses(debt.paidOff ? debt.payoffMonth : month);
+
     return {
       id: debt.id,
       name: debt.name,
@@ -147,7 +158,7 @@ function calculatePayoffSchedule(
       balance: debt.originalBalance,
       interestRate: debt.interestRate,
       minimumPayment: debt.minimumPayment,
-      monthsToPayoff: debt.payoffMonth,
+      monthsToPayoff: debt.paidOff ? debt.payoffMonth : Number.POSITIVE_INFINITY,
       totalInterestPaid: debt.totalInterestPaid,
       payoffDate,
       payoffOrder: debt.payoffOrder,
@@ -159,7 +170,7 @@ function calculatePayoffSchedule(
     description: strategy === 'avalanche' 
       ? 'Paga primero las deudas con mayor tasa de interés para minimizar el interés total pagado.'
       : 'Paga primero las deudas más pequeñas para obtener victorias rápidas y motivación.',
-    totalMonths: month,
+    totalMonths: quedaDeuda ? Number.POSITIVE_INFINITY : month,
     totalInterestPaid: totalInterest,
     debtFreeDate,
     payoffOrder: payoffOrder.sort((a, b) => a.monthsToPayoff - b.monthsToPayoff),

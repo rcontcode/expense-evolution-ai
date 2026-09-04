@@ -22,6 +22,7 @@ import { startOfYear, endOfYear, format } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 import { getBillCategoryLabel, getBillFrequencyLabel, getPaymentMethodLabel } from '@/lib/constants/bill-categories';
 import { PageHeader } from '@/components/PageHeader';
+import { fechaLocal } from '@/lib/fecha';
 
 interface ReportCard {
   id: string;
@@ -177,7 +178,7 @@ function ReportsAdvanced() {
 
   const years = Array.from({ length: 5 }, (_, i) => currentYear - i);
 
-  const yearIncomes = (incomes || []).filter(i => new Date(i.date).getFullYear() === selectedYear);
+  const yearIncomes = (incomes || []).filter(i => fechaLocal(i.date).getFullYear() === selectedYear);
   const activeBills = bills?.filter(b => b.status === 'active') || [];
 
   const getPreview = (cardId: string): string | null => {
@@ -418,7 +419,7 @@ function ReportsAdvanced() {
     try {
       switch (reportId) {
         case 'pnl': {
-          const yearIncomes = (incomes || []).filter(i => new Date(i.date).getFullYear() === selectedYear);
+          const yearIncomes = (incomes || []).filter(i => fechaLocal(i.date).getFullYear() === selectedYear);
           const yearExpenses = expenses || [];
           const pnlData = {
             year: selectedYear,
@@ -427,6 +428,7 @@ function ReportsAdvanced() {
             businessName: profile?.business_name || undefined,
             incomes: yearIncomes.map(i => ({ amount: i.amount, date: i.date, income_type: i.income_type, source: i.source, description: i.description })),
             expenses: yearExpenses.map(e => ({ amount: Number(e.amount), date: e.date, category: e.category, vendor: e.vendor })),
+            formatCurrency: fc,
           };
           if (format === 'excel') {
             const { exportPnLToExcel } = await import('@/lib/export/pnl-export');
@@ -844,7 +846,7 @@ async function exportBillsPDF(l: boolean, activeBills: any[], fc: (n: number) =>
       getBillCategoryLabel(b.category, lang),
       fc(b.amount),
       getBillFrequencyLabel(b.frequency, lang),
-      format(new Date(b.next_due_date), 'dd MMM yyyy', { locale: l ? es : enUS }),
+      format(fechaLocal(b.next_due_date), 'dd MMM yyyy', { locale: l ? es : enUS }),
     ]),
     theme: 'striped',
     headStyles: { fillColor: [59, 130, 246] },
@@ -893,7 +895,7 @@ async function exportBillsExcel(l: boolean, activeBills: any[], payments: any[],
 }
 
 async function exportIncomeSummaryExcel(l: boolean, incomes: any[], year: number) {
-  const yearIncomes = incomes.filter(i => new Date(i.date).getFullYear() === year);
+  const yearIncomes = incomes.filter(i => fechaLocal(i.date).getFullYear() === year);
   if (yearIncomes.length === 0) { toast.info(l ? 'No hay ingresos para exportar' : 'No income to export'); return; }
   const ExcelJS = await import('exceljs');
   const wb = new ExcelJS.Workbook();
@@ -947,7 +949,7 @@ async function exportMileagePDF(
     const ded = calculateMileageDeductionByCountry(km, runningKm, country, year);
     runningKm += km;
     return [
-      format(new Date(t.date), 'dd/MM/yyyy'),
+      format(fechaLocal(t.date), 'dd/MM/yyyy'),
       t.route.replace('[SAMPLE] ', ''),
       `${km.toFixed(1)} km`,
       t.client?.name?.replace('[SAMPLE] ', '') || '-',
@@ -1038,7 +1040,7 @@ async function exportMileageExcel(
 }
 
 async function exportIncomeSummaryPDF(l: boolean, incomes: any[], year: number, fc: (n: number) => string, userName?: string | null, businessName?: string | null) {
-  const yearIncomes = incomes.filter((i: any) => new Date(i.date).getFullYear() === year);
+  const yearIncomes = incomes.filter((i: any) => fechaLocal(i.date).getFullYear() === year);
   if (yearIncomes.length === 0) { toast.info(l ? 'No hay ingresos para exportar' : 'No income to export'); return; }
   const { default: jsPDF } = await import('jspdf');
   const { default: autoTable } = await import('jspdf-autotable');

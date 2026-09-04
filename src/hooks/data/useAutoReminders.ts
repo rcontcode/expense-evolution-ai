@@ -9,6 +9,7 @@ import { differenceInDays } from 'date-fns';
 import { getCountryConfig, type CountryCode } from '@/lib/constants/country-tax-config';
 import type { NotificationPreference } from './useNotificationPreferences';
 import { plural } from '@/lib/plural';
+import { aFechaISO, fechaLocal, hoyLocal } from '@/lib/fecha';
 
 const CHECK_INTERVAL_MS = 60_000;
 
@@ -160,7 +161,7 @@ export function useAutoReminders() {
       const muted = await isMuted(userId, 'bill_reminder', bill.name);
       if (muted) continue;
 
-      const dueDate = new Date(bill.next_due_date);
+      const dueDate = fechaLocal(bill.next_due_date);
       const daysUntilDue = differenceInDays(dueDate, today);
       const effectiveAdvance = Math.max(bill.reminder_days_before, advanceDays);
 
@@ -223,7 +224,7 @@ export function useAutoReminders() {
       const muted = await isMuted(userId, 'contract_reminder', name);
       if (muted) continue;
 
-      const endDate = new Date(c.end_date!);
+      const endDate = fechaLocal(c.end_date!);
       const noticeDays = Math.max(c.renewal_notice_days ?? 30, advanceDays);
       const daysUntilEnd = differenceInDays(endDate, today);
 
@@ -324,7 +325,7 @@ export function useAutoReminders() {
       .from('expenses')
       .select('category, amount')
       .eq('user_id', userId)
-      .gte('date', startOfMonth.toISOString().split('T')[0])
+      .gte('date', aFechaISO(startOfMonth))
       .is('deleted_at', null);
 
     if (expError) { console.warn('[useAutoReminders] expenses error:', expError.message); return; }
@@ -352,7 +353,7 @@ export function useAutoReminders() {
       }
 
       if (triggered) {
-        const todayStr = new Date().toISOString().split('T')[0];
+        const todayStr = hoyLocal();
         if (rule.last_triggered_at && rule.last_triggered_at.startsWith(todayStr)) continue;
 
         const exists = await hasRecentNotification(userId, 'budget_alert', rule.name, withinHours);

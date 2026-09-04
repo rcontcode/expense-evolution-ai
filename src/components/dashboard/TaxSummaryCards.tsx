@@ -3,7 +3,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ExternalLink, Calculator, TrendingDown, TrendingUp, AlertCircle, Receipt, BadgeDollarSign } from 'lucide-react';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { Button } from '@/components/ui/button';
-import { TaxSummary, TAX_DEDUCTION_RULES } from '@/hooks/data/useTaxCalculations';
+import { TaxSummary, getTaxDeductionRules } from '@/hooks/data/useTaxCalculations';
+import { useEntity } from '@/contexts/EntityContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { getCategoryLabelByLanguage, ExpenseCategory } from '@/lib/constants/expense-categories';
 
@@ -14,6 +15,11 @@ interface TaxSummaryCardsProps {
 export const TaxSummaryCards = memo(({ taxSummary }: TaxSummaryCardsProps) => {
   const { t, language } = useLanguage();
   const { formatCurrency: fc } = useFormatCurrency();
+  // La explicacion de cada categoria depende del pais: en Canada la comida es
+  // 50% deducible y en Chile no lo es. Antes se mostraba siempre la canadiense,
+  // al lado de un monto ya calculado con las reglas chilenas.
+  const { currentCountry } = useEntity();
+  const reglasFiscales = getTaxDeductionRules(currentCountry || 'CA');
 
   if (taxSummary.totalExpenses === 0) {
     return (
@@ -167,7 +173,7 @@ export const TaxSummaryCards = memo(({ taxSummary }: TaxSummaryCardsProps) => {
         <CardContent>
           <div className="space-y-4">
             {taxSummary.categoryBreakdown.map((item) => {
-              const rule = TAX_DEDUCTION_RULES.find((r) => r.category === item.category);
+              const rule = reglasFiscales.find((r) => r.category === item.category);
               return (
                 <div key={item.category} className="border-b pb-4 last:border-0">
                   <div className="flex items-start justify-between mb-2">

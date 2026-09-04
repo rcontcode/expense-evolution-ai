@@ -2,8 +2,10 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { format } from 'date-fns';
 import { ExpenseWithRelations } from '@/types/expense.types';
-import { TAX_DEDUCTION_RULES } from '@/hooks/data/useTaxCalculations';
+import { getTaxDeductionRules } from '@/hooks/data/useTaxCalculations';
 import { T2125_LINES, calculateT2125Totals } from './t2125-export';
+import { fechaLocal } from '@/lib/fecha';
+import { porcentaje } from '@/lib/numeros';
 
 // Extend jsPDF type for autoTable
 declare module 'jspdf' {
@@ -230,7 +232,15 @@ const formatCurrency = (amount: number, country?: string): string => {
   return `$${amount.toLocaleString('en-CA', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 };
 
-function calculateDeduction(amount: number, category: string | null, status: string | null): { deductible: number; nonDeductible: number; rate: number } {
+/**
+ * Cuanto de un gasto es deducible, segun el pais de la entidad.
+ *
+ * Antes esto usaba siempre la tabla canadiense, aunque el usuario fuera chileno:
+ * una comida salia como 50% deducible cuando en Chile no lo es. El exporte a
+ * Excel de este mismo informe ya lo hacia bien, asi que el PDF y el Excel del
+ * mismo mes entregaban numeros distintos.
+ */
+function calculateDeduction(amount: number, category: string | null, status: string | null, country?: string): { deductible: number; nonDeductible: number; rate: number } {
   if (status === 'reimbursable') {
     return { deductible: 0, nonDeductible: 0, rate: 0 };
   }
@@ -239,7 +249,7 @@ function calculateDeduction(amount: number, category: string | null, status: str
     return { deductible: 0, nonDeductible: amount, rate: 0 };
   }
 
-  const rule = TAX_DEDUCTION_RULES.find(r => r.category === category);
+  const rule = getTaxDeductionRules(country || 'CA').find(r => r.category === category);
   const rate = rule?.deductionRate || 1.0;
   const deductible = amount * rate;
   
@@ -496,7 +506,7 @@ export function exportExpensesToPDF(expenses: ExpenseWithRelations[], options: P
   const t = PDF_TRANSLATIONS[lang];
   
   const filteredExpenses = options.year 
-    ? expenses.filter(e => new Date(e.date).getFullYear() === options.year)
+    ? expenses.filter(e => fechaLocal(e.date).getFullYear() === options.year)
     : expenses;
   
   if (filteredExpenses.length === 0) {
@@ -516,7 +526,7 @@ export function exportExpensesToPDF(expenses: ExpenseWithRelations[], options: P
     totalExpenses += amount;
     
     // Monthly grouping
-    const monthKey = format(new Date(expense.date), 'yyyy-MM');
+    const monthKey = format(fechaLocal(expense.date), 'yyyy-MM');
     if (!monthlyTotals[monthKey]) {
       monthlyTotals[monthKey] = { total: 0, count: 0 };
     }
@@ -526,7 +536,7 @@ export function exportExpensesToPDF(expenses: ExpenseWithRelations[], options: P
     if (expense.status === 'reimbursable') {
       totalReimbursable += amount;
     } else if (expense.status === 'deductible') {
-      const { deductible, nonDeductible } = calculateDeduction(amount, expense.category, expense.status);
+      const { deductible, nonDeductible } = calculateDeduction(amount, expense.category, expense.status, options.country);
       totalDeductible += deductible;
       totalNonDeductible += nonDeductible;
 
@@ -584,7 +594,7 @@ export function exportExpensesToPDF(expenses: ExpenseWithRelations[], options: P
       data.count.toString(),
       formatCurrency(data.total, options.country),
       formatCurrency(data.deductible, options.country),
-      `${((data.deductible / data.total) * 100).toFixed(0)}%`,
+      `${porcentaje(data.deductible, data.total).toFixed(0)}%`,
     ]);
 
   autoTable(doc, {
@@ -700,7 +710,7 @@ export function exportT2125ToPDF(expenses: ExpenseWithRelations[], year?: number
   const t = PDF_TRANSLATIONS[lang];
   
   const filteredExpenses = year 
-    ? expenses.filter(e => new Date(e.date).getFullYear() === year)
+    ? expenses.filter(e => fechaLocal(e.date).getFullYear() === year)
     : expenses;
   
   const deductibleExpenses = filteredExpenses.filter(e => e.status === 'deductible');

@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import { DollarSign, TrendingUp, PieChart, Repeat } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { startOfMonth, endOfMonth, parseISO } from 'date-fns';
+import { mesLocal } from '@/lib/fecha';
 
 export function IncomeInsightsSummary() {
   const { language } = useLanguage();
@@ -53,7 +54,7 @@ export function IncomeInsightsSummary() {
     const clientMonths: Record<string, Set<string>> = {};
     income.forEach((i: any) => {
       if (!i.client_id) return;
-      const month = parseISO(i.date).toISOString().substring(0, 7);
+      const month = mesLocal(i.date);
       if (!clientMonths[i.client_id]) clientMonths[i.client_id] = new Set();
       clientMonths[i.client_id].add(month);
     });

@@ -37,6 +37,7 @@ import { es, enUS } from 'date-fns/locale';
 import { exportReimbursementReportWithCharts } from '@/lib/export/reimbursement-excel-export';
 import { exportReimbursementToPDF } from '@/lib/export/pdf-export';
 import { plural } from '@/lib/plural';
+import { fechaLocal } from '@/lib/fecha';
 
 interface ClientReimbursementReportProps {
   expenses: ExpenseWithRelations[];
@@ -666,7 +667,7 @@ export function ClientReimbursementReport({ expenses }: ClientReimbursementRepor
                             <TableCell className="font-medium">
                               <div className="flex items-center gap-2">
                                 <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
-                                {format(new Date(expense.date), 'dd MMM yyyy', { locale: dateLocale })}
+                                {format(fechaLocal(expense.date), 'dd MMM yyyy', { locale: dateLocale })}
                               </div>
                             </TableCell>
                             <TableCell>{expense.vendor || '—'}</TableCell>

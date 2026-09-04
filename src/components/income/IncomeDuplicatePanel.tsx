@@ -13,6 +13,7 @@ import { es, enUS } from 'date-fns/locale';
 import { toast } from 'sonner';
 import { plural } from '@/lib/plural';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
+import { fechaLocal } from '@/lib/fecha';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -215,7 +216,7 @@ function DuplicateGroupCard({
 
               <div className="flex-1 min-w-0 flex items-center gap-3 flex-wrap">
                 <span className="text-muted-foreground text-xs whitespace-nowrap">
-                  {format(new Date(record.date), 'PP', { locale: dateLocale })}
+                  {format(fechaLocal(record.date), 'PP', { locale: dateLocale })}
                 </span>
                 <span className="font-medium truncate">{record.source || record.description || '-'}</span>
                 <span className="font-bold text-chart-1">{formatCurrency(Number(record.amount))}</span>

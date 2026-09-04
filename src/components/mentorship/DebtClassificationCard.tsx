@@ -12,6 +12,7 @@ import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { Scale, ThumbsUp, ThumbsDown, DollarSign, Lightbulb, Edit2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { LegalDisclaimer } from '@/components/ui/legal-disclaimer';
+import { LIABILITY_CATEGORIES } from '@/hooks/data/useNetWorth';
 
 export function DebtClassificationCard() {
   const { language } = useLanguage();
@@ -204,7 +205,9 @@ export function DebtClassificationCard() {
                       )}
                       <div>
                         <p className="text-sm font-medium">{debt.name}</p>
-                        <p className="text-xs text-muted-foreground">{debt.category}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {LIABILITY_CATEGORIES.find(c => c.value === debt.category)?.label || debt.category}
+                        </p>
                       </div>
                     </div>
                     <div className="text-right">

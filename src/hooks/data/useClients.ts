@@ -168,10 +168,10 @@ export function useDeleteClientTestData() {
     onSuccess: () => {
       afterClientDelete();
       invalidate('mileage', 'mileage-summary', 'tags-with-expense-count');
-      t.success('Datos de prueba eliminados exitosamente', 'Test data deleted successfully');
+      t.success('Datos del cliente eliminados', 'Client data deleted');
     },
     onError: (error: Error) => {
-      t.error(error.message || 'Error al eliminar datos de prueba', error.message || 'Error deleting test data');
+      t.error(error.message || 'Error al eliminar los datos del cliente', error.message || 'Error deleting client data');
     },
   });
 }

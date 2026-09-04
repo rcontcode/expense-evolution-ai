@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useInvalidateRelated } from './useInvalidateRelated';
 import { insertAuditLog } from './useAuditLog';
+import { aFechaISO, fechaLocal, hoyLocal } from '@/lib/fecha';
 
 // RecurringBill, BillPayment, BillInsert, BillUpdate types
 export interface RecurringBill {
@@ -58,7 +59,7 @@ export async function generateHistoricalPayments(
   let iterations = 0;
   while (current < today && payments.length < MAX_HISTORICAL_PAYMENTS) {
     payments.push({
-      paid_date: current.toISOString().split('T')[0],
+      paid_date: aFechaISO(current),
       amount_paid: amount,
     });
     const prev = current.getTime();
@@ -216,7 +217,7 @@ export function useMarkBillPaid() {
         user_id: user!.id,
         bill_id: billId,
         amount_paid: amount,
-        paid_date: paidDate || new Date().toISOString().split('T')[0],
+        paid_date: paidDate || hoyLocal(),
         notes,
       });
       if (payError) throw payError;
@@ -230,15 +231,15 @@ export function useMarkBillPaid() {
       if (billError) throw billError;
       if (!bill) throw new Error('Bill not found');
 
-      const currentDue = new Date(bill.next_due_date);
+      const currentDue = fechaLocal(bill.next_due_date);
       const { getNextDueDate } = await import('@/lib/constants/bill-categories');
-      const nextDue = getNextDueDate(currentDue, bill.frequency, bill.frequency_months || undefined);
+      const nextDue = getNextDueDate(currentDue, bill.frequency, bill.frequency_months || undefined, bill.due_day);
 
       const { error: updateError } = await supabase
         .from('recurring_bills')
         .update({
-          last_paid_date: paidDate || new Date().toISOString().split('T')[0],
-          next_due_date: nextDue.toISOString().split('T')[0],
+          last_paid_date: paidDate || hoyLocal(),
+          next_due_date: aFechaISO(nextDue),
         })
         .eq('id', billId)
         .eq('user_id', user.id);

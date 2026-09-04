@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useLanguage } from '@/contexts/LanguageContext';
 import type { Database } from '@/integrations/supabase/types';
+import { aFechaISO } from '@/lib/fecha';
 
 type ExpenseStatus = Database['public']['Enums']['expense_status'];
 type IncomeType = Database['public']['Enums']['income_type'];
@@ -231,8 +232,8 @@ export function useGenerateSampleData() {
           budget: 25000, 
           color: '#3B82F6', 
           client_id: clientsData[0].id,
-          start_date: new Date(today.getFullYear(), today.getMonth() - 2, 1).toISOString().split('T')[0],
-          end_date: new Date(today.getFullYear(), today.getMonth() + 3, 30).toISOString().split('T')[0],
+          start_date: aFechaISO(new Date(today.getFullYear(), today.getMonth() - 2, 1)),
+          end_date: aFechaISO(new Date(today.getFullYear(), today.getMonth() + 3, 30)),
         },
         { 
           name: `${SAMPLE_MARKER} Mobile App Development`, 
@@ -241,8 +242,8 @@ export function useGenerateSampleData() {
           budget: 75000, 
           color: '#10B981', 
           client_id: clientsData[0].id,
-          start_date: new Date(today.getFullYear(), today.getMonth() - 1, 15).toISOString().split('T')[0],
-          end_date: new Date(today.getFullYear(), today.getMonth() + 6, 15).toISOString().split('T')[0],
+          start_date: aFechaISO(new Date(today.getFullYear(), today.getMonth() - 1, 15)),
+          end_date: aFechaISO(new Date(today.getFullYear(), today.getMonth() + 6, 15)),
         },
         // Creative Design projects
         { 
@@ -252,8 +253,8 @@ export function useGenerateSampleData() {
           budget: 12000, 
           color: '#8B5CF6', 
           client_id: clientsData[1].id,
-          start_date: new Date(today.getFullYear(), today.getMonth() - 3, 1).toISOString().split('T')[0],
-          end_date: new Date(today.getFullYear(), today.getMonth() - 1, 15).toISOString().split('T')[0],
+          start_date: aFechaISO(new Date(today.getFullYear(), today.getMonth() - 3, 1)),
+          end_date: aFechaISO(new Date(today.getFullYear(), today.getMonth() - 1, 15)),
         },
         { 
           name: `${SAMPLE_MARKER} Q1 Marketing Campaign`, 
@@ -262,8 +263,8 @@ export function useGenerateSampleData() {
           budget: 18000, 
           color: '#F59E0B', 
           client_id: clientsData[1].id,
-          start_date: new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0],
-          end_date: new Date(today.getFullYear(), today.getMonth() + 2, 28).toISOString().split('T')[0],
+          start_date: aFechaISO(new Date(today.getFullYear(), today.getMonth(), 1)),
+          end_date: aFechaISO(new Date(today.getFullYear(), today.getMonth() + 2, 28)),
         },
       ];
 
@@ -338,7 +339,7 @@ export function useGenerateSampleData() {
         date.setDate(date.getDate() - e.daysAgo);
         return {
           user_id: userId,
-          date: date.toISOString().split('T')[0],
+          date: aFechaISO(date),
           amount: e.amount,
           vendor: e.vendor,
           category: e.category,
@@ -390,7 +391,7 @@ export function useGenerateSampleData() {
         const recurrence: RecurrenceType = inc.type === 'passive_rental' ? 'monthly' : 'one_time';
         return {
           user_id: userId,
-          date: date.toISOString().split('T')[0],
+          date: aFechaISO(date),
           amount: inc.amount,
           income_type: inc.type,
           source: inc.source,
@@ -424,7 +425,7 @@ export function useGenerateSampleData() {
         date.setDate(date.getDate() - m.daysAgo);
         return {
           user_id: userId,
-          date: date.toISOString().split('T')[0],
+          date: aFechaISO(date),
           kilometers: m.km,
           route: `${SAMPLE_MARKER} ${m.route}`,
           purpose: m.purpose,
@@ -520,7 +521,7 @@ export function useGenerateSampleData() {
         date.setDate(date.getDate() - t.daysAgo);
         return {
           user_id: userId,
-          transaction_date: date.toISOString().split('T')[0],
+          transaction_date: aFechaISO(date),
           amount: t.amount,
           description: `${SAMPLE_MARKER} ${t.desc}`,
           status: t.status,
@@ -589,9 +590,9 @@ export function useGenerateSampleData() {
       // 11. CREATE 3 SAVINGS GOALS
       // ============================================
       const savingsGoals = [
-        { name: `${SAMPLE_MARKER} Vacation Fund`, target_amount: 5000, current_amount: 2800, color: '#EC4899', priority: 2, deadline: new Date(today.getFullYear(), today.getMonth() + 4, 1).toISOString().split('T')[0] },
-        { name: `${SAMPLE_MARKER} New MacBook Pro`, target_amount: 3500, current_amount: 1200, color: '#6366F1', priority: 3, deadline: new Date(today.getFullYear(), today.getMonth() + 6, 1).toISOString().split('T')[0] },
-        { name: `${SAMPLE_MARKER} Business Workshop`, target_amount: 2000, current_amount: 1800, color: '#14B8A6', priority: 1, deadline: new Date(today.getFullYear(), today.getMonth() + 1, 15).toISOString().split('T')[0] },
+        { name: `${SAMPLE_MARKER} Vacation Fund`, target_amount: 5000, current_amount: 2800, color: '#EC4899', priority: 2, deadline: aFechaISO(new Date(today.getFullYear(), today.getMonth() + 4, 1)) },
+        { name: `${SAMPLE_MARKER} New MacBook Pro`, target_amount: 3500, current_amount: 1200, color: '#6366F1', priority: 3, deadline: aFechaISO(new Date(today.getFullYear(), today.getMonth() + 6, 1)) },
+        { name: `${SAMPLE_MARKER} Business Workshop`, target_amount: 2000, current_amount: 1800, color: '#14B8A6', priority: 1, deadline: aFechaISO(new Date(today.getFullYear(), today.getMonth() + 1, 15)) },
       ];
 
       const { error: savingsError } = await supabase.from('savings_goals').insert(savingsGoals.map(g => ({ ...g, user_id: userId })));
@@ -608,7 +609,7 @@ export function useGenerateSampleData() {
         const baseLiabilities = 85000 - (6 - i) * 1200;
         netWorthSnapshots.push({
           user_id: userId,
-          snapshot_date: snapshotDate.toISOString().split('T')[0],
+          snapshot_date: aFechaISO(snapshotDate),
           total_assets: baseAssets + Math.random() * 2000,
           total_liabilities: baseLiabilities + Math.random() * 500,
           net_worth: baseAssets - baseLiabilities + Math.random() * 1500,
@@ -631,16 +632,16 @@ export function useGenerateSampleData() {
           contract_type: 'services',
           status: 'ready' as const,
           value: 75000,
-          start_date: new Date(today.getFullYear(), today.getMonth() - 2, 1).toISOString().split('T')[0],
-          end_date: new Date(today.getFullYear(), today.getMonth() + 10, 30).toISOString().split('T')[0],
+          start_date: aFechaISO(new Date(today.getFullYear(), today.getMonth() - 2, 1)),
+          end_date: aFechaISO(new Date(today.getFullYear(), today.getMonth() + 10, 30)),
           auto_renew: true,
           renewal_notice_days: 30,
           description: 'Master services agreement for software development',
           user_notes: `${SAMPLE_MARKER} Me reembolsarán cualquier compra de materiales, herramientas, software o insumos necesarios para el proyecto. También cubren viajes y kilometraje para visitas al cliente. Comidas de trabajo están cubiertas al 100%.`,
           extracted_terms: {
             parties: ['TechCorp Solutions', 'Contractor'],
-            effective_date: new Date(today.getFullYear(), today.getMonth() - 2, 1).toISOString().split('T')[0],
-            termination_date: new Date(today.getFullYear(), today.getMonth() + 10, 30).toISOString().split('T')[0],
+            effective_date: aFechaISO(new Date(today.getFullYear(), today.getMonth() - 2, 1)),
+            termination_date: aFechaISO(new Date(today.getFullYear(), today.getMonth() + 10, 30)),
             payment_terms: 'Net 30 days from invoice date',
             key_clauses: [
               'All work product becomes property of TechCorp',
@@ -714,16 +715,16 @@ export function useGenerateSampleData() {
           contract_type: 'retainer',
           status: 'ready' as const,
           value: 36000,
-          start_date: new Date(today.getFullYear(), 0, 1).toISOString().split('T')[0],
-          end_date: new Date(today.getFullYear(), 11, 31).toISOString().split('T')[0],
+          start_date: aFechaISO(new Date(today.getFullYear(), 0, 1)),
+          end_date: aFechaISO(new Date(today.getFullYear(), 11, 31)),
           auto_renew: false,
           renewal_notice_days: 60,
           description: 'Annual retainer for design and marketing services',
           user_notes: `${SAMPLE_MARKER} Reembolso de materiales de diseño y subscripciones de software creativo. Viajes para sesiones de fotos están incluidos. NO reembolsan comidas excepto durante eventos.`,
           extracted_terms: {
             parties: ['Creative Design Studio', 'Contractor'],
-            effective_date: new Date(today.getFullYear(), 0, 1).toISOString().split('T')[0],
-            termination_date: new Date(today.getFullYear(), 11, 31).toISOString().split('T')[0],
+            effective_date: aFechaISO(new Date(today.getFullYear(), 0, 1)),
+            termination_date: aFechaISO(new Date(today.getFullYear(), 11, 31)),
             payment_terms: 'Monthly retainer due on 1st of each month',
             key_clauses: [
               'Minimum 20 hours per month',
@@ -852,11 +853,11 @@ export function useGenerateSampleData() {
       // ============================================
       console.log('[SAMPLE DATA] Creating journal entries...');
       const journalEntries = [
-        { entry_type: 'reflection', content: `${SAMPLE_MARKER} Today I realized I've been spending too much on subscription services. Need to review and cancel unused ones.`, mood: 'thoughtful', lessons_learned: 'Small recurring expenses add up quickly over the year', entry_date: new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1).toISOString().split('T')[0] },
-        { entry_type: 'gratitude', content: `${SAMPLE_MARKER} Grateful for the new client project! This will significantly boost my quarterly income.`, mood: 'happy', entry_date: new Date(today.getFullYear(), today.getMonth(), today.getDate() - 3).toISOString().split('T')[0] },
-        { entry_type: 'decision', content: `${SAMPLE_MARKER} Decided to increase my monthly RRSP contribution from $500 to $750. Tax benefits plus compound growth!`, mood: 'motivated', lessons_learned: 'Automating savings removes the temptation to spend', entry_date: new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7).toISOString().split('T')[0] },
-        { entry_type: 'lesson', content: `${SAMPLE_MARKER} Read chapter 5 of a financial book. Key insight: Focus on building assets that generate passive income.`, mood: 'inspired', lessons_learned: 'Assets put money in your pocket; liabilities take money out', entry_date: new Date(today.getFullYear(), today.getMonth(), today.getDate() - 10).toISOString().split('T')[0] },
-        { entry_type: 'reflection', content: `${SAMPLE_MARKER} Reviewed my expense categories this month. Food spending is 15% over budget - need to meal prep more.`, mood: 'determined', lessons_learned: 'Tracking expenses reveals patterns invisible to memory', entry_date: new Date(today.getFullYear(), today.getMonth(), today.getDate() - 14).toISOString().split('T')[0] },
+        { entry_type: 'reflection', content: `${SAMPLE_MARKER} Today I realized I've been spending too much on subscription services. Need to review and cancel unused ones.`, mood: 'thoughtful', lessons_learned: 'Small recurring expenses add up quickly over the year', entry_date: aFechaISO(new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1)) },
+        { entry_type: 'gratitude', content: `${SAMPLE_MARKER} Grateful for the new client project! This will significantly boost my quarterly income.`, mood: 'happy', entry_date: aFechaISO(new Date(today.getFullYear(), today.getMonth(), today.getDate() - 3)) },
+        { entry_type: 'decision', content: `${SAMPLE_MARKER} Decided to increase my monthly RRSP contribution from $500 to $750. Tax benefits plus compound growth!`, mood: 'motivated', lessons_learned: 'Automating savings removes the temptation to spend', entry_date: aFechaISO(new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7)) },
+        { entry_type: 'lesson', content: `${SAMPLE_MARKER} Read chapter 5 of a financial book. Key insight: Focus on building assets that generate passive income.`, mood: 'inspired', lessons_learned: 'Assets put money in your pocket; liabilities take money out', entry_date: aFechaISO(new Date(today.getFullYear(), today.getMonth(), today.getDate() - 10)) },
+        { entry_type: 'reflection', content: `${SAMPLE_MARKER} Reviewed my expense categories this month. Food spending is 15% over budget - need to meal prep more.`, mood: 'determined', lessons_learned: 'Tracking expenses reveals patterns invisible to memory', entry_date: aFechaISO(new Date(today.getFullYear(), today.getMonth(), today.getDate() - 14)) },
       ];
 
       const { error: journalError } = await supabase.from('financial_journal').insert(journalEntries.map(j => ({ ...j, user_id: userId })));
@@ -867,8 +868,8 @@ export function useGenerateSampleData() {
       // ============================================
       console.log('[SAMPLE DATA] Creating education resources...');
       const educationResources = [
-        { title: `${SAMPLE_MARKER} Padre Rico, Padre Pobre`, author: 'Autor reconocido', resource_type: 'book', category: 'mindset', total_pages: 336, pages_read: 248, progress_percentage: 74, daily_goal_pages: 15, status: 'in_progress', started_date: new Date(today.getFullYear(), today.getMonth() - 1, 10).toISOString().split('T')[0], key_lessons: 'Assets vs liabilities, cash flow quadrant, financial education importance', notes: 'Essential reading for understanding wealth building mindset' },
-        { title: `${SAMPLE_MARKER} The Intelligent Investor`, author: 'Benjamin Graham', resource_type: 'book', category: 'investing', total_pages: 640, pages_read: 640, progress_percentage: 100, status: 'completed', started_date: new Date(today.getFullYear(), today.getMonth() - 3, 1).toISOString().split('T')[0], completed_date: new Date(today.getFullYear(), today.getMonth() - 1, 15).toISOString().split('T')[0], impact_rating: 5, key_lessons: 'Value investing, margin of safety, Mr. Market concept' },
+        { title: `${SAMPLE_MARKER} Padre Rico, Padre Pobre`, author: 'Autor reconocido', resource_type: 'book', category: 'mindset', total_pages: 336, pages_read: 248, progress_percentage: 74, daily_goal_pages: 15, status: 'in_progress', started_date: aFechaISO(new Date(today.getFullYear(), today.getMonth() - 1, 10)), key_lessons: 'Assets vs liabilities, cash flow quadrant, financial education importance', notes: 'Essential reading for understanding wealth building mindset' },
+        { title: `${SAMPLE_MARKER} The Intelligent Investor`, author: 'Benjamin Graham', resource_type: 'book', category: 'investing', total_pages: 640, pages_read: 640, progress_percentage: 100, status: 'completed', started_date: aFechaISO(new Date(today.getFullYear(), today.getMonth() - 3, 1)), completed_date: aFechaISO(new Date(today.getFullYear(), today.getMonth() - 1, 15)), impact_rating: 5, key_lessons: 'Value investing, margin of safety, Mr. Market concept' },
         { title: `${SAMPLE_MARKER} Financial Freedom Course`, resource_type: 'course', category: 'planning', total_minutes: 480, minutes_consumed: 320, progress_percentage: 67, daily_goal_minutes: 30, status: 'in_progress', url: 'https://example.com/course' },
         { title: `${SAMPLE_MARKER} The Psychology of Money`, author: 'Morgan Housel', resource_type: 'book', category: 'mindset', total_pages: 256, pages_read: 0, progress_percentage: 0, status: 'not_started', notes: 'Next on my reading list' },
       ];
@@ -888,7 +889,7 @@ export function useGenerateSampleData() {
           dailyLogs.push({
             user_id: userId,
             resource_id: eduData[0].id, // Rich Dad Poor Dad
-            log_date: logDate.toISOString().split('T')[0],
+            log_date: aFechaISO(logDate),
             pages_read: Math.floor(Math.random() * 20) + 5,
             minutes_consumed: Math.floor(Math.random() * 40) + 15,
             notes: i % 3 === 0 ? `${SAMPLE_MARKER} Great chapter on ${['assets', 'cash flow', 'financial literacy', 'investing'][i % 4]}` : null
@@ -908,7 +909,7 @@ export function useGenerateSampleData() {
         current_month_income: 5500,
         streak_months: 3,
         best_streak_months: 5,
-        last_payment_date: new Date(today.getFullYear(), today.getMonth(), 5).toISOString().split('T')[0]
+        last_payment_date: aFechaISO(new Date(today.getFullYear(), today.getMonth(), 5))
       };
 
       const { error: pyfError } = await supabase.from('pay_yourself_first_settings').upsert(pyfSettings, { onConflict: 'user_id' });
@@ -945,7 +946,7 @@ export function useGenerateSampleData() {
         total_savings: 15000,
         total_investments: 45000,
         streak_days: 12,
-        last_activity_date: today.toISOString().split('T')[0]
+        last_activity_date: aFechaISO(today)
       };
 
       const { error: levelError } = await supabase.from('user_financial_level').upsert(financialLevel, { onConflict: 'user_id' });
@@ -999,14 +1000,14 @@ export function useGenerateSampleData() {
       console.log('[SAMPLE DATA] Creating recurring bills...');
       const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
       const recurringBills = [
-        { name: `${SAMPLE_MARKER} Netflix`, amount: 22.99, category: 'entertainment', frequency: 'monthly', due_day: 15, next_due_date: new Date(nextMonth.getFullYear(), nextMonth.getMonth(), 15).toISOString().split('T')[0], auto_pay: true, priority: 'low', color: '#E50914', icon: '📺', notes: `${SAMPLE_MARKER} Streaming subscription` },
-        { name: `${SAMPLE_MARKER} Electricity - Hydro`, amount: 156.78, category: 'utilities', frequency: 'monthly', due_day: 20, next_due_date: new Date(nextMonth.getFullYear(), nextMonth.getMonth(), 20).toISOString().split('T')[0], auto_pay: false, priority: 'high', color: '#F59E0B', icon: '⚡', notes: `${SAMPLE_MARKER} Monthly hydro bill` },
-        { name: `${SAMPLE_MARKER} Car Insurance`, amount: 185.00, category: 'insurance', frequency: 'monthly', due_day: 1, next_due_date: new Date(nextMonth.getFullYear(), nextMonth.getMonth(), 1).toISOString().split('T')[0], auto_pay: true, priority: 'high', color: '#3B82F6', icon: '🚗', notes: `${SAMPLE_MARKER} Auto insurance premium` },
-        { name: `${SAMPLE_MARKER} Internet - Bell`, amount: 89.99, category: 'utilities', frequency: 'monthly', due_day: 5, next_due_date: new Date(nextMonth.getFullYear(), nextMonth.getMonth(), 5).toISOString().split('T')[0], auto_pay: true, priority: 'medium', color: '#0EA5E9', icon: '🌐', notes: `${SAMPLE_MARKER} Fiber internet 1Gbps` },
-        { name: `${SAMPLE_MARKER} Gym Membership`, amount: 49.99, category: 'health', frequency: 'monthly', due_day: 1, next_due_date: new Date(nextMonth.getFullYear(), nextMonth.getMonth(), 1).toISOString().split('T')[0], auto_pay: true, priority: 'low', color: '#10B981', icon: '🏋️', notes: `${SAMPLE_MARKER} Monthly gym membership` },
-        { name: `${SAMPLE_MARKER} Spotify Family`, amount: 16.99, category: 'entertainment', frequency: 'monthly', due_day: 10, next_due_date: new Date(nextMonth.getFullYear(), nextMonth.getMonth(), 10).toISOString().split('T')[0], auto_pay: true, priority: 'low', color: '#1DB954', icon: '🎵', notes: `${SAMPLE_MARKER} Family plan music streaming` },
-        { name: `${SAMPLE_MARKER} Home Insurance`, amount: 245.00, category: 'insurance', frequency: 'monthly', due_day: 15, next_due_date: new Date(nextMonth.getFullYear(), nextMonth.getMonth(), 15).toISOString().split('T')[0], auto_pay: false, priority: 'high', color: '#8B5CF6', icon: '🏠', notes: `${SAMPLE_MARKER} Homeowners insurance` },
-        { name: `${SAMPLE_MARKER} Phone Plan`, amount: 65.00, category: 'utilities', frequency: 'monthly', due_day: 25, next_due_date: new Date(nextMonth.getFullYear(), nextMonth.getMonth(), 25).toISOString().split('T')[0], auto_pay: true, priority: 'medium', color: '#EC4899', icon: '📱', notes: `${SAMPLE_MARKER} Mobile phone plan` },
+        { name: `${SAMPLE_MARKER} Netflix`, amount: 22.99, category: 'entertainment', frequency: 'monthly', due_day: 15, next_due_date: aFechaISO(new Date(nextMonth.getFullYear(), nextMonth.getMonth(), 15)), auto_pay: true, priority: 'low', color: '#E50914', icon: '📺', notes: `${SAMPLE_MARKER} Streaming subscription` },
+        { name: `${SAMPLE_MARKER} Electricity - Hydro`, amount: 156.78, category: 'utilities', frequency: 'monthly', due_day: 20, next_due_date: aFechaISO(new Date(nextMonth.getFullYear(), nextMonth.getMonth(), 20)), auto_pay: false, priority: 'high', color: '#F59E0B', icon: '⚡', notes: `${SAMPLE_MARKER} Monthly hydro bill` },
+        { name: `${SAMPLE_MARKER} Car Insurance`, amount: 185.00, category: 'insurance', frequency: 'monthly', due_day: 1, next_due_date: aFechaISO(new Date(nextMonth.getFullYear(), nextMonth.getMonth(), 1)), auto_pay: true, priority: 'high', color: '#3B82F6', icon: '🚗', notes: `${SAMPLE_MARKER} Auto insurance premium` },
+        { name: `${SAMPLE_MARKER} Internet - Bell`, amount: 89.99, category: 'utilities', frequency: 'monthly', due_day: 5, next_due_date: aFechaISO(new Date(nextMonth.getFullYear(), nextMonth.getMonth(), 5)), auto_pay: true, priority: 'medium', color: '#0EA5E9', icon: '🌐', notes: `${SAMPLE_MARKER} Fiber internet 1Gbps` },
+        { name: `${SAMPLE_MARKER} Gym Membership`, amount: 49.99, category: 'health', frequency: 'monthly', due_day: 1, next_due_date: aFechaISO(new Date(nextMonth.getFullYear(), nextMonth.getMonth(), 1)), auto_pay: true, priority: 'low', color: '#10B981', icon: '🏋️', notes: `${SAMPLE_MARKER} Monthly gym membership` },
+        { name: `${SAMPLE_MARKER} Spotify Family`, amount: 16.99, category: 'entertainment', frequency: 'monthly', due_day: 10, next_due_date: aFechaISO(new Date(nextMonth.getFullYear(), nextMonth.getMonth(), 10)), auto_pay: true, priority: 'low', color: '#1DB954', icon: '🎵', notes: `${SAMPLE_MARKER} Family plan music streaming` },
+        { name: `${SAMPLE_MARKER} Home Insurance`, amount: 245.00, category: 'insurance', frequency: 'monthly', due_day: 15, next_due_date: aFechaISO(new Date(nextMonth.getFullYear(), nextMonth.getMonth(), 15)), auto_pay: false, priority: 'high', color: '#8B5CF6', icon: '🏠', notes: `${SAMPLE_MARKER} Homeowners insurance` },
+        { name: `${SAMPLE_MARKER} Phone Plan`, amount: 65.00, category: 'utilities', frequency: 'monthly', due_day: 25, next_due_date: aFechaISO(new Date(nextMonth.getFullYear(), nextMonth.getMonth(), 25)), auto_pay: true, priority: 'medium', color: '#EC4899', icon: '📱', notes: `${SAMPLE_MARKER} Mobile phone plan` },
       ];
 
       const { error: billsError } = await supabase.from('recurring_bills').insert(
@@ -1323,7 +1324,7 @@ export function useGenerateSampleDataBySection() {
             date.setDate(date.getDate() - e.daysAgo);
             return {
               user_id: userId,
-              date: date.toISOString().split('T')[0],
+              date: aFechaISO(date),
               amount: e.amount,
               vendor: e.vendor,
               category: e.category,
@@ -1353,7 +1354,7 @@ export function useGenerateSampleDataBySection() {
             date.setDate(date.getDate() - inc.daysAgo);
             return {
               user_id: userId,
-              date: date.toISOString().split('T')[0],
+              date: aFechaISO(date),
               amount: inc.amount,
               income_type: inc.type,
               source: inc.source,
@@ -1389,7 +1390,7 @@ export function useGenerateSampleDataBySection() {
             date.setDate(date.getDate() - m.daysAgo);
             return {
               user_id: userId,
-              date: date.toISOString().split('T')[0],
+              date: aFechaISO(date),
               kilometers: m.km,
               route: `${SAMPLE_MARKER} ${m.route}`,
               purpose: m.purpose,
@@ -1455,10 +1456,10 @@ export function useGenerateSampleDataBySection() {
         case 'recurring_bills':
           const nextMo = new Date(today.getFullYear(), today.getMonth() + 1, 1);
           const bills = [
-            { name: `${SAMPLE_MARKER} Netflix`, amount: 22.99, category: 'entertainment', frequency: 'monthly', due_day: 15, next_due_date: new Date(nextMo.getFullYear(), nextMo.getMonth(), 15).toISOString().split('T')[0], auto_pay: true, priority: 'low', color: '#E50914', icon: '📺', notes: `${SAMPLE_MARKER} Streaming` },
-            { name: `${SAMPLE_MARKER} Electricity`, amount: 156.78, category: 'utilities', frequency: 'monthly', due_day: 20, next_due_date: new Date(nextMo.getFullYear(), nextMo.getMonth(), 20).toISOString().split('T')[0], auto_pay: false, priority: 'high', color: '#F59E0B', icon: '⚡', notes: `${SAMPLE_MARKER} Hydro` },
-            { name: `${SAMPLE_MARKER} Car Insurance`, amount: 185.00, category: 'insurance', frequency: 'monthly', due_day: 1, next_due_date: new Date(nextMo.getFullYear(), nextMo.getMonth(), 1).toISOString().split('T')[0], auto_pay: true, priority: 'high', color: '#3B82F6', icon: '🚗', notes: `${SAMPLE_MARKER} Auto insurance` },
-            { name: `${SAMPLE_MARKER} Internet`, amount: 89.99, category: 'utilities', frequency: 'monthly', due_day: 5, next_due_date: new Date(nextMo.getFullYear(), nextMo.getMonth(), 5).toISOString().split('T')[0], auto_pay: true, priority: 'medium', color: '#0EA5E9', icon: '🌐', notes: `${SAMPLE_MARKER} Fiber` },
+            { name: `${SAMPLE_MARKER} Netflix`, amount: 22.99, category: 'entertainment', frequency: 'monthly', due_day: 15, next_due_date: aFechaISO(new Date(nextMo.getFullYear(), nextMo.getMonth(), 15)), auto_pay: true, priority: 'low', color: '#E50914', icon: '📺', notes: `${SAMPLE_MARKER} Streaming` },
+            { name: `${SAMPLE_MARKER} Electricity`, amount: 156.78, category: 'utilities', frequency: 'monthly', due_day: 20, next_due_date: aFechaISO(new Date(nextMo.getFullYear(), nextMo.getMonth(), 20)), auto_pay: false, priority: 'high', color: '#F59E0B', icon: '⚡', notes: `${SAMPLE_MARKER} Hydro` },
+            { name: `${SAMPLE_MARKER} Car Insurance`, amount: 185.00, category: 'insurance', frequency: 'monthly', due_day: 1, next_due_date: aFechaISO(new Date(nextMo.getFullYear(), nextMo.getMonth(), 1)), auto_pay: true, priority: 'high', color: '#3B82F6', icon: '🚗', notes: `${SAMPLE_MARKER} Auto insurance` },
+            { name: `${SAMPLE_MARKER} Internet`, amount: 89.99, category: 'utilities', frequency: 'monthly', due_day: 5, next_due_date: aFechaISO(new Date(nextMo.getFullYear(), nextMo.getMonth(), 5)), auto_pay: true, priority: 'medium', color: '#0EA5E9', icon: '🌐', notes: `${SAMPLE_MARKER} Fiber` },
           ];
           await supabase.from('recurring_bills').insert(bills.map(b => ({ ...b, user_id: userId, status: 'active', payment_method_type: 'manual_online' })));
           break;

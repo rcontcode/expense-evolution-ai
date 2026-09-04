@@ -8,6 +8,8 @@ import { useIncome } from '@/hooks/data/useIncome';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { IncomeDialog } from '@/components/dialogs/IncomeDialog';
 import type { IncomeWithRelations } from '@/types/income.types';
+import { fechaLocal, mesLocal } from '@/lib/fecha';
+import { getIncomeCategoryLabel } from '@/lib/constants/income-categories';
 
 export function SimpleIncome() {
   const { language } = useLanguage();
@@ -22,7 +24,7 @@ export function SimpleIncome() {
   );
 
   const total = useMemo(() => {
-    const ym = new Date().toISOString().slice(0, 7);
+    const ym = mesLocal();
     return (income ?? [])
       .filter((i: any) => typeof i.date === 'string' && i.date.startsWith(ym))
       .reduce((s: number, i: any) => s + Number(i.amount || 0), 0);
@@ -74,8 +76,8 @@ export function SimpleIncome() {
                           {i.source || i.description || (language === 'es' ? 'Ingreso' : 'Income')}
                         </div>
                         <div className="text-xs text-muted-foreground">
-                          {new Date(i.date).toLocaleDateString(language === 'es' ? 'es' : 'en', { day: 'numeric', month: 'short' })}
-                          {i.category ? ` · ${i.category}` : ''}
+                          {fechaLocal(i.date).toLocaleDateString(language === 'es' ? 'es' : 'en', { day: 'numeric', month: 'short' })}
+                          {i.income_type ? ` · ${getIncomeCategoryLabel(i.income_type, language === 'es' ? 'es' : 'en')}` : ''}
                         </div>
                       </div>
                     </div>

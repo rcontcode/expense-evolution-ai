@@ -8,6 +8,7 @@ import { useBankTransactions } from '@/hooks/data/useBankTransactions';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { BankImportDialog } from '@/components/dialogs/BankImportDialog';
 import { cn } from '@/lib/utils';
+import { fechaLocal, mesLocal } from '@/lib/fecha';
 
 export function SimpleBanking() {
   const { language } = useLanguage();
@@ -18,7 +19,7 @@ export function SimpleBanking() {
   const recent = useMemo(() => (transactions ?? []).slice(0, 15), [transactions]);
 
   const monthSummary = useMemo(() => {
-    const ym = new Date().toISOString().slice(0, 7);
+    const ym = mesLocal();
     let inc = 0, out = 0;
     for (const t of (transactions ?? [])) {
       if (!t.transaction_date?.startsWith(ym)) continue;
@@ -86,9 +87,9 @@ export function SimpleBanking() {
                         <Landmark className="h-4 w-4" />
                       </div>
                       <div className="min-w-0">
-                        <div className="text-sm font-medium truncate">{t.description || t.merchant || (language === 'es' ? 'Movimiento' : 'Movement')}</div>
+                        <div className="text-sm font-medium truncate">{t.description || (language === 'es' ? 'Movimiento' : 'Movement')}</div>
                         <div className="text-xs text-muted-foreground">
-                          {new Date(t.transaction_date).toLocaleDateString(language === 'es' ? 'es' : 'en', { day: 'numeric', month: 'short' })}
+                          {fechaLocal(t.transaction_date).toLocaleDateString(language === 'es' ? 'es' : 'en', { day: 'numeric', month: 'short' })}
                         </div>
                       </div>
                     </div>
