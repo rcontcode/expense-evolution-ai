@@ -819,7 +819,9 @@ export function ReceiptReviewDialog({
                     />
                   ) : (
                     <div className="p-3 bg-muted/50 rounded-md font-bold text-lg">
-                      ${data.amount?.toFixed(2) || <span className="text-muted-foreground font-normal italic">0.00</span>}
+                      {data.amount != null
+                        ? formatCurrency(data.amount, { currency: data.currency })
+                        : <span className="text-muted-foreground font-normal italic">—</span>}
                     </div>
                   )}
                 </div>

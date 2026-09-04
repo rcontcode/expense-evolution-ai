@@ -70,7 +70,7 @@ export const MileageSummaryCard = ({ summary }: MileageSummaryCardProps) => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-chart-2">
-                ${summary.totalDeductibleAmount.toLocaleString()} CLP
+                {formatCurrency(summary.totalDeductibleAmount, { currency: 'CLP', decimals: 0 })}
               </div>
               <p className="text-xs text-muted-foreground">
                 {isEs ? 'Estimación SII gastos presuntos' : 'SII presumed expenses estimate'}
@@ -218,7 +218,7 @@ export const MileageSummaryCard = ({ summary }: MileageSummaryCardProps) => {
               <div className="text-sm text-muted-foreground">
                 {isEs ? 'Tarifa estimada por km' : 'Estimated rate per km'}
               </div>
-              <div className="text-lg font-bold">${siiRates.perKm} CLP/km</div>
+              <div className="text-lg font-bold">{formatCurrency(siiRates.perKm, { currency: 'CLP', decimals: 0 })}/km</div>
             </div>
             <div className="p-2 rounded-lg bg-amber-500/10 border border-amber-500/20">
               <p className="text-xs text-amber-700 dark:text-amber-400">

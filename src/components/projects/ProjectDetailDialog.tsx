@@ -177,7 +177,7 @@ export function ProjectDetailDialog({ open, onClose, project }: ProjectDetailDia
                     {language === 'es' ? 'Ingresos' : 'Income'}
                   </div>
                   <p className="text-2xl font-bold text-green-600 mt-1">
-                    ${totals.income.toLocaleString()}
+                    {formatCurrency(totals.income, { decimals: 0 })}
                   </p>
                 </CardContent>
               </Card>
@@ -188,7 +188,7 @@ export function ProjectDetailDialog({ open, onClose, project }: ProjectDetailDia
                     {language === 'es' ? 'Gastos' : 'Expenses'}
                   </div>
                   <p className="text-2xl font-bold text-red-600 mt-1">
-                    ${totals.expenses.toLocaleString()}
+                    {formatCurrency(totals.expenses, { decimals: 0 })}
                   </p>
                 </CardContent>
               </Card>
@@ -203,7 +203,7 @@ export function ProjectDetailDialog({ open, onClose, project }: ProjectDetailDia
                     {language === 'es' ? 'Balance' : 'Balance'}
                   </div>
                   <p className={`text-2xl font-bold mt-1 ${totals.netBalance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    ${Math.abs(totals.netBalance).toLocaleString()}
+                    {formatCurrency(Math.abs(totals.netBalance), { decimals: 0 })}
                   </p>
                 </CardContent>
               </Card>
@@ -215,7 +215,7 @@ export function ProjectDetailDialog({ open, onClose, project }: ProjectDetailDia
                       {language === 'es' ? 'Presupuesto' : 'Budget'}
                     </div>
                     <p className="text-2xl font-bold mt-1">
-                      ${totals.budgetRemaining.toLocaleString()}
+                      {formatCurrency(totals.budgetRemaining, { decimals: 0 })}
                     </p>
                     <Progress value={Math.min(totals.budgetUsed, 100)} className="h-2 mt-2" />
                     <p className="text-xs text-muted-foreground mt-1">
@@ -356,7 +356,7 @@ export function ProjectDetailDialog({ open, onClose, project }: ProjectDetailDia
                   <div className="flex items-center gap-3">
                     <DollarSign className="h-4 w-4 text-muted-foreground" />
                     <div className="text-sm">
-                      <span className="font-medium">${project.budget.toLocaleString()}</span>
+                      <span className="font-medium">{formatCurrency(project.budget, { decimals: 0 })}</span>
                       <span className="text-muted-foreground ml-1">
                         {language === 'es' ? 'presupuesto total' : 'total budget'}
                       </span>

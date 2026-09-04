@@ -233,7 +233,7 @@ import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
                    </p>
                    <div className="flex items-center justify-between">
                      <span className="text-2xl font-bold text-chart-2">
-                       ${budgetSuggestions.globalSuggestion.toFixed(0)}/mes
+                       {formatCurrency(budgetSuggestions.globalSuggestion, { decimals: 0 })}/mes
                      </span>
                      <Button variant="outline" size="sm" onClick={handleApplySuggestion}>
                        <Check className="h-4 w-4 mr-1" />

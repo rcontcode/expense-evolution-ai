@@ -364,12 +364,12 @@ export function BankImportDialog({ open, onClose }: BankImportDialogProps) {
                   <div className="p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-center">
                     <p className="text-xs text-muted-foreground">{l ? 'Ingresos creados' : 'Income created'}</p>
                     <p className="text-lg font-bold text-emerald-600">{ss?.incomeCreated ?? summary.incomeCount}</p>
-                    <p className="text-[10px] text-muted-foreground">${summary.incomeTotal.toFixed(0)}</p>
+                    <p className="text-[10px] text-muted-foreground">{formatCurrency(summary.incomeTotal, { decimals: 0 })}</p>
                   </div>
                   <div className="p-2.5 rounded-lg bg-red-500/10 border border-red-500/20 text-center">
                     <p className="text-xs text-muted-foreground">{l ? 'Gastos creados' : 'Expenses created'}</p>
                     <p className="text-lg font-bold text-red-600">{ss?.expensesCreated ?? summary.expenseCount}</p>
-                    <p className="text-[10px] text-muted-foreground">${summary.expenseTotal.toFixed(0)}</p>
+                    <p className="text-[10px] text-muted-foreground">{formatCurrency(summary.expenseTotal, { decimals: 0 })}</p>
                   </div>
                 </div>
               )}

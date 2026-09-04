@@ -22,9 +22,11 @@ import { TaxInfoVersionBadge } from '@/components/tax-calendar/TaxInfoVersionBad
 import { LegalDisclaimer } from '@/components/ui/legal-disclaimer';
 import { useEntity } from '@/contexts/EntityContext';
 import type { CountryCode } from '@/lib/constants/country-tax-config';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 
 export const TaxOptimizerCard = memo(function TaxOptimizerCard() {
   const { t } = useLanguage();
+  const { formatCurrency } = useFormatCurrency();
   const { data: profile } = useProfile();
   const { isAnalyzing, result, error, analyzeAndOptimize, clearResult } = useTaxOptimizer();
   const { currentCountry } = useEntity();
@@ -152,8 +154,8 @@ export const TaxOptimizerCard = memo(function TaxOptimizerCard() {
                 </div>
                 <p className="text-xl font-bold text-primary">
                   {isCL 
-                    ? `$${result.summary.totalDeductible.toLocaleString('es-CL', { maximumFractionDigits: 0 })}`
-                    : `$${result.summary.totalDeductible.toLocaleString('es-CA', { minimumFractionDigits: 2 })}`
+                    ? formatCurrency(result.summary.totalDeductible, { decimals: 0 })
+                    : formatCurrency(result.summary.totalDeductible, { decimals: 2 })
                   }
                 </p>
               </div>
@@ -164,8 +166,8 @@ export const TaxOptimizerCard = memo(function TaxOptimizerCard() {
                 </div>
                 <p className="text-xl font-bold text-green-600">
                   {isCL 
-                    ? `$${result.summary.potentialSavings.toLocaleString('es-CL', { maximumFractionDigits: 0 })}`
-                    : `$${result.summary.potentialSavings.toLocaleString('es-CA', { minimumFractionDigits: 2 })}`
+                    ? formatCurrency(result.summary.potentialSavings, { decimals: 0 })
+                    : formatCurrency(result.summary.potentialSavings, { decimals: 2 })
                   }
                 </p>
               </div>

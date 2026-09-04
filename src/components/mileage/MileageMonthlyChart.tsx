@@ -94,7 +94,7 @@ export function MileageMonthlyChart({ data, year }: MileageMonthlyChartProps) {
         <div className="flex gap-4 text-sm text-muted-foreground">
           <span>{totals.trips} {language === 'es' ? 'viajes' : 'trips'}</span>
           <span>{totals.kilometers.toLocaleString()} km</span>
-          <span className="text-primary font-medium">${totals.deduction.toLocaleString()}</span>
+          <span className="text-primary font-medium">{formatCurrency(totals.deduction, { decimals: 0 })}</span>
         </div>
       </CardHeader>
       <CardContent>

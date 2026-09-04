@@ -95,7 +95,7 @@ export const SpendingHeatmap = memo(({ expenses, isLoading }: SpendingHeatmapPro
 
   const dayLabels = DAY_LABELS[language] || DAY_LABELS.es;
 
-  const { formatCompact: formatCurrency } = useFormatCurrency();
+  const { formatCompact: formatCurrency, formatAxis } = useFormatCurrency();
 
   if (isLoading) {
     return (
@@ -198,7 +198,7 @@ export const SpendingHeatmap = memo(({ expenses, isLoading }: SpendingHeatmapPro
                   </span>
                   {amount > 0 && (
                     <span className="text-[8px] font-semibold text-foreground leading-none mt-0.5 truncate w-full text-center">
-                      ${amount >= 1000 ? `${(amount / 1000).toFixed(0)}K` : amount.toFixed(0)}
+                      {formatAxis(amount)}
                     </span>
                   )}
                 </button>

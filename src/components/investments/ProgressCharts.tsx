@@ -104,7 +104,7 @@ export function ProgressCharts({ savingsGoals, investmentGoals }: ProgressCharts
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">{t('investments.totalSaved')}</p>
-                <p className="text-2xl font-bold">${totalSaved.toLocaleString()}</p>
+                <p className="text-2xl font-bold">{formatCurrency(totalSaved, { decimals: 0 })}</p>
               </div>
             </div>
           </CardContent>
@@ -219,7 +219,7 @@ export function ProgressCharts({ savingsGoals, investmentGoals }: ProgressCharts
                   outerRadius={90}
                   paddingAngle={5}
                   dataKey="value"
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  label={({ name, percent }) => `${name} {formatCurrency((percent * 100), { decimals: 0 })}%`}
                   labelLine={false}
                 >
                   {summaryData.map((entry, index) => (

@@ -98,7 +98,7 @@ export const MileageTabContent = memo(({ mileageSummary, isLoading, country }: M
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-chart-2">
-                ${mileageSummary.totalDeductibleAmount.toLocaleString()} CLP
+                {formatCurrency(mileageSummary.totalDeductibleAmount, { currency: 'CLP', decimals: 0 })}
               </div>
               <p className="text-xs text-muted-foreground">
                 {isEs ? 'Estimación SII' : 'SII estimate'}

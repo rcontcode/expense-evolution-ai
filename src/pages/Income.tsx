@@ -225,7 +225,7 @@ function IncomeAdvanced() {
                             <span className="text-[10px] text-muted-foreground">{t('income.totalIncome')}</span>
                             <DollarSign className="h-3 w-3 text-chart-1" />
                           </div>
-                          <p className="text-sm font-bold text-chart-1">${summary?.totalIncome.toFixed(0) || '0'}</p>
+                          <p className="text-sm font-bold text-chart-1">{formatCurrency(summary?.totalIncome ?? 0, { decimals: 0 })}</p>
                         </CardContent>
                       </Card>
                       <Card>
@@ -277,7 +277,7 @@ function IncomeAdvanced() {
                             <div key={group.key} className="space-y-1">
                               <div className="flex justify-between text-xs">
                                 <span className="font-medium">{language === 'es' ? group.label : group.labelEn}</span>
-                                <span className="text-muted-foreground">${group.total.toFixed(0)}</span>
+                                <span className="text-muted-foreground">{formatCurrency(group.total, { decimals: 0 })}</span>
                               </div>
                               <Progress value={(group.total / (summary?.totalIncome || 1)) * 100} className="h-1.5" />
                             </div>
@@ -352,7 +352,7 @@ function IncomeAdvanced() {
                   <DollarSign className="h-4 w-4 text-chart-1" />
                 </CardHeader>
                 <CardContent className="p-3 pt-0">
-                  <div className="text-lg sm:text-2xl font-bold text-chart-1">${summary?.totalIncome.toFixed(2) || '0.00'}</div>
+                  <div className="text-lg sm:text-2xl font-bold text-chart-1">{formatCurrency(summary?.totalIncome ?? 0)}</div>
                 </CardContent>
               </Card>
               <Card>
@@ -361,7 +361,7 @@ function IncomeAdvanced() {
                   <Wallet className="h-4 w-4 text-chart-2" />
                 </CardHeader>
                 <CardContent className="p-3 pt-0">
-                  <div className="text-lg sm:text-2xl font-bold text-chart-2">${summary?.taxableIncome.toFixed(2) || '0.00'}</div>
+                  <div className="text-lg sm:text-2xl font-bold text-chart-2">{formatCurrency(summary?.taxableIncome ?? 0)}</div>
                 </CardContent>
               </Card>
               <Card>
@@ -370,7 +370,7 @@ function IncomeAdvanced() {
                   <PiggyBank className="h-4 w-4 text-chart-3" />
                 </CardHeader>
                 <CardContent className="p-3 pt-0">
-                  <div className="text-lg sm:text-2xl font-bold text-chart-3">${summary?.nonTaxableIncome.toFixed(2) || '0.00'}</div>
+                  <div className="text-lg sm:text-2xl font-bold text-chart-3">{formatCurrency(summary?.nonTaxableIncome ?? 0)}</div>
                 </CardContent>
               </Card>
               <Card>

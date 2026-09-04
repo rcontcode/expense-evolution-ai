@@ -172,20 +172,20 @@ export const MonthComparisonChart = memo(({ expenses, isLoading }: MonthComparis
             <p className="text-xs text-muted-foreground mb-1">
               {language === 'es' ? 'Mes actual' : 'Current month'}
             </p>
-            <p className="text-lg font-bold text-primary">${totals.current.toFixed(0)}</p>
+            <p className="text-lg font-bold text-primary">{formatCurrency(totals.current, { decimals: 0 })}</p>
           </div>
           <div className="p-3 rounded-lg bg-muted/50 text-center">
             <p className="text-xs text-muted-foreground mb-1">
               {language === 'es' ? 'Mes anterior' : 'Previous month'}
             </p>
-            <p className="text-lg font-bold">${totals.previous.toFixed(0)}</p>
+            <p className="text-lg font-bold">{formatCurrency(totals.previous, { decimals: 0 })}</p>
           </div>
           <div className="p-3 rounded-lg bg-muted/30 text-center">
             <p className="text-xs text-muted-foreground mb-1">
               {language === 'es' ? 'Diferencia' : 'Difference'}
             </p>
             <p className={`text-lg font-bold ${totals.current > totals.previous ? 'text-red-500' : 'text-emerald-500'}`}>
-              {totals.current > totals.previous ? '+' : ''}${(totals.current - totals.previous).toFixed(0)}
+              {totals.current > totals.previous ? '+' : ''}{formatCurrency((totals.current - totals.previous), { decimals: 0 })}
             </p>
           </div>
         </div>
@@ -257,8 +257,8 @@ export const MonthComparisonChart = memo(({ expenses, isLoading }: MonthComparis
                 {chartData.map(item => (
                   <tr key={item.category} className="border-t hover:bg-muted/30">
                     <td className="p-2">{item.categoryLabel}</td>
-                    <td className="p-2 text-right font-medium">${item.current.toFixed(0)}</td>
-                    <td className="p-2 text-right text-muted-foreground">${item.previous.toFixed(0)}</td>
+                    <td className="p-2 text-right font-medium">{formatCurrency(item.current, { decimals: 0 })}</td>
+                    <td className="p-2 text-right text-muted-foreground">{formatCurrency(item.previous, { decimals: 0 })}</td>
                     <td className="p-2 text-right">
                       <div className="flex items-center justify-end gap-1">
                         {getChangeIcon(item.change)}

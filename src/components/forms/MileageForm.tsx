@@ -930,7 +930,7 @@ export const MileageForm = ({ initialData, yearToDateKm = 0, onSubmit, isLoading
                   <span className="text-muted-foreground">{t('mileage.totalEstimatedDeduction')}</span>
                   <span className="font-bold text-chart-1">
                     {totalTripDeduction.currency === 'CLP' 
-                      ? `$${totalTripDeduction.deductible.toLocaleString()} CLP`
+                      ? formatCurrency(totalTripDeduction.deductible, { currency: 'CLP', decimals: 0 })
                       : `${formatCurrency(totalTripDeduction.deductible)}`}
                   </span>
                 </div>
@@ -963,13 +963,13 @@ export const MileageForm = ({ initialData, yearToDateKm = 0, onSubmit, isLoading
               <span className="text-muted-foreground">{t('mileage.estimatedDeduction')}</span>
               <span className="font-bold text-chart-1">
                 {estimatedDeduction.currency === 'CLP'
-                  ? `$${estimatedDeduction.deductible.toLocaleString()} CLP`
+                  ? formatCurrency(estimatedDeduction.deductible, { currency: 'CLP', decimals: 0 })
                   : `${formatCurrency(estimatedDeduction.deductible)}`}
               </span>
               <span className="text-muted-foreground">{t('mileage.rateApplied')}</span>
               <span>
                 {estimatedDeduction.currency === 'CLP'
-                  ? `$${estimatedDeduction.rate} CLP/km`
+                  ? `${formatCurrency(estimatedDeduction.rate, { currency: 'CLP', decimals: 0 })}/km`
                   : `${formatCurrency(estimatedDeduction.rate)}/km`}
               </span>
               <span className="text-muted-foreground">{t('mileage.yearToDateKm')}</span>

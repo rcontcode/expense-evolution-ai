@@ -7,9 +7,11 @@ import { useEntity } from '@/contexts/EntityContext';
 import { useMileage, useMileageSummary, getCRAMileageRates, getSIIMileageRates } from '@/hooks/data/useMileage';
 import { Car, DollarSign, CalendarDays, TrendingUp, Lightbulb, Route } from 'lucide-react';
 import { plural } from '@/lib/plural';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 
 export function MileageDeductionMaximizer() {
   const { language } = useLanguage();
+  const { formatCurrency: fmtMoneda } = useFormatCurrency();
   const { currentCountry } = useEntity();
   const isEs = language === 'es';
   const currentYear = new Date().getFullYear();
@@ -86,8 +88,8 @@ export function MileageDeductionMaximizer() {
     }
     if (currentCountry === 'CA' && projectedYearEnd > 5000 && businessKm < 5000) {
       tips.push(isEs 
-        ? `Vas camino a superar los 5,000 km. La tarifa baja a $${rates.after5000}/km después — ¡maximiza ahora!`
-        : `On track to exceed 5,000 km. Rate drops to $${rates.after5000}/km after — maximize now!`);
+        ? `Vas camino a superar los 5,000 km. La tarifa baja a ${fmtMoneda(rates.after5000)}/km después — ¡maximiza ahora!`
+        : `On track to exceed 5,000 km. Rate drops to ${fmtMoneda(rates.after5000)}/km after — maximize now!`);
     }
     if (currentCountry === 'CL') {
       tips.push(isEs
@@ -104,10 +106,8 @@ export function MileageDeductionMaximizer() {
 
   if (!analysis) return null;
 
-  const formatCurrency = (n: number, currency?: string) => {
-    if (currency === 'CLP') return `$${n.toLocaleString(undefined, { maximumFractionDigits: 0 })} CLP`;
-    return `$${n.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
-  };
+  const formatCurrency = (n: number, currency?: string) =>
+    fmtMoneda(n, { decimals: 0, ...(currency ? { currency } : {}) });
 
   const countryLabel = currentCountry === 'CA' ? '🇨🇦 CRA' : currentCountry === 'CL' ? '🇨🇱 SII' : null;
 
@@ -197,7 +197,7 @@ export function MileageDeductionMaximizer() {
               {isEs ? `Tasas CRA ${currentYear}` : `CRA ${currentYear} Rates`}
             </Badge>
             <p className="text-[10px] text-muted-foreground">
-              ${rates.first5000}/km ({isEs ? 'primeros' : 'first'} 5,000) · ${rates.after5000}/km ({isEs ? 'después' : 'after'})
+              {fmtMoneda(rates.first5000)}/km ({isEs ? 'primeros' : 'first'} 5,000) · {fmtMoneda(rates.after5000)}/km ({isEs ? 'después' : 'after'})
             </p>
             <p className="text-[9px] text-muted-foreground/70">
               {isEs ? 'Verifique tasas vigentes en canada.ca antes de declarar' : 'Verify current rates at canada.ca before filing'}

@@ -21,6 +21,7 @@ import { Target, Plus, Edit, Trash2, PiggyBank, DollarSign, Sparkles, Home, Car,
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSavingsGoals, useCreateSavingsGoal, useUpdateSavingsGoal, useDeleteSavingsGoal, useAddToSavingsGoal } from '@/hooks/data/useSavingsGoals';
 import { cn } from '@/lib/utils';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 
 const GOAL_COLORS = [
   '#10B981', '#3B82F6', '#8B5CF6', '#F59E0B', '#EF4444', '#EC4899', '#06B6D4', '#84CC16'
@@ -64,6 +65,7 @@ const CATEGORY_CONFIG = {
 
 export function SavingsGoalsSection() {
   const { t, language } = useLanguage();
+  const { formatCurrency } = useFormatCurrency();
   const { data: savingsGoals, isLoading: goalsLoading } = useSavingsGoals();
   const createGoal = useCreateSavingsGoal();
   const updateGoal = useUpdateSavingsGoal();
@@ -252,7 +254,7 @@ export function SavingsGoalsSection() {
                       <p className="font-medium text-sm leading-tight">{suggestion.name[language]}</p>
                       <p className="text-xs text-muted-foreground mt-1">{suggestion.description[language]}</p>
                       <p className="text-xs font-medium mt-2" style={{ color: suggestion.color }}>
-                        ${suggestion.suggestedAmount.toLocaleString()}
+                        {formatCurrency(suggestion.suggestedAmount, { decimals: 0 })}
                       </p>
                     </button>
                   );
@@ -324,14 +326,14 @@ export function SavingsGoalsSection() {
                         </div>
                         <Progress value={Math.min(progress, 100)} className="h-2" />
                         <div className="flex justify-between text-sm">
-                          <span>${(goal.current_amount || 0).toLocaleString()}</span>
-                          <span className="text-muted-foreground">/ ${goal.target_amount.toLocaleString()}</span>
+                          <span>{formatCurrency((goal.current_amount || 0), { decimals: 0 })}</span>
+                          <span className="text-muted-foreground">/ {formatCurrency(goal.target_amount, { decimals: 0 })}</span>
                         </div>
                       </div>
 
                       {!isCompleted && remaining > 0 && (
                         <p className="text-sm text-muted-foreground mt-2">
-                          {t('savingsGoals.remaining')}: ${remaining.toLocaleString()}
+                          {t('savingsGoals.remaining')}: {formatCurrency(remaining, { decimals: 0 })}
                         </p>
                       )}
                       {isCompleted && (

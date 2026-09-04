@@ -849,7 +849,7 @@ export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCe
                                       </p>
                                       {ed.line_items.slice(0, 5).map((item: any, i: number) => (
                                         <p key={i} className="text-[11px] text-muted-foreground">
-                                          • {item.name} — ${(item.total || 0).toLocaleString()}
+                                          • {item.name} — {fmtCurr(item.total || 0, { decimals: 0 })}
                                         </p>
                                       ))}
                                     </div>
@@ -1062,7 +1062,7 @@ export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCe
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-medium truncate">📄 {doc.file_name}</p>
                         <p className="text-[10px] text-muted-foreground">
-                          🏪 {doc.extracted_data?.vendor || '—'} · 💰 ${doc.extracted_data?.amount?.toFixed(2) || '0.00'}
+                          🏪 {doc.extracted_data?.vendor || '—'} · 💰 {fmtCurr(doc.extracted_data?.amount ?? 0)}
                         </p>
                       </div>
                     </div>

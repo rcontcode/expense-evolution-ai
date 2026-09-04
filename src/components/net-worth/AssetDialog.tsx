@@ -16,6 +16,7 @@ import { useProfile } from '@/hooks/data/useProfile';
 import { useEntity } from '@/contexts/EntityContext';
 import { Asset, ASSET_CATEGORIES, ASSET_CATEGORY_GROUPS, useCreateAsset, useUpdateAsset } from '@/hooks/data/useNetWorth';
 import { cn } from '@/lib/utils';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { 
   Wallet, TrendingUp, Home, Car, PiggyBank, Bitcoin, Gem, Building2, Package,
   Hexagon, CircleDollarSign, Coins, Layers, ImageIcon, AlertTriangle, Lightbulb, BookOpen,
@@ -77,6 +78,7 @@ const ASSET_EDUCATION = {
 
 export function AssetDialog({ open, onOpenChange, editingAsset }: AssetDialogProps) {
   const { t } = useLanguage();
+  const { formatCurrency } = useFormatCurrency();
   const { data: profile } = useProfile();
   const { currentCurrency } = useEntity();
   const createAsset = useCreateAsset();
@@ -397,7 +399,7 @@ export function AssetDialog({ open, onOpenChange, editingAsset }: AssetDialogPro
               <AlertDescription className="text-sm text-red-600 dark:text-red-400">
                 Este activo ha perdido {' '}
                 <strong>
-                  ${(formData.purchase_value - formData.current_value).toLocaleString()} 
+                  {formatCurrency((formData.purchase_value - formData.current_value), { decimals: 0 })} 
                   ({((1 - formData.current_value / formData.purchase_value) * 100).toFixed(1)}%)
                 </strong>
                 {' '}de su valor original.
@@ -412,7 +414,7 @@ export function AssetDialog({ open, onOpenChange, editingAsset }: AssetDialogPro
               <AlertDescription className="text-sm text-green-600 dark:text-green-400">
                 Este activo ha ganado {' '}
                 <strong>
-                  ${(formData.current_value - formData.purchase_value).toLocaleString()} 
+                  {formatCurrency((formData.current_value - formData.purchase_value), { decimals: 0 })} 
                   ({((formData.current_value / formData.purchase_value - 1) * 100).toFixed(1)}%)
                 </strong>
                 {' '}desde su compra. 🎉

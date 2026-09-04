@@ -7,9 +7,11 @@ import { Tag, TrendingUp, PieChart, BarChart3, Receipt, Percent, Sparkles } from
 import { PieChart as RechartsPie, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, CartesianGrid, LineChart, Line } from 'recharts';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 
 export function TagAnalytics() {
   const { language } = useLanguage();
+  const { formatCurrency } = useFormatCurrency();
   const { data, isLoading } = useTagAnalytics();
 
   if (isLoading) {
@@ -149,7 +151,7 @@ export function TagAnalytics() {
                         <div className="text-right">
                           <span className="font-semibold">{tag.count}</span>
                           <span className="text-xs text-muted-foreground ml-1">
-                            (${tag.totalAmount.toLocaleString()})
+                            ({formatCurrency(tag.totalAmount, { decimals: 0 })})
                           </span>
                         </div>
                       </div>
@@ -195,7 +197,7 @@ export function TagAnalytics() {
                       outerRadius={80}
                       paddingAngle={2}
                       dataKey="value"
-                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                      label={({ name, percent }) => `${name} {formatCurrency((percent * 100), { decimals: 0 })}%`}
                       labelLine={false}
                     >
                       {pieData.map((entry, index) => (
@@ -284,7 +286,7 @@ export function TagAnalytics() {
                   <div className="text-right">
                     <p className="text-sm font-semibold">{tag.count}</p>
                     <p className="text-[10px] text-muted-foreground">
-                      ${tag.totalAmount.toLocaleString()}
+                      {formatCurrency(tag.totalAmount, { decimals: 0 })}
                     </p>
                   </div>
                 </div>

@@ -128,12 +128,12 @@ export const MileageTable = ({ data, onEdit }: MileageTableProps) => {
                     <div className="space-y-1">
                       <div className="font-medium text-chart-1">
                         {record.deductionCurrency === 'CLP' 
-                          ? `$${record.deductible.toLocaleString()} CLP`
+                          ? formatCurrency(record.deductible, { currency: 'CLP', decimals: 0 })
                           : `${formatCurrency(record.deductible)}`}
                       </div>
                       <div className="text-xs text-muted-foreground">
                         {record.deductionCurrency === 'CLP'
-                          ? `$${record.rate} CLP/km`
+                          ? `${formatCurrency(record.rate, { currency: 'CLP', decimals: 0 })}/km`
                           : `${formatCurrency(record.rate)}/km`}
                       </div>
                     </div>

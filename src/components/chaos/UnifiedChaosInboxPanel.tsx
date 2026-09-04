@@ -28,6 +28,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { PostUploadWizard } from './PostUploadWizard';
 import { toast } from 'sonner';
 import { plural } from '@/lib/plural';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 
 function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
@@ -152,6 +153,7 @@ function Thumbnail({ doc }: { doc: ClassifiedDocument }) {
 
 function ProcessedResultMessage({ doc, language }: { doc: ClassifiedDocument; language: string }) {
   const navigate = useNavigate();
+  const { formatCurrency } = useFormatCurrency();
   const result = doc.processedResult;
   if (!result) return null;
 
@@ -162,7 +164,7 @@ function ProcessedResultMessage({ doc, language }: { doc: ClassifiedDocument; la
     income_proof: { es: 'Ingreso detectado — revísalo', en: 'Income detected — review it', route: '/income', routeLabel: { es: 'Ingresos', en: 'Income' } },
     contract: { es: result.analysisError ? 'Contrato guardado (análisis pendiente)' : 'Contrato guardado y analizado', en: result.analysisError ? 'Contract saved (analysis pending)' : 'Contract saved and analyzed', route: '/contracts', routeLabel: { es: 'Contratos', en: 'Contracts' } },
     invoice: { es: 'Factura procesada — enviada al Centro de Revisión', en: 'Invoice processed — sent to Review Center', route: '/expenses', routeLabel: { es: 'Revisar', en: 'Review' } },
-    invoice_income: { es: `💰 Ingreso de $${result.amount?.toLocaleString() || '?'} ${result.currency || ''} — pendiente de revisión`, en: `💰 Income of $${result.amount?.toLocaleString() || '?'} ${result.currency || ''} — pending review`, route: '/expenses', routeLabel: { es: 'Revisar', en: 'Review' } },
+    invoice_income: { es: `💰 Ingreso de ${result.amount != null ? formatCurrency(result.amount, { currency: result.currency }) : '?'} — pendiente de revisión`, en: `💰 Income of ${result.amount != null ? formatCurrency(result.amount, { currency: result.currency }) : '?'} — pending review`, route: '/expenses', routeLabel: { es: 'Revisar', en: 'Review' } },
     invoice_expense: { es: 'Factura (gasto) enviada al Centro de Revisión', en: 'Invoice (expense) sent to Review Center', route: '/expenses', routeLabel: { es: 'Revisar', en: 'Review' } },
     tax_document: { es: 'Documento fiscal guardado', en: 'Tax document saved', route: '/files', routeLabel: { es: 'Archivos', en: 'Files' } },
     medical_receipt: { es: '🏥 Gasto médico — deducible CRA/SII', en: '🏥 Medical expense — CRA/SII deductible', route: '/expenses', routeLabel: { es: 'Revisar', en: 'Review' } },
