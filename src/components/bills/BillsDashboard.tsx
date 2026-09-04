@@ -107,7 +107,7 @@ export function BillsDashboard() {
       )}
 
       {/* ═══ SMART INSIGHTS ═══ */}
-      {hasBills && <BillSmartInsights />}
+      {hasBills && <BillSmartInsights onIrAPagar={() => setView('checklist')} />}
 
       {/* ═══ COLLAPSIBLE ONBOARDING ═══ */}
       <Collapsible open={onboardingOpen} onOpenChange={setOnboardingOpen}>

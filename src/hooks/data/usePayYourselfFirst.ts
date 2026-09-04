@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { useIncome } from './useIncome';
 import { useLocalizedToast } from '@/hooks/utils/useLocalizedToast';
 import { aFechaISO, fechaLocal } from '@/lib/fecha';
@@ -21,6 +22,7 @@ export interface PayYourselfFirstData {
 
 export function usePayYourselfFirst(): PayYourselfFirstData {
   const { formatCurrency } = useFormatCurrency();
+  const { language } = useLanguage();
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const currentYear = new Date().getFullYear();
@@ -42,28 +44,50 @@ export function usePayYourselfFirst(): PayYourselfFirstData {
   const incomeThisMonth = incomeData?.reduce((sum, inc) => sum + inc.amount, 0) || 0;
   const targetPercentage = settings?.target_percentage || 20;
   const targetSavedThisMonth = incomeThisMonth * (targetPercentage / 100);
-  const actualSavedThisMonth = settings?.current_month_saved || 0;
-  const percentageSaved = incomeThisMonth > 0 ? (actualSavedThisMonth / incomeThisMonth) * 100 : 0;
-  const isOnTrack = actualSavedThisMonth >= targetSavedThisMonth;
 
   const lastPaymentDate = settings?.last_payment_date ? fechaLocal(settings.last_payment_date) : null;
   const hasPaidThisMonth = lastPaymentDate
     ? lastPaymentDate.getMonth() === currentMonth && lastPaymentDate.getFullYear() === currentYear : false;
 
+  // `current_month_saved` guarda lo apartado en el mes del ultimo aporte, y solo se
+  // pone a cero cuando la persona registra el aporte siguiente. Asi que el dia 1 del
+  // mes nuevo la pantalla seguia mostrando lo del mes pasado: alguien que aparto 850
+  // en septiembre abria la app el 1 de octubre y leia "llevas 850 ahorrados este mes"
+  // y "vas bien", cuando todavia no habia apartado nada. Mientras el ultimo aporte no
+  // sea de ESTE mes, lo ahorrado de este mes es cero.
+  const actualSavedThisMonth = hasPaidThisMonth ? (settings?.current_month_saved || 0) : 0;
+  const percentageSaved = incomeThisMonth > 0 ? (actualSavedThisMonth / incomeThisMonth) * 100 : 0;
+  const isOnTrack = actualSavedThisMonth >= targetSavedThisMonth;
+
+  // Estos consejos estaban escritos solo en espanol: a un usuario en ingles le
+  // aparecia el bloque entero en el idioma equivocado.
+  const es = language === 'es';
   const recommendations: string[] = [];
   if (!hasPaidThisMonth && incomeThisMonth > 0) {
-    recommendations.push(`"No gastes lo que queda después de ahorrar; ahorra primero"`);
-    recommendations.push(`Deberías apartar ${formatCurrency(targetSavedThisMonth)} este mes (${targetPercentage}% de tu ingreso)`);
+    recommendations.push(es
+      ? '"No gastes lo que queda después de ahorrar; ahorra primero"'
+      : '"Do not spend what is left after saving; save first"');
+    recommendations.push(es
+      ? `Deberías apartar ${formatCurrency(targetSavedThisMonth)} este mes (${targetPercentage}% de tu ingreso)`
+      : `You should set aside ${formatCurrency(targetSavedThisMonth)} this month (${targetPercentage}% of your income)`);
   } else if (hasPaidThisMonth && !isOnTrack) {
-    recommendations.push(`Te faltan ${formatCurrency((targetSavedThisMonth - actualSavedThisMonth))} para alcanzar tu meta`);
+    recommendations.push(es
+      ? `Te faltan ${formatCurrency(targetSavedThisMonth - actualSavedThisMonth)} para alcanzar tu meta`
+      : `You are ${formatCurrency(targetSavedThisMonth - actualSavedThisMonth)} away from your goal`);
   } else if (hasPaidThisMonth && isOnTrack) {
-    recommendations.push('¡Excelente! Ya te pagaste primero este mes');
+    recommendations.push(es
+      ? '¡Excelente! Ya te pagaste primero este mes'
+      : 'Excellent! You already paid yourself first this month');
     if (settings?.streak_months && settings.streak_months > 1) {
-      recommendations.push(`Llevas ${settings.streak_months} meses consecutivos. ¡Sigue así!`);
+      recommendations.push(es
+        ? `Llevas ${settings.streak_months} meses consecutivos. ¡Sigue así!`
+        : `${settings.streak_months} months in a row. Keep it up!`);
     }
   }
   if (!settings) {
-    recommendations.push('Configura tu porcentaje de ahorro para empezar a rastrear');
+    recommendations.push(es
+      ? 'Configura tu porcentaje de ahorro para empezar a rastrear'
+      : 'Set your savings percentage to start tracking');
   }
 
   return {
@@ -113,7 +137,17 @@ export function useRecordPayment() {
       const lastPaymentDate = settings?.last_payment_date ? fechaLocal(settings.last_payment_date) : null;
       const isNewMonth = !lastPaymentDate || lastPaymentDate.getMonth() !== currentMonth || lastPaymentDate.getFullYear() !== currentYear;
       const newSaved = isNewMonth ? amount : (settings?.current_month_saved || 0) + amount;
-      const newStreak = isNewMonth ? (settings?.streak_months || 0) + 1 : settings?.streak_months || 1;
+
+      // La racha decia "meses consecutivos" pero contaba aportes: quien aportaba en
+      // enero, se saltaba diez meses y aportaba en diciembre veia "2 meses
+      // consecutivos". Solo sigue la racha si el aporte anterior fue el mes pasado.
+      const mesPasado = new Date(currentYear, currentMonth - 1, 1);
+      const veniaSeguido = !!lastPaymentDate
+        && lastPaymentDate.getMonth() === mesPasado.getMonth()
+        && lastPaymentDate.getFullYear() === mesPasado.getFullYear();
+      const newStreak = isNewMonth
+        ? (veniaSeguido ? (settings?.streak_months || 0) + 1 : 1)
+        : (settings?.streak_months || 1);
       const newBestStreak = Math.max(newStreak, settings?.best_streak_months || 0);
 
       if (settings) {

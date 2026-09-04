@@ -95,6 +95,7 @@ import {
 import { getCategoryLabelByLanguage, ExpenseCategory } from '@/lib/constants/expense-categories';
 import { MobileChartHint } from '@/components/ui/mobile-chart-hint';
 import { porcentaje } from '@/lib/numeros';
+import { useNavigate } from 'react-router-dom';
 
 // Category color palette - vibrant 3D-like colors
 const CATEGORY_COLORS: Record<string, string> = {
@@ -131,6 +132,7 @@ const FAMILY_ACHIEVEMENTS = {
 };
 
 export function FamilyMonthlyAnalysis({ year, month }: FamilyMonthlyAnalysisProps) {
+  const navigate = useNavigate();
   const { language } = useLanguage();
   const { currentCurrency } = useEntity();
   const { data: savingsGoals } = useSavingsGoals();
@@ -751,6 +753,7 @@ export function FamilyMonthlyAnalysis({ year, month }: FamilyMonthlyAnalysisProp
       title: string;
       message: string;
       action?: string;
+      onAction?: () => void;
     }[] = [];
     
     // Critical: Going over budget
@@ -762,7 +765,10 @@ export function FamilyMonthlyAnalysis({ year, month }: FamilyMonthlyAnalysisProp
         message: language === 'es' 
           ? `Proyección excede ingresos por ${formatCurrency(insights.projectedTotal - insights.totalIncome)}`
           : `Projection exceeds income by ${formatCurrency(insights.projectedTotal - insights.totalIncome)}`,
-        action: language === 'es' ? 'Ver plan de reducción' : 'View reduction plan'
+        action: language === 'es' ? 'Ver plan de reducción' : 'View reduction plan',
+        // El plan de reduccion es el presupuesto. Antes el boton no llevaba a
+        // ninguna parte: se dibujaba con su flecha y al pulsarlo no pasaba nada.
+        onAction: () => navigate('/budget'),
       });
     }
     
@@ -1070,8 +1076,8 @@ export function FamilyMonthlyAnalysis({ year, month }: FamilyMonthlyAnalysisProp
                     <p className="font-bold text-sm">{alert.title}</p>
                     <p className="text-xs text-muted-foreground truncate">{alert.message}</p>
                   </div>
-                  {alert.action && (
-                    <Button size="sm" variant="ghost" className="text-xs gap-1">
+                  {alert.action && alert.onAction && (
+                    <Button size="sm" variant="ghost" className="text-xs gap-1" onClick={alert.onAction}>
                       {alert.action}
                       <ArrowRight className="h-3 w-3" />
                     </Button>
