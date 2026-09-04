@@ -12,6 +12,7 @@ import { format } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 import { toast } from 'sonner';
 import { plural } from '@/lib/plural';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -164,6 +165,7 @@ function DuplicateGroupCard({
   dateLocale: typeof es;
   language: string;
 }) {
+  const { formatCurrency } = useFormatCurrency();
   const l = language === 'es';
   const allRecords = [group.keep, ...group.duplicates];
 
@@ -216,7 +218,7 @@ function DuplicateGroupCard({
                   {format(new Date(record.date), 'PP', { locale: dateLocale })}
                 </span>
                 <span className="font-medium truncate">{record.source || record.description || '-'}</span>
-                <span className="font-bold text-chart-1">${Number(record.amount).toFixed(2)}</span>
+                <span className="font-bold text-chart-1">{formatCurrency(Number(record.amount))}</span>
                 {record.client && (
                   <Badge variant="outline" className="text-xs">{record.client.name}</Badge>
                 )}

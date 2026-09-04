@@ -617,14 +617,14 @@ export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCe
                                   <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">
                                     💻 {language === 'es' ? 'En sistema' : 'In system'}
                                   </p>
-                                  <p className="text-lg font-bold">${item.expenseAmount.toFixed(2)}</p>
+                                  <p className="text-lg font-bold">{fmtCurr(item.expenseAmount)}</p>
                                 </div>
                                 <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800">
                                   <p className="text-[10px] uppercase tracking-wider text-amber-600 mb-1">
                                     🧾 {language === 'es' ? 'En recibo' : 'On receipt'}
                                   </p>
                                   <p className="text-lg font-bold text-amber-700 dark:text-amber-400">
-                                    ${item.receiptAmount.toFixed(2)}
+                                    {fmtCurr(item.receiptAmount)}
                                   </p>
                                 </div>
                               </div>
@@ -996,7 +996,7 @@ export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCe
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-medium truncate">{expense.vendor || '—'}</p>
                         <p className="text-[10px] text-muted-foreground">
-                          📅 {expense.date} · 💰 ${Number(expense.amount).toFixed(2)}
+                          📅 {expense.date} · 💰 {fmtCurr(Number(expense.amount))}
                         </p>
                       </div>
                     </div>

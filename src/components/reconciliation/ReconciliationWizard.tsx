@@ -44,6 +44,7 @@ import { toast } from 'sonner';
 import { useCelebrationSound } from '@/hooks/utils/useCelebrationSound';
 import { useEntity } from '@/contexts/EntityContext';
 import { plural } from '@/lib/plural';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 
 interface Flow {
   id: string;
@@ -65,6 +66,7 @@ type WizardStep = 'welcome' | 'select-flow' | 'import' | 'review-matches' | 'res
 
 export function ReconciliationWizard({ onExitWizard }: { onExitWizard: () => void }) {
   const { language } = useLanguage();
+  const { formatCurrency } = useFormatCurrency();
   const { fire: confetti } = useConfetti();
   const [currentStep, setCurrentStep] = useState<WizardStep>('welcome');
   const [selectedFlow, setSelectedFlow] = useState<string | null>(null);
@@ -650,7 +652,7 @@ export function ReconciliationWizard({ onExitWizard }: { onExitWizard: () => voi
                             </p>
                           </div>
                         </div>
-                        <span className="font-bold text-lg">${Number(tx.amount).toFixed(2)}</span>
+                        <span className="font-bold text-lg">{formatCurrency(Number(tx.amount))}</span>
                       </div>
                       <div className="pl-13 space-y-2">
                         <p className="text-sm text-muted-foreground font-medium">
@@ -762,7 +764,7 @@ export function ReconciliationWizard({ onExitWizard }: { onExitWizard: () => voi
                           </div>
                         </div>
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="font-bold">${Number(tx.amount).toFixed(2)}</span>
+                          <span className="font-bold">{formatCurrency(Number(tx.amount))}</span>
                           <Button 
                             size="sm" 
                             className="bg-success hover:bg-success/90"
@@ -979,7 +981,7 @@ export function ReconciliationWizard({ onExitWizard }: { onExitWizard: () => voi
                   </p>
                 </div>
                 <Badge variant="secondary" className="text-lg">
-                  ${selectedTransaction.amount.toFixed(2)}
+                  {formatCurrency(selectedTransaction.amount)}
                 </Badge>
               </div>
             </div>

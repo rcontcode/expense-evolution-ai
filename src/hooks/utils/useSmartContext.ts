@@ -116,7 +116,7 @@ export function useSmartContext(
     }
 
     return insights.sort((a, b) => b.priority - a.priority);
-  }, [financialData, isSpanish]);
+  }, [financialData, isSpanish, formatCurrency]);
 
   // Time-based greeting
   const getTimeBasedGreeting = useCallback(() => {

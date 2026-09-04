@@ -161,7 +161,7 @@ export function useDebtClassification(language: 'es' | 'en' = 'es'): DebtClassif
       netMonthlyCostBadDebt,
       recommendations,
     };
-  }, [liabilities, language]);
+  }, [liabilities, language, formatCurrency]);
 
   return {
     ...result,

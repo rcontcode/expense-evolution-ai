@@ -127,7 +127,7 @@ export function useGlobalSearch(query: string, maxResults = 5) {
         pathPrefix: '/tags',
       }),
     };
-  }, [debouncedQuery, expenses, clients, projects, income, bills, contracts, mileage, tags, maxResults]);
+  }, [debouncedQuery, expenses, clients, projects, income, bills, contracts, mileage, tags, maxResults, formatCurrency]);
 
   const hasResults = Object.values(results).some(arr => arr.length > 0);
 

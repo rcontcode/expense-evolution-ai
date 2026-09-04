@@ -59,6 +59,7 @@ import { plural } from '@/lib/plural';
     const { data: savingsGoals } = useSavingsGoals();
     const { isConfirmed: expensesConfirmed, looksIncomplete } = useExpenseCompleteness();
    const budgetSuggestions = useBudgetSuggestions();
+   const { formatCompact: formatCurrency } = useFormatCurrency();
  
    const now = new Date();
    const monthStart = startOfMonth(now);
@@ -264,7 +265,7 @@ import { plural } from '@/lib/plural';
        const priority = { high: 0, medium: 1, low: 2 };
        return priority[a.priority] - priority[b.priority];
      });
-   }, [globalBudget, budgetSuggestions, categoryHealth, savingsRate, savingsGoals, totalIncome, monthOverMonth, l]);
+   }, [globalBudget, budgetSuggestions, categoryHealth, savingsRate, savingsGoals, totalIncome, monthOverMonth, l, formatCurrency]);
  
    const getScoreColor = (score: number) => {
      if (score >= 80) return 'from-emerald-500 to-teal-500';
@@ -283,7 +284,6 @@ import { plural } from '@/lib/plural';
      return labels[level];
    };
  
-   const { formatCompact: formatCurrency } = useFormatCurrency();
  
    return (
     <div className="space-y-6">

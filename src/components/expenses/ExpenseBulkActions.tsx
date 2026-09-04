@@ -70,7 +70,7 @@ export const ExpenseBulkActions = memo(function ExpenseBulkActions({
                       {language === 'es' ? 'seleccionados' : 'selected'}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      ${totalAmount.toFixed(2)} {language === 'es' ? 'total' : 'total'}
+                      {formatCurrency(totalAmount)} {language === 'es' ? 'total' : 'total'}
                     </p>
                   </div>
                 </div>
@@ -124,7 +124,7 @@ export const ExpenseBulkActions = memo(function ExpenseBulkActions({
                 {selectedExpenses.slice(0, 10).map(e => (
                   <div key={e.id} className="flex justify-between">
                     <span className="truncate">{e.vendor || '—'}</span>
-                    <span className="font-medium">${Number(e.amount).toFixed(2)}</span>
+                    <span className="font-medium">{formatCurrency(Number(e.amount))}</span>
                   </div>
                 ))}
                 {count > 10 && (

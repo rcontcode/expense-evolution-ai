@@ -10,6 +10,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 import { ExpenseWithRelations } from '@/types/expense.types';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 
 interface OrphanDocument {
   id: string;
@@ -126,6 +127,7 @@ function ImageViewer({ src, alt }: { src: string; alt: string }) {
 
 export function LinkReceiptDialog({ open, onClose, expenseIds, expenses = [] }: LinkReceiptDialogProps) {
   const { language } = useLanguage();
+  const { formatCurrency } = useFormatCurrency();
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const [orphanDocs, setOrphanDocs] = useState<OrphanDocument[]>([]);
@@ -297,7 +299,7 @@ export function LinkReceiptDialog({ open, onClose, expenseIds, expenses = [] }: 
                           <p className="text-sm font-medium truncate">{vendor}</p>
                         </div>
                         <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-muted-foreground mt-1">
-                          {amount > 0 && <span className="font-semibold text-foreground">${amount.toFixed(2)}</span>}
+                          {amount > 0 && <span className="font-semibold text-foreground">{formatCurrency(amount)}</span>}
                           {date && <span>{date}</span>}
                         </div>
                         <p className="text-[11px] text-muted-foreground/60 truncate mt-1">{doc.file_name}</p>
@@ -328,7 +330,7 @@ export function LinkReceiptDialog({ open, onClose, expenseIds, expenses = [] }: 
                           <p className="text-xs font-medium text-amber-800 dark:text-amber-300">
                             {language === 'es' ? 'Coincide con:' : 'Matches:'}
                           </p>
-                          <p className="text-sm font-semibold">{bestMatch.vendor} · ${Number(bestMatch.amount).toFixed(2)} · {bestMatch.date}</p>
+                          <p className="text-sm font-semibold">{bestMatch.vendor} · {formatCurrency(Number(bestMatch.amount))} · {bestMatch.date}</p>
                         </div>
                         <Button
                           size="sm"

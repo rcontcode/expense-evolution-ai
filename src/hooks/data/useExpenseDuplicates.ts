@@ -54,5 +54,5 @@ export function useExpenseDuplicates(expenses: ExpenseWithRelations[]) {
     }
 
     return { groups, count: groups.length };
-  }, [expenses]);
+  }, [expenses, formatCurrency]);
 }

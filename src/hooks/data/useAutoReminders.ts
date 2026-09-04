@@ -195,7 +195,7 @@ export function useAutoReminders() {
         }
       }
     }
-  }, [getPreference, hasRecentNotification, countMonthNotifications, isMuted, insertNotification, isEs]);
+  }, [getPreference, hasRecentNotification, countMonthNotifications, isMuted, insertNotification, isEs, formatCurrency]);
 
   // B) Contract reminders
   const checkContractReminders = useCallback(async (userId: string) => {
@@ -371,7 +371,7 @@ export function useAutoReminders() {
         }
       }
     }
-  }, [getPreference, hasRecentNotification, isMuted, insertNotification, isEs]);
+  }, [getPreference, hasRecentNotification, isMuted, insertNotification, isEs, formatCurrency]);
 
   const runAllChecks = useCallback(async () => {
     if (!user?.id || runningRef.current) return;

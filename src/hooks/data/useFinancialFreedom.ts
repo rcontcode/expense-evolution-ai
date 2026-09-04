@@ -173,7 +173,7 @@ export function useFinancialFreedom(language: 'es' | 'en' = 'es'): FinancialFree
       isFinanciallyFree,
       recommendations,
     };
-  }, [incomeData, expensesData, currentMonth, language]);
+  }, [incomeData, expensesData, currentMonth, language, formatCurrency]);
 
   return {
     ...result,

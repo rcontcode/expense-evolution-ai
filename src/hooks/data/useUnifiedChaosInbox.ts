@@ -757,7 +757,7 @@ export function useUnifiedChaosInbox() {
       toast.error(`Error: ${doc.fileName}`);
       return null;
     }
-  }, [documents, user, updateDoc, queryClient]);
+  }, [documents, user, updateDoc, queryClient, formatCurrency]);
 
   const processAllClassified = useCallback(async () => {
     const classified = documents.filter(d => d.status === 'classified');

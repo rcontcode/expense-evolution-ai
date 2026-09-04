@@ -142,7 +142,7 @@ export function SplitTransactionDialog({
                   </p>
                 </div>
                 <Badge variant="outline" className="text-lg font-bold">
-                  ${Number(transaction.amount).toFixed(2)}
+                  {formatCurrency(Number(transaction.amount))}
                 </Badge>
               </div>
             </CardContent>
@@ -161,7 +161,7 @@ export function SplitTransactionDialog({
               <span className="text-sm font-medium">
                 {t('reconciliation.totalAssigned')}:
               </span>
-              <span className="font-bold">${totalAmount.toFixed(2)}</span>
+              <span className="font-bold">{formatCurrency(totalAmount)}</span>
             </div>
             {!isBalanced && (
               <span className={`text-sm font-medium ${remainingAmount > 0 ? 'text-warning' : 'text-destructive'}`}>

@@ -363,7 +363,7 @@ export function useAssistantActions(options: UseAssistantActionsOptions) {
     } finally {
       setIsExecuting(false);
     }
-  }, [language, navigate, onNavigate, onClarify, onHighlight, onActionStart, onActionComplete, onRunTutorial, onShowInsights, onSetGoal, onCreateExpense, onCreateIncome]);
+  }, [language, navigate, onNavigate, onClarify, onHighlight, onActionStart, onActionComplete, onRunTutorial, onShowInsights, onSetGoal, onCreateExpense, onCreateIncome, formatCurrency]);
 
   const undoLastAction = useCallback(() => {
     if (!lastAction) return;

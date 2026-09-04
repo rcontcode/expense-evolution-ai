@@ -138,5 +138,5 @@ export function useIncomeDuplicates(incomes: IncomeWithRelations[]) {
     }
 
     return { groups, count: groups.reduce((s, g) => s + g.duplicates.length, 0) };
-  }, [incomes]);
+  }, [incomes, formatCurrency]);
 }

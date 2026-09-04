@@ -18,6 +18,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useAIErrorHandler } from '@/hooks/utils/useAIErrorHandler';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 
 interface BankImportDialogProps {
   open: boolean;
@@ -26,6 +27,7 @@ interface BankImportDialogProps {
 
 export function BankImportDialog({ open, onClose }: BankImportDialogProps) {
   const { language } = useLanguage();
+  const { formatCurrency } = useFormatCurrency();
   const l = language === 'es';
   const [activeTab, setActiveTab] = useState<'csv' | 'photo' | 'pdf'>('csv');
   const [isLoading, setIsLoading] = useState(false);
@@ -193,7 +195,7 @@ export function BankImportDialog({ open, onClose }: BankImportDialogProps) {
                   <div>
                     <p className="font-medium text-sm">{dup.transaction.description}</p>
                     <p className="text-xs text-muted-foreground">
-                      {dup.transaction.date} • ${dup.transaction.amount.toFixed(2)}
+                      {dup.transaction.date} • {formatCurrency(dup.transaction.amount)}
                     </p>
                   </div>
                   <Badge variant="outline" className="text-warning border-warning/50">
@@ -290,7 +292,7 @@ export function BankImportDialog({ open, onClose }: BankImportDialogProps) {
                 <span className="text-sm font-medium">{l ? 'Ingresos' : 'Income'}</span>
               </div>
               <p className="text-2xl font-bold text-emerald-600">{s.incomeCount}</p>
-              <p className="text-xs text-muted-foreground">${s.incomeTotal.toFixed(2)}</p>
+              <p className="text-xs text-muted-foreground">{formatCurrency(s.incomeTotal)}</p>
             </Card>
 
             <Card className="p-4 bg-red-500/10 border-red-500/20">
@@ -299,7 +301,7 @@ export function BankImportDialog({ open, onClose }: BankImportDialogProps) {
                 <span className="text-sm font-medium">{l ? 'Gastos' : 'Expenses'}</span>
               </div>
               <p className="text-2xl font-bold text-red-600">{s.expenseCount}</p>
-              <p className="text-xs text-muted-foreground">${s.expenseTotal.toFixed(2)}</p>
+              <p className="text-xs text-muted-foreground">{formatCurrency(s.expenseTotal)}</p>
             </Card>
 
             <Card className="p-4 bg-primary/10 border-primary/20">
@@ -520,7 +522,7 @@ export function BankImportDialog({ open, onClose }: BankImportDialogProps) {
                   ? `${parsedTransactions.length} transacciones detectadas`
                   : `${parsedTransactions.length} transactions detected`}
               </h3>
-              <Badge variant="outline" className="text-lg">${totalAmount.toFixed(2)}</Badge>
+              <Badge variant="outline" className="text-lg">{formatCurrency(totalAmount)}</Badge>
             </div>
 
             <div className="max-h-60 overflow-y-auto space-y-2 pr-2">
@@ -558,7 +560,7 @@ export function BankImportDialog({ open, onClose }: BankImportDialogProps) {
                           ? 'text-emerald-600'
                           : 'text-destructive'
                       }`}>
-                        {transaction.transaction_type === 'income' ? '+' : '-'}${transaction.amount.toFixed(2)}
+                        {transaction.transaction_type === 'income' ? '+' : '-'}{formatCurrency(transaction.amount)}
                       </span>
                       <Button
                         variant="ghost"

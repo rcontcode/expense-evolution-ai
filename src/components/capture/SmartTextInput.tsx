@@ -20,6 +20,7 @@ import type { IncomeType } from '@/types/income.types';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { RecurringBillConfirmDialog, type RecurringBillCandidate } from '@/components/bills/RecurringBillConfirmDialog';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 
 interface SmartTextInputProps {
   onSuccess?: () => void;
@@ -56,6 +57,7 @@ const TYPE_CONFIG = {
 
 export function SmartTextInput({ onSuccess, onCancel }: SmartTextInputProps) {
   const { language } = useLanguage();
+  const { formatCurrency } = useFormatCurrency();
   const { user } = useAuth();
   const { currentEntity } = useEntity();
   const l = language === 'es';
@@ -303,7 +305,7 @@ export function SmartTextInput({ onSuccess, onCancel }: SmartTextInputProps) {
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   <div className="p-2 rounded bg-muted/50">
                     <p className="text-[11px] text-muted-foreground">{l ? 'Monto' : 'Amount'}</p>
-                    <p className="font-bold text-base">${result.data.amount.toFixed(2)}</p>
+                    <p className="font-bold text-base">{formatCurrency(result.data.amount)}</p>
                   </div>
                   <div className="p-2 rounded bg-muted/50">
                     <p className="text-[11px] text-muted-foreground">{l ? 'Fecha' : 'Date'}</p>

@@ -28,6 +28,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { ExpenseWithRelations } from '@/types/expense.types';
 import { DuplicateGroup } from '@/hooks/data/useExpenseDuplicates';
 import { cn } from '@/lib/utils';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 
 interface ExpenseHealthPanelProps {
   expenses: ExpenseWithRelations[];
@@ -47,6 +48,7 @@ export const ExpenseHealthPanel = memo(function ExpenseHealthPanel({
   onDeleteDuplicate,
 }: ExpenseHealthPanelProps) {
   const { language } = useLanguage();
+  const { formatCurrency } = useFormatCurrency();
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
 
   const toggle = (key: string) => setOpenSections(prev => ({ ...prev, [key]: !prev[key] }));
@@ -223,7 +225,7 @@ export const ExpenseHealthPanel = memo(function ExpenseHealthPanel({
                           <div className="flex justify-between items-start text-xs">
                             <div>
                               <p className="font-medium">{group.original.vendor}</p>
-                              <p className="text-muted-foreground">{group.original.date} · ${Number(group.original.amount).toFixed(2)}</p>
+                              <p className="text-muted-foreground">{group.original.date} · {formatCurrency(Number(group.original.amount))}</p>
                             </div>
                             <Badge variant="destructive" className="text-[10px]">
                               {language === 'es' ? 'Duplicado' : 'Duplicate'}
@@ -249,7 +251,7 @@ export const ExpenseHealthPanel = memo(function ExpenseHealthPanel({
                       {section.items.map((e: ExpenseWithRelations) => (
                         <div key={e.id} className="flex items-center justify-between text-xs p-1.5 rounded bg-white/40 dark:bg-black/10">
                           <span className="truncate flex-1">{e.vendor || '—'}</span>
-                          <span className="font-medium ml-2">${Number(e.amount).toFixed(2)}</span>
+                          <span className="font-medium ml-2">{formatCurrency(Number(e.amount))}</span>
                         </div>
                       ))}
                       {section.count > 5 && (

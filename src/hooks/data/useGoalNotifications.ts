@@ -189,7 +189,7 @@ export function useGoalNotifications({ savingsGoals, investmentGoals, userLevel 
         }
       }
     }
-  }, [user, language]);
+  }, [user, language, formatCurrency]);
 
   useEffect(() => {
     if (!hasInitialized.current) {

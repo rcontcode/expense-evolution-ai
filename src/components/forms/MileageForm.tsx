@@ -45,6 +45,7 @@ import { LeafletRouteMap } from '@/components/mileage/LeafletRouteMap';
 import { TripCalendarPreview } from '@/components/mileage/TripCalendarPreview';
 import { EntitySelect } from '@/components/forms/EntitySelect';
 import { useEntity } from '@/contexts/EntityContext';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 
 interface MileageFormProps {
   initialData?: MileageWithClient | null;
@@ -55,6 +56,7 @@ interface MileageFormProps {
 
 export const MileageForm = ({ initialData, yearToDateKm = 0, onSubmit, isLoading }: MileageFormProps) => {
   const { t, language } = useLanguage();
+  const { formatCurrency } = useFormatCurrency();
   const { data: clients } = useClients();
   const { currentEntity } = useEntity();
   const [showClientAddressSuggestion, setShowClientAddressSuggestion] = useState(false);
@@ -929,7 +931,7 @@ export const MileageForm = ({ initialData, yearToDateKm = 0, onSubmit, isLoading
                   <span className="font-bold text-chart-1">
                     {totalTripDeduction.currency === 'CLP' 
                       ? `$${totalTripDeduction.deductible.toLocaleString()} CLP`
-                      : `$${totalTripDeduction.deductible.toFixed(2)}`}
+                      : `${formatCurrency(totalTripDeduction.deductible)}`}
                   </span>
                 </div>
               </div>
@@ -962,13 +964,13 @@ export const MileageForm = ({ initialData, yearToDateKm = 0, onSubmit, isLoading
               <span className="font-bold text-chart-1">
                 {estimatedDeduction.currency === 'CLP'
                   ? `$${estimatedDeduction.deductible.toLocaleString()} CLP`
-                  : `$${estimatedDeduction.deductible.toFixed(2)}`}
+                  : `${formatCurrency(estimatedDeduction.deductible)}`}
               </span>
               <span className="text-muted-foreground">{t('mileage.rateApplied')}</span>
               <span>
                 {estimatedDeduction.currency === 'CLP'
                   ? `$${estimatedDeduction.rate} CLP/km`
-                  : `$${estimatedDeduction.rate.toFixed(2)}/km`}
+                  : `${formatCurrency(estimatedDeduction.rate)}/km`}
               </span>
               <span className="text-muted-foreground">{t('mileage.yearToDateKm')}</span>
               <span>{yearToDateKm.toFixed(1)} km</span>

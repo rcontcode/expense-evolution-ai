@@ -393,7 +393,7 @@ function IncomeAdvanced() {
                     <div key={group.key} className="space-y-2">
                       <div className="flex justify-between text-sm">
                         <span className="font-medium">{language === 'es' ? group.label : group.labelEn}</span>
-                        <span className="text-muted-foreground">${group.total.toFixed(2)}</span>
+                        <span className="text-muted-foreground">{formatCurrency(group.total)}</span>
                       </div>
                       <Progress value={(group.total / (summary?.totalIncome || 1)) * 100} className="h-2" />
                     </div>
@@ -454,7 +454,7 @@ function IncomeAdvanced() {
                                   <Badge variant="outline" style={{ borderColor: income.project.color, color: income.project.color }}>{income.project.name}</Badge>
                                 ) : <span className="text-muted-foreground">-</span>}
                               </TableCell>
-                              <TableCell className="text-right font-bold text-chart-1">${Number(income.amount).toFixed(2)}</TableCell>
+                              <TableCell className="text-right font-bold text-chart-1">{formatCurrency(Number(income.amount))}</TableCell>
                               <TableCell>
                                 {income.recurrence !== 'one_time' && (
                                   <div className="flex items-center gap-1 text-muted-foreground">

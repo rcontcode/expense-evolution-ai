@@ -53,6 +53,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { plural } from '@/lib/plural';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 
 function MatchScoreBadge({ score, matchType }: { score: number; matchType: string }) {
   const { language } = useLanguage();
@@ -88,6 +89,7 @@ function SuggestedMatchCard({
   isLoading: boolean;
 }) {
   const { language } = useLanguage();
+  const { formatCurrency } = useFormatCurrency();
   
   return (
     <div className="flex items-center justify-between p-3 bg-background rounded-lg border">
@@ -100,7 +102,7 @@ function SuggestedMatchCard({
             {match.expense.vendor || match.expense.description || (language === 'es' ? 'Sin descripción' : 'No description')}
           </p>
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <span>${Number(match.expense.amount).toFixed(2)}</span>
+            <span>{formatCurrency(Number(match.expense.amount))}</span>
             <span>•</span>
             <span>{format(new Date(match.expense.date), 'dd MMM', { locale: language === 'es' ? es : undefined })}</span>
             {match.expense.category && (
@@ -142,6 +144,7 @@ function TransactionWithSuggestions({
   isMatchLoading: boolean;
 }) {
   const { language } = useLanguage();
+  const { formatCurrency } = useFormatCurrency();
   const [isOpen, setIsOpen] = useState(transaction.suggestedMatches.length > 0);
   const hasMatches = transaction.suggestedMatches.length > 0;
 
@@ -180,7 +183,7 @@ function TransactionWithSuggestions({
           </div>
           <div className="flex items-center gap-3">
             <span className="font-bold text-destructive">
-              -${Number(transaction.amount).toFixed(2)}
+              -{formatCurrency(Number(transaction.amount))}
             </span>
             {hasMatches && (
               <CollapsibleTrigger asChild>
@@ -233,6 +236,7 @@ function TransactionWithSuggestions({
 
 export default function Reconciliation() {
   const { t, language } = useLanguage();
+  const { formatCurrency } = useFormatCurrency();
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [importDialogOpen, setImportDialogOpen] = useState(false);
@@ -547,7 +551,7 @@ export default function Reconciliation() {
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="font-bold">${Number(transaction.amount).toFixed(2)}</span>
+                          <span className="font-bold">{formatCurrency(Number(transaction.amount))}</span>
                           <Button
                             variant="ghost"
                             size="icon"
@@ -594,7 +598,7 @@ export default function Reconciliation() {
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="font-bold text-destructive">${Number(transaction.amount).toFixed(2)}</span>
+                          <span className="font-bold text-destructive">{formatCurrency(Number(transaction.amount))}</span>
                           <Button
                             variant="ghost"
                             size="icon"

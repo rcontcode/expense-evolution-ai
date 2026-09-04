@@ -5,6 +5,7 @@ import { ExternalLink, Car, TrendingUp, BadgeDollarSign, Globe, Settings } from 
 import { MileageSummary, CRA_MILEAGE_RATES, getSIIMileageRates, getCRAMileageRates } from '@/hooks/data/useMileage';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useNavigate } from 'react-router-dom';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 
 interface MileageSummaryCardProps {
   summary: MileageSummary;
@@ -12,6 +13,7 @@ interface MileageSummaryCardProps {
 
 export const MileageSummaryCard = ({ summary }: MileageSummaryCardProps) => {
   const { t, language } = useLanguage();
+  const { formatCurrency } = useFormatCurrency();
   const navigate = useNavigate();
   const isEs = language === 'es';
   const country = summary.country;
@@ -49,7 +51,7 @@ export const MileageSummaryCard = ({ summary }: MileageSummaryCardProps) => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-chart-2">
-                ${summary.totalDeductibleAmount.toFixed(2)} CAD
+                {formatCurrency(summary.totalDeductibleAmount)} CAD
               </div>
               <p className="text-xs text-muted-foreground">
                 {t('mileage.craRates')}
@@ -86,7 +88,7 @@ export const MileageSummaryCard = ({ summary }: MileageSummaryCardProps) => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-chart-4">
-                ${summary.itcClaimable.toFixed(2)}
+                {formatCurrency(summary.itcClaimable)}
               </div>
               <p className="text-xs text-muted-foreground">
                 {t('mileage.fuelHstEstimate')}
@@ -154,11 +156,11 @@ export const MileageSummaryCard = ({ summary }: MileageSummaryCardProps) => {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
                 <div className="text-sm text-muted-foreground">{t('mileage.first5000')}</div>
-                <div className="text-lg font-bold">${craRates.first5000.toFixed(2)}/km</div>
+                <div className="text-lg font-bold">{formatCurrency(craRates.first5000)}/km</div>
               </div>
               <div className="space-y-1">
                 <div className="text-sm text-muted-foreground">{t('mileage.after5000')}</div>
-                <div className="text-lg font-bold">${craRates.after5000.toFixed(2)}/km</div>
+                <div className="text-lg font-bold">{formatCurrency(craRates.after5000)}/km</div>
               </div>
             </div>
 

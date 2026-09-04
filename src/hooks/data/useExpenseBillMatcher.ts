@@ -77,7 +77,7 @@ export function useExpenseBillMatcher() {
       // Only notify for first match
       return;
     }
-  }, [bills, l, markPaid]);
+  }, [bills, l, markPaid, formatCurrency]);
 
   return { checkExpenseAgainstBills };
 }

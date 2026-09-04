@@ -1072,7 +1072,7 @@ export function useSmartGuidance() {
       const priorityOrder = { high: 0, medium: 1, low: 2 };
       return priorityOrder[a.priority] - priorityOrder[b.priority];
     });
-  }, [stats, expenses, income, clients, projects]);
+  }, [stats, expenses, income, clients, projects, formatCurrency]);
 
   // Check if user is asking for a tutorial - can search by ID or by trigger text
   const findTutorial = useCallback((textOrId: string): Tutorial | null => {

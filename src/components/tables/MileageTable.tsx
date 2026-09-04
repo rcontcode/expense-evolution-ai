@@ -32,6 +32,7 @@ import { useEntity } from '@/contexts/EntityContext';
 import { useState } from 'react';
 import { MileageRoutePreview } from '@/components/mileage/MileageRoutePreview';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 
 interface MileageTableProps {
   data: MileageWithClient[];
@@ -40,6 +41,7 @@ interface MileageTableProps {
 
 export const MileageTable = ({ data, onEdit }: MileageTableProps) => {
   const { t } = useLanguage();
+  const { formatCurrency } = useFormatCurrency();
   const { currentCountry } = useEntity();
   const deleteMileage = useDeleteMileage();
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -127,12 +129,12 @@ export const MileageTable = ({ data, onEdit }: MileageTableProps) => {
                       <div className="font-medium text-chart-1">
                         {record.deductionCurrency === 'CLP' 
                           ? `$${record.deductible.toLocaleString()} CLP`
-                          : `$${record.deductible.toFixed(2)}`}
+                          : `${formatCurrency(record.deductible)}`}
                       </div>
                       <div className="text-xs text-muted-foreground">
                         {record.deductionCurrency === 'CLP'
                           ? `$${record.rate} CLP/km`
-                          : `$${record.rate.toFixed(2)}/km`}
+                          : `${formatCurrency(record.rate)}/km`}
                       </div>
                     </div>
                   </TableCell>

@@ -11,6 +11,7 @@ import {
 import { useLanguage } from '@/contexts/LanguageContext';
 import { MileageWithClient, calculateMileageDeduction } from '@/hooks/data/useMileage';
 import { MoreHorizontal, Pencil, Trash2, MapPin, Calendar, Car, DollarSign, User } from 'lucide-react';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 
 interface MileageCardProps {
   record: MileageWithClient;
@@ -21,6 +22,7 @@ interface MileageCardProps {
 
 export function MileageCard({ record, ytdKm, onEdit, onDelete }: MileageCardProps) {
   const { t } = useLanguage();
+  const { formatCurrency } = useFormatCurrency();
   
   const km = parseFloat(record.kilometers.toString());
   const { deductible, rate } = calculateMileageDeduction(km, ytdKm);
@@ -72,10 +74,10 @@ export function MileageCard({ record, ytdKm, onEdit, onDelete }: MileageCardProp
                 </Badge>
                 <Badge className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-0 text-xs h-6 gap-1">
                   <DollarSign className="h-3 w-3" />
-                  ${deductible.toFixed(2)}
+                  {formatCurrency(deductible)}
                 </Badge>
                 <span className="text-[10px] text-muted-foreground">
-                  ${rate.toFixed(2)}/km
+                  {formatCurrency(rate)}/km
                 </span>
               </div>
               
