@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
+import { useEntity } from '@/contexts/EntityContext';
 import { aFechaISO } from '@/lib/fecha';
 
 interface ActionResult {
@@ -101,6 +102,7 @@ const ROUTE_MAP: Record<string, string> = {
 
 export function useAssistantActions(options: UseAssistantActionsOptions) {
   const { formatCurrency } = useFormatCurrency();
+  const { currentCurrency } = useEntity();
   const {
     language,
     onNavigate,
@@ -300,7 +302,9 @@ export function useAssistantActions(options: UseAssistantActionsOptions) {
               detail: {
                 name: billData.name || (language === 'es' ? 'Sin nombre' : 'Unnamed'),
                 amount: billData.amount,
-                currency: 'CAD',
+                // Antes quedaba fijo en dolares canadienses: a una cuenta chilena el
+                // asistente le proponia el pago fijo en CAD.
+                currency: currentCurrency,
                 category: billData.category || 'utilities',
                 frequency: billData.frequency || 'monthly',
                 auto_pay: billData.auto_pay || false,

@@ -156,7 +156,7 @@ import { cn } from '@/lib/utils';
  
          {/* Overview Tab */}
          <TabsContent value="overview" className="space-y-6">
-           <BudgetCommandCenter />
+           <BudgetCommandCenter onIrAPresupuestos={() => setActiveTab('budgets')} />
          </TabsContent>
  
          {/* Budgets Tab */}

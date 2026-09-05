@@ -28,10 +28,17 @@ interface Insight {
   description: string;
   impact?: string;
   action?: string;
+  onAction?: () => void;
   priority: number;
 }
 
-export function BillSmartInsights() {
+interface BillSmartInsightsProps {
+  /** Lleva a la lista donde se marcan los pagos. Sin esto, el boton
+   *  "Pagar ahora" se dibujaba pero no hacia absolutamente nada. */
+  onIrAPagar?: () => void;
+}
+
+export function BillSmartInsights({ onIrAPagar }: BillSmartInsightsProps = {}) {
   const { language } = useLanguage();
   const l = language === 'es';
   const { formatCurrency } = useFormatCurrency();
@@ -69,6 +76,7 @@ export function BillSmartInsights() {
           : `You have ${formatCurrency(totalOverdue)} in overdue bills: ${overdue.map(b => b.name).join(', ')}`,
         impact: formatCurrency(totalOverdue),
         action: l ? 'Pagar ahora' : 'Pay now',
+        onAction: onIrAPagar,
         priority: 10,
       });
     }
@@ -265,8 +273,8 @@ export function BillSmartInsights() {
                         </Badge>
                       )}
                     </div>
-                    {insight.action && (
-                      <Button variant="ghost" size="sm" className="shrink-0 text-xs h-7 gap-1">
+                    {insight.action && insight.onAction && (
+                      <Button variant="ghost" size="sm" className="shrink-0 text-xs h-7 gap-1" onClick={insight.onAction}>
                         {insight.action} <ArrowRight className="h-3 w-3" />
                       </Button>
                     )}

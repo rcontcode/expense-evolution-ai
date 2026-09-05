@@ -36,6 +36,20 @@ interface ExportData {
   averagePerExpense: number;
   dateRange: { from?: Date; to?: Date };
   language: string;
+  /** Moneda de la entidad fiscal. Sin esto el libro salia siempre con formato
+   *  mexicano y dos decimales: en pesos chilenos "$1,234,567.00" en vez de
+   *  "$1.234.567". */
+  currency?: string | null;
+}
+
+/** Separadores y decimales segun la moneda, para los textos sueltos del resumen. */
+function montoDeTexto(monto: number, moneda: string): string {
+  const decimales = moneda === 'CLP' ? 0 : 2;
+  const local = moneda === 'CLP' ? 'es-CL' : 'en-CA';
+  return monto.toLocaleString(local, {
+    minimumFractionDigits: decimales,
+    maximumFractionDigits: decimales,
+  });
 }
 
 import { getCategoryLabelByLanguage, getCategoryIcon } from '@/lib/constants/expense-categories';
@@ -63,6 +77,9 @@ const CHART_COLORS = [
 ];
 
 export async function exportReimbursementReportWithCharts(data: ExportData): Promise<void> {
+  const moneda = data.currency || 'CAD';
+  // Formato de celda de Excel: los pesos chilenos no llevan decimales.
+  const FMT = moneda === 'CLP' ? '"$"#,##0' : '"$"#,##0.00';
   const { clientGroups, totalReimbursable, totalExpenses, filteredExpenses, categoryTotals, averagePerExpense, dateRange, language } = data;
   const dateLocale = language === 'es' ? es : enUS;
   
@@ -117,9 +134,9 @@ export async function exportReimbursementReportWithCharts(data: ExportData): Pro
 
   // KPI boxes
   const kpis = [
-    { label: 'TOTAL A FACTURAR', value: `$${totalReimbursable.toLocaleString('es-MX', { minimumFractionDigits: 2 })}`, color: '10B981' },
+    { label: 'TOTAL A FACTURAR', value: `$${montoDeTexto(totalReimbursable, moneda)}`, color: '10B981' },
     { label: 'GASTOS PROCESADOS', value: totalExpenses.toString(), color: '3B82F6' },
-    { label: 'PROMEDIO POR GASTO', value: `$${averagePerExpense.toLocaleString('es-MX', { minimumFractionDigits: 2 })}`, color: 'F59E0B' },
+    { label: 'PROMEDIO POR GASTO', value: `$${montoDeTexto(averagePerExpense, moneda)}`, color: 'F59E0B' },
     { label: 'CLIENTES ACTIVOS', value: clientGroups.length.toString(), color: '8B5CF6' },
   ];
 
@@ -165,7 +182,7 @@ export async function exportReimbursementReportWithCharts(data: ExportData): Pro
     
     summarySheet.getCell(row, 1).value = getCatLabel(category, language);
     summarySheet.getCell(row, 2).value = total;
-    summarySheet.getCell(row, 2).numFmt = '"$"#,##0.00';
+    summarySheet.getCell(row, 2).numFmt = FMT;
     summarySheet.getCell(row, 3).value = percentage / 100;
     summarySheet.getCell(row, 3).numFmt = '0.0%';
     summarySheet.getCell(row, 4).value = '█'.repeat(barLength) + '░'.repeat(20 - barLength);
@@ -202,7 +219,7 @@ export async function exportReimbursementReportWithCharts(data: ExportData): Pro
     summarySheet.getCell(row, 2).value = group.clientName;
     summarySheet.getCell(row, 3).value = group.count;
     summarySheet.getCell(row, 4).value = group.total;
-    summarySheet.getCell(row, 4).numFmt = '"$"#,##0.00';
+    summarySheet.getCell(row, 4).numFmt = FMT;
     summarySheet.getCell(row, 5).value = percentage / 100;
     summarySheet.getCell(row, 5).numFmt = '0.0%';
     summarySheet.getCell(row, 6).value = '█'.repeat(barLength) + '░'.repeat(20 - barLength);
@@ -254,14 +271,14 @@ export async function exportReimbursementReportWithCharts(data: ExportData): Pro
     clientSheet.getCell(row, 1).value = group.clientName;
     clientSheet.getCell(row, 2).value = group.count;
     clientSheet.getCell(row, 3).value = group.total;
-    clientSheet.getCell(row, 3).numFmt = '"$"#,##0.00';
+    clientSheet.getCell(row, 3).numFmt = FMT;
     clientSheet.getCell(row, 4).value = group.total / group.count;
-    clientSheet.getCell(row, 4).numFmt = '"$"#,##0.00';
+    clientSheet.getCell(row, 4).numFmt = FMT;
     clientSheet.getCell(row, 5).value = percentage / 100;
     clientSheet.getCell(row, 5).numFmt = '0.0%';
     clientSheet.getCell(row, 6).value = topCategory ? getCatLabel(topCategory[0], language) : 'N/A';
     clientSheet.getCell(row, 7).value = topCategory ? topCategory[1].total : 0;
-    clientSheet.getCell(row, 7).numFmt = '"$"#,##0.00';
+    clientSheet.getCell(row, 7).numFmt = FMT;
     
     // Conditional formatting for percentage
     if (percentage >= 20) {
@@ -282,10 +299,10 @@ export async function exportReimbursementReportWithCharts(data: ExportData): Pro
   clientSheet.getCell(totalRow, 2).value = totalExpenses;
   clientSheet.getCell(totalRow, 2).font = { bold: true };
   clientSheet.getCell(totalRow, 3).value = totalReimbursable;
-  clientSheet.getCell(totalRow, 3).numFmt = '"$"#,##0.00';
+  clientSheet.getCell(totalRow, 3).numFmt = FMT;
   clientSheet.getCell(totalRow, 3).font = { bold: true };
   clientSheet.getCell(totalRow, 4).value = averagePerExpense;
-  clientSheet.getCell(totalRow, 4).numFmt = '"$"#,##0.00';
+  clientSheet.getCell(totalRow, 4).numFmt = FMT;
   clientSheet.getCell(totalRow, 5).value = 1;
   clientSheet.getCell(totalRow, 5).numFmt = '0%';
   
@@ -338,11 +355,11 @@ export async function exportReimbursementReportWithCharts(data: ExportData): Pro
       catSheet.getCell(row, 1).value = getCatLabel(category, language);
       catSheet.getCell(row, 2).value = stats.count;
       catSheet.getCell(row, 3).value = stats.total;
-      catSheet.getCell(row, 3).numFmt = '"$"#,##0.00';
+      catSheet.getCell(row, 3).numFmt = FMT;
       catSheet.getCell(row, 4).value = percentage / 100;
       catSheet.getCell(row, 4).numFmt = '0.0%';
       catSheet.getCell(row, 5).value = stats.total / stats.count;
-      catSheet.getCell(row, 5).numFmt = '"$"#,##0.00';
+      catSheet.getCell(row, 5).numFmt = FMT;
       catSheet.getCell(row, 6).value = stats.clients.size;
       
       if (idx % 2 === 0) {
@@ -402,11 +419,11 @@ export async function exportReimbursementReportWithCharts(data: ExportData): Pro
     monthlySheet.getCell(row, 1).value = monthLabel;
     monthlySheet.getCell(row, 2).value = stats.count;
     monthlySheet.getCell(row, 3).value = stats.total;
-    monthlySheet.getCell(row, 3).numFmt = '"$"#,##0.00';
+    monthlySheet.getCell(row, 3).numFmt = FMT;
     monthlySheet.getCell(row, 4).value = percentage / 100;
     monthlySheet.getCell(row, 4).numFmt = '0.0%';
     monthlySheet.getCell(row, 5).value = stats.total / stats.count;
-    monthlySheet.getCell(row, 5).numFmt = '"$"#,##0.00';
+    monthlySheet.getCell(row, 5).numFmt = FMT;
     
     if (idx === 0) {
       monthlySheet.getCell(row, 6).value = 'N/A';
@@ -476,11 +493,11 @@ export async function exportReimbursementReportWithCharts(data: ExportData): Pro
       vendorSheet.getCell(row, 1).value = vendor;
       vendorSheet.getCell(row, 2).value = stats.count;
       vendorSheet.getCell(row, 3).value = stats.total;
-      vendorSheet.getCell(row, 3).numFmt = '"$"#,##0.00';
+      vendorSheet.getCell(row, 3).numFmt = FMT;
       vendorSheet.getCell(row, 4).value = percentage / 100;
       vendorSheet.getCell(row, 4).numFmt = '0.0%';
       vendorSheet.getCell(row, 5).value = stats.total / stats.count;
-      vendorSheet.getCell(row, 5).numFmt = '"$"#,##0.00';
+      vendorSheet.getCell(row, 5).numFmt = FMT;
       vendorSheet.getCell(row, 6).value = Array.from(stats.categories).join(', ');
       vendorSheet.getCell(row, 7).value = Array.from(stats.clients).join(', ');
       
@@ -529,8 +546,8 @@ export async function exportReimbursementReportWithCharts(data: ExportData): Pro
       detailSheet.getCell(row, 5).value = getCatLabel(expense.category || 'other', language);
       detailSheet.getCell(row, 6).value = expense.description || '';
       detailSheet.getCell(row, 7).value = Number(expense.amount);
-      detailSheet.getCell(row, 7).numFmt = '"$"#,##0.00';
-      detailSheet.getCell(row, 8).value = expense.currency || 'CAD';
+      detailSheet.getCell(row, 7).numFmt = FMT;
+      detailSheet.getCell(row, 8).value = expense.currency || moneda;
       detailSheet.getCell(row, 9).value = STATUS_LABELS[expense.status || 'pending']?.[language === 'es' ? 'es' : 'en'] || expense.status || '';
       detailSheet.getCell(row, 10).value = expense.reimbursement_type || 'Sin clasificar';
       detailSheet.getCell(row, 11).value = expense.project_id || '';
@@ -550,7 +567,7 @@ export async function exportReimbursementReportWithCharts(data: ExportData): Pro
   detailSheet.getCell(dTotalRow, 2).value = 'TOTAL';
   detailSheet.getCell(dTotalRow, 2).font = { bold: true };
   detailSheet.getCell(dTotalRow, 7).value = totalReimbursable;
-  detailSheet.getCell(dTotalRow, 7).numFmt = '"$"#,##0.00';
+  detailSheet.getCell(dTotalRow, 7).numFmt = FMT;
   detailSheet.getCell(dTotalRow, 7).font = { bold: true };
   for (let c = 1; c <= 13; c++) {
     detailSheet.getCell(dTotalRow, c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FECACA' } };
@@ -611,7 +628,7 @@ export async function exportReimbursementReportWithCharts(data: ExportData): Pro
     rangeSheet.getCell(row, 1).value = range.label;
     rangeSheet.getCell(row, 2).value = expensesInRange.length;
     rangeSheet.getCell(row, 3).value = total;
-    rangeSheet.getCell(row, 3).numFmt = '"$"#,##0.00';
+    rangeSheet.getCell(row, 3).numFmt = FMT;
     rangeSheet.getCell(row, 4).value = percentage / 100;
     rangeSheet.getCell(row, 4).numFmt = '0.0%';
     rangeSheet.getCell(row, 5).value = '█'.repeat(barLength) + '░'.repeat(20 - barLength);
@@ -659,7 +676,7 @@ export async function exportReimbursementReportWithCharts(data: ExportData): Pro
         matrixSheet.getCell(mxRow, 2).value = getCatLabel(category, language);
         matrixSheet.getCell(mxRow, 3).value = catData.count;
         matrixSheet.getCell(mxRow, 4).value = catData.total;
-        matrixSheet.getCell(mxRow, 4).numFmt = '"$"#,##0.00';
+        matrixSheet.getCell(mxRow, 4).numFmt = FMT;
         matrixSheet.getCell(mxRow, 5).value = clientPct / 100;
         matrixSheet.getCell(mxRow, 5).numFmt = '0.0%';
         matrixSheet.getCell(mxRow, 6).value = totalPct / 100;

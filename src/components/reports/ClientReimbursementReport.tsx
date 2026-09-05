@@ -13,6 +13,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig } from '
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend } from 'recharts';
 import { cn } from '@/lib/utils';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
+import { useEntity } from '@/contexts/EntityContext';
 import { getCategoryLabelByLanguage, getCategoryColor } from '@/lib/constants/expense-categories';
 import { 
   Building2,
@@ -74,6 +75,7 @@ export function ClientReimbursementReport({ expenses }: ClientReimbursementRepor
   const { t, language } = useLanguage();
   const dateLocale = language === 'es' ? es : enUS;
   const { formatCurrency, formatCompact } = useFormatCurrency();
+  const { currentCurrency } = useEntity();
   
   const [dateRange, setDateRange] = useState<DateRange>({
     from: startOfMonth(new Date()),
@@ -190,7 +192,8 @@ export function ClientReimbursementReport({ expenses }: ClientReimbursementRepor
       categoryTotals,
       averagePerExpense,
       dateRange,
-      language
+      language,
+      currency: currentCurrency,
     });
   };
 

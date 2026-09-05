@@ -51,7 +51,13 @@ import { plural } from '@/lib/plural';
    };
  }
  
- export function BudgetCommandCenter() {
+ interface BudgetCommandCenterProps {
+  /** Lleva a la pestana donde de verdad se define el presupuesto. Sin esto, el
+   *  boton "Configurar ahora" era decorativo. */
+  onIrAPresupuestos?: () => void;
+}
+
+export function BudgetCommandCenter({ onIrAPresupuestos }: BudgetCommandCenterProps = {}) {
    const { language } = useLanguage();
    const { data: profile } = useProfile();
    const { data: budgets } = useCategoryBudgets();
@@ -173,7 +179,7 @@ import { plural } from '@/lib/plural';
  
    // Generate smart recommendations
    const recommendations = useMemo(() => {
-     const recs: Array<{ icon: React.ElementType; title: string; description: string; priority: 'high' | 'medium' | 'low'; action?: string }> = [];
+     const recs: Array<{ icon: React.ElementType; title: string; description: string; priority: 'high' | 'medium' | 'low'; action?: string; onAction?: () => void }> = [];
  
      // No global budget
      if (globalBudget === 0 && budgetSuggestions.globalSuggestion > 0) {
@@ -185,6 +191,7 @@ import { plural } from '@/lib/plural';
            : `Based on your history, we suggest ${formatCurrency(budgetSuggestions.globalSuggestion)}/mo`,
          priority: 'high',
          action: l ? 'Configurar ahora' : 'Set up now',
+         onAction: onIrAPresupuestos,
        });
      }
  
@@ -454,8 +461,8 @@ import { plural } from '@/lib/plural';
                  </div>
                  <p className="text-sm text-muted-foreground">{recommendations[0].description}</p>
                </div>
-               {recommendations[0].action && (
-                 <Button size="sm" variant="outline">
+               {recommendations[0].action && recommendations[0].onAction && (
+                 <Button size="sm" variant="outline" onClick={recommendations[0].onAction}>
                    {recommendations[0].action}
                    <ArrowRight className="h-4 w-4 ml-1" />
                  </Button>

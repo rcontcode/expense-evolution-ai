@@ -42,7 +42,7 @@ export function BillOptimizationEngine() {
   const optimizations = useMemo(() => {
     if (!bills || bills.length < 2) return [];
 
-    const active = bills.filter((b: any) => b.is_active);
+    const active = bills.filter((b: any) => b.status === 'active');
     const results: Optimization[] = [];
 
     // 1. Bundling opportunities (same category services)
