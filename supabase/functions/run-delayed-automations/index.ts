@@ -3,11 +3,33 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// La etapa que la mama eligio en el quiz se guarda en la columna `situation`.
+// Este codigo la buscaba en `baby_stage` y `stage`, dos columnas que no existen
+// en `quiz_leads`: el resultado es que el reemplazo NUNCA encontraba nada y todas
+// leian el texto de relleno -- "Tu resultado dice que estas en la etapa que tu bebe
+// vive ahora", una frase que no dice nada, en el correo de bienvenida.
+const ETAPA_EN_PROSA: Record<string, string> = {
+  'esperando bebé': 'de espera',
+  'esperando bebe': 'de espera',
+  'pregnant': 'de espera',
+  '0-3 meses': 'de los primeros tres meses',
+  '0-3 months': 'de los primeros tres meses',
+  '3-6 meses': 'de los tres a los seis meses',
+  '3-6 months': 'de los tres a los seis meses',
+  '6-9 meses': 'de los seis a los nueve meses',
+  '6-9 months': 'de los seis a los nueve meses',
+  '9-12 meses': 'de los nueve a los doce meses',
+  '9-12 months': 'de los nueve a los doce meses',
+};
+
 // Reemplaza los merge tags del copy fijo de nurturing: {{name}}, {{stage}}.
-// Si el lead no trae una etapa explícita, usa un fallback que lee natural.
 function renderVars(text: string, lead: any): string {
   const firstName = String(lead?.name || '').trim().split(/\s+/)[0] || '';
-  const stage = lead?.baby_stage || lead?.stage || 'que tu bebé vive ahora';
+  const elegida = String(lead?.situation || lead?.baby_stage || lead?.stage || '').trim();
+  // La frase es "estas en la etapa {{stage}}", asi que el valor crudo del quiz
+  // ("0-3 meses") queda torpe. Se traduce a prosa; si llega una etapa que no
+  // conocemos, se usa el valor tal cual antes que perderlo.
+  const stage = ETAPA_EN_PROSA[elegida.toLowerCase()] || elegida || 'que tu bebé vive ahora';
   return String(text || '')
     .replace(/\{\{\s*name\s*\}\}/gi, firstName)
     .replace(/\{\{\s*stage\s*\}\}/gi, String(stage));
