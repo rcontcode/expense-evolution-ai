@@ -46,6 +46,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { plural } from '@/lib/plural';
+import { mensajeDeError } from '@/lib/mensajeDeError';
 
 function DocumentImageWrapper({ document, onApprove, onReject, onAddComment, onDelete, onCheckDuplicates, isLoading, onDataExtracted }: {
   document: ReceiptDocument;
@@ -440,7 +441,7 @@ export default function ChaosInbox() {
         return prev;
       });
     } catch (error: any) {
-      toast.error(error.message);
+      toast.error(mensajeDeError(error));
       setUploadProgress(prev => prev ? { ...prev, phase: 'error' } : null);
     } finally {
       setUploading(false);
@@ -667,7 +668,7 @@ export default function ChaosInbox() {
         return prev;
       });
     } catch (error: any) {
-      toast.error(error.message);
+      toast.error(mensajeDeError(error));
     } finally {
       setUploading(false);
     }

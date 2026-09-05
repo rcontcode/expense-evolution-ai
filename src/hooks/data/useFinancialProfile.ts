@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { mensajeDeError } from '@/lib/mensajeDeError';
 
 export interface FinancialProfile {
   id: string;
@@ -63,7 +64,7 @@ export function useUpsertFinancialProfile() {
       toast.success(t('investments.profileSaved'));
     },
     onError: (error) => {
-      toast.error(error.message);
+      toast.error(mensajeDeError(error));
     },
   });
 }

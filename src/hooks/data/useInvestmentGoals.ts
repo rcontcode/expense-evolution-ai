@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useInvalidateRelated } from './useInvalidateRelated';
 import { insertAuditLog } from './useAuditLog';
+import { mensajeDeError } from '@/lib/mensajeDeError';
 
 export interface InvestmentGoal {
   id: string;
@@ -76,7 +77,7 @@ export function useCreateInvestmentGoal() {
       toast.success(t('investments.goalCreated'));
     },
     onError: (error) => {
-      toast.error(error.message);
+      toast.error(mensajeDeError(error));
     },
   });
 }
@@ -99,7 +100,7 @@ export function useUpdateInvestmentGoal() {
       toast.success(t('investments.goalUpdated'));
     },
     onError: (error) => {
-      toast.error(error.message);
+      toast.error(mensajeDeError(error));
     },
   });
 }
@@ -133,7 +134,7 @@ export function useDeleteInvestmentGoal() {
       toast.success(t('investments.goalDeleted'));
     },
     onError: (error) => {
-      toast.error(error.message);
+      toast.error(mensajeDeError(error));
     },
   });
 }

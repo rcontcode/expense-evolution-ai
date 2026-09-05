@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAIErrorHandler } from '@/hooks/utils/useAIErrorHandler';
+import { mensajeDeError } from '@/lib/mensajeDeError';
 
 export interface LineItem {
   name: string;
@@ -92,7 +93,7 @@ export function useReceiptProcessor() {
         if (handleAIError(data, { feature: 'ocr', requiredPlan: 'premium' })) {
           return null;
         }
-        toast.error(data.error);
+        toast.error(mensajeDeError(data));
         return null;
       }
 

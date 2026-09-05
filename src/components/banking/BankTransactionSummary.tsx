@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { fechaLocal } from '@/lib/fecha';
+import { mensajeDeError } from '@/lib/mensajeDeError';
 
 const CATEGORY_ICONS: Record<string, React.ElementType> = {
   groceries: ShoppingCart, supermercado: ShoppingCart,
@@ -136,7 +137,7 @@ export function BankTransactionSummary() {
       .update({ category, status: 'classified' })
       .in('id', txIds)
       .eq('user_id', user.id);
-    if (error) { toast.error(error.message); return; }
+    if (error) { toast.error(mensajeDeError(error)); return; }
     queryClient.invalidateQueries({ queryKey: ['bank-transactions'] });
     toast.success(language === 'es' ? 'Transferencia clasificada' : 'Transfer classified');
   }, [user, queryClient, language]);
@@ -148,7 +149,7 @@ export function BankTransactionSummary() {
       .update({ is_recurring: true, recurring_type: 'monthly' })
       .in('id', txIds)
       .eq('user_id', user.id);
-    if (error) { toast.error(error.message); return; }
+    if (error) { toast.error(mensajeDeError(error)); return; }
     queryClient.invalidateQueries({ queryKey: ['bank-transactions'] });
     toast.success(language === 'es' ? 'Recurrencia confirmada' : 'Recurrence confirmed');
   }, [user, queryClient, language]);
