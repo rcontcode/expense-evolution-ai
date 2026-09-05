@@ -18,6 +18,7 @@ import { SampleDataOfferStep } from '@/components/guidance/SampleDataOfferStep';
 import { PhoenixLogo, PhoenixState } from '@/components/ui/phoenix-logo';
 import { ConversationalOnboarding } from '@/components/onboarding/ConversationalOnboarding';
 import { getCountryConfig, getAvailableCountries, CountryCode, WorkTypeOption } from '@/lib/constants/country-tax-config';
+import { mensajeDeError } from '@/lib/mensajeDeError';
 
 // Work type enum values that match the database
 type WorkTypeEnum = 'employee' | 'contractor' | 'corporation';
@@ -163,7 +164,7 @@ export default function Onboarding() {
       toast.success(t('common.success'));
       return true;
     } catch (error: any) {
-      toast.error(error.message);
+      toast.error(mensajeDeError(error));
       return false;
     } finally {
       setLoading(false);
