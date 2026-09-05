@@ -105,18 +105,26 @@ export function SmartTextInput({ onSuccess, onCancel }: SmartTextInputProps) {
         console.error('Smart input error:', error);
         if (handleAIError(error, { feature: 'ai_credits', requiredPlan: 'pro' })) return;
         if (error.message?.includes('429')) {
-          toast.error(l ? 'Demasiadas solicitudes, espera un momento' : 'Too many requests, please wait');
-        } else if (error.message?.includes('402')) {
-          toast.error(l ? 'Créditos de AI agotados' : 'AI credits depleted');
+          toast.error(l ? 'El asistente está ocupado en este momento' : 'The assistant is busy right now', {
+            description: l ? 'Dale un momento y vuelve a intentarlo.' : 'Give it a moment and try again.',
+          });
         } else {
-          toast.error(l ? 'Error al procesar' : 'Processing error');
+          // De quien sea la cuota que se acabo, al cliente le pasa lo mismo: no salio.
+          toast.error(l ? 'No se pudo leer eso ahora' : "Couldn't read that right now", {
+            description: l ? 'Vuelve a intentarlo en un momento.' : 'Try again in a moment.',
+          });
         }
         return;
       }
 
       if (data?.error) {
         if (handleAIError(data, { feature: 'ai_credits', requiredPlan: 'pro' })) return;
-        toast.error(data.error);
+        // NUNCA se imprime `data.error` tal cual: es prosa del servidor, escrita para
+        // nosotros. De ahi salian "AI credits depleted." y "Rate limit exceeded" a la
+        // pantalla del cliente, en ingles y hablando de una cuota que no es suya.
+        toast.error(l ? 'No se pudo leer eso ahora' : "Couldn't read that right now", {
+          description: l ? 'Vuelve a intentarlo en un momento.' : 'Try again in a moment.',
+        });
         return;
       }
 
