@@ -6,6 +6,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useInvalidateRelated } from './useInvalidateRelated';
 import { insertAuditLog } from './useAuditLog';
 import { hoyLocal } from '@/lib/fecha';
+import { mensajeDeError } from '@/lib/mensajeDeError';
 
 export interface Asset {
   id: string;
@@ -303,7 +304,7 @@ export function useCreateAsset() {
       toast.success(t('netWorth.assetAdded') || 'Activo agregado');
     },
     onError: (error) => {
-      toast.error(error.message);
+      toast.error(mensajeDeError(error));
     },
   });
 }
@@ -332,7 +333,7 @@ export function useUpdateAsset() {
       toast.success(t('netWorth.assetUpdated') || 'Activo actualizado');
     },
     onError: (error) => {
-      toast.error(error.message);
+      toast.error(mensajeDeError(error));
     },
   });
 }
@@ -361,7 +362,7 @@ export function useDeleteAsset() {
       toast.success(t('netWorth.assetDeleted') || 'Activo eliminado');
     },
     onError: (error) => {
-      toast.error(error.message);
+      toast.error(mensajeDeError(error));
     },
   });
 }
@@ -398,7 +399,7 @@ export function useCreateLiability() {
       toast.success(t('netWorth.liabilityAdded') || 'Pasivo agregado');
     },
     onError: (error) => {
-      toast.error(error.message);
+      toast.error(mensajeDeError(error));
     },
   });
 }
@@ -427,7 +428,7 @@ export function useUpdateLiability() {
       toast.success(t('netWorth.liabilityUpdated') || 'Pasivo actualizado');
     },
     onError: (error) => {
-      toast.error(error.message);
+      toast.error(mensajeDeError(error));
     },
   });
 }
@@ -456,7 +457,7 @@ export function useDeleteLiability() {
       toast.success(t('netWorth.liabilityDeleted') || 'Pasivo eliminado');
     },
     onError: (error) => {
-      toast.error(error.message);
+      toast.error(mensajeDeError(error));
     },
   });
 }

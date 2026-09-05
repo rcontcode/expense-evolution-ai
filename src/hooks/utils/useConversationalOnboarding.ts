@@ -7,6 +7,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { getCountryConfig, CountryCode, WorkTypeOption } from '@/lib/constants/country-tax-config';
+import { mensajeDeError } from '@/lib/mensajeDeError';
 
 // Map work type values to DB enum values
 type WorkTypeEnum = 'employee' | 'contractor' | 'corporation';
@@ -641,7 +642,7 @@ export function useConversationalOnboarding() {
       const errorMessage = language === 'es' 
         ? 'Error al guardar el perfil' 
         : 'Error saving profile';
-      toast.error(error.message || errorMessage);
+      toast.error(mensajeDeError(error));
       setState(prev => ({ ...prev, isLoading: false }));
       return false;
     }

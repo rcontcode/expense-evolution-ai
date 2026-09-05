@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import { mensajeDeError } from '@/lib/mensajeDeError';
 
 interface SystemAlert {
   id: string;
@@ -164,7 +165,7 @@ export const useBetaSystem = () => {
     onError: (error: Error) => {
       toast({
         title: 'Error',
-        description: error.message,
+        description: mensajeDeError(error),
         variant: 'destructive',
       });
     },
@@ -223,7 +224,7 @@ export const useBetaSystem = () => {
     onError: (error: Error) => {
       toast({
         title: 'Error',
-        description: error.message,
+        description: mensajeDeError(error),
         variant: 'destructive',
       });
     },

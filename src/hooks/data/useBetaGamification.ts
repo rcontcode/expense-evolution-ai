@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import { mensajeDeError } from '@/lib/mensajeDeError';
 
 export interface BetaTesterPoints {
   id: string;
@@ -289,7 +290,7 @@ export const useBetaGamification = () => {
     onError: (error: Error) => {
       toast({
         title: 'Error',
-        description: error.message,
+        description: mensajeDeError(error),
         variant: 'destructive',
       });
     },
