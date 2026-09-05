@@ -144,13 +144,14 @@ export function SmartReconciliationPanel() {
       );
     } catch (err: any) {
       console.error('AI reconciliation error:', err);
-      if (err.message?.includes('429') || err.message?.includes('Rate limit')) {
-        toast.error(l ? 'Límite de velocidad excedido, intenta más tarde' : 'Rate limit exceeded, try again later');
-      } else if (err.message?.includes('402')) {
-        toast.error(l ? 'Créditos de IA agotados' : 'AI credits exhausted');
-      } else {
-        toast.error(l ? 'Error en análisis IA' : 'AI analysis error');
-      }
+      // El manejador comun ya sabe decir esto sin contarle al cliente de quien es la
+      // cuota que se acabo, y esta pantalla YA lo usaba en los otros dos puntos de fallo.
+      // Solo este catch se lo saltaba y escribia sus propios avisos: "Limite de velocidad
+      // excedido" y "Creditos de IA agotados", en una pantalla que usa quien ya paga.
+      if (handleAIError(err, { feature: 'ai_credits', requiredPlan: 'pro' })) return;
+      toast.error(l ? 'El análisis no está disponible ahora' : 'The analysis is unavailable right now', {
+        description: l ? 'Vuelve a intentarlo en un momento.' : 'Try again in a moment.',
+      });
     } finally {
       setIsAnalyzing(false);
     }
