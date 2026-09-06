@@ -22,17 +22,113 @@ const ETAPA_EN_PROSA: Record<string, string> = {
   '9-12 months': 'de los nueve a los doce meses',
 };
 
-// Reemplaza los merge tags del copy fijo de nurturing: {{name}}, {{stage}}.
+// El obstaculo que ella marco en la Brujula ("no se que actividades hacer",
+// "falta de apoyo"...) entra al primer correo como UNA frase, no como un correo
+// distinto: reconocer en voz alta lo que ella dijo que le pesa es lo que hace que
+// el correo se lea escrito para ella y no para una lista.
+//
+// Los cinco textos hablan de la ESPERA, no de un bebe ya nacido: esta secuencia
+// es la del embarazo. Cuando se escriban las otras cuatro etapas, cada una traera
+// sus propios puentes.
+const PUENTE_POR_OBSTACULO: Record<string, string> = {
+  'falta de tiempo':
+    'Marcaste que el tiempo es lo que más te falta. Lo tomé en cuenta: nada de lo que te voy a mandar pide una tarde libre.',
+  'lack of time':
+    'Marcaste que el tiempo es lo que más te falta. Lo tomé en cuenta: nada de lo que te voy a mandar pide una tarde libre.',
+
+  'no sé qué actividades hacer':
+    'Marcaste que no sabes bien qué hacer. Es la respuesta más honesta que se puede dar antes de que nazca, y es exactamente lo que vamos a ordenar.',
+  'no se que actividades hacer':
+    'Marcaste que no sabes bien qué hacer. Es la respuesta más honesta que se puede dar antes de que nazca, y es exactamente lo que vamos a ordenar.',
+  "don't know what activities to do":
+    'Marcaste que no sabes bien qué hacer. Es la respuesta más honesta que se puede dar antes de que nazca, y es exactamente lo que vamos a ordenar.',
+
+  // El quiz de Little ya no le muestra "mi bebe no coopera" a quien esta embarazada
+  // -- ella no tiene todavia un bebe con quien no cooperar --, sino "el embarazo no
+  // va como esperaba". Las dos claves siguen aqui: los leads viejos guardaron la
+  // primera y hay que saber contestarles igual.
+  'el embarazo no va como esperaba':
+    'Marcaste que el embarazo no va como esperabas. Lo tomo en cuenta: nada de lo que te mande da por supuesto que todo marcha según el plan.',
+  "my pregnancy isn't going as i expected":
+    'Marcaste que el embarazo no va como esperabas. Lo tomo en cuenta: nada de lo que te mande da por supuesto que todo marcha según el plan.',
+  'mi bebé no coopera':
+    'Marcaste que temes que las cosas no salgan como en los manuales. Te adelanto algo: casi nunca salen así, y no es señal de que lo estés haciendo mal.',
+  'mi bebe no coopera':
+    'Marcaste que temes que las cosas no salgan como en los manuales. Te adelanto algo: casi nunca salen así, y no es señal de que lo estés haciendo mal.',
+  "my baby doesn't cooperate":
+    'Marcaste que temes que las cosas no salgan como en los manuales. Te adelanto algo: casi nunca salen así, y no es señal de que lo estés haciendo mal.',
+
+  'falta de apoyo':
+    'Marcaste que te falta apoyo. Eso cambia lo que sirve y lo que no: lo que te voy a mandar está pensado para hacerse sin un equipo alrededor.',
+  'lack of support':
+    'Marcaste que te falta apoyo. Eso cambia lo que sirve y lo que no: lo que te voy a mandar está pensado para hacerse sin un equipo alrededor.',
+
+  'información contradictoria':
+    'Marcaste que te cansa la información contradictoria. Por eso cada cosa que te mande viene con el estudio de donde salió, para que puedas revisarlo tú.',
+  'informacion contradictoria':
+    'Marcaste que te cansa la información contradictoria. Por eso cada cosa que te mande viene con el estudio de donde salió, para que puedas revisarlo tú.',
+  'contradictory information':
+    'Marcaste que te cansa la información contradictoria. Por eso cada cosa que te mande viene con el estudio de donde salió, para que puedas revisarlo tú.',
+};
+
+// Reemplaza los merge tags del copy fijo de nurturing: {{name}}, {{stage}}, {{puente}}.
 function renderVars(text: string, lead: any): string {
   const firstName = String(lead?.name || '').trim().split(/\s+/)[0] || '';
-  const elegida = String(lead?.situation || lead?.baby_stage || lead?.stage || '').trim();
+  const elegida = String(lead?.situation || '').trim();
   // La frase es "estas en la etapa {{stage}}", asi que el valor crudo del quiz
   // ("0-3 meses") queda torpe. Se traduce a prosa; si llega una etapa que no
   // conocemos, se usa el valor tal cual antes que perderlo.
   const stage = ETAPA_EN_PROSA[elegida.toLowerCase()] || elegida || 'que tu bebé vive ahora';
-  return String(text || '')
+  const obstaculo = String(lead?.obstacle || '').trim().toLowerCase();
+  const puente = PUENTE_POR_OBSTACULO[obstaculo] || '';
+
+  let out = String(text || '');
+
+  // Sin nombre, "Tu Brujula esta lista, {{name}}" quedaba como "Tu Brujula esta
+  // lista,  🧭" -- una coma colgando en el asunto. Y "{{name}}, antes que nada"
+  // quedaba empezando con minuscula. Se limpian las dos formas antes de reemplazar.
+  if (!firstName) {
+    out = out
+      .replace(/,\s*\{\{\s*name\s*\}\}/gi, '')
+      .replace(/\{\{\s*name\s*\}\}\s*,\s*(\p{L})/gu, (_m, letra: string) => letra.toUpperCase());
+  }
+
+  return out
     .replace(/\{\{\s*name\s*\}\}/gi, firstName)
-    .replace(/\{\{\s*stage\s*\}\}/gi, String(stage));
+    .replace(/\{\{\s*stage\s*\}\}/gi, String(stage))
+    // El puente viaja en su propia linea. Si esta vacio se lleva tambien el salto
+    // de linea que lo precede, para no dejar un hueco en medio del correo.
+    .replace(/\n*\{\{\s*puente\s*\}\}/gi, puente ? '\n\n' + puente : '');
+}
+
+// ── Condiciones: un solo evaluador para las reglas y para los frenos ──
+// Las reglas de inscripcion ya escritas usan `contains` y `in`, y este evaluador
+// solo conocia `eq`, `gte` y `exists`: un operador desconocido no coincidia con
+// ningun caso, la condicion se daba por cumplida y la regla aceptaba a CUALQUIER
+// lead. La regla que filtra por `source contains "universmind"` habria metido a
+// clientes de EvoFinz en la secuencia de bebes el dia que se encendiera.
+function cumpleCondicion(cond: any, lead: any): boolean {
+  const bruto = lead?.[cond?.field];
+  const texto = String(bruto ?? '').toLowerCase();
+  const val = cond?.value;
+  const opciones = () => (Array.isArray(val) ? val : [val]).map((v) => String(v).toLowerCase());
+
+  switch (cond?.operator || 'eq') {
+    case 'eq': return texto === String(val).toLowerCase();
+    case 'neq': return texto !== String(val).toLowerCase();
+    case 'contains': return texto.includes(String(val).toLowerCase());
+    case 'in': return opciones().includes(texto);
+    case 'not_in': return !opciones().includes(texto);
+    case 'gte': return Number(bruto || 0) >= Number(val);
+    case 'lte': return Number(bruto || 0) <= Number(val);
+    case 'exists': return val === true ? !!bruto : !bruto;
+    // `tags` es un arreglo en la base; asi se pregunta "¿tiene esta etiqueta?".
+    case 'array_contains':
+      return Array.isArray(bruto) && bruto.map((v) => String(v).toLowerCase()).includes(String(val).toLowerCase());
+    // Un operador que no conocemos NO se da por cumplido: si no sabemos leer la
+    // condicion, no filtramos a nadie hacia adentro.
+    default: return false;
+  }
 }
 
 Deno.serve(async (req) => {
@@ -104,18 +200,10 @@ Deno.serve(async (req) => {
             if (existing.length > 0) continue;
           }
 
+          // Una regla inscribe solo si el lead cumple TODAS sus condiciones.
           const conditions = rule.trigger_condition;
-          if (conditions && Array.isArray(conditions)) {
-            let skip = false;
-            for (const cond of conditions) {
-              const leadVal = lead[cond.field];
-              const op = cond.operator || 'eq';
-              const val = cond.value;
-              if (op === 'eq' && String(leadVal).toLowerCase() !== String(val).toLowerCase()) { skip = true; break; }
-              if (op === 'gte' && Number(leadVal || 0) < Number(val)) { skip = true; break; }
-              if (op === 'exists' && val === true && !leadVal) { skip = true; break; }
-            }
-            if (skip) continue;
+          if (conditions && Array.isArray(conditions) && conditions.length > 0) {
+            if (!conditions.every((cond: any) => cumpleCondicion(cond, lead))) continue;
           }
 
           try {
@@ -181,6 +269,78 @@ Deno.serve(async (req) => {
           if (leads.length === 0) continue;
           const lead = leads[0];
 
+          // ═══ FRENOS DE LA SECUENCIA ═══════════════════════════════════════
+          // Un paso que no corresponde no se "salta": se apaga la secuencia
+          // entera para ese lead. La diferencia importa — si ella compra la
+          // guia el dia 15, saltarse solo ese paso le mandaria igual la oferta
+          // del dia 21, ofreciendole lo que ya pago.
+          const frenar = async (motivo: string) => {
+            await fetch(
+              `${supabaseUrl}/rest/v1/lead_nurturing_log?lead_id=eq.${log.lead_id}&sequence_id=eq.${log.sequence_id}&status=eq.pending`,
+              {
+                method: 'PATCH',
+                headers: { ...headers, 'Prefer': 'return=minimal' },
+                body: JSON.stringify({ status: 'skipped', executed_at: now, message_generated: motivo }),
+              }
+            );
+          };
+
+          // 1) Se dio de baja, reboto o marco spam. El envio ya lo bloquea mas
+          //    abajo, pero sin este freno la secuencia seguiria generando pasos
+          //    para alguien que pidio no volver a recibir nada.
+          let sePuedeSeguir = true;
+          if (lead.email) {
+            const supRes = await fetch(
+              `${supabaseUrl}/rest/v1/suppressed_emails?email=eq.${encodeURIComponent(String(lead.email).toLowerCase())}&select=reason&limit=1`,
+              { headers }
+            );
+            if (supRes.ok) {
+              const sup = await supRes.json();
+              if (sup.length > 0) {
+                await frenar(`Correo dado de baja (${sup[0].reason}) — secuencia detenida`);
+                sePuedeSeguir = false;
+              }
+            }
+          }
+          if (!sePuedeSeguir) continue;
+
+          // 2) Nacio el bebe (o cambio de etapa). El quiz NO actualiza el lead
+          //    viejo: cada respuesta crea una fila nueva. O sea que una mama que
+          //    responde la Brujula embarazada y vuelve a responderla con su bebe
+          //    de dos meses deja la fila vieja intacta -- y esa fila vieja seguiria
+          //    mandandole correos que hablan de "antes de que nazca". Por eso el
+          //    freno no mira esta fila: mira si hay una MAS NUEVA con el mismo
+          //    correo y otra etapa.
+          if (lead.email && lead.situation) {
+            const nuevoRes = await fetch(
+              `${supabaseUrl}/rest/v1/quiz_leads?email=eq.${encodeURIComponent(String(lead.email).toLowerCase())}&created_at=gt.${lead.created_at}&select=situation,created_at&order=created_at.desc&limit=5`,
+              { headers }
+            );
+            if (nuevoRes.ok) {
+              const posteriores = await nuevoRes.json();
+              const cambio = posteriores.find(
+                (l: any) => l.situation && String(l.situation).toLowerCase() !== String(lead.situation).toLowerCase()
+              );
+              if (cambio) {
+                await frenar(`Volvio a responder la Brujula y ahora dice "${cambio.situation}" — secuencia detenida`);
+                sePuedeSeguir = false;
+              }
+            }
+          }
+          if (!sePuedeSeguir) continue;
+
+          // 3) Los frenos que declara la propia secuencia (compras, etiquetas).
+          //    Basta que se cumpla UNO. Mismo evaluador que las reglas.
+          const frenos = sequence.stop_conditions;
+          if (Array.isArray(frenos) && frenos.length > 0) {
+            const cumplido = frenos.find((c: any) => cumpleCondicion(c, lead));
+            if (cumplido) {
+              await frenar(`Freno de la secuencia: ${cumplido.field} ${cumplido.operator} ${JSON.stringify(cumplido.value)}`);
+              continue;
+            }
+          }
+          // ══════════════════════════════════════════════════════════════════
+
           // Skip if lead was already contacted
           if (lead.contacted_at) {
             await fetch(`${supabaseUrl}/rest/v1/lead_nurturing_log?id=eq.${log.id}`, {
@@ -243,6 +403,8 @@ Deno.serve(async (req) => {
                     templateName: step.template_name || 'crm-universmind-little-nurture',
                     ctaText: step.cta_text || '',
                     ctaUrl: step.cta_url || '',
+                    ctaSecondaryText: step.cta2_text || '',
+                    ctaSecondaryUrl: step.cta2_url || '',
                     isFollowUp: false,
                     stepNumber: log.step_index + 1,
                   }),
