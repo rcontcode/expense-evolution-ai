@@ -21,6 +21,8 @@ project_id = "oxrfslyuzcgxacomgzgw"
     verify_jwt = false
   [functions.elevenlabs-tts]
     verify_jwt = false
+  [functions.marcar-evento-lead]
+    verify_jwt = false
   [functions.generate-lead-message]
     verify_jwt = false
   [functions.optimize-apv-chile]
