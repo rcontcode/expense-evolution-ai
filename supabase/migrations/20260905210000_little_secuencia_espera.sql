@@ -104,7 +104,7 @@ BEGIN
 
 Soy Rudy. Papá de dos, e ingeniero. Cuando esperábamos al primero yo tenía la cabeza llena de listas de cosas que comprar y ninguna respuesta a la pregunta que de verdad me quitaba el sueño: ¿y yo qué hago cuando esté acá? Así que hice lo que mejor sé hacer: ordenar el problema, comparar la evidencia y convertirla en pasos claros. De ahí nació Universmind Little y esta Brújula que acabas de responder.
 
-Tu resultado dice que estás en la etapa {{stage}}. Durante los próximos días te voy a ir mandando lo que de verdad importa antes de que nazca — con la ciencia detrás, en palabras normales.
+Tu resultado dice que estás en la etapa {{stage}}. Durante los próximos días te voy a ir mandando lo que de verdad importa antes de que nazca, con la ciencia detrás y en palabras normales.
 {{puente}}
 
 Hoy quédate solo con esto: el trabajo ya empezó, y no es el de armar el cuarto. Es este, el de ir entendiendo qué viene, a tu ritmo y sin apuro.
@@ -124,7 +124,7 @@ En un par de días te cuento algo que me sorprendió leyendo: qué es lo que tu 
         'subject', $s$Tu voz ya le suena conocida$s$,
         'body', $b${{name}}, seguro te han dicho "tranquila, que el bebé lo siente". Suena a frase de manual y, peor, suena a que ahora estar nerviosa también es culpa tuya.
 
-Te cuento lo que sí está medido, porque es más interesante que la frase — y no te carga con nada.
+Te cuento lo que sí está medido, porque es más interesante que la frase, y porque no te carga con nada.
 
 En 1986, DeCasper y Spence les pidieron a un grupo de embarazadas que leyeran en voz alta el mismo pasaje, todos los días, durante las últimas seis semanas. Cuando esos bebés nacieron, les pusieron un chupete conectado a una grabadora: succionando de una manera sonaba el pasaje conocido y de otra manera sonaba uno nuevo. Los bebés succionaban para escuchar el conocido. Seis años antes, DeCasper y Fifer ya habían mostrado lo mismo con la voz: un recién nacido de días prefiere la de su madre a la de otra mujer.
 
@@ -203,13 +203,13 @@ En un par de días te la muestro como se debe, con precio y todo.
         'subject', $s$La guía que me hubiera gustado tener esperando$s$,
         'body', $b${{name}}, esto es lo que hay adentro de la guía y lo que cuesta.
 
-La Guía Completa de la Espera son las 40 semanas del embarazo, una por una: qué está pasando dentro, qué puedes hacer esa semana, y por qué — con el estudio de donde salió cada cosa, para que puedas revisarlo tú y no creerme a mí.
+La Guía Completa de la Espera son las 40 semanas del embarazo, una por una: qué está pasando dentro, qué puedes hacer esa semana, y por qué, con el estudio de donde salió cada cosa para que puedas revisarlo tú y no creerme a mí.
 
 Qué trae, en concreto:
 
 • Las 40 semanas del embarazo, una por una.
 • 160 actividades repartidas entre esas semanas.
-• 40 reflexiones para escribir, una por semana. Cada una viene en tres versiones —para la mamá, para el papá y para los dos juntos— y eliges la que te sirva esa semana. No son 120 tareas: es una pregunta semanal con tres puertas de entrada. Casi nadie le escribe al que espera al lado, y esa fue la razón de hacerlo así.
+• 40 reflexiones para escribir, una por semana. Cada una viene en tres versiones (para la mamá, para el papá y para los dos juntos) y eliges la que te sirva esa semana. No son 120 tareas: es una pregunta semanal con tres puertas de entrada. Casi nadie le escribe al que espera al lado, y esa fue la razón de hacerlo así.
 • Las referencias científicas de donde sale cada recomendación, con su enlace. Que una actividad se apoye en un estudio no quiere decir que ese estudio haya probado esa actividad; quiere decir que de ahí salió la idea, y tú puedes ir a leerlo.
 • Soporte por correo: me escribes y te contesto yo.
 • Actualizaciones de por vida.
@@ -219,7 +219,7 @@ Los precios:
 • Guía Completa de la Espera — US$87.
 • Colección Completa, del embarazo a los 12 meses (5 guías, 496 actividades) — US$247, en vez de los US$355 que costarían sueltas. Son US$108 menos, alrededor de un 30 %.
 
-Y ahora lo que te conviene saber antes de decidir, con el cálculo hecho: si compras la Guía de la Espera y más adelante una sola guía más, gastas US$154 — menos que la Colección. Dicho al revés: la Colección son US$160 más que la Guía de la Espera. Conviene si crees que vas a usar cuatro o cinco etapas. Si todavía no lo sabes, empieza por la Espera, que es lo que te sirve ahora.
+Y ahora lo que te conviene saber antes de decidir, con el cálculo hecho: si compras la Guía de la Espera y más adelante una sola guía más, gastas US$154, que es menos que la Colección. Dicho al revés: la Colección son US$160 más que la Guía de la Espera. Conviene si crees que vas a usar cuatro o cinco etapas. Si todavía no lo sabes, empieza por la Espera, que es lo que te sirve ahora.
 
 Las dos tienen 30 días de garantía. Si la abres y no es lo que esperabas, me escribes y te devuelvo el dinero, sin pedirte explicaciones. Y ninguna de las dos reemplaza a quien lleva tu embarazo: son para llegar a esa consulta con las preguntas ordenadas.
 
@@ -240,7 +240,7 @@ Las dos tienen 30 días de garantía. Si la abres y no es lo que esperabas, me e
 
 El embarazo tiene fecha de término, y aquí no hay ninguna oferta que venza. Lo que se acaba son las semanas, y esas se van a usar igual en algo. Se pueden usar leyendo foros a las tres de la mañana, o se pueden usar sabiendo qué pasa esta semana y qué hacer con eso.
 
-Si la Colección te parece mucho, empieza por la Guía de la Espera (US$87) — lo que te sirve ahora, nada más. Con los mismos 30 días de garantía: si no es lo que esperabas, te devuelvo el dinero.
+Si la Colección te parece mucho, empieza por la Guía de la Espera (US$87), que es lo que te sirve ahora y nada más. Con los mismos 30 días de garantía: si no es lo que esperabas, te devuelvo el dinero.
 
 Y si hoy no es el momento de comprar, también está bien. Vas a seguir recibiendo lo que publico, gratis, y no vas a dejar de recibirlo por no haber comprado.
 
