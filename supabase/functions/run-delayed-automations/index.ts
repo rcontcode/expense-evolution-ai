@@ -32,43 +32,43 @@ const ETAPA_EN_PROSA: Record<string, string> = {
 // sus propios puentes.
 const PUENTE_POR_OBSTACULO: Record<string, string> = {
   'falta de tiempo':
-    'Marcaste que el tiempo es lo que más te falta. Lo tomé en cuenta: nada de lo que te voy a mandar pide una tarde libre.',
+    'Ninguno te va a pedir que hagas algo ese mismo día.',
   'lack of time':
-    'Marcaste que el tiempo es lo que más te falta. Lo tomé en cuenta: nada de lo que te voy a mandar pide una tarde libre.',
+    'Ninguno te va a pedir que hagas algo ese mismo día.',
 
   'no sé qué actividades hacer':
-    'Marcaste que no sabes bien qué hacer. Es la respuesta más honesta que se puede dar antes de que nazca, y es exactamente lo que vamos a ordenar.',
+    'Y nada de lo que te voy a contar se convierte en una tarea diaria.',
   'no se que actividades hacer':
-    'Marcaste que no sabes bien qué hacer. Es la respuesta más honesta que se puede dar antes de que nazca, y es exactamente lo que vamos a ordenar.',
+    'Y nada de lo que te voy a contar se convierte en una tarea diaria.',
   "don't know what activities to do":
-    'Marcaste que no sabes bien qué hacer. Es la respuesta más honesta que se puede dar antes de que nazca, y es exactamente lo que vamos a ordenar.',
+    'Y nada de lo que te voy a contar se convierte en una tarea diaria.',
 
   // El quiz de Little ya no le muestra "mi bebe no coopera" a quien esta embarazada
   // -- ella no tiene todavia un bebe con quien no cooperar --, sino "el embarazo no
   // va como esperaba". Las dos claves siguen aqui: los leads viejos guardaron la
   // primera y hay que saber contestarles igual.
   'el embarazo no va como esperaba':
-    'Marcaste que el embarazo no va como esperabas. Lo tomo en cuenta: nada de lo que te mande da por supuesto que todo marcha según el plan.',
+    'Y si tu cabeza ya está en la posibilidad de una cesárea, eso también se deja conversado antes, con nombre y apellido.',
   "my pregnancy isn't going as i expected":
-    'Marcaste que el embarazo no va como esperabas. Lo tomo en cuenta: nada de lo que te mande da por supuesto que todo marcha según el plan.',
+    'Y si tu cabeza ya está en la posibilidad de una cesárea, eso también se deja conversado antes, con nombre y apellido.',
   'mi bebé no coopera':
-    'Marcaste que temes que las cosas no salgan como en los manuales. Te adelanto algo: casi nunca salen así, y no es señal de que lo estés haciendo mal.',
+    'El piel con piel de la primera hora se puede dejar conversado antes, incluso para el caso de que el parto tome otro rumbo.',
   'mi bebe no coopera':
-    'Marcaste que temes que las cosas no salgan como en los manuales. Te adelanto algo: casi nunca salen así, y no es señal de que lo estés haciendo mal.',
+    'El piel con piel de la primera hora se puede dejar conversado antes, incluso para el caso de que el parto tome otro rumbo.',
   "my baby doesn't cooperate":
-    'Marcaste que temes que las cosas no salgan como en los manuales. Te adelanto algo: casi nunca salen así, y no es señal de que lo estés haciendo mal.',
+    'El piel con piel de la primera hora se puede dejar conversado antes, incluso para el caso de que el parto tome otro rumbo.',
 
   'falta de apoyo':
-    'Marcaste que te falta apoyo. Eso cambia lo que sirve y lo que no: lo que te voy a mandar está pensado para hacerse sin un equipo alrededor.',
+    'El piel con piel de la primera hora se puede dejar conversado con el equipo del hospital, sin que dependa de que vayas acompañada.',
   'lack of support':
-    'Marcaste que te falta apoyo. Eso cambia lo que sirve y lo que no: lo que te voy a mandar está pensado para hacerse sin un equipo alrededor.',
+    'El piel con piel de la primera hora se puede dejar conversado con el equipo del hospital, sin que dependa de que vayas acompañada.',
 
   'información contradictoria':
-    'Marcaste que te cansa la información contradictoria. Por eso cada cosa que te mande viene con el estudio de donde salió, para que puedas revisarlo tú.',
+    'Cuando te cite un estudio te digo también qué fue lo que no midió.',
   'informacion contradictoria':
-    'Marcaste que te cansa la información contradictoria. Por eso cada cosa que te mande viene con el estudio de donde salió, para que puedas revisarlo tú.',
+    'Cuando te cite un estudio te digo también qué fue lo que no midió.',
   'contradictory information':
-    'Marcaste que te cansa la información contradictoria. Por eso cada cosa que te mande viene con el estudio de donde salió, para que puedas revisarlo tú.',
+    'Cuando te cite un estudio te digo también qué fue lo que no midió.',
 };
 
 // Reemplaza los merge tags del copy fijo de nurturing: {{name}}, {{stage}}, {{puente}}.

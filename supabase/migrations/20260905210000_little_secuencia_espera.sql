@@ -100,16 +100,16 @@ BEGIN
         'nota_interna', 'Espera 1/6 — bienvenida. Unico paso que usa {{puente}} (el obstaculo del quiz).',
         'template_type', 'welcome', 'template_name', 'crm-universmind-little-nurture',
         'subject', $s$Tu Brújula está lista, {{name}} 🧭$s$,
-        'body', $b${{name}}, antes que nada: todavía no nace y ya estás preparándote. Eso dice bastante.
+        'body', $b${{name}}, cuando esperábamos al primero yo tenía la cabeza llena de listas de cosas que comprar y ninguna respuesta a la única pregunta que de verdad me quitaba el sueño: ¿y yo qué hago cuando esté acá?
 
-Soy Rudy. Papá de dos, e ingeniero. Cuando esperábamos al primero yo tenía la cabeza llena de listas de cosas que comprar y ninguna respuesta a la pregunta que de verdad me quitaba el sueño: ¿y yo qué hago cuando esté acá? Así que hice lo que mejor sé hacer: ordenar el problema, comparar la evidencia y convertirla en pasos claros. De ahí nació Universmind Little y esta Brújula que acabas de responder.
+Soy Rudy, papá de dos e ingeniero. Así que hice lo que mejor sé hacer: en vez de juntar opiniones me fui a leer los estudios, y anoté qué decía cada uno y hasta dónde llegaba. De ahí nació Universmind Little, y también la Brújula.
 
-Tu resultado dice que estás en la etapa {{stage}}. Durante los próximos días te voy a ir mandando lo que de verdad importa antes de que nazca, con la ciencia detrás y en palabras normales.
+En los tres correos que siguen te cuento qué se pudo medir de lo que un bebé reconoce al nacer, qué conviene dejar conversado para la primera hora después del parto, y qué me sirvió a mí contra el miedo a no saber qué hacer. Después te ofrezco la guía que hice.
 {{puente}}
 
-Hoy quédate solo con esto: el trabajo ya empezó, y no es el de armar el cuarto. Es este, el de ir entendiendo qué viene, a tu ritmo y sin apuro.
+Para prepararte no hace falta tener el cuarto armado. Alcanza con ir entendiendo qué viene, a tu ritmo y cuando quieras.
 
-En un par de días te cuento algo que me sorprendió leyendo: qué es lo que tu bebé ya reconoce de ti antes de nacer, y cómo hicieron para medirlo.
+En un par de días te cuento algo que me sorprendió leyendo: cómo hicieron para saber que un recién nacido reconoce algo que oyó antes de nacer.
 
 — Rudy$b$,
         'cta_text', $c$Ver mi resultado de la Brújula$c$,
@@ -121,22 +121,18 @@ En un par de días te cuento algo que me sorprendió leyendo: qué es lo que tu 
         'day', 2, 'delay_hours', 48, 'channel', 'email',
         'nota_interna', 'Espera 2/6 — el dato prenatal (DeCasper). Sin pedir nada.',
         'template_type', 'nurture', 'template_name', 'crm-universmind-little-nurture',
-        'subject', $s$Tu voz ya le suena conocida$s$,
-        'body', $b${{name}}, seguro te han dicho "tranquila, que el bebé lo siente". Suena a frase de manual y, peor, suena a que ahora estar nerviosa también es culpa tuya.
+        'subject', $s$Lo que midieron con un chupete y una grabadora$s$,
+        'body', $b${{name}}, hay una frase que circula mucho en el embarazo: "tranquila, que el bebé lo siente". Suena a frase de manual y, peor, suena a que ahora estar nerviosa también es culpa tuya.
 
-Te cuento lo que sí está medido, porque es más interesante que la frase, y porque no te carga con nada.
+En 1986, DeCasper y Spence les pidieron a un grupo de embarazadas que leyeran en voz alta el mismo pasaje, todos los días, durante las últimas seis semanas. Cuando esos bebés nacieron, les pusieron un chupete conectado a una grabadora: succionando de una manera sonaba el pasaje conocido y de otra manera sonaba uno nuevo. Los bebés succionaban para escuchar el conocido.
 
-En 1986, DeCasper y Spence les pidieron a un grupo de embarazadas que leyeran en voz alta el mismo pasaje, todos los días, durante las últimas seis semanas. Cuando esos bebés nacieron, les pusieron un chupete conectado a una grabadora: succionando de una manera sonaba el pasaje conocido y de otra manera sonaba uno nuevo. Los bebés succionaban para escuchar el conocido. Seis años antes, DeCasper y Fifer ya habían mostrado lo mismo con la voz: un recién nacido de días prefiere la de su madre a la de otra mujer.
+Lo que se midió ahí fue una preferencia después de nacer, no lo que pasaba adentro: el estudio no dice cómo llega el sonido ni qué fue exactamente lo que retuvieron. Seis años antes, DeCasper y Fifer habían medido otra cosa: un recién nacido de días prefiere la voz de su madre a la de otra mujer. Ese estudio no midió nada del embarazo. Ninguno de los dos midió que entienda la historia, ni que leerle lo vuelva más listo. Así que si te gusta leerle en voz alta, léele; y si no, tampoco pasa nada. De ahí no sale una tarea diaria.
 
-Fíjate en lo que midieron, porque es bastante y es poco a la vez. Midieron que el sonido de tu voz le llega y que le llega lo suficiente como para reconocerlo al nacer. No midieron que entienda la historia, ni que leerle lo vuelva más listo, ni nada sobre cómo te sentiste esos meses. Así que si te gusta leerle en voz alta, léele; y si no, tampoco pasa nada. De ahí no sale una tarea diaria.
+Sobre la calma, que era de lo que hablaba esa frase, hay otra cosa medida, esta vez después del nacimiento. Gunnar y Donzella (2002) revisaron lo que se había estudiado del cortisol en los primeros años, y lo que describen es más acotado de lo que suele citarse: en varios contextos, el cortisol del bebé sube menos cuando el adulto que lo cuida responde a lo que le pasa. Es una asociación que depende de la edad y del vínculo, y lo que se midió fue cortisol, no el estrés entero.
 
-Lo otro —lo de la calma— empieza a funcionar después de nacer, y también está estudiado. Gunnar y Donzella (2002) revisaron los estudios sobre el cortisol en los primeros años y describen algo que se repite: cuando hay un adulto atento cerca, la respuesta de estrés del bebé sube menos.
+Eso no dice que tengas que estar serena todo el tiempo; nadie lo está. Lo que yo saco de ahí, y esto ya es mío y no del estudio, es que alterarse forma parte del asunto y que no hay que tenerlo resuelto antes de que nazca. Y con un recién nacido delante, eso se practica bastante.
 
-Fíjate bien en lo que eso NO dice. No dice que tengas que estar serena todo el tiempo; nadie lo está, y menos embarazada. Dice que tu bebé va a necesitar a alguien que se altere y vuelva. Eso es lo que le enseña que del susto se sale.
-
-Y esa parte se practica. No hace falta nacer con paciencia.
-
-En el próximo correo te dejo lo único que de verdad conviene tener listo para la primera hora después del parto. No es nada que se compre.
+En el próximo correo te cuento algo concreto que conviene dejar conversado con tu equipo antes del parto.
 
 — Rudy$b$,
         'cta_text', '', 'cta_url', ''
@@ -148,22 +144,18 @@ En el próximo correo te dejo lo único que de verdad conviene tener listo para 
         'nota_interna', 'Espera 3/6 — la lista de la primera hora. Valor puro, sin venta.',
         'template_type', 'nurture', 'template_name', 'crm-universmind-little-nurture',
         'subject', $s$Lo que conviene dejar conversado antes del parto$s$,
-        'body', $b${{name}}, te prometí algo práctico. Acá va, y no se compra en ninguna tienda.
+        'body', $b${{name}}, el contacto piel con piel es esto: tu bebé sobre tu pecho apenas nace, sin ropa de por medio y sin apuro. Es lo práctico que te prometí, y conviene dejarlo conversado antes. Si tú y tu bebé están estables, la Organización Mundial de la Salud recomienda que sea inmediato y sin interrupciones durante al menos una hora; está en su guía de 2017 sobre lactancia en maternidades. Esa recomendación se apoya en la revisión Cochrane de Moore y colegas sobre contacto piel con piel inmediato o temprano, que compara hacerlo contra la atención habitual de cada hospital, que no es la misma en todas partes. Ahí el grupo del piel con piel sale mejor en los resultados de lactancia. La temperatura también sube algo, pero la diferencia es pequeña. Y si aparece una urgencia, esa parte la resuelve el equipo médico ahí mismo, lo que no borra lo que dejaste conversado ni te impide preguntar cuando se pueda.
 
-Hay algo que conviene dejar hablado antes, y es el contacto piel con piel: tu bebé sobre tu pecho, sin ropa de por medio, sin apuro. Si tú y tu bebé están estables, la Organización Mundial de la Salud recomienda que sea inmediato y sin interrupciones durante al menos una hora. La razón que dan es concreta y no es sentimental: encima de su madre el bebé mantiene mejor la temperatura, y la lactancia arranca mejor que si se lo llevan a pesar primero. Si el parto se complica, esa decisión la toma el equipo médico y no hay nada que negociar en ese momento.
-
-Eso es una cosa. Otra distinta —y conviene no confundirlas— es el marco de Cuidado Nutritivo de la OMS y UNICEF (Britto y colegas, en The Lancet, 2017). Ese marco tiene cinco componentes, y el piel con piel no es uno de ellos: los cinco son salud, nutrición, seguridad, cuidado responsivo y oportunidades de aprendizaje temprano. El piel con piel es una de las formas más tempranas de cuidado responsivo, no una categoría aparte. Te lo aclaro porque vas a ver ese marco citado en todas partes, casi siempre mal.
-
-Lo que te sirve tener decidido ANTES, porque en el momento no vas a estar para negociar:
+Lo que conviene dejar anotado antes, para no tener que explicarlo el mismo día:
 
 1) Que quieres piel con piel apenas nazca, si la situación médica lo permite.
 2) Que el pesaje, la vestida y las fotos pueden esperar un rato.
-3) Quién lo pide por ti si tú no estás en condiciones de hablar.
-4) Que si te toca cesárea o una urgencia, el piel con piel lo puede hacer tu pareja mientras tanto. Muchos hospitales ya lo ofrecen; conviene preguntarlo antes y no en el momento.
+3) Quién dice todo esto por ti si tú no puedes hablar en ese momento.
+4) Que si te toca cesárea, quieres piel con piel contigo igual, en el quirófano, si el estado de ambos lo permite; y que si no se puede, lo haga quien te acompañe mientras tanto. Eso depende del protocolo de cada hospital, así que conviene preguntar antes las dos cosas.
 
-Sobre ese punto 4, una precisión honesta: no te voy a decir que exista un estudio que mida exactamente eso. Lo que sí está documentado es otra cosa. Feldman, Braun y Champagne, en Nature Reviews Neuroscience (2019), describen que el cuidado paterno tiene su propia neurobiología, con oxitocina y vasopresina de por medio. Eso respalda que el cuidado del padre cuenta por sí mismo; no alcanza para prometerte que una cosa reemplace a la otra.
+Sobre ese punto 4 hay una medición directa. Erlandsson y colegas (2007) siguieron a 29 bebés nacidos por cesárea programada: unos pasaron las primeras horas piel con piel con el padre y otros en una cuna al lado. Los que estuvieron con el padre lloraron menos, se calmaron antes y llegaron antes a un estado de somnolencia. Son 29 bebés, son cesáreas programadas y no urgencias, y el estudio no compara al padre con la madre. Sirve para conversarlo con tu equipo, no para prometerte que da lo mismo.
 
-Los cuatro puntos son preferencias para conversar antes con el equipo que te va a atender, no cosas que haya que exigir el día del parto. Escríbelos en una nota del teléfono y muéstraselos a quien te acompañe. Eso es todo.
+Los cuatro puntos son preferencias para conversar antes con el equipo que te va a atender, no cosas que haya que exigir el día del parto. Escríbelos en una nota del teléfono. Si vas acompañada, muéstraselos antes a esa persona. Y si vas sola, déjalos conversados con tu matrona o con el equipo en alguna consulta previa, que para eso están esas consultas.
 
 PD: en el próximo correo quiero desarmar contigo el miedo que más he escuchado de futuros padres, y que yo también tuve: "no voy a saber qué hacer".
 
@@ -179,17 +171,15 @@ PD: en el próximo correo quiero desarmar contigo el miedo que más he escuchado
         'subject', $s$"No voy a saber qué hacer"$s$,
         'body', $b${{name}}, esa frase la pensé yo, palabra por palabra, mirando una cuna vacía.
 
-Lo que aprendí después no era lo que yo esperaba.
+Yo no lo supe. Y con el segundo tampoco lo supe del todo, aunque ya había pasado una vez por ahí. Lo que me cambió las cosas fue tener a mano dos o tres cosas medidas de verdad, como la del chupete y la grabadora que te conté el otro día, y saber también hasta dónde llegaban. Con eso a las tres de la mañana uno hace menos cosas por puro miedo.
 
-Nadie sabe qué hacer. Tampoco los que se ven seguros. Lo que cambia las cosas a las tres de la mañana es tener a mano dos o tres cosas ciertas, en lugar de cinco opiniones que se contradicen entre sí.
+Y hay algo más, que la Academia Americana de Pediatría dejó por escrito (Shonkoff, Garner y colegas, 2012): entre lo que amortigua la respuesta de estrés tóxico en los primeros años están las relaciones estables con adultos que responden a lo que le pasa. Amortiguar no es borrar, y no es lo único que cuenta. Estrés tóxico ahí no describe una circunstancia sino una reacción, la de un organismo con los sistemas de estrés encendidos fuerte o mucho tiempo y sin apoyos alrededor que lo amortigüen. No son los nervios de una madre primeriza que no sabe qué hacer. La palabra que hace el trabajo ahí es "responden": darte cuenta de que algo le pasa y hacer algo con eso, una y otra vez, aunque no siempre aciertes qué era.
 
-Y hay algo más, que la Academia Americana de Pediatría dejó por escrito (Shonkoff, Garner y colegas, 2012): lo que protege el cerebro de un bebé frente al estrés sostenido son las relaciones estables con adultos que responden. Una relación, entonces, y no un entorno perfecto.
+Eso no dice que tú sola tengas que compensar todo lo que venga. Hay circunstancias que no se compensan con buena voluntad, y no sería justo cargártelas.
 
-Lee bien lo que eso dice y lo que no dice. No dice que tú sola tengas que compensar todo lo que venga; hay circunstancias que no se compensan con buena voluntad, y no sería justo cargártelas. Dice que el vínculo cuenta, y que el vínculo se construye estando, no sabiendo.
+Lo que ordené en la Guía Completa de la Espera es algo mucho más terrenal: las 40 semanas, una por una, con lo que ocurre en cada una y de dónde salió cada cosa, para no tener que ir armando el mapa sobre la marcha.
 
-Lo que sí te ahorra sufrimiento es no tener que averiguar cada cosa de madrugada, con el teléfono en una mano y tu hijo en la otra. Eso es exactamente lo que ordené en la Guía Completa de la Espera: qué pasa cada semana, qué le sirve, y qué puedes soltar sin que se caiga nada.
-
-En un par de días te la muestro como se debe, con precio y todo.
+La semana que viene te la muestro como se debe, con precio y todo.
 
 — Rudy$b$,
         'cta_text', '', 'cta_url', ''
@@ -203,25 +193,30 @@ En un par de días te la muestro como se debe, con precio y todo.
         'subject', $s$La guía que me hubiera gustado tener esperando$s$,
         'body', $b${{name}}, esto es lo que hay adentro de la guía y lo que cuesta.
 
-La Guía Completa de la Espera son las 40 semanas del embarazo, una por una: qué está pasando dentro, qué puedes hacer esa semana, y por qué, con el estudio de donde salió cada cosa para que puedas revisarlo tú y no creerme a mí.
+La Guía Completa de la Espera son las 40 semanas del embarazo, una por una: qué está pasando dentro, qué puedes hacer esa semana, y de dónde salió cada idea, con la referencia y el enlace de cada estudio. Algunos abren completos y otros solo el resumen, porque hay revistas que cobran.
 
 Qué trae, en concreto:
 
 • Las 40 semanas del embarazo, una por una.
 • 160 actividades repartidas entre esas semanas.
-• 40 reflexiones para escribir, una por semana. Cada una viene en tres versiones (para la mamá, para el papá y para los dos juntos) y eliges la que te sirva esa semana. No son 120 tareas: es una pregunta semanal con tres puertas de entrada. Casi nadie le escribe al que espera al lado, y esa fue la razón de hacerlo así.
-• Las referencias científicas de donde sale cada recomendación, con su enlace. Que una actividad se apoye en un estudio no quiere decir que ese estudio haya probado esa actividad; quiere decir que de ahí salió la idea, y tú puedes ir a leerlo.
+• 40 reflexiones para escribir, una por semana. Cada una viene en tres versiones (para la mamá, para el papá y para los dos juntos) y eliges la que te sirva esa semana. No son 120 tareas: es una pregunta por semana, y eliges con cuál de las tres entrar. A mí me faltó eso cuando esperábamos, y por eso lo hice así.
+• Las referencias científicas de donde salió cada idea, con su enlace. Que una actividad se apoye en un estudio no quiere decir que ese estudio haya probado esa actividad; quiere decir que de ahí salió la idea, y tú puedes ir a leerlo.
 • Soporte por correo: me escribes y te contesto yo.
-• Actualizaciones de por vida.
+• Actualizaciones incluidas: cuando corrijo o amplío una semana, te llega la versión nueva sin pagar de nuevo.
 
 Los precios:
 
 • Guía Completa de la Espera — US$87.
-• Colección Completa, del embarazo a los 12 meses (5 guías, 496 actividades) — US$247, en vez de los US$355 que costarían sueltas. Son US$108 menos, alrededor de un 30 %.
+• Cada una de las cuatro guías posteriores (0-3, 3-6, 6-9 y 9-12 meses) — US$67.
+• Colección Completa, las cinco juntas — US$247, en vez de los US$355 que costarían sueltas.
 
-Y ahora lo que te conviene saber antes de decidir, con el cálculo hecho: si compras la Guía de la Espera y más adelante una sola guía más, gastas US$154, que es menos que la Colección. Dicho al revés: la Colección son US$160 más que la Guía de la Espera. Conviene si crees que vas a usar cuatro o cinco etapas. Si todavía no lo sabes, empieza por la Espera, que es lo que te sirve ahora.
+La cuenta, empezando por la Espera: con una guía más son US$154; con dos más, US$221; con tres más, US$288. Ahí la Colección, que son US$247, ya te sale menos. Así que por precio la Colección conviene si crees que vas a usar cuatro o cinco etapas, y no antes. Una cosa que conviene saber ahora y no después: si empiezas por la Espera y más adelante quieres la Colección, la Colección se paga entera aparte, o sea US$334 en total. Si todavía no sabes cuántas etapas vas a usar, empieza por la Espera contando con eso.
 
-Las dos tienen 30 días de garantía. Si la abres y no es lo que esperabas, me escribes y te devuelvo el dinero, sin pedirte explicaciones. Y ninguna de las dos reemplaza a quien lleva tu embarazo: son para llegar a esa consulta con las preguntas ordenadas.
+Cómo funciona la compra, para que no haya sorpresas: es un pago único y no una suscripción; la guía no se descarga como archivo, se abre dentro de la app y ahí se va actualizando; y el acceso no vence. Los 30 días de garantía corren desde el día que pagas, no desde que la abres: escribes a soporte@universmind.com dentro de ese plazo y te devuelvo el 100%, sin pedirte explicaciones.
+
+Una cosa más, que vale para las dos: no reemplazan a quien lleva tu embarazo, ni al pediatra después. Sirven para llegar a esas consultas con las preguntas ordenadas.
+
+Y si tu bebé ya nació, dímelo respondiendo aquí: esta guía es para antes, y te sirve otra.
 
 ¿Dudas? Responde este correo. Lo leo yo. — Rudy$b$,
         'cta_text', $c$Ver la Guía de la Espera — US$87$c$,
@@ -238,15 +233,17 @@ Las dos tienen 30 días de garantía. Si la abres y no es lo que esperabas, me e
         'subject', $s$Antes de que nazca$s$,
         'body', $b${{name}}, este es el último correo de esta serie sobre la Guía de la Espera. No te insisto más con ella.
 
-El embarazo tiene fecha de término, y aquí no hay ninguna oferta que venza. Lo que se acaba son las semanas, y esas se van a usar igual en algo. Se pueden usar leyendo foros a las tres de la mañana, o se pueden usar sabiendo qué pasa esta semana y qué hacer con eso.
+Y antes que nada: si tu bebé ya nació en estas semanas, respóndeme y te cambio lo que te mando. También puedes volver a responder la Brújula y el cambio se hace solo.
 
-Si la Colección te parece mucho, empieza por la Guía de la Espera (US$87), que es lo que te sirve ahora y nada más. Con los mismos 30 días de garantía: si no es lo que esperabas, te devuelvo el dinero.
+La guía viene ordenada semana por semana y con las fuentes a la vista, así que te ahorra la parte de buscar.
 
-Y si hoy no es el momento de comprar, también está bien. Vas a seguir recibiendo lo que publico, gratis, y no vas a dejar de recibirlo por no haber comprado.
+Si la Colección te parece mucho, empieza por la Guía de la Espera (US$87), que es la que cubre las semanas que tienes por delante. Y como te decía, si más adelante quieres la Colección, esa se paga entera aparte: los US$87 no se descuentan y el total te quedaría en US$334. Con los mismos 30 días de garantía: si no es lo que esperabas, te devuelvo el dinero.
 
-Y acuérdate de lo que te decía hace unos días: para acompañar a un bebé no hay que saberlo todo, hay que estar.
+Y si hoy no es el momento de comprar, también está bien: vas a seguir recibiendo lo que publico, gratis.
 
-Gracias por dejarme acompañarte esta espera. — Rudy$b$,
+Y acuérdate de lo que te decía hace unos días: para acompañar a tu bebé no vas a necesitar saberlo todo.
+
+Y si un día de estos te toca la duda de las tres de la mañana, respóndeme este correo aunque no hayas comprado nada. Lo leo yo. — Rudy$b$,
         'cta_text', $c$Ver la Guía de la Espera — US$87$c$,
         'cta_url', 'https://universmind.com/guia/embarazo?utm_source=correo&utm_medium=nurture&utm_campaign=espera&utm_content=dia21-guia'
       )
