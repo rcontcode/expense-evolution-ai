@@ -126,9 +126,9 @@ En un par de días te cuento algo que me sorprendió leyendo: cómo hicieron par
 
 En 1986, DeCasper y Spence les pidieron a un grupo de embarazadas que leyeran en voz alta el mismo pasaje, todos los días, durante las últimas seis semanas. Cuando esos bebés nacieron, les pusieron un chupete conectado a una grabadora: succionando de una manera sonaba el pasaje conocido y de otra manera sonaba uno nuevo. Los bebés succionaban para escuchar el conocido.
 
-Lo que se midió ahí fue una preferencia después de nacer, no lo que pasaba adentro: el estudio no dice cómo llega el sonido ni qué fue exactamente lo que retuvieron. Seis años antes, DeCasper y Fifer habían medido otra cosa: un recién nacido de días prefiere la voz de su madre a la de otra mujer. Ese estudio no midió nada del embarazo. Ninguno de los dos midió que entienda la historia, ni que leerle lo vuelva más listo. Así que si te gusta leerle en voz alta, léele; y si no, tampoco pasa nada. De ahí no sale una tarea diaria.
+Lo que se midió ahí fue una preferencia después de nacer, no lo que pasaba adentro: el estudio no dice cómo llega el sonido ni qué fue exactamente lo que retuvieron. Seis años antes, DeCasper y Fifer habían medido otra cosa: un recién nacido de días prefiere la voz de su madre a la de otra mujer. Ese estudio no midió nada del embarazo. Ninguno de los dos midió que entienda la historia, ni que leerle lo vuelva más listo. Así que si te gusta leerle en voz alta, léele. Lo que no puedo decirte es qué pasa si no lo haces, porque eso tampoco lo midieron. De ahí no sale una tarea diaria.
 
-Sobre la calma, que era de lo que hablaba esa frase, hay otra cosa medida, esta vez después del nacimiento. Gunnar y Donzella (2002) revisaron lo que se había estudiado del cortisol en los primeros años, y lo que describen es más acotado de lo que suele citarse: en varios contextos, el cortisol del bebé sube menos cuando el adulto que lo cuida responde a lo que le pasa. Es una asociación que depende de la edad y del vínculo, y lo que se midió fue cortisol, no el estrés entero.
+Sobre la calma, que era de lo que hablaba esa frase, hay otra cosa medida, esta vez después del nacimiento. Gunnar y Donzella (2002) no hicieron un experimento: juntaron lo que se había estudiado del cortisol en los primeros años y lo ordenaron, y los resultados no apuntan todos al mismo lado. De ahí sacan que la presencia de un adulto que responde amortigua la subida de cortisol en varias situaciones, y avisan que eso cambia con la edad, con el temperamento del niño y con el vínculo que ya tengan. Lo que se midió fue cortisol, no el estrés entero.
 
 Eso no dice que tengas que estar serena todo el tiempo; nadie lo está. Lo que yo saco de ahí, y esto ya es mío y no del estudio, es que alterarse forma parte del asunto y que no hay que tenerlo resuelto antes de que nazca. Y con un recién nacido delante, eso se practica bastante.
 
@@ -144,18 +144,18 @@ En el próximo correo te cuento algo concreto que conviene dejar conversado con 
         'nota_interna', 'Espera 3/6 — la lista de la primera hora. Valor puro, sin venta.',
         'template_type', 'nurture', 'template_name', 'crm-universmind-little-nurture',
         'subject', $s$Lo que conviene dejar conversado antes del parto$s$,
-        'body', $b${{name}}, el contacto piel con piel es esto: tu bebé sobre tu pecho apenas nace, sin ropa de por medio y sin apuro. Es lo práctico que te prometí, y conviene dejarlo conversado antes. Si tú y tu bebé están estables, la Organización Mundial de la Salud recomienda que sea inmediato y sin interrupciones durante al menos una hora; está en su guía de 2017 sobre lactancia en maternidades. Esa recomendación se apoya en la revisión Cochrane de Moore y colegas sobre contacto piel con piel inmediato o temprano, que compara hacerlo contra la atención habitual de cada hospital, que no es la misma en todas partes. Ahí el grupo del piel con piel sale mejor en los resultados de lactancia. La temperatura también sube algo, pero la diferencia es pequeña. Y si aparece una urgencia, esa parte la resuelve el equipo médico ahí mismo, lo que no borra lo que dejaste conversado ni te impide preguntar cuando se pueda.
+        'body', $b${{name}}, el contacto piel con piel es esto: tu bebé sobre tu pecho apenas nace, sin ropa de por medio y sin apuro. Conviene dejarlo conversado antes. Si tú y tu bebé están estables, la Organización Mundial de la Salud recomienda que empiece lo antes posible después del nacimiento y sin interrupciones; está en su guía de 2017 sobre lactancia en maternidades, que añade aparte que lo ideal es que dure más de una hora. Esa recomendación se apoya en la revisión Cochrane de Moore y colegas sobre contacto piel con piel inmediato o temprano, que compara hacerlo contra la atención habitual de cada hospital, que no es la misma en todas partes. Ahí el grupo del piel con piel sale mejor en los resultados de lactancia. La temperatura también sube algo, pero la diferencia es pequeña. Y si aparece una urgencia, esa parte la resuelve el equipo médico ahí mismo, lo que no borra lo que dejaste conversado ni te impide preguntar cuando se pueda.
 
-Lo que conviene dejar anotado antes, para no tener que explicarlo el mismo día:
+Estas cuatro son preferencias, no requisitos, y solo sirven si son las tuyas. Quédate con las que quieras y descarta el resto; tenerlo escrito antes ahorra explicarlo el mismo día:
 
 1) Que quieres piel con piel apenas nazca, si la situación médica lo permite.
-2) Que el pesaje, la vestida y las fotos pueden esperar un rato.
+2) Que pesarlo, vestirlo y las fotos pueden esperar un rato.
 3) Quién dice todo esto por ti si tú no puedes hablar en ese momento.
 4) Que si te toca cesárea, quieres piel con piel contigo igual, en el quirófano, si el estado de ambos lo permite; y que si no se puede, lo haga quien te acompañe mientras tanto. Eso depende del protocolo de cada hospital, así que conviene preguntar antes las dos cosas.
 
 Sobre ese punto 4 hay una medición directa. Erlandsson y colegas (2007) siguieron a 29 bebés nacidos por cesárea programada: unos pasaron las primeras horas piel con piel con el padre y otros en una cuna al lado. Los que estuvieron con el padre lloraron menos, se calmaron antes y llegaron antes a un estado de somnolencia. Son 29 bebés, son cesáreas programadas y no urgencias, y el estudio no compara al padre con la madre. Sirve para conversarlo con tu equipo, no para prometerte que da lo mismo.
 
-Los cuatro puntos son preferencias para conversar antes con el equipo que te va a atender, no cosas que haya que exigir el día del parto. Escríbelos en una nota del teléfono. Si vas acompañada, muéstraselos antes a esa persona. Y si vas sola, déjalos conversados con tu matrona o con el equipo en alguna consulta previa, que para eso están esas consultas.
+Se conversan antes con el equipo que te va a atender; no son cosas para exigir el día del parto. Escríbelos en una nota del teléfono. Si vas acompañada, muéstraselos antes a esa persona. Y si vas sola, déjalos conversados con tu matrona o con el equipo en alguna consulta previa, que para eso están esas consultas.
 
 PD: en el próximo correo quiero desarmar contigo el miedo que más he escuchado de futuros padres, y que yo también tuve: "no voy a saber qué hacer".
 
@@ -199,7 +199,7 @@ Qué trae, en concreto:
 
 • Las 40 semanas del embarazo, una por una.
 • 160 actividades repartidas entre esas semanas.
-• 40 reflexiones para escribir, una por semana. Cada una viene en tres versiones (para la mamá, para el papá y para los dos juntos) y eliges la que te sirva esa semana. No son 120 tareas: es una pregunta por semana, y eliges con cuál de las tres entrar. A mí me faltó eso cuando esperábamos, y por eso lo hice así.
+• Una reflexión para escribir cada semana, en tres versiones (para la mamá, para el papá y para los dos juntos) y eliges la que te sirva esa semana. No son 120 tareas: es una pregunta por semana, y eliges con cuál de las tres entrar. A mí me faltó eso cuando esperábamos, y por eso lo hice así.
 • Las referencias científicas de donde salió cada idea, con su enlace. Que una actividad se apoye en un estudio no quiere decir que ese estudio haya probado esa actividad; quiere decir que de ahí salió la idea, y tú puedes ir a leerlo.
 • Soporte por correo: me escribes y te contesto yo.
 • Actualizaciones incluidas: cuando corrijo o amplío una semana, te llega la versión nueva sin pagar de nuevo.
@@ -210,7 +210,7 @@ Los precios:
 • Cada una de las cuatro guías posteriores (0-3, 3-6, 6-9 y 9-12 meses) — US$67.
 • Colección Completa, las cinco juntas — US$247, en vez de los US$355 que costarían sueltas.
 
-La cuenta, empezando por la Espera: con una guía más son US$154; con dos más, US$221; con tres más, US$288. Ahí la Colección, que son US$247, ya te sale menos. Así que por precio la Colección conviene si crees que vas a usar cuatro o cinco etapas, y no antes. Una cosa que conviene saber ahora y no después: si empiezas por la Espera y más adelante quieres la Colección, la Colección se paga entera aparte, o sea US$334 en total. Si todavía no sabes cuántas etapas vas a usar, empieza por la Espera contando con eso.
+Empezando por la Espera: con una guía más son US$154; con dos más, US$221; con tres más, US$288. Ahí la Colección, que son US$247, ya te sale menos. Así que por precio la Colección conviene si crees que vas a usar cuatro o cinco etapas, y no antes. Y si empiezas por la Espera y más adelante quieres la Colección, la Colección se paga entera aparte, o sea US$334 en total. Si todavía no sabes cuántas etapas vas a usar, empieza por la Espera contando con eso.
 
 Cómo funciona la compra, para que no haya sorpresas: lo que te ofrezco aquí es un pago único y no una suscripción; la guía no se descarga como archivo, se abre dentro de la app y ahí se va actualizando; y el acceso no vence. Los 30 días de garantía corren desde el día que pagas, no desde que la abres: escribes a soporte@universmind.com dentro de ese plazo y te devuelvo el 100%, sin pedirte explicaciones.
 
@@ -263,12 +263,13 @@ Y si un día de estos te toca la duda de las tres de la mañana, respóndeme est
     'Universmind Little — Inscribir Espera',
     'new_lead',
     '[{"field":"source","operator":"contains","value":"universmind"},
-      {"field":"situation","operator":"in","value":["Esperando bebé","Embarazada","Pregnant"]}]'::jsonb,
+      {"field":"situation","operator":"in","value":["Esperando bebé","Embarazada","Pregnant"]},
+      {"field":"metadata.rol","operator":"in","value":["Mamá","Mom"]}]'::jsonb,
     'email_sequence',
     jsonb_build_object('sequence_id', v_seq_id),
     0,
     false,
-    'Inscribe en la secuencia de la Espera a quien respondio la Brujula estando embarazada. DESACTIVADA hasta que Rudy apruebe el copy Y hasta que la plantilla tenga direccion postal (CASL).'
+    'Inscribe en la secuencia de la Espera a quien respondio la Brujula estando embarazada. Pide rol Mama/Mom a proposito: el texto le habla a la persona embarazada (cesarea, matrona, quien lleva tu embarazo), asi que un papa o cuidador que elija "Esperando bebe" NO entra aqui y necesita su propia secuencia. DESACTIVADA hasta que Rudy apruebe el copy Y hasta que la plantilla tenga direccion postal (CASL).'
   );
 
   RAISE NOTICE 'Secuencia de la Espera creada: %', v_seq_id;

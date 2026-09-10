@@ -29,6 +29,7 @@ interface ExternalLeadPayload {
   // Nested metadata (Universmind format)
   metadata?: {
     situacion?: string;
+    rol?: string;
     objetivo?: string;
     obstaculo?: string;
     tiempo_disponible?: string;
@@ -373,6 +374,11 @@ Deno.serve(async (req) => {
     if (payload.metadata?.producto_recomendado) extraMetadata.producto_recomendado = payload.metadata.producto_recomendado;
     if (payload.metadata?.precio_producto) extraMetadata.precio_producto = payload.metadata.precio_producto;
     if (payload.metadata?.conocimiento_previo) extraMetadata.conocimiento_previo = payload.metadata.conocimiento_previo;
+    // El rol de quien responde (Mama, Papa, Cuidador(a), Otro). El quiz de Little lo
+    // pide como campo obligatorio y lo enviaba desde siempre; aca se perdia. Sin el,
+    // la secuencia de la Espera no puede distinguir a la persona embarazada de su
+    // pareja, y le escribe a ambos como si estuvieran embarazados.
+    if (payload.metadata?.rol) extraMetadata.rol = payload.metadata.rol;
     if (payload.metadata?.guide) extraMetadata.guide = payload.metadata.guide;
     if (payload.metadata?.respuestas_best_practices) extraMetadata.respuestas_detail = payload.metadata.respuestas_best_practices;
     // Fokuspark quiz_answers — store directly in metadata

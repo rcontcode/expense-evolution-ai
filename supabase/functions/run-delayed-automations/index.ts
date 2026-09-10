@@ -32,9 +32,9 @@ const ETAPA_EN_PROSA: Record<string, string> = {
 // sus propios puentes.
 const PUENTE_POR_OBSTACULO: Record<string, string> = {
   'falta de tiempo':
-    'Ninguno te va a pedir que hagas algo ese mismo día.',
+    'Ninguno de esos tres correos te va a pedir que hagas algo ese mismo día.',
   'lack of time':
-    'Ninguno te va a pedir que hagas algo ese mismo día.',
+    'Ninguno de esos tres correos te va a pedir que hagas algo ese mismo día.',
 
   'no sé qué actividades hacer':
     'Y nada de lo que te voy a contar se convierte en una tarea diaria.',
@@ -48,9 +48,9 @@ const PUENTE_POR_OBSTACULO: Record<string, string> = {
   // va como esperaba". Las dos claves siguen aqui: los leads viejos guardaron la
   // primera y hay que saber contestarles igual.
   'el embarazo no va como esperaba':
-    'Y si tu cabeza ya está en la posibilidad de una cesárea, eso también se deja conversado antes, con nombre y apellido.',
+    'Y si tu cabeza ya está en la posibilidad de una cesárea, eso también se deja conversado antes del parto.',
   "my pregnancy isn't going as i expected":
-    'Y si tu cabeza ya está en la posibilidad de una cesárea, eso también se deja conversado antes, con nombre y apellido.',
+    'Y si tu cabeza ya está en la posibilidad de una cesárea, eso también se deja conversado antes del parto.',
   'mi bebé no coopera':
     'El piel con piel de la primera hora se puede dejar conversado antes, incluso para el caso de que el parto tome otro rumbo.',
   'mi bebe no coopera':
@@ -59,9 +59,9 @@ const PUENTE_POR_OBSTACULO: Record<string, string> = {
     'El piel con piel de la primera hora se puede dejar conversado antes, incluso para el caso de que el parto tome otro rumbo.',
 
   'falta de apoyo':
-    'El piel con piel de la primera hora se puede dejar conversado con el equipo del hospital, sin que dependa de que vayas acompañada.',
+    'Y de lo que te voy a contar, lo más útil se deja conversado con el equipo que te va a atender.',
   'lack of support':
-    'El piel con piel de la primera hora se puede dejar conversado con el equipo del hospital, sin que dependa de que vayas acompañada.',
+    'Y de lo que te voy a contar, lo más útil se deja conversado con el equipo que te va a atender.',
 
   'información contradictoria':
     'Cuando te cite un estudio te digo también qué fue lo que no midió.',
@@ -107,8 +107,17 @@ function renderVars(text: string, lead: any): string {
 // ningun caso, la condicion se daba por cumplida y la regla aceptaba a CUALQUIER
 // lead. La regla que filtra por `source contains "universmind"` habria metido a
 // clientes de EvoFinz en la secuencia de bebes el dia que se encendiera.
+// Lee un campo del lead admitiendo rutas con punto ("metadata.rol"). Antes solo
+// se leia el primer nivel, asi que una regla no podia mirar nada de lo que el quiz
+// guarda dentro de metadata. Devuelve undefined si algun tramo no existe.
+function leerCampo(lead: any, ruta: string): any {
+  if (!ruta) return undefined;
+  if (!ruta.includes('.')) return lead?.[ruta];
+  return ruta.split('.').reduce((obj: any, tramo: string) => (obj == null ? undefined : obj[tramo]), lead);
+}
+
 function cumpleCondicion(cond: any, lead: any): boolean {
-  const bruto = lead?.[cond?.field];
+  const bruto = leerCampo(lead, cond?.field);
   const texto = String(bruto ?? '').toLowerCase();
   const val = cond?.value;
   const opciones = () => (Array.isArray(val) ? val : [val]).map((v) => String(v).toLowerCase());
