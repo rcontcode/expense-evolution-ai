@@ -212,7 +212,7 @@ Los precios:
 
 La cuenta, empezando por la Espera: con una guía más son US$154; con dos más, US$221; con tres más, US$288. Ahí la Colección, que son US$247, ya te sale menos. Así que por precio la Colección conviene si crees que vas a usar cuatro o cinco etapas, y no antes. Una cosa que conviene saber ahora y no después: si empiezas por la Espera y más adelante quieres la Colección, la Colección se paga entera aparte, o sea US$334 en total. Si todavía no sabes cuántas etapas vas a usar, empieza por la Espera contando con eso.
 
-Cómo funciona la compra, para que no haya sorpresas: es un pago único y no una suscripción; la guía no se descarga como archivo, se abre dentro de la app y ahí se va actualizando; y el acceso no vence. Los 30 días de garantía corren desde el día que pagas, no desde que la abres: escribes a soporte@universmind.com dentro de ese plazo y te devuelvo el 100%, sin pedirte explicaciones.
+Cómo funciona la compra, para que no haya sorpresas: lo que te ofrezco aquí es un pago único y no una suscripción; la guía no se descarga como archivo, se abre dentro de la app y ahí se va actualizando; y el acceso no vence. Los 30 días de garantía corren desde el día que pagas, no desde que la abres: escribes a soporte@universmind.com dentro de ese plazo y te devuelvo el 100%, sin pedirte explicaciones.
 
 Una cosa más, que vale para las dos: no reemplazan a quien lleva tu embarazo, ni al pediatra después. Sirven para llegar a esas consultas con las preguntas ordenadas.
 
@@ -238,6 +238,8 @@ Y antes que nada: si tu bebé ya nació en estas semanas, respóndeme y te cambi
 La guía viene ordenada semana por semana y con las fuentes a la vista, así que te ahorra la parte de buscar.
 
 Si la Colección te parece mucho, empieza por la Guía de la Espera (US$87), que es la que cubre las semanas que tienes por delante. Y como te decía, si más adelante quieres la Colección, esa se paga entera aparte: los US$87 no se descuentan y el total te quedaría en US$334. Con los mismos 30 días de garantía: si no es lo que esperabas, te devuelvo el dinero.
+
+Y si lo que pesa es poner US$87 de una vez, hay otra puerta: la app cobra las cinco guías también por suscripción, US$14,99 al mes, y se cancela cuando quieras. Empiezas hoy con poco y entras a las cinco, la de la Espera incluida. Tiene su costo: mientras la pagas tienes acceso, y si la cortas lo pierdes. Y pasados unos dieciséis meses habrás pagado más que los US$247 de la Colección sin quedarte con nada. Conviene si quieres probar; no si ya sabes que la vas a usar los dos años.
 
 Y si hoy no es el momento de comprar, también está bien: vas a seguir recibiendo lo que publico, gratis.
 
