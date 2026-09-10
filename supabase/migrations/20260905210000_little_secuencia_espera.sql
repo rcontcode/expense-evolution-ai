@@ -199,7 +199,7 @@ Qué trae, en concreto:
 
 • Las 40 semanas del embarazo, una por una.
 • 160 actividades repartidas entre esas semanas.
-• Una reflexión para escribir cada semana, en tres versiones (para la mamá, para el papá y para los dos juntos) y eliges la que te sirva esa semana. No son 120 tareas: es una pregunta por semana, y eliges con cuál de las tres entrar. A mí me faltó eso cuando esperábamos, y por eso lo hice así.
+• 40 reflexiones para escribir, una por semana, y cada una habla de lo que pasa esa semana: en la del corazón te pregunta por el latido, en la que ya oye te pregunta qué le dirías. Vienen en tres versiones, para la mamá, para el papá y para los dos juntos, y eliges con cuál entrar. No son 120 tareas: es una pregunta por semana. A mí me faltó eso cuando esperábamos, y por eso lo hice así.
 • Las referencias científicas de donde salió cada idea, con su enlace. Que una actividad se apoye en un estudio no quiere decir que ese estudio haya probado esa actividad; quiere decir que de ahí salió la idea, y tú puedes ir a leerlo.
 • Soporte por correo: me escribes y te contesto yo.
 • Actualizaciones incluidas: cuando corrijo o amplío una semana, te llega la versión nueva sin pagar de nuevo.
