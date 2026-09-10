@@ -210,7 +210,7 @@ Los precios:
 • Cada una de las cuatro guías posteriores (0-3, 3-6, 6-9 y 9-12 meses) — US$67.
 • Colección Completa, las cinco juntas — US$247, en vez de los US$355 que costarían sueltas.
 
-Empezando por la Espera: con una guía más son US$154; con dos más, US$221; con tres más, US$288. Ahí la Colección, que son US$247, ya te sale menos. Así que por precio la Colección conviene si crees que vas a usar cuatro o cinco etapas, y no antes. Y si empiezas por la Espera y más adelante quieres la Colección, la Colección se paga entera aparte, o sea US$334 en total. Si todavía no sabes cuántas etapas vas a usar, empieza por la Espera contando con eso.
+Empezando por la Espera: con una guía más son US$154; con dos más, US$221; con tres más, US$288. Ahí la Colección, que son US$247, ya te sale menos. Así que por precio la Colección conviene si crees que vas a usar cuatro o cinco etapas, y no antes. Y si todavía no sabes cuántas vas a usar, empieza por la Espera sin darle más vueltas: si después quieres la Colección, los US$87 que pagaste se descuentan y te cuesta US$160, o sea los mismos US$247 que si la hubieras comprado entera de una vez. Para eso no hay plazo.
 
 Cómo funciona la compra, para que no haya sorpresas: lo que te ofrezco aquí es un pago único y no una suscripción; la guía no se descarga como archivo, se abre dentro de la app y ahí se va actualizando; y el acceso no vence. Los 30 días de garantía corren desde el día que pagas, no desde que la abres: escribes a soporte@universmind.com dentro de ese plazo y te devuelvo el 100%, sin pedirte explicaciones.
 
@@ -237,7 +237,7 @@ Y antes que nada: si tu bebé ya nació en estas semanas, respóndeme y te cambi
 
 La guía viene ordenada semana por semana y con las fuentes a la vista, así que te ahorra la parte de buscar.
 
-Si la Colección te parece mucho, empieza por la Guía de la Espera (US$87), que es la que cubre las semanas que tienes por delante. Y como te decía, si más adelante quieres la Colección, esa se paga entera aparte: los US$87 no se descuentan y el total te quedaría en US$334. Con los mismos 30 días de garantía: si no es lo que esperabas, te devuelvo el dinero.
+Si la Colección te parece mucho, empieza por la Guía de la Espera (US$87), que es la que cubre las semanas que tienes por delante. Y como te decía, si más adelante quieres la Colección, lo que pagaste por la Espera se descuenta: te cuesta US$160 y puedes hacerlo cuando quieras, sin plazo. Con los mismos 30 días de garantía: si no es lo que esperabas, te devuelvo el dinero.
 
 Y si lo que pesa es poner US$87 de una vez, hay otra puerta: la app cobra las cinco guías también por suscripción, US$14,99 al mes, y se cancela cuando quieras. Empiezas hoy con poco y entras a las cinco, la de la Espera incluida. Tiene su costo: mientras la pagas tienes acceso, y si la cortas lo pierdes. Y pasados unos dieciséis meses habrás pagado más que los US$247 de la Colección sin quedarte con nada. Conviene si quieres probar; no si ya sabes que la vas a usar los dos años.
 
@@ -269,7 +269,7 @@ Y si un día de estos te toca la duda de las tres de la mañana, respóndeme est
     jsonb_build_object('sequence_id', v_seq_id),
     0,
     false,
-    'Inscribe en la secuencia de la Espera a quien respondio la Brujula estando embarazada. Pide rol Mama/Mom a proposito: el texto le habla a la persona embarazada (cesarea, matrona, quien lleva tu embarazo), asi que un papa o cuidador que elija "Esperando bebe" NO entra aqui y necesita su propia secuencia. DESACTIVADA hasta que Rudy apruebe el copy Y hasta que la plantilla tenga direccion postal (CASL).'
+    'Inscribe en la secuencia de la Espera a quien respondio la Brujula estando embarazada. Pide rol Mama/Mom a proposito: el texto le habla a la persona embarazada (cesarea, matrona, quien lleva tu embarazo), asi que un papa o cuidador que elija "Esperando bebe" NO entra aqui y necesita su propia secuencia. DESACTIVADA hasta que se cumplan TRES cosas: que Rudy apruebe el copy; que la plantilla tenga direccion postal (CASL); y que exista en Stripe el precio de actualizacion de US$160 con su id puesto en STRIPE_PRICE_BUNDLE_UPGRADE, porque los correos de los dias 14 y 21 prometen ese descuento y sin el precio la promesa es falsa.'
   );
 
   RAISE NOTICE 'Secuencia de la Espera creada: %', v_seq_id;
