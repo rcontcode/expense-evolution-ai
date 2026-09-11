@@ -44,6 +44,15 @@ async function wasAlreadyExecuted(
 }
 
 // ===== TRIGGER CONDITION EVALUATOR =====
+// Lee un campo del lead admitiendo rutas con punto ("metadata.rol"). Antes solo
+// se leia el primer nivel, asi que una regla no podia mirar nada de lo que el quiz
+// guarda dentro de metadata. Devuelve undefined si algun tramo no existe.
+function leerCampo(lead: any, ruta: string): any {
+  if (!ruta) return undefined;
+  if (!ruta.includes('.')) return lead?.[ruta];
+  return ruta.split('.').reduce((obj: any, tramo: string) => (obj == null ? undefined : obj[tramo]), lead);
+}
+
 function evaluateTriggerConditions(lead: any, conditions: any): { match: boolean; reason?: string } {
   if (!conditions || typeof conditions !== 'object') return { match: true };
   const conds = Array.isArray(conditions) ? conditions : [conditions];
@@ -54,7 +63,7 @@ function evaluateTriggerConditions(lead: any, conditions: any): { match: boolean
     const value = cond.value;
     if (!field) continue;
 
-    const leadVal = lead[field];
+    const leadVal = leerCampo(lead, field);
 
     switch (op) {
       case 'eq':

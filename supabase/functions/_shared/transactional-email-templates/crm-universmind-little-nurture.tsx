@@ -7,6 +7,12 @@ import type { TemplateEntry } from './registry.ts'
 // Marca: crianza con ciencia, sin culpa. Renderiza el copy FIJO (subject + body)
 // que le pasa el ejecutor, más un botón CTA opcional (ctaText/ctaUrl).
 const SITE_NAME = 'Universmind Little'
+// Un correo de marketing debe decir quien lo manda y desde donde. La ley canadiense
+// (CASL) pide el nombre legal y una direccion postal; la estadounidense (CAN-SPAM),
+// una direccion fisica valida. Mientras SENDER_ADDRESS este vacio el bloque no se
+// pinta -- pero entonces esta secuencia NO puede encenderse.
+const SENDER_LEGAL_NAME = 'Evolarys — Vertogen Technologies Inc.'
+const SENDER_ADDRESS = ''
 const LOGO_URL = 'https://oxrfslyuzcgxacomgzgw.supabase.co/storage/v1/object/public/email-assets/universmind-logo.png'
 const BRAND = '#8b5cf6'
 
@@ -16,10 +22,17 @@ interface Props {
   body?: string
   ctaText?: string
   ctaUrl?: string
+  // Segundo boton, opcional. El correo de la oferta tiene dos caminos legitimos
+  // (una guia o la coleccion) y meterlos en un solo boton obliga a elegir por ella.
+  ctaSecondaryText?: string
+  ctaSecondaryUrl?: string
+  unsubscribeUrl?: string
   ruleName?: string
 }
 
-const UniversmindLittleNurtureEmail = ({ subject, body, ctaText, ctaUrl }: Props) => (
+const UniversmindLittleNurtureEmail = ({
+  subject, body, ctaText, ctaUrl, ctaSecondaryText, ctaSecondaryUrl, unsubscribeUrl,
+}: Props) => (
   <Html lang="es" dir="ltr">
     <Head />
     <Preview>{subject || 'Universmind Little'}</Preview>
@@ -39,10 +52,26 @@ const UniversmindLittleNurtureEmail = ({ subject, body, ctaText, ctaUrl }: Props
               <Button style={ctaButton} href={ctaUrl}>{ctaText}</Button>
             </Section>
           ) : null}
+          {ctaSecondaryText && ctaSecondaryUrl ? (
+            <Section style={ctaSecondarySection}>
+              <Button style={ctaSecondaryButton} href={ctaSecondaryUrl}>{ctaSecondaryText}</Button>
+            </Section>
+          ) : null}
           <Hr style={hr} />
           <Text style={footer}>
             {SITE_NAME} — la ciencia de criar, en simple
           </Text>
+          {SENDER_ADDRESS ? (
+            <Text style={legal}>
+              {SENDER_LEGAL_NAME}<br />{SENDER_ADDRESS}
+            </Text>
+          ) : null}
+          {unsubscribeUrl ? (
+            <Text style={legal}>
+              Recibes este correo porque respondiste la Brújula en universmind.com.{' '}
+              <a href={unsubscribeUrl} style={unsubLink}>Darme de baja</a>
+            </Text>
+          ) : null}
         </Container>
       </Container>
     </Body>
@@ -73,5 +102,9 @@ const h1 = { fontSize: '21px', fontWeight: 'bold' as const, color: '#1a1530', li
 const textStyle = { fontSize: '15px', color: '#4b5563', lineHeight: '1.65', margin: '0 0 24px', whiteSpace: 'pre-wrap' as const }
 const ctaSection = { textAlign: 'center' as const, margin: '8px 0 4px' }
 const ctaButton = { backgroundColor: BRAND, color: '#ffffff', padding: '13px 30px', borderRadius: '10px', fontSize: '15px', fontWeight: 'bold' as const, textDecoration: 'none' }
+const ctaSecondarySection = { textAlign: 'center' as const, margin: '10px 0 4px' }
+const ctaSecondaryButton = { backgroundColor: '#ffffff', color: BRAND, padding: '12px 26px', borderRadius: '10px', fontSize: '14px', fontWeight: 'bold' as const, textDecoration: 'none', border: `1px solid ${BRAND}` }
 const hr = { borderColor: '#ece5f6', margin: '24px 0' }
+const legal = { fontSize: '11px', color: '#9ca3af', lineHeight: '1.6', margin: '8px 0 0' }
+const unsubLink = { color: '#9ca3af', textDecoration: 'underline' }
 const footer = { fontSize: '12px', color: '#9ca3af', margin: '0' }

@@ -282,6 +282,13 @@ Deno.serve(async (req) => {
     )
   }
 
+  // El token de baja ya existe a esta altura, pero hasta ahora solo viajaba en el
+  // sobre (la cabecera List-Unsubscribe). Ninguna plantilla podia pintar el enlace
+  // visible, y un correo de marketing sin enlace visible de baja no cumple la ley
+  // canadiense (CASL) ni la estadounidense (CAN-SPAM). Se entrega aqui, una sola
+  // vez, para todas: la plantilla que no lo use simplemente lo ignora.
+  templateData.unsubscribeUrl = `https://evofinz.com/unsubscribe?token=${encodeURIComponent(unsubscribeToken)}`
+
   // 4. Render React Email template to HTML and plain text
   const html = await renderAsync(
     React.createElement(template.component, templateData)

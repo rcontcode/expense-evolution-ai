@@ -53,7 +53,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { recipientEmail, recipientName, subject, htmlBody, textBody, leadId, ruleName, leadSource, isFollowUp, stepNumber, templateType, templateName: requestedTemplate, ctaText, ctaUrl, codigo, idioma } = await req.json();
+    const { recipientEmail, recipientName, subject, htmlBody, textBody, leadId, ruleName, leadSource, isFollowUp, stepNumber, templateType, templateName: requestedTemplate, ctaText, ctaUrl, ctaSecondaryText, ctaSecondaryUrl, codigo, idioma } = await req.json();
 
     if (!recipientEmail) {
       return new Response(
@@ -117,6 +117,10 @@ Deno.serve(async (req) => {
             stepNumber: stepNumber || 1,
             ctaText: ctaText || '',
             ctaUrl: ctaUrl || '',
+            // Segundo boton opcional (correo de oferta: una guia o la coleccion).
+            // Las plantillas que no lo usan lo ignoran.
+            ctaSecondaryText: ctaSecondaryText || '',
+            ctaSecondaryUrl: ctaSecondaryUrl || '',
             // Campos nuevos y OPCIONALES (23-ago-2026), para el aula de Future Lab:
             // `codigo` deja pintar el codigo de acceso como protagonista en vez de
             // dejarlo perdido dentro del parrafo, e `idioma` marca el correo en el
