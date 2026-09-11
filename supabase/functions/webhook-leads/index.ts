@@ -187,9 +187,16 @@ Deno.serve(async (req) => {
   //   x-leads-secret: <LEADS_WEBHOOK_SHARED_SECRET>
   // Admin UI callers (browser) can alternatively send Authorization: Bearer <user JWT>
   // where the user has role='admin', so we don't have to expose the secret in browser code.
+  // A second accepted secret, only for the two Cloudflare Workers (futurelab-aula and
+  // universmind-hub). Lovable secrets are write-only, so the shared one can't be copied to
+  // them; rotating it would break Little and the other apps that already send it. With
+  // LEADS_WEBHOOK_SECRET_WORKERS unset this check is always false and nothing changes.
   const sharedSecret = Deno.env.get("LEADS_WEBHOOK_SHARED_SECRET") ?? "";
+  // trim(): pasted by hand in Lovable, a trailing newline would make it never match.
+  const workersSecret = (Deno.env.get("LEADS_WEBHOOK_SECRET_WORKERS") ?? "").trim();
   const providedSecret = req.headers.get("x-leads-secret") ?? "";
-  let authOk = sharedSecret.length > 0 && providedSecret === sharedSecret;
+  let authOk = (sharedSecret.length > 0 && providedSecret === sharedSecret) ||
+    (workersSecret.length > 0 && providedSecret === workersSecret);
 
   if (!authOk) {
     const authHeader = req.headers.get("Authorization") ?? "";
